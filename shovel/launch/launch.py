@@ -120,28 +120,6 @@ def generate_launch_description():
         )
         ,
         Node(
-            package='talon',
-            name='camera',
-            executable='talon_node',
-            parameters=[
-                {"motor_number": 18},
-                {"diagnostics_port": 56711},
-                {"invert_motor": True},
-                {"speed_topic": "talon_18_speed"},
-                {"potentiometer_topic": "potentiometer_5_data"},
-                {"info_topic": "talon_18_info"},
-                {"use_velocity": False},
-                {"velocity_multiplier": 3000},
-                {"test_speed": 100},
-                {"kP": 0.20},
-                {"kI": 0.000001},
-                {"kD": 0.000001},
-                {"kF": 0.0}
-            ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
-        )
-        ,
-        Node(
             package='excavation',
             name='excavation',
             executable='excavation_node'

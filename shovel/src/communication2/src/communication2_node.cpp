@@ -29,8 +29,10 @@
 #include <messages/msg/button_state.hpp>
 #include <messages/msg/axis_state.hpp>
 #include <messages/msg/talon_out.hpp>
+#include <messages/msg/victor_out.hpp>
 #include <messages/msg/zed_position.hpp>
 #include <messages/msg/linear_out.hpp>
+#include <messages/msg/neo_out.hpp>
 #include <messages/msg/autonomy_out.hpp>
 
 #include <BinaryMessage.hpp>
@@ -145,6 +147,20 @@ void send(BinaryMessage message){
 }
 
 
+void send(std::string messageLabel, const messages::msg::VictorOut::SharedPtr victorOut){
+    if(silentRunning)return;
+    //RCLCPP_INFO(nodeHandle->get_logger(), "send victor");
+    BinaryMessage message(messageLabel);
+
+    message.addElementFloat32("Device ID",victorOut->device_id);
+    message.addElementFloat32("Bus Voltage",victorOut->bus_voltage);
+    message.addElementFloat32("Output Voltage",victorOut->output_voltage);
+    message.addElementFloat32("Output Percent",victorOut->output_percent);
+
+    send(message);
+}
+
+
 void send(std::string messageLabel, const messages::msg::TalonOut::SharedPtr talonOut){
     if(silentRunning)return;
     //RCLCPP_INFO(nodeHandle->get_logger(), "send talon");
@@ -207,6 +223,17 @@ void send(std::string messageLabel, const messages::msg::LinearOut::SharedPtr li
     message.addElementBoolean("Run", linear->run);
     message.addElementBoolean("At Min", linear->at_min);
     message.addElementBoolean("At Max", linear->at_max);
+
+    send(message);
+}
+
+
+void send(std::string messageLabel, const messages::msg::NeoOut::SharedPtr neo){
+    if(silentRunning)return;
+
+    BinaryMessage message(messageLabel);
+
+    message.addElementFloat32("Speed", neo->speed);
 
     send(message);
 }
@@ -328,19 +355,6 @@ void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * @param talonOut
  * @return void
  * */
-void talon5Callback(const messages::msg::TalonOut::SharedPtr talonOut){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
-    send("Talon 5",talonOut);
-}
-
-/** @brief Callback function for the Talon topic
- * 
- * This function receives the talonOut message published by the first 
- * Talon and uses the send function to send the data to the client side
- * GUI.
- * @param talonOut
- * @return void
- * */
 void falcon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
     send("Falcon 1",talonOut);
@@ -428,15 +442,8 @@ void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     send("Linear 3", linearOut);
 }
 
-
-/** @brief Callback function for the LinearOut topic
- * 
- * This function receives the linearOut message published by the excavation
- * node and uses the send data to send the data to the client side GUI.
- * @param linearOut 
- */
-void linearOut4Callback(const messages::msg::LinearOut::SharedPtr linearOut){
-    send("Linear 4", linearOut);
+void neoOutCallback(const messages::msg::NeoOut::SharedPtr neoOut){
+    send("Neo", neoOut);
 }
 
 
@@ -598,7 +605,7 @@ int main(int argc, char **argv){
     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,talon1Callback);
     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,talon2Callback);
     auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_16_info",1,talon3Callback);
-    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_17_info",1,talon4Callback);
+    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_19_info",1,talon4Callback);
     auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_10_info",1,falcon1Callback);
     auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_11_info",1,falcon2Callback);
     auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_12_info",1,falcon3Callback);
@@ -606,7 +613,7 @@ int main(int argc, char **argv){
     auto linearOut1Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut1",1,linearOut1Callback);
     auto linearOut2Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut2",1,linearOut2Callback);
     auto linearOut3Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut3",1,linearOut3Callback);
-    auto linearOut4Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut4",1,linearOut4Callback);
+    auto neoOutSubscriber = nodeHandle->create_subscription<messages::msg::NeoOut>("neo_out",1,neoOutCallback);
     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
     auto zedImageSubscriber = nodeHandle->create_subscription<sensor_msgs::msg::Image>("zed_image", 10, zedImageCallback);
     auto autonomyOutSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyOut>("autonomy_out", 10, autonomyOutCallback);

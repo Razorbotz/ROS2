@@ -14,6 +14,10 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon16Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon17Publisher;
 
+messages::msg::LinearOut linearOut1;
+messages::msg::LinearOut linearOut2;
+messages::msg::LinearOut linearOut3;
+messages::msg::LinearOut linearOut4;
 /** @file
  * @brief Node to control excavation motors
  * 
@@ -83,9 +87,9 @@ LinearActuator linear4{0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, fals
 
 float currentSpeed = 0.0;
 float currentSpeed2 = 0.0;
-int thresh1 = 60;
-int thresh2 = 120;
-int thresh3 = 180;
+int thresh1 = 15;
+int thresh2 = 30;
+int thresh3 = 45;
 
 bool automationGo = false;
 
@@ -153,7 +157,7 @@ void setSpeeds(){
         }
     }
     if(linear1.error != ConnectionError && linear1.error != PotentiometerError && linear2.error != ConnectionError && linear2.error != PotentiometerError){
-        sync(linear1, linear2);
+        sync();
         if(linear1.atMax && currentSpeed > 0){
             linear1.speed = 0.0;
         }
@@ -186,13 +190,13 @@ void setSpeeds2(){
         if(linear3.atMax && currentSpeed2 > 0){
             linear3.speed = 0.0;
         }
-        if(linear2.atMax && currentSpeed2 > 0){
+        if(linear4.atMax && currentSpeed2 > 0){
             linear4.speed = 0.0;
         }
         if(linear3.atMin && currentSpeed2 < 0){
             linear3.speed = 0.0;
         }
-        if(linear2.atMin && currentSpeed2 < 0){
+        if(linear4.atMin && currentSpeed2 < 0){
             linear4.speed = 0.0;
         }
     }
@@ -338,6 +342,14 @@ void setSyncErrors(){
         }
     }
     sync();
+    if(linear1.speed != 0 || linear2.speed != 0){
+        std_msgs::msg::Float32 speed1;
+        speed1.data = linear1.speed;
+        talon14Publisher->publish(speed1);
+        std_msgs::msg::Float32 speed2;
+        speed2.data = linear2.speed;
+        talon15Publisher->publish(speed2);
+    }
 }
 
 void setSyncErrors2(){
@@ -358,6 +370,14 @@ void setSyncErrors2(){
         }
     }
     sync2();
+    if(linear3.speed != 0 || linear4.speed != 0){
+        std_msgs::msg::Float32 speed1;
+        speed1.data = linear3.speed;
+        talon16Publisher->publish(speed1);
+        std_msgs::msg::Float32 speed2;
+        speed2.data = linear4.speed;
+        talon17Publisher->publish(speed2);
+    }
 }
 
 
@@ -440,30 +460,30 @@ void armSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 
 
 void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
-    currentSpeed = speed->data;
-    RCLCPP_INFO(nodeHandle->get_logger(),"currentSpeed: %f", currentSpeed);
+    currentSpeed2 = speed->data;
+    RCLCPP_INFO(nodeHandle->get_logger(),"currentSpeed: %f", currentSpeed2);
     if(!automationGo){
-        linear3.speed = currentSpeed;
-        linear4.speed = currentSpeed;
+        linear3.speed = currentSpeed2;
+        linear4.speed = currentSpeed2;
     }
     else{
         if(linear3.error != ConnectionError && linear3.error != PotentiometerError && linear4.error != PotentiometerError){
-            linear3.speed = currentSpeed;
-            linear4.speed = currentSpeed;
+            linear3.speed = currentSpeed2;
+            linear4.speed = currentSpeed2;
         }
     }
     if(linear3.error != ConnectionError && linear3.error != PotentiometerError && linear4.error != PotentiometerError){
         sync2();
-        if(linear3.atMax && currentSpeed > 0){
+        if(linear3.atMax && currentSpeed2 > 0){
             linear3.speed = 0.0;
         }
-        if(linear4.atMax && currentSpeed > 0){
+        if(linear4.atMax && currentSpeed2 > 0){
             linear4.speed = 0.0;
         }
-        if(linear3.atMin && currentSpeed < 0){
+        if(linear3.atMin && currentSpeed2 < 0){
             linear3.speed = 0.0;
         }
-        if(linear4.atMin && currentSpeed < 0){
+        if(linear4.atMin && currentSpeed2 < 0){
             linear4.speed = 0.0;
         }
     }
@@ -473,7 +493,7 @@ void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     std_msgs::msg::Float32 speed2;
     speed2.data = linear4.speed;
     talon17Publisher->publish(speed2);
-    RCLCPP_INFO(nodeHandle->get_logger(),"Bucket speeds: %f, %f", linear3.speed, linear2.speed);
+    RCLCPP_INFO(nodeHandle->get_logger(),"Bucket speeds: %f, %f", linear3.speed, linear4.speed);
 
 }
 
@@ -486,16 +506,52 @@ void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
  * @param *linear - Pointer for the linear actuator
  * @return void
  * */
-void getLinearOut(messages::msg::LinearOut *linearOut, LinearActuator *linear){
-    linearOut->speed = linear->speed;
-    linearOut->potentiometer = linear->potentiometer;
-    linearOut->time_without_change = linear->timeWithoutChange;
-    linearOut->max = linear->max;
-    linearOut->min = linear->min;
-    linearOut->error = errorMap.at(linear->error);
-    linearOut->run = linear->run;
-    linearOut->at_min = linear->atMin;
-    linearOut->at_max = linear->atMax;
+void getLinearOut1(){
+    linearOut1.speed = linear1.speed;
+    linearOut1.potentiometer = linear1.potentiometer;
+    linearOut1.time_without_change = linear1.timeWithoutChange;
+    linearOut1.max = linear1.max;
+    linearOut1.min = linear1.min;
+    linearOut1.error = errorMap.at(linear1.error);
+    linearOut1.run = linear1.run;
+    linearOut1.at_min = linear1.atMin;
+    linearOut1.at_max = linear1.atMax;
+}
+
+void getLinearOut2(){
+    linearOut2.speed = linear2.speed;
+    linearOut2.potentiometer = linear2.potentiometer;
+    linearOut2.time_without_change = linear2.timeWithoutChange;
+    linearOut2.max = linear2.max;
+    linearOut2.min = linear2.min;
+    linearOut2.error = errorMap.at(linear2.error);
+    linearOut2.run = linear2.run;
+    linearOut2.at_min = linear2.atMin;
+    linearOut2.at_max = linear2.atMax;
+}
+
+void getLinearOut3(){
+    linearOut3.speed = linear3.speed;
+    linearOut3.potentiometer = linear3.potentiometer;
+    linearOut3.time_without_change = linear3.timeWithoutChange;
+    linearOut3.max = linear3.max;
+    linearOut3.min = linear3.min;
+    linearOut3.error = errorMap.at(linear3.error);
+    linearOut3.run = linear3.run;
+    linearOut3.at_min = linear3.atMin;
+    linearOut3.at_max = linear3.atMax;
+}
+
+void getLinearOut4(){
+    linearOut4.speed = linear4.speed;
+    linearOut4.potentiometer = linear4.potentiometer;
+    linearOut4.time_without_change = linear4.timeWithoutChange;
+    linearOut4.max = linear4.max;
+    linearOut4.min = linear4.min;
+    linearOut4.error = errorMap.at(linear4.error);
+    linearOut4.run = linear4.run;
+    linearOut4.at_min = linear4.atMin;
+    linearOut4.at_max = linear4.atMax;
 }
 
 
@@ -519,11 +575,6 @@ int main(int argc, char **argv){
     talon16Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_16_speed",1);
     talon17Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_17_speed",1);
     
-    messages::msg::LinearOut linearOut1;
-    messages::msg::LinearOut linearOut2;
-    messages::msg::LinearOut linearOut3;
-    messages::msg::LinearOut linearOut4;
-
     auto linearOut1Publisher = nodeHandle->create_publisher<messages::msg::LinearOut>("linearOut1",1);
     auto linearOut2Publisher = nodeHandle->create_publisher<messages::msg::LinearOut>("linearOut2",1);
     auto linearOut3Publisher = nodeHandle->create_publisher<messages::msg::LinearOut>("linearOut3",1);
@@ -533,16 +584,17 @@ int main(int argc, char **argv){
     while(rclcpp::ok()){
         auto finish = std::chrono::high_resolution_clock::now();
         if(std::chrono::duration_cast<std::chrono::seconds>(finish-start).count() > 2){
-            getLinearOut(&linearOut1, &linear1);
+            getLinearOut1();
             linearOut1Publisher->publish(linearOut1);
 
-            getLinearOut(&linearOut2, &linear2);
+            getLinearOut2();
             linearOut2Publisher->publish(linearOut2);
 
-            getLinearOut(&linearOut3, &linear3);
+
+            getLinearOut3();
             linearOut3Publisher->publish(linearOut3);
 
-            getLinearOut(&linearOut4, &linear4);
+            getLinearOut4();
             linearOut4Publisher->publish(linearOut4);
         }
         rclcpp:spin_some(nodeHandle);
