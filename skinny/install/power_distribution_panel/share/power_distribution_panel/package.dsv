@@ -1,8 +1,0 @@
-source;share/power_distribution_panel/hook/cmake_prefix_path.ps1
-source;share/power_distribution_panel/hook/cmake_prefix_path.dsv
-source;share/power_distribution_panel/hook/cmake_prefix_path.sh
-source;share/power_distribution_panel/local_setup.bash
-source;share/power_distribution_panel/local_setup.dsv
-source;share/power_distribution_panel/local_setup.ps1
-source;share/power_distribution_panel/local_setup.sh
-source;share/power_distribution_panel/local_setup.zsh
