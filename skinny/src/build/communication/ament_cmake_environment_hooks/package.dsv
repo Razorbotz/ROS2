@@ -1,4 +1,0 @@
-source;share/communication/local_setup.bash
-source;share/communication/local_setup.dsv
-source;share/communication/local_setup.sh
-source;share/communication/local_setup.zsh

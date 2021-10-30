@@ -1,4 +1,0 @@
-source;share/power_distribution_panel/local_setup.bash
-source;share/power_distribution_panel/local_setup.dsv
-source;share/power_distribution_panel/local_setup.sh
-source;share/power_distribution_panel/local_setup.zsh

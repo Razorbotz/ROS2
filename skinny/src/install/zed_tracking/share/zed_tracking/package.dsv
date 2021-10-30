@@ -1,8 +1,0 @@
-source;share/zed_tracking/hook/cmake_prefix_path.ps1
-source;share/zed_tracking/hook/cmake_prefix_path.dsv
-source;share/zed_tracking/hook/cmake_prefix_path.sh
-source;share/zed_tracking/local_setup.bash
-source;share/zed_tracking/local_setup.dsv
-source;share/zed_tracking/local_setup.ps1
-source;share/zed_tracking/local_setup.sh
-source;share/zed_tracking/local_setup.zsh

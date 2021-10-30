@@ -1,6 +1,0 @@
-source;share/excavation/hook/pythonpath.ps1
-source;share/excavation/hook/pythonpath.dsv
-source;share/excavation/hook/pythonpath.sh
-source;share/excavation/hook/ament_prefix_path.ps1
-source;share/excavation/hook/ament_prefix_path.dsv
-source;share/excavation/hook/ament_prefix_path.sh

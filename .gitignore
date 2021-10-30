@@ -2,3 +2,5 @@ skinny/log
 skinny/src/log
 skinny/build
 skinny/install
+skinny/src/build/
+skinny/src/install/
