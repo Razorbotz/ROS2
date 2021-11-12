@@ -4,3 +4,9 @@ skinny/build
 skinny/install
 skinny/src/build/
 skinny/src/install/
+skinny/src/zed_tracking/src/build
+skinny/src/zed_tracking/src/install
+skinny/src/zed_tracking/src/log
+skinny/src/logic/src/build
+skinny/src/logic/src/install
+skinny/src/logic/src/log
