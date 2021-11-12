@@ -499,7 +499,8 @@ int main(int argc, char **argv){
         }
 
         rclcpp::spin_some(nodeHandle);
-    }
+		usleep(20);
+	}
 
-    broadcastThread.join();
+	broadcastThread.join();
 }
