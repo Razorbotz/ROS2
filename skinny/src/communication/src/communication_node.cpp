@@ -408,7 +408,10 @@ int main(int argc, char **argv){
 
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
-    while(rclcpp::ok()){
+
+	rclcpp::Rate rate(20);
+
+	while(rclcpp::ok()){
         bytesRead = recv(new_socket, buffer, 1024, 0);
         for(int index=0;index<bytesRead;index++){
             messageBytesList.push_back(buffer[index]);
@@ -499,7 +502,7 @@ int main(int argc, char **argv){
         }
 
         rclcpp::spin_some(nodeHandle);
-		usleep(20);
+        rate.sleep();
 	}
 
 	broadcastThread.join();
