@@ -5,29 +5,25 @@
 
 #include "AutomationTypes.hpp"
 
+class Automation {
+  public:
+	std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void>>, std::allocator<void>>> driveLeftSpeedPublisher;
+	std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void>>, std::allocator<void>>> driveRightSpeedPublisher;
 
-class Automation{
-    public:
+	rclcpp::Node::SharedPtr node;
+	Position position;
+	Quaternion orientationQuaternion;
+	EulerAngles orientation;
+	float currentLeftSpeed = 0;
+	float currentRightSpeed = 0;
 
-    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
-    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
+	virtual void automate() = 0;
 
-    rclcpp::Node::SharedPtr node;
-    Position position;
-    Quaternion orientationQuaternion;
-    EulerAngles orientation;
-    float currentLeftSpeed=0;
-    float currentRightSpeed=0;
+	void setNode(rclcpp::Node::SharedPtr node);
 
+	void setPosition(Position position);
 
-    virtual void automate() = 0;
+	void changeSpeed(float left, float right);
 
-    void setNode(rclcpp::Node::SharedPtr node);
-
-    void setPosition(Position position);
-
-    void changeSpeed(float left, float right);
-
-    EulerAngles toEulerAngles(Quaternion q); 
-
+	EulerAngles toEulerAngles(Quaternion q);
 };
