@@ -11,15 +11,6 @@
 
 // This is hardcoded to a power panel at id 1   Sad!!!
 
-/** @brief Gets current C from the power panel
- * Gets the current C from the power panel from the specified source
- * @param source
- * @return currentC[source]
- * */
-float PowerDistributionPanel::getCurrent(int source) {
-	return currentC[source];
-}
-
 /** @brief Gets current A from the power panel
  * Gets the current A from the power panel from the specified source
  * @param source

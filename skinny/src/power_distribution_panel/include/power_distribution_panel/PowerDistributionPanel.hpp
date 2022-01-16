@@ -25,7 +25,6 @@ class PowerDistributionPanel {
 	float currentC[15];
 
   public:
-	float getCurrent(int source);
 	float getCurrentA(int source);
 	float getCurrentB(int source);
 	float getCurrentC(int source);
