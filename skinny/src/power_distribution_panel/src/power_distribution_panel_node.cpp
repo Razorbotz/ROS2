@@ -23,7 +23,7 @@
  *
  * This node does not listen for any topics to be published.
  * Instead, this node queries the PDP and then packages the
- * information it recieves into  one topic, which is
+ * information it receives into  one topic, which is
  * \li \b power
  *
  * To read more about the functions that this makes use of,
@@ -31,6 +31,12 @@
  *
  * */
 
+/** @brief Main loop for the Power Distribution Panel node
+ * Handles the setup and event loop for the Power Distribution Panel node.
+ * @param argc
+ * @param argv
+ * @return Exit status
+ * */
 int main(int argc, char** argv) {
 	rclcpp::init(argc, argv);
 	rclcpp::Node::SharedPtr nodeHandle = rclcpp::Node::make_shared("communication");

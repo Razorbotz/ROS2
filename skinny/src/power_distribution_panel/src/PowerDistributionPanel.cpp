@@ -4,15 +4,15 @@
 #include <ncurses.h>
 
 /** @file
- * @brief Brief description of file
- * Detailed description of file
+ * @brief Defines all of the functions in PowerDistributionPanel.hpp
+ * Processes all of the data for the Power Distribution Panel.
  *
  * */
 
 // This is hardcoded to a power panel at id 1   Sad!!!
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Gets current C from the power panel
+ * Gets the current C from the power panel from the specified source
  * @param source
  * @return currentC[source]
  * */
@@ -20,8 +20,8 @@ float PowerDistributionPanel::getCurrent(int source) {
 	return currentC[source];
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Gets current A from the power panel
+ * Gets the current A from the power panel from the specified source
  * @param source
  * @return currentA[source]
  * */
@@ -29,8 +29,8 @@ float PowerDistributionPanel::getCurrentA(int source) {
 	return currentA[source];
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Gets current B from the power panel
+ * Gets the current B from the power panel from the specified source
  * @param source
  * @return currentB[source]
  * */
@@ -38,8 +38,8 @@ float PowerDistributionPanel::getCurrentB(int source) {
 	return currentB[source];
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Gets current C from the power panel
+ * Gets the current C from the power panel from the specified source
  * @param source
  * @return currentC[source]
  * */
