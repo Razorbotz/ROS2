@@ -5,13 +5,13 @@
   <description>The power_distribution_panel package</description>
 
   <maintainer email="todo@todo.todo">nvidia</maintainer>
-  <author>William Johnston</author>	  
+  <author>William Johnston</author>
   <license>none</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>std_msgs</depend>	  
+  <depend>std_msgs</depend>
   <depend>messages</depend>
 
   <export>
