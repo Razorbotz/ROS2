@@ -1,209 +1,235 @@
 
 #include "power_distribution_panel/PowerDistributionPanel.hpp"
-#include <ncurses.h>
 #include <iostream>
+#include <ncurses.h>
 
 /** @file
- * @brief Brief description of file
- * Detailed description of file 
- * 
+ * @brief Defines all of the functions in PowerDistributionPanel.hpp
+ * Processes all of the data for the Power Distribution Panel.
+ *
  * */
 
 // This is hardcoded to a power panel at id 1   Sad!!!
 
-/** @brief Brief description of function
- * Detailed description of function
- * */
-PowerDistributionPanel::PowerDistributionPanel(){
-	this->voltage=0;
-}
-
-/** @brief Brief description of function
- * Detailed description of function
- * @param source
- * @return currentC[source]
- * */
-float PowerDistributionPanel::getCurrent(int source){
-	return currentC[source];
-}
-
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Gets current A from the power panel
+ * Gets the current A from the power panel from the specified source
  * @param source
  * @return currentA[source]
  * */
-float PowerDistributionPanel::getCurrentA(int source){
+float PowerDistributionPanel::getCurrentA(int source) {
 	return currentA[source];
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Gets current B from the power panel
+ * Gets the current B from the power panel from the specified source
  * @param source
  * @return currentB[source]
  * */
-float PowerDistributionPanel::getCurrentB(int source){
+float PowerDistributionPanel::getCurrentB(int source) {
 	return currentB[source];
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Gets current C from the power panel
+ * Gets the current C from the power panel from the specified source
  * @param source
  * @return currentC[source]
  * */
-float PowerDistributionPanel::getCurrentC(int source){
+float PowerDistributionPanel::getCurrentC(int source) {
 	return currentC[source];
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Returns voltage
+ * Returns the voltage (as a float)
  * @param source
  * @return voltage
  * */
-float PowerDistributionPanel::getVoltage(){
+float PowerDistributionPanel::getVoltage() {
 	return voltage;
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Parse a frame from the PDP
+ * Parses current (and voltage if CAN ID is 3, 6, or 9) data from the PDP.
  * @param frame
  * @return void
  * */
-void PowerDistributionPanel::parseFrame(struct can_frame frame){
+void PowerDistributionPanel::parseFrame(struct can_frame frame) {
+	switch(frame.can_id) {
+		// Parse voltage (and also current)
+		case id3:
+		case id6:
+		case id9:
+			parseVoltage(frame);
+			// Continue to parse current
 
-        if(frame.can_id==0x88041481 || frame.can_id==0x88041541 || frame.can_id==0x88041601){
-		parseVoltage(frame);
-	}
-	
-	if(frame.can_id==0x88041401||
-           frame.can_id==0x88041441||
-           frame.can_id==0x88041481||
-           frame.can_id==0x880414C1||
-           frame.can_id==0x88041501||
-           frame.can_id==0x88041541||
-           frame.can_id==0x88041581||
-           frame.can_id==0x880415C1||
-           frame.can_id==0x88041601){
-		parseCurrent(frame);
-	}
-        if(frame.can_id==0x88041641){
-		//who knows
+		// Parse current
+		case id1:
+		case id2:
+		case id4:
+		case id5:
+		case id7:
+		case id8:
+			parseCurrent(frame);
+			break;
+
+		// Unknown ID
+		default:
+			// Should not get here
+			break;
 	}
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Parses voltage from a CAN frame
+ * Parses voltage from a CAN frame (if the CAN ID is 3, 6, or 9) doing some operations on the data and setting the voltage member variable.
  * @param frame
  * @return void
  * */
-void PowerDistributionPanel::parseVoltage(struct can_frame frame){
-	if(frame.can_id==0x88041481 || frame.can_id==0x88041541 || frame.can_id==0x88041601){
-		this->voltage=.05*frame.data[6]+4;
-        }
+void PowerDistributionPanel::parseVoltage(struct can_frame frame) {
+	switch(frame.can_id) {
+		case id3:
+		case id6:
+		case id9:
+			this->voltage = 0.05f * frame.data[6] + 4;
+			break;
+
+		default:
+			break;
+	}
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Proceses and sets the current for the PDP class
+ * Does a bunch of ugly bitwise manipulations on the frame data to get the current and then sets the corresponding current member variable (A, B, or C)
  * @param frame
  * @return void
  * */
-void PowerDistributionPanel::parseCurrent(struct can_frame frame){
-        float currentScalar = 0.125f;
-        int i1=frame.data[0];
-        i1=i1<<2;
-        i1=i1|(frame.data[1]>>6 & 0x03);
-        float current1=i1*currentScalar;
+void PowerDistributionPanel::parseCurrent(struct can_frame frame) {
+	// A bunch of ugly bit manipulations
+	constexpr float currentScalar = 0.125f;
 
-        int i2=frame.data[1] & 0x3f;
-        i2=i2<<4;
-        i2=i2|(frame.data[2]>>4 & 0x0f);
-        float current2=i2*currentScalar;
+	// Current 1
+	int i1 = frame.data[0];
+	i1 = i1 << 2;
+	i1 = i1 | (frame.data[1] >> 6 & 0x03);
+	const float current1 = i1 * currentScalar;
 
-        int i3=frame.data[2] & 0x0f;
-        i3=i3<<6;
-        i3=i3|(frame.data[3]>>2 & 0x3f);
-        float current3=i3*currentScalar;
+	// Current 2
+	int i2 = frame.data[1] & 0x3f;
+	i2 = i2 << 4;
+	i2 = i2 | (frame.data[2] >> 4 & 0x0f);
+	const float current2 = i2 * currentScalar;
 
-        int i4=frame.data[3] & 0x03;
-        i4=i4<<8;
-        i4=i4|(frame.data[4]);
-        float current4=i4*currentScalar;
+	// Current 3
+	int i3 = frame.data[2] & 0x0f;
+	i3 = i3 << 6;
+	i3 = i3 | (frame.data[3] >> 2 & 0x3f);
+	const float current3 = i3 * currentScalar;
 
-        int i5=frame.data[5];
-        i5=i5<<2;
-        i5=i5|(frame.data[6]>>6 & 0x03);
-        float current5=i5*currentScalar;
+	// Current 4
+	int i4 = frame.data[3] & 0x03;
+	i4 = i4 << 8;
+	i4 = i4 | (frame.data[4]);
+	const float current4 = i4 * currentScalar;
 
-        int i6=frame.data[6] & 0x3f;
-        i6=i6<<4;
-        i6=i6|(frame.data[7]>>4 & 0x7);
-        float current6=i6*currentScalar;
+	// Current 5
+	int i5 = frame.data[5];
+	i5 = i5 << 2;
+	i5 = i5 | (frame.data[6] >> 6 & 0x03);
+	const float current5 = i5 * currentScalar;
 
+	// Current 6
+	int i6 = frame.data[6] & 0x3f;
+	i6 = i6 << 4;
+	i6 = i6 | (frame.data[7] >> 4 & 0x7);
+	const float current6 = i6 * currentScalar;
 
+	// Set the frame's current
+	size_t offset = 0;
+	switch(frame.can_id) {
+		case id1:
+			offset = 0;
+			this->currentA[offset + 0] = current1;
+			this->currentA[offset + 1] = current2;
+			this->currentA[offset + 2] = current3;
+			this->currentA[offset + 3] = current4;
+			this->currentA[offset + 4] = current5;
+			this->currentA[offset + 5] = current6;
+			break;
 
-	if(frame.can_id==0x88041401){
-		this->currentA[0]=current1;
-		this->currentA[1]=current2;
-		this->currentA[2]=current3;
-		this->currentA[3]=current4;
-		this->currentA[4]=current5;
-		this->currentA[5]=current6;
-	}
-        if(frame.can_id==0x88041441){
-		this->currentA[6]=current1;
-		this->currentA[7]=current2;
-		this->currentA[8]=current3;
-		this->currentA[9]=current4;
-		this->currentA[10]=current5;
-		this->currentA[11]=current6;
-	}
-        if(frame.can_id==0x88041481){
-		this->currentA[12]=current1;
-		this->currentA[13]=current2;
-		this->currentA[14]=current3;
-		this->currentA[15]=current4;
-	}
-        if(frame.can_id==0x880414C1){
-		this->currentB[0]=current1;
-		this->currentB[1]=current2;
-		this->currentB[2]=current3;
-		this->currentB[3]=current4;
-		this->currentB[4]=current5;
-		this->currentB[5]=current6;
-	}
-        if(frame.can_id==0x88041501){
-		this->currentC[6]=current1;
-		this->currentC[7]=current2;
-		this->currentC[8]=current3;
-		this->currentC[9]=current4;
-		this->currentC[10]=current5;
-		this->currentC[11]=current6;
-	}
-        if(frame.can_id==0x88041541){
-		this->currentB[12]=current1;
-		this->currentB[13]=current2;
-		this->currentB[14]=current3;
-		this->currentB[15]=current4;
-	}
-        if(frame.can_id==0x88041581){
-		this->currentC[0]=current1;
-		this->currentC[1]=current2;
-		this->currentC[2]=current3;
-		this->currentC[3]=current4;
-		this->currentC[4]=current5;
-		this->currentC[5]=current6;
-	}
-        if(frame.can_id==0x880415C1){
-		this->currentC[6]=current1;
-		this->currentC[7]=current2;
-		this->currentC[8]=current3;
-		this->currentC[9]=current4;
-		this->currentC[10]=current5;
-		this->currentC[11]=current6;
-	}
-        if(frame.can_id==0x88041601){
-		this->currentC[12]=current1;
-		this->currentC[13]=current2;
-		this->currentC[14]=current3;
-		this->currentC[15]=current4;
+		case id2:
+			offset = 6;
+			this->currentA[offset + 0] = current1;
+			this->currentA[offset + 1] = current2;
+			this->currentA[offset + 2] = current3;
+			this->currentA[offset + 3] = current4;
+			this->currentA[offset + 4] = current5;
+			this->currentA[offset + 5] = current6;
+			break;
+
+		case id4:
+			offset = 0;
+			this->currentB[offset + 0] = current1;
+			this->currentB[offset + 1] = current2;
+			this->currentB[offset + 2] = current3;
+			this->currentB[offset + 3] = current4;
+			this->currentB[offset + 4] = current5;
+			this->currentB[offset + 5] = current6;
+			break;
+
+		case id5:
+			offset = 6;
+			this->currentC[offset + 0] = current1;
+			this->currentC[offset + 1] = current2;
+			this->currentC[offset + 2] = current3;
+			this->currentC[offset + 3] = current4;
+			this->currentC[offset + 4] = current5;
+			this->currentC[offset + 5] = current6;
+			break;
+
+		case id7:
+			offset = 0;
+			this->currentC[offset + 0] = current1;
+			this->currentC[offset + 1] = current2;
+			this->currentC[offset + 2] = current3;
+			this->currentC[offset + 3] = current4;
+			this->currentC[offset + 4] = current5;
+			this->currentC[offset + 5] = current6;
+			break;
+
+		case id8:
+			offset = 6;
+			this->currentC[offset + 0] = current1;
+			this->currentC[offset + 1] = current2;
+			this->currentC[offset + 2] = current3;
+			this->currentC[offset + 3] = current4;
+			this->currentC[offset + 4] = current5;
+			this->currentC[offset + 5] = current6;
+			break;
+
+		case id3:
+			offset = 12;
+			this->currentA[offset + 0] = current1;
+			this->currentA[offset + 1] = current2;
+			this->currentA[offset + 2] = current3;
+			this->currentA[offset + 3] = current4;
+			break;
+
+		case id6:
+			offset = 12;
+			this->currentB[offset + 0] = current1;
+			this->currentB[offset + 1] = current2;
+			this->currentB[offset + 2] = current3;
+			this->currentB[offset + 3] = current4;
+			break;
+
+		case id9:
+			offset = 12;
+			this->currentC[offset + 0] = current1;
+			this->currentC[offset + 1] = current2;
+			this->currentC[offset + 2] = current3;
+			this->currentC[offset + 3] = current4;
+			break;
+
+		default:
+			// Should not get here
+			break;
 	}
 }
