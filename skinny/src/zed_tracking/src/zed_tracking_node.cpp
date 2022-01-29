@@ -11,9 +11,27 @@
 //using namespace std;
 
 /** @file
- * @brief Brief description of file
+ * @brief Node handling Zed camera
  * 
- * Detailed description of file 
+ * This node does not receive any information from other nodes, therefore, it does not subscribe to any node. Current purpose is to utilize the "ArUco Positional Tracking sample" with the Zed camera and publishes topics relating to it. Node contains no other functions, only main.
+ * \see aruco.cpp
+ *  
+ * The topics that are being published are as follows:
+ * \li \b zedPosition
+ * "zedPosition" contains the variables x, y, z, ox, oy, oz, ow, and aruco_visible.
+ * 
+ * The variables x, y, and z are the translation vectors. 
+ * To learn more about the translation vectors, see https://en.wikipedia.org/wiki/Translation_(geometry)
+ * 
+ * The variables ox, oy, oz, and ow are the orientation vectors. The orientation data is also known as "quaternion" data. These vectors help with calculating three-dimensional rotations.
+ * To learn more about quaternion, see https://en.wikipedia.org/wiki/Quaternion
+ * \see ZedPosition.msg
+ * 
+ * The variable "aruco_visible" tells whether or not that at least one marker is detected.
+ * 
+ * To read more about the nodes that subscribe to this one
+ * \see logic_node.cpp
+ * 
  * 
  * */
 
@@ -44,7 +62,7 @@ int main(int argc, char **argv) {
     // Open the camera
     sl::ERROR_CODE err = zed.open(init_params);
     if (err != sl::ERROR_CODE::SUCCESS) {
-	std::cout << "Error, unable to open ZED camera: " << err << "\n";
+	    std::cout << "Error, unable to open ZED camera: " << err << "\n";
         zed.close();
         return 1; // Quit if an error occurred
     }
@@ -83,13 +101,11 @@ int main(int argc, char **argv) {
     float pastValues[ROW_COUNT][7];
     float average[7];
     for(int col=0;col<7;col++){
-	average[col]=0;
+	    average[col]=0;
         for(int row=0;row<ROW_COUNT;row++){
-	    pastValues[row][col]=0;
-	}
+	        pastValues[row][col]=0;
+	    }
     }
-
-
 
     sl::PositionalTrackingParameters tracking_params;
     tracking_params.enable_imu_fusion = false; // for this sample, IMU (of ZED-M) is disable, we use the gravity given by the marker.
@@ -111,60 +127,62 @@ int main(int argc, char **argv) {
             cv::aruco::detectMarkers(image_ocv_rgb, dictionary, corners, ids);
             // if at least one marker detected
             if (ids.size() > 0) {
-	//	int id=ids[0];
+	        //	int id=ids[0];
                 cv::aruco::estimatePoseSingleMarkers(corners, actual_marker_size_meters, camera_matrix, dist_coeffs, rvecs, tvecs);
                 arucoPose.setTranslation(sl::float3(tvecs[0](0), tvecs[0](1), tvecs[0](2)));
                 arucoPose.setRotationVector(sl::float3(rvecs[0](0), rvecs[0](1), rvecs[0](2)));
                 arucoPose.inverse();
 
                 zed.resetPositionalTracking(arucoPose);
-		zedPosition.aruco_visible=true;
-	    }else{
-	        zedPosition.aruco_visible=false;
-	    }
+		        zedPosition.aruco_visible=true;
+	        } 
+            else {
+	            zedPosition.aruco_visible=false;
+	        }
 
             sl::POSITIONAL_TRACKING_STATE tracking_state = zed.getPosition(zedPose, sl::REFERENCE_FRAME::WORLD);
-	    if (tracking_state == sl::POSITIONAL_TRACKING_STATE::OK) {
-		for(int col=0;col<7;col++){    
-		    average[col]-=pastValues[currentRow][col]/ROW_COUNT;
-		}
 
-	        pastValues[currentRow][0]=zedPose.getTranslation().x;
-    	        pastValues[currentRow][1]=zedPose.getTranslation().y;
-	        pastValues[currentRow][2]=zedPose.getTranslation().z;
-	        pastValues[currentRow][3]=zedPose.getOrientation().ox;
-	        pastValues[currentRow][4]=zedPose.getOrientation().oy;
-	        pastValues[currentRow][5]=zedPose.getOrientation().oz;
-	        pastValues[currentRow][6]=zedPose.getOrientation().ow;
+            if (tracking_state == sl::POSITIONAL_TRACKING_STATE::OK) {
+                for(int col=0;col<7;col++){    
+                    average[col]-=pastValues[currentRow][col]/ROW_COUNT;
+                }
 
-		for(int col=0;col<7;col++){    
-		    average[col]+=pastValues[currentRow][col]/ROW_COUNT;
-		}
-		currentRow++;
-		if(currentRow==ROW_COUNT)currentRow=0;
+                pastValues[currentRow][0]=zedPose.getTranslation().x;
+                pastValues[currentRow][1]=zedPose.getTranslation().y;
+                pastValues[currentRow][2]=zedPose.getTranslation().z;
+                pastValues[currentRow][3]=zedPose.getOrientation().ox;
+                pastValues[currentRow][4]=zedPose.getOrientation().oy;
+                pastValues[currentRow][5]=zedPose.getOrientation().oz;
+                pastValues[currentRow][6]=zedPose.getOrientation().ow;
 
-	        zedPosition.x=average[0];
-    	        zedPosition.y=average[1];
-	        zedPosition.z=average[2];
-	        zedPosition.ox=average[3];
-	        zedPosition.oy=average[4];
-	        zedPosition.oz=average[5];
-	        zedPosition.ow=average[6];
+                for(int col=0;col<7;col++){    
+                    average[col]+=pastValues[currentRow][col]/ROW_COUNT;
+                }
+                currentRow++;
 
+                if(currentRow==ROW_COUNT)currentRow=0;
 
-//	        zedPosition.x=zedPose.getTranslation().x;
-//    	        zedPosition.y=zedPose.getTranslation().y;
-//	        zedPosition.z=zedPose.getTranslation().z;
-//	        zedPosition.ox=zedPose.getOrientation().ox;
-//	        zedPosition.oy=zedPose.getOrientation().oy;
-//	        zedPosition.oz=zedPose.getOrientation().oz;
-//	        zedPosition.ow=zedPose.getOrientation().ow;
+                zedPosition.x=average[0];
+                zedPosition.y=average[1];
+                zedPosition.z=average[2];
+                zedPosition.ox=average[3];
+                zedPosition.oy=average[4];
+                zedPosition.oz=average[5];
+                zedPosition.ow=average[6];
+                
+    //	        zedPosition.x=zedPose.getTranslation().x;
+    //    	        zedPosition.y=zedPose.getTranslation().y;
+    //	        zedPosition.z=zedPose.getTranslation().z;
+    //	        zedPosition.ox=zedPose.getOrientation().ox;
+    //	        zedPosition.oy=zedPose.getOrientation().oy;
+    //	        zedPosition.oz=zedPose.getOrientation().oz;
+    //	        zedPosition.ow=zedPose.getOrientation().ow;
 
-	        zedPositionPublisher->publish(zedPosition);
-	    }
+                zedPositionPublisher->publish(zedPosition);
+            }
 
         }
-	rate.sleep();
+	    rate.sleep();
     }
     zed.close();
     return 0;
