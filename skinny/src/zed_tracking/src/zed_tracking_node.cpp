@@ -31,6 +31,7 @@
  * 
  * To read more about the nodes that subscribe to this one
  * \see logic_node.cpp
+ * \see autonomy_node.cpp
  * 
  * 
  * */
