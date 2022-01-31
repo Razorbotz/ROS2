@@ -829,7 +829,7 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = skinny/src/autonomy/src skinny/src/communication/src skinny/src/logic/src skinny/src/messages/msg skinny/src/power_distribution_panel/ skinny/src/talon/src skinny/src/zed_tracking/src skinny/launch skinny/src/autonomy/include MainPage.cpp README.md
+INPUT                  = skinny/src/autonomy/src skinny/src/communication/src skinny/src/logic/src skinny/src/messages/msg skinny/src/power_distribution_panel/ skinny/src/talon/src skinny/src/zed_tracking/src skinny/launch skinny/src/autonomy/include docs/MainPage.cpp docs/Example.cpp README.md
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

@@ -14,16 +14,19 @@ To begin the project, install VirtualBox or another virtualization software to y
 ### Installing VirtualBox
 To install VirtualBox, first download the software [here](https://www.virtualbox.org/wiki/Downloads).  After downloading and installing VirtualBox, download an image of [Ubuntu 20.04](http://releases.ubuntu.com/20.04/) and install Ubuntu.  A tutorial on how to do so is located [here](https://linuxhint.com/install_ubuntu_virtualbox_2004/).  To allows the virtual machine to be able to be full screen, enter the following commands in the terminal:
 
+```
 sudo apt update
 
 sudo apt install virtualbox-guest-dkms virtualbox-guest-x11 virtualbox-guest-utils
+```
 
 After executing the commands, click on the Devices drop down menu at the top of the virtual machine.  Click on Insert Guest Additions Image, then click Run and enter the password when prompted.  For any issues, please consult this [installation guide](https://linuxhint.com/install_ubuntu_virtualbox_2004/#:~:text=Installing%20VirtualBox%20Guest%20Additions%20on%20Ubuntu%2020.04%20LTS).
 
 ## Installing ROS2
-The project uses the Foxy distribution of ROS2.  To install the Foxy distribution of ROS2 using Debian packages, use the following Linux terminal commands.  To build from source or install on other operating systems, refer to the [Installation Page](https://docs.ros.org/en/foxy/Installation.html).
+The project uses the Foxy distribution of ROS2.  To build from source or install on other operating systems, refer to the [Installation Page](https://docs.ros.org/en/foxy/Installation.html).  **To install the Foxy distribution of ROS2 using Debian packages, run the following Linux terminal commands inside the virtual machine or on a native Linux machine.**
 
 ### Set locale
+```
 locale  # check for UTF-8
 
 sudo apt update && sudo apt install locales
@@ -32,37 +35,45 @@ sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 export LANG=en_US.UTF-8
 
 locale  # verify settings
+```
 
 ### Setup Sources
+```
 sudo apt update && sudo apt install curl gnupg2 lsb-release
 sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -o /usr/share/keyrings/ros-archive-keyring.gpg
 
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
 sudo sed -i -e 's/ubuntu .* main/ubuntu focal main/g' /etc/apt/sources.list.d/ros2.list
+```
 
 ### Install ROS2 Packages
+```
 sudo apt update
 
 sudo apt install ros-foxy-desktop
+```
 
 ### Run Some Examples
-Run the following commands in one terminal
+**Run the following commands in one terminal**
 
+```
 source /opt/ros/foxy/setup.bash
 
 ros2 run demo_nodes_cpp talker
+```
 
-In a second terminal, run the following commands
+**In a second terminal, run the following commands**
 
+```
 source /opt/ros/foxy/setup.bash
 
 ros2 run demo_nodes_py listener
+```
 
 If you want to build from source or install on a different operating system, please refer to the [installation guide](https://docs.ros.org/en/foxy/Installation.html).
 
 ## Understanding the Codebase
-TODO: Write lines explaining the codebase and the structure
 
 ### Structure of the packages
 ROS2 packages all contain the following:
@@ -70,11 +81,34 @@ ROS2 packages all contain the following:
 * CMakeLists.txt //auto-generated file necessary for C++ ROS2 packages
 * package.xml //auto-generated file necessary for C++ ROS2 packages
 
-The src folder within a package contains the .cpp files that define nodes and supporting files for classes/objects/functions relevant to that package.
+The src folder within a package contains the .cpp files that define nodes and supporting files for classes/objects/functions relevant to that package.  To read more about ROS2 packages, please refer to the [ROS tutorial](https://docs.ros.org/en/foxy/Tutorials/Creating-Your-First-ROS2-Package.html).
+
+The ROS2 packages currently in this project are as follows:
+* [Autonomy](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/autonomy)
+* [Communication](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/communication)
+* [Excavation](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/excavation)
+* [Logic](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/logic)
+* [Power Distribution Panel](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/poewr_distribution_panel)
+* [Talon](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/talon)
+* [Zed Tracking](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/zed_tracking)
 
 ## Documentation
-TODO: Write more about the documentation, maybe include a standard template for all documentation
 This project uses [Doxygen](https://www.doxygen.nl/index.html) to generate documentation for the files automatically.  To learn more about the Doxygen formatting, please refer to the [Documenting the code](https://www.doxygen.nl/manual/docblocks.html) section of the Doxygen docs.  The documentation for this project can be found at the project website that is found [here](https://razorbotz.github.io/ROS2/).
+
+### Documentation Template
+To standardize the documentation across multiple authors, the following documentation template will be used throughout the project.  To see an example of how files should be commented to generate the documentation correctly, see [Example.cpp](https://github.com/Razorbotz/ROS2/blob/master/docs/Example.cpp).
+
+**Files**
+* Description of file
+* Topics subscribed to
+* Topics published
+* Related files
+
+**Functions**
+* Description of Function
+* Parameters
+* Return values
+* Related files and/or functions
 
 ## Tutorials
 
@@ -92,4 +126,3 @@ To gain a better understanding of ROS2, please refer to the following [tutorials
 * [Using Parameters in a Class (C++)](https://docs.ros.org/en/foxy/Tutorials/Using-Parameters-In-A-Class-CPP.html)
 * [Using Parameters in a Class (Python)](https://docs.ros.org/en/foxy/Tutorials/Using-Parameters-In-A-Class-Python.html)
 * [Using ROS2 Launch](https://docs.ros.org/en/foxy/Tutorials/Launch-Files/Using-ROS2-Launch-For-Large-Projects.html)
-
