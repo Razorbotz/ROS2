@@ -2,58 +2,14 @@
 This page intends to provide a starting point and overview of the project, as well as a roadmap for how to get involved with the project even if you aren't familiar with the code or technology stack. Please note that these links may not be up to date and any links should be followed at your own risk.  If you find any links that no longer work or changes that need to be made, please contact me at andrewburroughs17@gmail.com.  Click [here](https://razorbotz.github.io/ROS2/) to view the documentation for the project.  If you are not familiar with Github and the git cli, please refer to the [Razorbotz Github Intro page](https://github.com/Razorbotz/Test).
 
 ## Overview
-* [Prerequisites](https://github.com/Razorbotz/ROS2/tree/master#prerequisites---windows)
 * [Installing ROS2](https://github.com/Razorbotz/ROS2/tree/master#installing-ros2)
 * [Understanding the Codebase](https://github.com/Razorbotz/ROS2/tree/master#understanding-the-codebase)
 * [Documentation](https://github.com/Razorbotz/ROS2/tree/master#documentation)
 * [Tutorials](https://github.com/Razorbotz/ROS2/tree/master#tutorials)
-
-## Prerequisites - Windows
-To begin the project, install VirtualBox or another virtualization software to your computer.  If you are using Linux, disregard the VirtualBox installation.
-
-### Installing VirtualBox
-To install VirtualBox, first download the software [here](https://www.virtualbox.org/wiki/Downloads).  After downloading and installing VirtualBox, download an image of [Ubuntu 20.04](http://releases.ubuntu.com/20.04/) and install Ubuntu.  A tutorial on how to do so is located [here](https://linuxhint.com/install_ubuntu_virtualbox_2004/).  To allows the virtual machine to be able to be full screen, enter the following commands in the terminal:
-
-```
-sudo apt update
-
-sudo apt install virtualbox-guest-dkms virtualbox-guest-x11 virtualbox-guest-utils
-```
-
-After executing the commands, click on the Devices drop down menu at the top of the virtual machine.  Click on Insert Guest Additions Image, then click Run and enter the password when prompted.  For any issues, please consult this [installation guide](https://linuxhint.com/install_ubuntu_virtualbox_2004/#:~:text=Installing%20VirtualBox%20Guest%20Additions%20on%20Ubuntu%2020.04%20LTS).
+* [Resources](https://github.com/Razorbotz/ROS2/tree/master#resources)
 
 ## Installing ROS2
-The project uses the Foxy distribution of ROS2.  To build from source or install on other operating systems, refer to the [Installation Page](https://docs.ros.org/en/foxy/Installation.html).  **To install the Foxy distribution of ROS2 using Debian packages, run the following Linux terminal commands inside the virtual machine or on a native Linux machine.**
-
-### Set locale
-```
-locale  # check for UTF-8
-
-sudo apt update && sudo apt install locales
-sudo locale-gen en_US en_US.UTF-8
-sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
-export LANG=en_US.UTF-8
-
-locale  # verify settings
-```
-
-### Setup Sources
-```
-sudo apt update && sudo apt install curl gnupg2 lsb-release
-sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -o /usr/share/keyrings/ros-archive-keyring.gpg
-
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-
-sudo sed -i -e 's/ubuntu .* main/ubuntu focal main/g' /etc/apt/sources.list.d/ros2.list
-```
-
-### Install ROS2 Packages
-```
-sudo apt update
-
-sudo apt install ros-foxy-desktop
-```
-
+To install ROS2 and begin the project, please refer to the [Razorbotz Installation Page](https://github.com/Razorbotz/ROS2/tree/install).  After installing ROS2, please use the following commands to ensure ROS2 is installed correctly.
 ### Run Some Examples
 **Run the following commands in one terminal**
 
@@ -70,8 +26,6 @@ source /opt/ros/foxy/setup.bash
 
 ros2 run demo_nodes_py listener
 ```
-
-If you want to build from source or install on a different operating system, please refer to the [installation guide](https://docs.ros.org/en/foxy/Installation.html).
 
 ## Understanding the Codebase
 
@@ -126,3 +80,16 @@ To gain a better understanding of ROS2, please refer to the following [tutorials
 * [Using Parameters in a Class (C++)](https://docs.ros.org/en/foxy/Tutorials/Using-Parameters-In-A-Class-CPP.html)
 * [Using Parameters in a Class (Python)](https://docs.ros.org/en/foxy/Tutorials/Using-Parameters-In-A-Class-Python.html)
 * [Using ROS2 Launch](https://docs.ros.org/en/foxy/Tutorials/Launch-Files/Using-ROS2-Launch-For-Large-Projects.html)
+
+## Resources
+General Reference Material: 
+* [Coding Standards for C++](http://web.mit.edu/6.s096/www/standards.html)
+
+Hardware Documentation:  
+* [Talon Documenation](http://www.ctr-electronics.com/downloads/api/cpp/html/index.html)
+* [SparkMax Documenation](https://docs.revrobotics.com/sparkmax/)
+
+C++ Reference Material:
+* [C++ Namespaces (sets 1 - 3)](https://www.geeksforgeeks.org/namespace-in-c/)
+* [C++ Operators reference](https://www.cplusplus.com/doc/tutorial/operators/)
+* [C++ Member Access Refresher](https://en.cppreference.com/w/cpp/language/operator_member_access)
