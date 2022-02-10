@@ -9,23 +9,23 @@ import fibre.remote_object
 
 class ExcavationNode(Node):
 	def __init__(self):
-                print("init")
-                super().__init__('excavation_node')
-                print("odriveObjects")
-                self.calibrated = False
-                self.findODriveObjects()
-                print("Found ODriveObjects")
-                self.calibrate()
-                self.setRequestedState()
-                print("elevationSubscription")
-                self.excavationElevationSubscription = self.create_subscription(Float32, 'excavationElevation', self.excavationElevationCallback, 10)
-                print("augerSubscription")
-                self.excavationAugerSubscription = self.create_subscription(Float32, 'excavationAuger', self.excavationAugerCallback, 10)
-                print("angleSubscription")
-                self.excavationAngleSubscription = self.create_subscription(Float32, 'excavationAngle', self.excavationAngleCallback, 10)
+				self.get_logger().info("init")
+				super().__init__('excavation_node')
+				self.get_logger().info("odriveObjects")
+				self.calibrated = False
+				self.findODriveObjects()
+				self.get_logger().info("Found ODriveObjects")
+				self.calibrate()
+				self.setRequestedState()
+				self.get_logger().info("elevationSubscription")
+				self.excavationElevationSubscription = self.create_subscription(Float32, 'excavationElevation', self.excavationElevationCallback, 10)
+				self.get_logger().info("augerSubscription")
+				self.excavationAugerSubscription = self.create_subscription(Float32, 'excavationAuger', self.excavationAugerCallback, 10)
+				self.get_logger().info("angleSubscription")
+				self.excavationAngleSubscription = self.create_subscription(Float32, 'excavationAngle', self.excavationAngleCallback, 10)
 
 	def findODriveObjects(self):
-		print("findOdriveObjects start")
+		self.get_logger().info("findOdriveObjects start")
 		self.odrv0 = odrive.find_any(path = "usb", serial_number = "20773881304E")
 		self.odrv1 = odrive.find_any(path = "usb", serial_number = "206736A1424D")
 
@@ -39,7 +39,7 @@ class ExcavationNode(Node):
 	#encoder needed to run it with sensors.						 #
 	##################################################################################
 	def setRequestedState(self):
-		print("setRequestedState start")
+		self.get_logger().info("setRequestedState start")
 		self.odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
 		self.odrv0.axis0.controller.config.control_mode = 3
 		self.odrv0.axis0.controller.input_pos = 0
@@ -75,7 +75,7 @@ class ExcavationNode(Node):
 			self.get_logger().info("input_pos: " + str(self.odrv1.axis1.controller.input_pos))
 
 	def calibrate(self):
-		print("calibrate start")
+		self.get_logger().info("calibrate start")
 		self.odrv0.axis0.requested_state = AXIS_STATE_FULL_CALIBRATION_SEQUENCE
 		self.odrv1.axis0.requested_state = AXIS_STATE_FULL_CALIBRATION_SEQUENCE
 		while self.odrv0.axis0.current_state != AXIS_STATE_IDLE | self.odrv1.axis0.current_state != AXIS_STATE_IDLE:
@@ -84,14 +84,12 @@ class ExcavationNode(Node):
 		self.odrv1.axis1.requested_state = AXIS_STATE_FULL_CALIBRATION_SEQUENCE
 		while self.odrv0.axis1.current_state != AXIS_STATE_IDLE | self.odrv1.axis1.current_state != AXIS_STATE_IDLE:
 			time.sleep(0.1)
-		print("Calibrated")
+		self.get_logger().info("Calibrated")
 
 
 def main(args=None):
 	rclpy.init(args=args)
-	print("Hello from exavation node")
 	excavation_node = ExcavationNode()
-	print("Created excavation node")
 	rclpy.spin(excavation_node)
 
 	excavation_node.destroy_node()

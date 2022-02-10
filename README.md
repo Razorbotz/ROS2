@@ -9,10 +9,10 @@ This page intends to provide a starting point and overview of the project, as we
 * [Resources](https://github.com/Razorbotz/ROS2/tree/master#resources)
 
 ## Installing ROS2
-To install ROS2 and begin the project, please refer to the [Razorbotz Installation Page](https://github.com/Razorbotz/ROS2/tree/install).  After installing ROS2, please use the following commands to ensure ROS2 is installed correctly.
+To install ROS2 and begin the project, please refer to the [Razorbotz Installation Page](https://github.com/Razorbotz/ROS2-Installation).  After installing ROS2, please use the following commands to run some examples and ensure ROS2 is installed correctly.
 
 ### Run Some Examples
-**Run the following commands in one terminal**
+**Run the following commands in one terminal in your Linux environment**
 
 ```
 source /opt/ros/foxy/setup.bash
@@ -20,7 +20,7 @@ source /opt/ros/foxy/setup.bash
 ros2 run demo_nodes_cpp talker
 ```
 
-**In a second terminal, run the following commands**
+**In a second terminal in your Linux environment, run the following commands**
 
 ```
 source /opt/ros/foxy/setup.bash
@@ -36,7 +36,7 @@ ROS2 packages all contain the following:
 * CMakeLists.txt //auto-generated file necessary for C++ ROS2 packages
 * package.xml //auto-generated file necessary for C++ ROS2 packages
 
-The src folder within a package contains the .cpp files that define nodes and supporting files for classes/objects/functions relevant to that package.  To read more about ROS2 packages, please refer to the [ROS tutorial](https://docs.ros.org/en/foxy/Tutorials/Creating-Your-First-ROS2-Package.html).
+The src folder within a package contains the .cpp files that define nodes and supporting files for classes/objects/functions relevant to that package.  To read more about ROS2 packages, please refer to the [ROS2 tutorial](https://docs.ros.org/en/foxy/Tutorials/Creating-Your-First-ROS2-Package.html).
 
 The ROS2 packages currently in this project are as follows:
 * [Autonomy](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/autonomy)
@@ -48,7 +48,7 @@ The ROS2 packages currently in this project are as follows:
 * [Zed Tracking](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/zed_tracking)
 
 ## Documentation
-This project uses [Doxygen](https://www.doxygen.nl/index.html) to generate documentation for the files automatically.  To learn more about the Doxygen formatting, please refer to the [Documenting the code](https://www.doxygen.nl/manual/docblocks.html) section of the Doxygen docs.  The documentation for this project can be found at the project website that is found [here](https://razorbotz.github.io/ROS2/).
+This project uses [Doxygen](https://www.doxygen.nl/index.html) to generate documentation for the files automatically.  **To make documentation easier for all users, Doxygen is hosted on the Github and does not need to be downloaded by contributers.**  To learn more about the Doxygen formatting, please refer to the [Documenting the code](https://www.doxygen.nl/manual/docblocks.html) section of the Doxygen docs.  The documentation for this project can be found at the project website that is found [here](https://razorbotz.github.io/ROS2/).
 
 ### Documentation Template
 To standardize the documentation across multiple authors, the following documentation template will be used throughout the project.  To see an example of how files should be commented to generate the documentation correctly, see [Example.cpp](https://github.com/Razorbotz/ROS2/blob/master/docs/Example.cpp).
@@ -87,7 +87,7 @@ General Reference Material:
 * [Coding Standards for C++](http://web.mit.edu/6.s096/www/standards.html)
 
 Hardware Documentation:  
-* [Talon Documenation](http://www.ctr-electronics.com/downloads/api/cpp/html/index.html)
+* [Talon Documenation](https://store.ctr-electronics.com/content/api/cpp/html/index.html)
 * [SparkMax Documenation](https://docs.revrobotics.com/sparkmax/)
 
 C++ Reference Material:

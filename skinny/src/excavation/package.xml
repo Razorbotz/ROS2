@@ -3,9 +3,9 @@
 <package format="3">
   <name>excavation</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="andrewburroughs17@gmail.com">team</maintainer>
-  <license>TODO: License declaration</license>
+  <description>Python package controlling ODrive motors for excavation</description>
+  <maintainer email="andrewburroughs17@gmail.com">Andrew Burroughs</maintainer>
+  <license></license>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>odrive</exec_depend>
