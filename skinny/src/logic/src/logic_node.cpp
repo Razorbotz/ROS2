@@ -40,6 +40,10 @@
  * To read more about the nodes that subscribe to this one
  * \see talon_node.cpp
  * 
+ * This node uses ternary statements in the joystickAxisCallback
+ * function.  To read more about how these operate, please read
+ * \see http://www.cplusplus.com/articles/1AUq5Di1/
+ * 
  * */
 
 rclcpp::Node::SharedPtr nodeHandle;
@@ -56,6 +60,23 @@ Automation* automation=new Automation1();
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > driveStatePublisher;
+
+/** @brief Function to update speed of the wheels
+ * 
+ * This function is called on the node startup to 
+ * initialize the wheels to a speed of zero to
+ * prevent the random wheel rotations that would
+ * occur at certain times.  
+ * @return void
+ * */
+void initSetSpeed(){
+
+    std_msgs::msg::Float32 speed;
+    speed.data = 0.0;
+
+    driveLeftSpeedPublisher->publish(speed);
+    driveRightSpeedPublisher->publish(speed);
+}
 
 /** @brief Function to update speed of the wheels
  * 
@@ -97,23 +118,35 @@ void updateSpeed(){
 void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     RCLCPP_INFO(nodeHandle->get_logger(),"Button %d %d %f", axisState->joystick, axisState->axis, axisState->state);
     float deadZone = 0.1;
-    std_msgs::msg::Float32 auger;
+    joystick1Roll = -axisState->state0;
+    joystick1Roll = (fabs(joystick1Roll)<deadZone)? 0.0 : joystick1Roll;
+    joystick1Roll = (joystick1Roll>0)?joystick1Roll-deadZone:joystick1Roll;
+    joystick1Roll = (joystick1Roll<0)?joystick1Roll+deadZone:joystick1Roll;
+    joystick1Pitch = axisState->state1;
+    joystick1Pitch = (fabs(joystick1Pitch)<deadZone)? 0.0 : joystick1Pitch;
+    joystick1Pitch = (joystick1Pitch>0)?joystick1Pitch-deadZone:joystick1Pitch;
+    joystick1Pitch = (joystick1Pitch<0)?joystick1Pitch+deadZone:joystick1Pitch;
+    joystick1Yaw = axisState->state2;
+    updateSpeed();
+    //std_msgs::msg::Float32 auger;
+/*    
     if(axisState->axis==0){
         joystick1Roll = -axisState->state;
         joystick1Roll = (fabs(joystick1Roll)<deadZone)? 0.0 : joystick1Roll;
-	joystick1Roll = (joystick1Roll>0)?joystick1Roll-deadZone:joystick1Roll;
-	joystick1Roll = (joystick1Roll<0)?joystick1Roll+deadZone:joystick1Roll;
+	    joystick1Roll = (joystick1Roll>0)?joystick1Roll-deadZone:joystick1Roll;
+	    joystick1Roll = (joystick1Roll<0)?joystick1Roll+deadZone:joystick1Roll;
         updateSpeed();
     }else if(axisState->axis==1){
         joystick1Pitch = axisState->state;
         joystick1Pitch = (fabs(joystick1Pitch)<deadZone)? 0.0 : joystick1Pitch;
-	joystick1Pitch = (joystick1Pitch>0)?joystick1Pitch-deadZone:joystick1Pitch;
-	joystick1Pitch = (joystick1Pitch<0)?joystick1Pitch+deadZone:joystick1Pitch;
+	    joystick1Pitch = (joystick1Pitch>0)?joystick1Pitch-deadZone:joystick1Pitch;
+	    joystick1Pitch = (joystick1Pitch<0)?joystick1Pitch+deadZone:joystick1Pitch;
         updateSpeed();
     }else if(axisState->axis==2){
         joystick1Yaw = axisState->state;
     }else if(axisState->axis==3){
     }
+*/
 }
 
 /** @brief Callback function for joystick buttons
@@ -233,6 +266,8 @@ int main(int argc, char **argv){
     driveLeftSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
     driveRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
     driveStatePublisher= nodeHandle->create_publisher<std_msgs::msg::Bool>("drive_state",1);
+
+    initSetSpeed();
 
     rclcpp::Rate rate(20);
 

@@ -440,6 +440,10 @@ int main(int argc, char **argv){
     uint8_t buffer[1024] = {0}; 
     std::string hello("Hello from server");
 
+    float state0 = 0.0;
+    float state1 = 0.0;
+    float state2 = 0.0;
+
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
         perror("socket failed"); 
@@ -519,11 +523,28 @@ int main(int argc, char **argv){
             if(command==1){
                 messages::msg::AxisState axisState;
                 axisState.joystick=message[1];
+                if(message[2]==0)
+                    state0=parseFloat(&message[3]);
+                if(message[2]==1)
+                    state1=parseFloat(&message[3]);
+                if(message[2]==2)
+                    state2=parseFloat(&message[3]);
+                axisState.state0=state0;
+                axisState.state1=state1;
+                axisState.state2=state2;
+                joystickAxisPublisher->publish(axisState);
+                RCLCPP_INFO(nodeHandle->get_logger(), "joystick %d %f %f %f", axisState.joystick, axisState.state0, axisState.state1, axisState.state2);
+            }
+/*
+            if(command==1){
+                messages::msg::AxisState axisState;
+                axisState.joystick=message[1];
                 axisState.axis=message[2];
                 axisState.state=parseFloat(&message[3]);
-		joystickAxisPublisher->publish(axisState);
-		RCLCPP_INFO(nodeHandle->get_logger(),"axis %d %d %f ", axisState.joystick, axisState.axis , axisState.state);
+		        joystickAxisPublisher->publish(axisState);
+		        RCLCPP_INFO(nodeHandle->get_logger(),"axis %d %d %f ", axisState.joystick, axisState.axis , axisState.state);
             }
+*/
 
             if(command==2){
                 messages::msg::KeyState keyState;

@@ -1,3 +1,4 @@
 uint8 joystick
-uint8 axis
-float32 state
+float32 state0
+float32 state1
+float32 state2
