@@ -28,7 +28,7 @@ void Automation::setNode(rclcpp::Node::SharedPtr node){
 
 /** @brief Sets position for x, y, z axes and w (homogenous vertex)
  * 
- * This function assigns 
+ * This function assigns xyzw coordinates for the location of the unit
  * @param Position
  * @return void
  * */
