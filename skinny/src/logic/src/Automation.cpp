@@ -4,18 +4,35 @@
 #include <std_msgs/msg/float32.hpp>
 
 #include "logic/Automation.hpp"
-#include "logic/AutomationTypes.hpp"
+#include "logic/AutomationTypes.hpp"A
 
 /** @file
+ * @brief Defines functions used in Automation.hpp and AutomationTypes.hpp. 
+ *  These functions are used to send wheel speed and positioning of the robot to the 
+ *   ZED Camera
  * 
  * */
-
+ 
+/** @brief Sets publisher node for left and right wheel motor speed
+ * 
+ * This function creates the driveLeftSpeedPublisher and driveRightSpeedPublisher
+ * @param rclcpp::Node::SharedPtr node
+ * @return void
+ * */
+ 
 void Automation::setNode(rclcpp::Node::SharedPtr node){
     this->node=node;
     driveLeftSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
     driveRightSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
 }
 
+/** @brief Sets position for x, y, z axes and w (homogenous vertex)
+ * 
+ * This function assigns 
+ * @param Position
+ * @return void
+ * */
+ 
 
 void Automation::setPosition(Position position){
     this->position = position;
