@@ -15,6 +15,7 @@
 #include <sys/reboot.h>
 
 #include <rclcpp/rclcpp.hpp>
+
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -31,16 +32,36 @@
 #define PORT 31337
 
 /** @file
- * @brief Brief description of file
+ * @brief Node for handling communication between the client and the rover.
  * Detailed description of file 
+ *  
+ * This node receives information published by the power_distribution_panel node, motor nodes, and the logic node
+ * wraps the information into topics, then publishes the topics.  
+ * Currently this node is missing the callback functions for the motors. 
+ * The topics that the node subscribes to are as follows:
+ * \li \b power
+ * \li \b rev motor topic 
+ * \li \b drive_state
+ * \li \b STOP 
+ * \li \b GO
+ * 
+ * The topics that are being published are as follows:
+ * \li \b joystick_axis
+ * \li \b joystick_button
+ * \li \b joystick_hat
+ * \li \b key
+ * 
+ * To read more about the nodes that subscribe to this one
+ * \see logic_node.cpp
+ * 
  * 
  * */
 
 std_msgs::msg::Empty empty;
 bool silentRunning=true;
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Inserts topic into a payload to be sent.
+ * Takes a float topic and an array and stores a byte represenation of the topic.
  * @param array
  * @return void
  * */
@@ -51,8 +72,8 @@ void insert(float value,uint8_t* array){
     array[3]=uint8_t((uint32_t(*(static_cast<uint32_t*>(static_cast<void*>(&value))))>>0) & 0xff);
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Inserts topic into a payload to be sent.
+ * Takes an int topic and an array and stores a byte represenation of the topic.
  * @param array
  * @return void
  * */
@@ -63,13 +84,14 @@ void insert(int value,uint8_t* array){
     array[3]=uint8_t((uint32_t(*(static_cast<uint32_t*>(static_cast<void*>(&value))))>>0) & 0xff);
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Parse a byte represenation into a float.
+ * 
  * @param array
  * @return value
  * */
 float parseFloat(uint8_t* array){
     uint32_t axisYInteger=0;
+	// bit wise shifts of the array
     axisYInteger|=uint32_t(array[0])<<24;    
     axisYInteger|=uint32_t(array[1])<<16;    
     axisYInteger|=uint32_t(array[2])<<8;    
@@ -79,11 +101,12 @@ float parseFloat(uint8_t* array){
     return value;
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Parse a byte represenation into an int.
+ * 
  * @param array
  * @return value
  * */
+ 
 int parseInt(uint8_t* array){
     uint32_t axisYInteger=0;
     axisYInteger|=uint32_t(array[0])<<24;    
@@ -97,8 +120,16 @@ int parseInt(uint8_t* array){
 
  
 int new_socket;
-/** @brief Brief description of function
- * Detailed description of function
+
+ 
+/** @brief Callback function for the power topic.
+ * 
+ * This function is called when the node receives a
+ * topic with the name power. This function
+ * extracts the information given from the power topic
+ * and places data into a payload to be sent.
+ *  
+ * \see .power_distribution_panel.cpp
  * @param power
  * @return void
  * */
@@ -109,8 +140,11 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
     uint8_t message[17*4+2];
     message[0]=messageSize;
     message[1]=1;
-    float* floatPointer=(float*)(void*)&message[2];
+	// floatPointer points to the location in memory of the third location of the message var.
+    // A void pointer can point to a variable of any data type.
+	float* floatPointer=(float*)(void*)&message[2];
 
+	// values from power.msg stored into floatPointer
     insert(power->voltage,(uint8_t*)floatPointer++);
     insert(power->current0,(uint8_t*)floatPointer++);
     insert(power->current1,(uint8_t*)floatPointer++);
@@ -132,130 +166,14 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
     send(new_socket, message, messageSize, 0);
 }
 
-/** @brief Brief description of function
- * Detailed description of function
- * @param talonOut
- * @return void
- * */
-void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
-//std::cout << "talon1Callback" << std::endl;    
-    if(silentRunning)return;
-    int messageSize=11*4+2;
-    uint8_t message[11*4+2];
-    message[0]=messageSize;
-    message[1]=2;
-    float* byte4Pointer=(float*)(void*)&message[2];
-
-    insert(talonOut->device_id,(uint8_t*)byte4Pointer++);
-    insert(talonOut->bus_voltage,(uint8_t*)byte4Pointer++);
-    insert(talonOut->output_current,(uint8_t*)byte4Pointer++);
-    insert(talonOut->output_voltage,(uint8_t*)byte4Pointer++);
-    insert(talonOut->output_percent,(uint8_t*)byte4Pointer++);
-    insert(talonOut->temperature,(uint8_t*)byte4Pointer++);
-    insert(talonOut->sensor_position,(uint8_t*)byte4Pointer++);
-    insert(talonOut->sensor_velocity,(uint8_t*)byte4Pointer++);
-    insert(talonOut->closed_loop_error,(uint8_t*)byte4Pointer++);
-    insert(talonOut->integral_accumulator,(uint8_t*)byte4Pointer++);
-    insert(talonOut->error_derivative,(uint8_t*)byte4Pointer++);
-
-    send(new_socket, message, messageSize, 0);
-}
-
-/** @brief Brief description of function
- * Detailed description of function
- * @param talonOut
- * @return void
- * */
-void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
-    if(silentRunning)return;
-    int messageSize=11*4+2;
-    uint8_t message[11*4+2];
-    message[0]=messageSize;
-    message[1]=3;
-    float* byte4Pointer=(float*)(void*)&message[2];
-
-    insert(talonOut->device_id,(uint8_t*)byte4Pointer++);
-    insert(talonOut->bus_voltage,(uint8_t*)byte4Pointer++);
-    insert(talonOut->output_current,(uint8_t*)byte4Pointer++);
-    insert(talonOut->output_voltage,(uint8_t*)byte4Pointer++);
-    insert(talonOut->output_percent,(uint8_t*)byte4Pointer++);
-    insert(talonOut->temperature,(uint8_t*)byte4Pointer++);
-    insert(talonOut->sensor_position,(uint8_t*)byte4Pointer++);
-    insert(talonOut->sensor_velocity,(uint8_t*)byte4Pointer++);
-    insert(talonOut->closed_loop_error,(uint8_t*)byte4Pointer++);
-    insert(talonOut->integral_accumulator,(uint8_t*)byte4Pointer++);
-    insert(talonOut->error_derivative,(uint8_t*)byte4Pointer++);
-
-    send(new_socket, message, messageSize, 0);
-}
-
-/** @brief Brief description of function
- * Detailed description of function
- * @param victorOut
- * @return void
- * */
-void victor1Callback(const messages::msg::VictorOut::SharedPtr victorOut){
-    if(silentRunning)return;
-    int messageSize=11*4+2;
-    uint8_t message[11*4+2];
-    message[0]=messageSize;
-    message[1]=4;
-    float* byte4Pointer=(float*)(void*)&message[2];
-
-    insert(victorOut->device_id,(uint8_t*)byte4Pointer++);
-    insert(victorOut->bus_voltage,(uint8_t*)byte4Pointer++);
-    insert(victorOut->output_voltage,(uint8_t*)byte4Pointer++);
-    insert(victorOut->output_percent,(uint8_t*)byte4Pointer++);
-
-    send(new_socket, message, messageSize, 0);
-}
-
-/** @brief Brief description of function
- * Detailed description of function
- * @param victorOut
- * @return void
- * */
-void victor2Callback(const messages::msg::VictorOut::SharedPtr victorOut){
-    if(silentRunning)return;
-    int messageSize=11*4+2;
-    uint8_t message[11*4+2];
-    message[0]=messageSize;
-    message[1]=5;
-    float* byte4Pointer=(float*)(void*)&message[2];
-
-    insert(victorOut->device_id,(uint8_t*)byte4Pointer++);
-    insert(victorOut->bus_voltage,(uint8_t*)byte4Pointer++);
-    insert(victorOut->output_voltage,(uint8_t*)byte4Pointer++);
-    insert(victorOut->output_percent,(uint8_t*)byte4Pointer++);
-
-    send(new_socket, message, messageSize, 0);
-}
-
-/** @brief Brief description of function
- * Detailed description of function
- * @param victorOut
- * @return void
- * */
-void victor3Callback(const messages::msg::VictorOut::SharedPtr victorOut){
-    if(silentRunning)return;
-    int messageSize=11*4+2;
-    uint8_t message[11*4+2];
-    message[0]=messageSize;
-    message[1]=6;
-    float* byte4Pointer=(float*)(void*)&message[2];
-
-    insert(victorOut->device_id,(uint8_t*)byte4Pointer++);
-    insert(victorOut->bus_voltage,(uint8_t*)byte4Pointer++);
-    insert(victorOut->output_voltage,(uint8_t*)byte4Pointer++);
-    insert(victorOut->output_percent,(uint8_t*)byte4Pointer++);
-
-    send(new_socket, message, messageSize, 0);
-}
-
 
 uint8_t driveState=1;
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Callback function for the driveState topic.
+ *
+ * This function is called when the node receives a
+ * topic with the name driveState. This function
+ * extracts the information given from the driveState topic
+ * and places data into a payload to be sent.
  * @param state
  * @return void
  * */
@@ -270,8 +188,11 @@ void driveStateCallback(const std_msgs::msg::Bool::SharedPtr state){
     send(new_socket, message, messageSize, 0);
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Function for sending the current state of the rover.
+ * 
+ * This function is called when the node receives a
+ * request for the rovers current state. This function
+ * places the driveState var into a payload to be sent.
  * */
 void sendRobotState() {
     int messageSize = 3;
@@ -283,8 +204,11 @@ void sendRobotState() {
     send(new_socket, message, messageSize, 0);
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Returns the address string of the rover.
+ * 
+ * This function is called when the node
+ * tries to setup the socket connection between the rover and client. This function
+ * returns the address as a string.
  * @param family
  * @param interfaceName
  * @return addressString
@@ -323,8 +247,8 @@ std::string getAddressString(int family, std::string interfaceName){
 }
 
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Prints the address
+ * 
  * */
 void printAddresses() {
     printf("Addresses\n");
@@ -364,8 +288,8 @@ void printAddresses() {
     printf("Done\n");
 }
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Reboots the rover. 
+ *
  * */
 void reboot(){
     sync();
@@ -374,8 +298,12 @@ void reboot(){
 
 std::string robotName="unnamed";
 bool broadcast=true;
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Creates socketDescriptor for socket connection.
+ * 
+ * This function is called when the node
+ * tries to setup the socket connection between the rover and client.
+ * This function creates the socketDescriptor for the socket connection.
+ * Uses the getAddressString function.
  * */
 void broadcastIP(){
     while(true){
@@ -406,18 +334,21 @@ void broadcastIP(){
     }
 }
 
-
 int main(int argc, char **argv){
+	// initialize arguments 
     rclcpp::init(argc,argv);
 
+	// create a new subnode 
     rclcpp::Node::SharedPtr nodeHandle = rclcpp::Node::make_shared("communication");
     RCLCPP_INFO(nodeHandle->get_logger(),"Starting communication node");
 
+	// set robots name
     nodeHandle->declare_parameter<std::string>("robot_name","not named");
     rclcpp::Parameter robotNameParameter = nodeHandle->get_parameter("robot_name");
     robotName = robotNameParameter.as_string();
     RCLCPP_INFO(nodeHandle->get_logger(),"robotName: %s", robotName.c_str());
 
+	// create publisher subnodes
     auto joystickAxisPublisher = nodeHandle->create_publisher<messages::msg::AxisState>("joystick_axis", 1);
     auto joystickHatPublisher = nodeHandle->create_publisher<messages::msg::HatState>("joystick_hat",1);
     auto joystickButtonPublisher = nodeHandle->create_publisher<messages::msg::ButtonState>("joystick_button",1);
@@ -425,24 +356,17 @@ int main(int argc, char **argv){
     auto stopPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("STOP",1);
     auto goPublisher=nodeHandle->create_publisher<std_msgs::msg::Empty>("GO",1);
 
+	// create subscriber subnodes and set callbacks 
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
-    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_1_info",1,talon1Callback);
-    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_2_info",1,talon2Callback);
-    auto victor1Subscriber = nodeHandle->create_subscription<messages::msg::VictorOut>("victor_3_info",1,victor1Callback);
-    auto victor2Subscriber = nodeHandle->create_subscription<messages::msg::VictorOut>("victor_4_info",1,victor2Callback);
-    auto victor3Subscriber = nodeHandle->create_subscription<messages::msg::VictorOut>("victor_6_info",1,victor3Callback);
     auto driveStateSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>("drive_state",1,driveStateCallback);
      
+	// initialize vars
     int server_fd, bytesRead; 
     struct sockaddr_in address; 
     int opt = 1; 
     int addrlen = sizeof(address); 
     uint8_t buffer[1024] = {0}; 
     std::string hello("Hello from server");
-
-    float state0 = 0.0;
-    float state1 = 0.0;
-    float state2 = 0.0;
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
@@ -471,6 +395,7 @@ int main(int argc, char **argv){
         perror("accept"); 
         exit(EXIT_FAILURE); 
     }
+	// initialize vars for connecting the sockets
     broadcast=false;
     bytesRead = read(new_socket, buffer, 1024); 
     send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
@@ -521,32 +446,20 @@ int main(int argc, char **argv){
             //parse command
             uint8_t command=message[0];
             if(command==1){
-                messages::msg::AxisState axisState;
-                axisState.joystick=message[1];
-                if(message[2]==0)
-                    state0=parseFloat(&message[3]);
-                if(message[2]==1)
-                    state1=parseFloat(&message[3]);
-                if(message[2]==2)
-                    state2=parseFloat(&message[3]);
-                axisState.state0=state0;
-                axisState.state1=state1;
-                axisState.state2=state2;
-                joystickAxisPublisher->publish(axisState);
-                RCLCPP_INFO(nodeHandle->get_logger(), "joystick %d %f %f %f", axisState.joystick, axisState.state0, axisState.state1, axisState.state2);
-            }
-/*
-            if(command==1){
+<<<<<<< Updated upstream
+=======
+				// command == 1 joystickAxisPublisher
+>>>>>>> Stashed changes
                 messages::msg::AxisState axisState;
                 axisState.joystick=message[1];
                 axisState.axis=message[2];
                 axisState.state=parseFloat(&message[3]);
-		        joystickAxisPublisher->publish(axisState);
-		        RCLCPP_INFO(nodeHandle->get_logger(),"axis %d %d %f ", axisState.joystick, axisState.axis , axisState.state);
+		joystickAxisPublisher->publish(axisState);
+		RCLCPP_INFO(nodeHandle->get_logger(),"axis %d %d %f ", axisState.joystick, axisState.axis , axisState.state);
             }
-*/
 
             if(command==2){
+				// command == 2 keyPublisher
                 messages::msg::KeyState keyState;
                 keyState.key=((uint16_t)message[1])<<8 | ((uint16_t)message[2]);
                 keyState.state=message[3];
@@ -555,6 +468,7 @@ int main(int argc, char **argv){
             }
 
             if(command==5){
+				// command == 5 joystickButtonPublisher
                 messages::msg::ButtonState buttonState;
                 buttonState.joystick=message[1];
                 buttonState.button=message[2];
@@ -571,6 +485,7 @@ int main(int argc, char **argv){
 		RCLCPP_INFO(nodeHandle->get_logger(),"button %d %d %d", buttonState.joystick , buttonState.button , buttonState.state);
             }
             if(command==6){
+				// command ==6 joystickHatPublisher
                 messages::msg::HatState hatState;
                 hatState.joystick=message[1];
                 hatState.hat=message[2];
@@ -579,17 +494,18 @@ int main(int argc, char **argv){
 		RCLCPP_INFO(nodeHandle->get_logger(),"hat %d %d %d", hatState.joystick , hatState.hat , hatState.state);
             }
             if(command==7){
+				// command == 7 silentRunning
                 silentRunning=message[1];
                 std::cout << "silentRunning " << silentRunning << std::endl;
             }
             if(command==8){
+				// command == 8 reboot
                 reboot();
                 std::cout << "reboot " << silentRunning << std::endl;
             }
         }
-
         rclcpp::spin_some(nodeHandle);
     }
-
+	// let the next thread begin execution
     broadcastThread.join();
 }
