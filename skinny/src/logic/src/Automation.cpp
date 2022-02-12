@@ -12,7 +12,7 @@
  
 /** @brief Sets publisher node for left and right wheel motor speed
  * 
- * This function creates the driveLeftSpeedPublisher and driveRightSpeedPublisher.
+ * This function sets the driveLeftSpeedPublisher and driveRightSpeedPublisher.
  * @param rclcpp::Node::SharedPtr node
  * @return void
  * */
