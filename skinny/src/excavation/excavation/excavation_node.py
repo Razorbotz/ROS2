@@ -9,20 +9,20 @@ import fibre.remote_object
 
 class ExcavationNode(Node):
 	def __init__(self):
-				self.get_logger().info("init")
-				super().__init__('excavation_node')
-				self.get_logger().info("odriveObjects")
-				self.calibrated = False
-				self.findODriveObjects()
-				self.get_logger().info("Found ODriveObjects")
-				self.calibrate()
-				self.setRequestedState()
-				self.get_logger().info("elevationSubscription")
-				self.excavationElevationSubscription = self.create_subscription(Float32, 'excavationElevation', self.excavationElevationCallback, 10)
-				self.get_logger().info("augerSubscription")
-				self.excavationAugerSubscription = self.create_subscription(Float32, 'excavationAuger', self.excavationAugerCallback, 10)
-				self.get_logger().info("angleSubscription")
-				self.excavationAngleSubscription = self.create_subscription(Float32, 'excavationAngle', self.excavationAngleCallback, 10)
+		self.get_logger().info("init")
+		super().__init__('excavation_node')
+		self.get_logger().info("odriveObjects")
+		self.calibrated = False
+		self.findODriveObjects()
+		self.get_logger().info("Found ODriveObjects")
+		self.calibrate()
+		self.setRequestedState()
+		self.get_logger().info("elevationSubscription")
+		self.excavationElevationSubscription = self.create_subscription(Float32, 'excavationElevation', self.excavationElevationCallback, 10)
+		self.get_logger().info("augerSubscription")
+		self.excavationAugerSubscription = self.create_subscription(Float32, 'excavationAuger', self.excavationAugerCallback, 10)
+		self.get_logger().info("angleSubscription")
+		self.excavationAngleSubscription = self.create_subscription(Float32, 'excavationAngle', self.excavationAngleCallback, 10)
 
 
 	# Going to have a total of four motors. Will most likely have to find new serial numbers and two more objects
