@@ -1,25 +1,21 @@
 #include <cmath>
-
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float32.hpp>
-
 #include "logic/Automation.hpp"
 #include "logic/AutomationTypes.hpp"A
 
 /** @file
- * @brief Defines functions used in Automation.hpp and AutomationTypes.hpp. 
- *  These functions are used to calculate wheel speed and three dimensional positioning of the bot.
- * 
+ *
+ * @brief Defines functions used in Automation.hpp and AutomationTypes.hpp
+ * These functions are used to calculate wheel speed and three dimensional positioning of the bot.
  * */
  
 /** @brief Sets publisher node for left and right wheel motor speed
  * 
  * This function creates the driveLeftSpeedPublisher and driveRightSpeedPublisher.
- 
  * @param rclcpp::Node::SharedPtr node
  * @return void
  * */
- 
 void Automation::setNode(rclcpp::Node::SharedPtr node){
     this->node=node;
     driveLeftSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
@@ -27,16 +23,13 @@ void Automation::setNode(rclcpp::Node::SharedPtr node){
 }
 
 /** @brief Sets axis orientations and calls EulerAngles.
-
-*   Sets position for x, y, z axes and w (homogenous vertex), and then 
- *  calls toEulerAngles to convert the positions to Euler angles to orient 
- *  the bot in 3d space.
  *
+ * Sets position for x, y, z axes and w (homogenous vertex), and then 
+ * calls toEulerAngles to convert the positions to Euler angles to orient 
+ * the bot in 3d space.
  * @param Position
  * @return void
  * */
- 
-
 void Automation::setPosition(Position position){
     this->position = position;
     this->orientationQuaternion.x=position.ox;
@@ -49,11 +42,9 @@ void Automation::setPosition(Position position){
 /** @brief Assigns/publishes left/right motorspeeds
  * 
  * This function assigns the speed of the left and right motors and then publishes them.
- *
  * @param left, right
  * @return void
  * */
- 
 void Automation::changeSpeed(float left, float right){
     if(currentLeftSpeed==left && currentRightSpeed==right) return;
     currentLeftSpeed=left;
@@ -67,18 +58,15 @@ void Automation::changeSpeed(float left, float right){
 }
 
 /** @brief Converts raw x,y,z-axis data to Euler angles to orient the bot in 3d space.
-
- *	This function takes in the x,y,z-axis coordinates established in setPosition and 
- *  converts them to Euler angles. Euler angles describe the orientation of a body to a fixed coordinate 
- *  system using each axes angle from its respective origin to the coordinate itself. 
- *  This measurment of a coordinates angle from the origin in each individual axii indicates the 
- *  rotation of the robot in the 3d reference system i.e, pitch, roll, and yaw.
- 
+ *
+ * This function takes in the x,y,z-axis coordinates established in setPosition and 
+ * converts them to Euler angles. Euler angles describe the orientation of a body to a fixed coordinate 
+ * system using each axes angle from its respective origin to the coordinate itself. 
+ * This measurment of a coordinates angle from the origin in each individual axii indicates the 
+ * rotation of the robot in the 3d reference system i.e, pitch, roll, and yaw.
  * @param q
  * @return angles
  * */
- 
-
 EulerAngles Automation::toEulerAngles(Quaternion q) {
     EulerAngles angles;
 
