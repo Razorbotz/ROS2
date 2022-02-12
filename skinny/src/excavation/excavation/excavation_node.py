@@ -24,11 +24,15 @@ class ExcavationNode(Node):
 				self.get_logger().info("angleSubscription")
 				self.excavationAngleSubscription = self.create_subscription(Float32, 'excavationAngle', self.excavationAngleCallback, 10)
 
+
+	# Going to have a total of four motors. Will most likely have to find new serial numbers and two more objects
 	def findODriveObjects(self):
 		self.get_logger().info("findOdriveObjects start")
 		self.odrv0 = odrive.find_any(path = "usb", serial_number = "20773881304E")
 		self.odrv1 = odrive.find_any(path = "usb", serial_number = "206736A1424D")
 
+
+	# Comment below is outdated (Excavation is different)
 	##################################################################################
 	#Note: This setup relies on the motors being in the following positions:         #
 	#The first three motors are position controlled.  The motors of odrv0 are assumed#
@@ -38,6 +42,28 @@ class ExcavationNode(Node):
 	#is currently configured to run sensorlessly because we do not have the final    #
 	#encoder needed to run it with sensors.						 #
 	##################################################################################
+
+	#Control States:
+	# 1. VOLTAGE_CONTROL= 0 (0x0)
+	# 2. TORQUE_CONTROL= 1 (0x1)
+	# 3. VELOCITY_CONTROL= 2 (0x2)
+	# 4. POSITION_CONTROL= 3 (0x3)
+
+	#Axis States:
+	# UNDEFINED= 0 (0x0)
+	# IDLE= 1 (0x1)
+	# STARTUP_SEQUENCE= 2 (0x2)
+	# FULL_CALIBRATION_SEQUENCE= 3 (0x3)
+	# MOTOR_CALIBRATION= 4 (0x4)
+	# ENCODER_INDEX_SEARCH= 5 (0x5)
+	# ENCODER_OFFSET_CALIBRATION= 6 (0x6)
+	# CLOSED_LOOP_CONTROL= 7 (0x7)
+	# LOCKIN_SPIN= 8 (0x8)
+	# ENCODER_DIR_FIND= 9 (0x9)
+	# HOMING= 10 (0xA)
+	# ENCODER_HALL_POLARITY_CALIBRATION= 11 (0xB)
+	# ENCODER_HALL_PHASE_CALIBRATION= 12 (0xC)
+
 	def setRequestedState(self):
 		self.get_logger().info("setRequestedState start")
 		self.odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
