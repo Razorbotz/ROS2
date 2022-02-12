@@ -89,6 +89,7 @@ General Reference Material:
 Hardware Documentation:  
 * [Talon Documenation](https://store.ctr-electronics.com/content/api/cpp/html/index.html)
 * [SparkMax Documenation](https://docs.revrobotics.com/sparkmax/)
+* [ODrive Documentation](https://docs.odriverobotics.com/v/latest/index.html)
 
 C++ Reference Material:
 * [C++ Namespaces (sets 1 - 3)](https://www.geeksforgeeks.org/namespace-in-c/)
