@@ -2,11 +2,12 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include "logic/Automation.hpp"
-#include "logic/AutomationTypes.hpp"A
+#include "logic/AutomationTypes.hpp"
 
 /** @file
  *
  * @brief Defines functions used in Automation.hpp and AutomationTypes.hpp
+ * 
  * These functions are used to calculate wheel speed and three dimensional positioning of the bot.
  * */
  

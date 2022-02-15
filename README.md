@@ -51,7 +51,7 @@ The ROS2 packages currently in this project are as follows:
 This project uses [Doxygen](https://www.doxygen.nl/index.html) to generate documentation for the files automatically.  **To make documentation easier for all users, Doxygen is hosted on the Github and does not need to be downloaded by contributers.**  To learn more about the Doxygen formatting, please refer to the [Documenting the code](https://www.doxygen.nl/manual/docblocks.html) section of the Doxygen docs.  The documentation for this project can be found at the project website that is found [here](https://razorbotz.github.io/ROS2/).
 
 ### Documentation Template
-To standardize the documentation across multiple authors, the following documentation template will be used throughout the project.  To see an example of how files should be commented to generate the documentation correctly, see [Example.cpp](https://github.com/Razorbotz/ROS2/blob/master/docs/Example.cpp).
+To standardize the documentation across multiple authors, the following documentation template will be used throughout the project.  To see an example of how files should be commented to generate the documentation correctly, see [Example.cpp](https://github.com/Razorbotz/ROS2/blob/master/docs/Example.cpp).  To view the documentation generated for the Example.cpp file, please click [here](https://razorbotz.github.io/ROS2/Example_8cpp.html).
 
 **Files**
 * Description of file

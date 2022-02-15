@@ -1,5 +1,11 @@
 #pragma once
 
+/** @file
+ *
+ *  @brief Header file for AutomationTypes
+ * 
+ * */
+
 struct Position{
     double x,y,z,ox,oy,oz,ow,arucoVisible;
 };

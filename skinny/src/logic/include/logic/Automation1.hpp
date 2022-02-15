@@ -2,6 +2,12 @@
 
 #include "Automation.hpp"
 
+/** @file
+ *
+ *  @brief Header file for Automation
+ * 
+ * */
+
 class Automation1 : public Automation{
 
     enum RobotState{LOCATE,GO_TO_DIG_SITE,DIG,HOME,DOCK,DUMP};

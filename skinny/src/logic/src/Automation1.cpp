@@ -4,6 +4,14 @@
 #include "logic/Automation.hpp"
 #include "logic/Automation1.hpp"
 
+/** @file
+ *
+ * @brief Defines functions used in Automation1.hpp
+ * 
+ * This function sets the wheel speed and spins to the right until the camera
+ * sees the Aruco marker, then drives forward until the robot is less than a
+ * meter away from the marker.
+ * */
 
 void Automation1::automate(){
     if(robotState==LOCATE){

@@ -5,6 +5,11 @@
 
 #include "AutomationTypes.hpp"
 
+/** @file
+ *
+ *  @brief Header file for Automation
+ * 
+ * */
 
 class Automation{
     public:
