@@ -16,6 +16,7 @@ void Automation1::automate(){
         }
     }
     if(robotState==GO_TO_DIG_SITE){
+        //since camera is sideways, want to change pitch?
         double yawRadians=this->orientation.roll;
 
         double facingUnitX=-sin(yawRadians);
@@ -23,10 +24,12 @@ void Automation1::automate(){
         double directionX=destination.x-position.x;
         double directionZ=destination.z-position.z;
 
+        //Pitch is theta, no idea what this is
         double theta = acos((facingUnitX*directionX + facingUnitZ*directionZ)/(sqrt(directionX*directionX + directionZ*directionZ)))*180/M_PI;
         double yaw = yawRadians * 180/M_PI;
         double deltaYaw = theta-yaw;
         double yawTolerance=5;
+    //
     if(deltaYaw > yawTolerance){
         changeSpeed(-0.15,0.15);
     }else if (deltaYaw < yawTolerance){
