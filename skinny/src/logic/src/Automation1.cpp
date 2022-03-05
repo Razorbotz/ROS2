@@ -16,9 +16,11 @@ void Automation1::automate(){
         }
     }
     if(robotState==GO_TO_DIG_SITE){
-        //since camera is sideways, want to change pitch?
+        //With the coordinate system we picked for the Zed camera (Image mode), the roll is what determines how it turns left to right.
+        //Our yaw from our perspective is the cameras roll, so we put yaw=roll.
         double yawRadians=this->orientation.roll;
 
+        //code of no idea what's happening
         double facingUnitX=-sin(yawRadians);
         double facingUnitZ=cos(yawRadians);
         double directionX=destination.x-position.x;
@@ -29,14 +31,19 @@ void Automation1::automate(){
         double yaw = yawRadians * 180/M_PI;
         double deltaYaw = theta-yaw;
         double yawTolerance=5;
+        
+
     //
     if(deltaYaw > yawTolerance){
         changeSpeed(-0.15,0.15);
     }else if (deltaYaw < yawTolerance){
         changeSpeed(0.15,-0.15);
     }else{
-         changeSpeed(0.15 - 0.1*deltaYaw/yawTolerance,0.15 + 0.1*deltaYaw/yawTolerance);
+        changeSpeed(0.15 - 0.1*deltaYaw/yawTolerance,0.15 + 0.1*deltaYaw/yawTolerance);
     }
+
+    //end of code of no idea what's happening
+    
     std::cout << orientation.roll*180/M_PI << ", " << orientation.pitch*180/M_PI << ", " << orientation.yaw*180/ M_PI << "   "
               << "   \t" << position.x << "  " << position.y << "  " << position.z
               << "   \t" << position.ox << "  " << position.oy << "  " << position.oz << "  " << position.ow
