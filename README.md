@@ -33,8 +33,8 @@ ros2 run demo_nodes_py listener
 ### Structure of the packages
 ROS2 packages all contain the following:
 * src folder //contains the source code / node files
-* CMakeLists.txt //auto-generated file necessary for C++ ROS2 packages
-* package.xml //auto-generated file necessary for C++ ROS2 packages
+* CMakeLists.txt //Defines dependencies for cmake 
+* package.xml //Defines dependencies for ROS2
 
 The src folder within a package contains the .cpp files that define nodes and supporting files for classes/objects/functions relevant to that package.  To read more about ROS2 packages, please refer to the [ROS2 tutorial](https://docs.ros.org/en/foxy/Tutorials/Creating-Your-First-ROS2-Package.html).
 
@@ -42,7 +42,9 @@ The ROS2 packages currently in this project are as follows:
 * [Autonomy](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/autonomy)
 * [Communication](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/communication)
 * [Excavation](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/excavation)
+* [Linear](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/linear)
 * [Logic](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/logic)
+* [Neo](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/logic)
 * [Power Distribution Panel](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/poewr_distribution_panel)
 * [Talon](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/talon)
 * [Zed Tracking](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/zed_tracking)
