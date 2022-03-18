@@ -2,9 +2,42 @@
 #include <std_msgs/msg/float32.hpp>
 #include "messages/msg/zed_position.hpp"
 
+/** @file
+* @brief Node handling Autonomy for robot
+*
+* This node recieves information about zedPosition, 
+* and publishes speedLeft and SpeedRight information.
+*
+* The topics that are being subscribed to are as follows:
+* \li \b ZedPosition
+*
+* The topics that are being published are as follows:
+* \li \b speedLeft
+* \li \b speedRight
+*
+*
+**/
+
 rclcpp::Node::SharedPtr nodeHandle;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
+
+/** @brief Callback function for zedPosition
+*
+* This function is called when the node recieves a topic 
+* with the name zedPosition. This function sets the 
+* speedLeft and speedRight data depending on aruco_visible and z 
+* values. It then logs and publishes speedLeft and speedRight.
+*
+* The first statement checks if the marker is visible and the z position is greater than 1 meter away
+* if so, the left and right wheels move forward.
+* The second statement stops the wheels
+* The third statement rotates the wheels in opposite directions until the marker is visible
+* 
+* @param zedPosition \see ZedPosition.msg
+* @return void
+* */
+
 
 void positionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
 	std_msgs::msg::Float32 speedLeft;
