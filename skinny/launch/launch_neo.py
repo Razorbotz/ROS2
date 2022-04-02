@@ -18,13 +18,13 @@ def generate_launch_description():
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
                 {"test_speed": 100},
-                {"kP": 0.20},
-                {"kI": 0.000001},
-                {"kD": 0.000001},
+                {"kP": 0.1},
+                {"kI": 0.0001},
+                {"kD": 1.0},
                 {"kIz": 0.0},
                 {"kFF": 0.0},
-                {"kMinOutput": 0.0},
-                {"kMaxOutput": 0.0}        
+                {"kMinOutput": -1.0},
+                {"kMaxOutput": 1.0}        
                 
             ]
         )
