@@ -93,7 +93,11 @@ void goCallback(std_msgs::msg::Empty::SharedPtr empty){
 bool useVelocity=false;
 int velocityMultiplier=0;
 int testSpeed=0;
-TalonSRX* talonSRX;
+
+//init pidController
+rev::CANPIDController pidController_front;
+rev::CANPIDController pidController_back;
+
 
 /** @brief Speed Callback Function
  * 
@@ -109,11 +113,19 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 //	RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
 
+	//sets motor at set speed
 	if(useVelocity){
-        	talonSRX->Set(ControlMode::Velocity, int(speed->data*velocityMultiplier));
-		//talonSRX->Set(ControlMode::Velocity, testSpeed);
+		pidController.SetReference(speed->data*velocityMultiplier, rev::ControlType::kVelocity);
+
+	//sets motor at percent times max rpm
 	}else{
-        	talonSRX->Set(ControlMode::PercentOutput, speed->data);
+		//percent passed 
+		double percent = speed->data;
+
+		//https://motors.vex.com/other-motors/neo
+		//max published rpm (can go higher but don't want to blow up)
+		int max_rpm = 5676;
+        pidController.SetReference(double(percent*max_rpm), rev::ControlType::kVelocity);
 	}
 }
 
@@ -179,20 +191,120 @@ T getParameter(std::string parameterName, int initialValue, int type){
 	return value;
 }
 
+//set motor pidController settings
+void set_motor_settings(
+	double kP,
+	double kI,
+	double kD,
+	double kIz,
+	double kFF,
+	double kMinOutput,
+	double kMaxOutput,
+	rev::CANPIDController *pidController
+) 
+{
+	//proportional gain constant
+	pidController.SetP(kP);
+	// Integral Gain constant
+	pidController.SetI(kI);
+	//Derivative Gain constant
+	pidController.SetD(kD);
+	//IZone constant
+	pidController.SetIZone(kIz);
+	// Feed-forward Gain
+	pidController.SetFF(kFF);
+	//set reverse power min and forward power max
+	pidController.SetOutputRange(kMinOutput, kMaxOutput);
+}
+
 int main(int argc, char** argv){
 	rclcpp::init(argc,argv);
 	nodeHandle = rclcpp::Node::make_shared("neo");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting neo");
-	int motorNumber = getParameter<int>("motor_number", 1, 0);
+
+	//geting params
+	int motorNumberFront = getParameter<int>("motor_number_front", 1, 0);
+	int motorNumberBack = getParameter<int>("motor_number_back", 1, 0);
+
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
+
 	bool invertMotor = getParameter<bool>("invert_motor", 0, 1);
 	useVelocity = getParameter<bool>("use_velocity", 0, 1);
 	velocityMultiplier = getParameter<int>("velocity_multiplier", 0, 0);
+	
 	testSpeed = getParameter<int>("test_speed", 0, 0);
 
-	rev::CANSparkMax sparkMax{motorNumber, rev::CANSparkMax::MotorType::kBrushless};
-	sparkMax.RestoreFactoryDefaults();
+	//<type>(name_of_var, init_val, type_of_var)
+
+	//type_of_var:
+	//0 then int
+	//1 then bool
+	//2 then double
+	double kP = getParameter<double>("kP", 0, 2);
+	double kI = getParameter<double>("kI", 0, 2);
+	double kD = getParameter<double>("kD", 0, 2);
+	double kIz = getParameter<double>("kIz", 0, 2);
+	double kFF = getParameter<double>("kFF", 0, 2);
+	double kMinOutput = getParameter<double>("kMinOutput", 0, 2);
+	double kMaxOutput = getParameter<double>("kMaxOutput", 0, 2);
+
+
+	//front motor
+	rev::CANSparkMax sparkMax_front{motorNumberFront, rev::CANSparkMax::MotorType::kBrushless};
+	sparkMax_front.RestoreFactoryDefaults();
+
+	//pidController setup
+	pidController_front  = sparkMax_front.GetPIDController();
+
+	//setup pidController
+	set_motor_settings(
+		kP,
+		kI,
+		kD,
+		kIz,
+		kFF,
+		kMinOutput,
+		kMaxOutput,
+		&pidController_front
+	);
+
+	// //init front encoder (not required for us)
+	// rev::CANEncoder encoder_front = sparkMax_front.GetEncoder(rev::CANEncoder::EncoderType::kQuadrature, 4096);
+	// encoder.SetInverted(invertMotor);
+
+	// //set controller's feedback device 
+	// pidController_front.SetFeedbackDevice(encoder_front);
+
+	//back motor
+	rev::CANSparkMax sparkMax_back{motorNumberBack, rev::CANSparkMax::MotorType::kBrushless};
+	sparkMax_back.RestoreFactoryDefaults();
+
+	//pidController setup
+	pidController_back  = sparkMax_back.GetPIDController();
+
+	//setup pidController
+	set_motor_settings(
+		kP,
+		kI,
+		kD,
+		kIz,
+		kFF,
+		kMinOutput,
+		kMaxOutput,
+		&pidController_back
+	);
+
+	//back motor to mirror the front
+	sparkMax_back.Follow(CANSparkMax &sparkMax_front, false);
+)	
+
+	// //init back encoder (not required for us)
+	// rev::CANEncoder encoder_back = sparkMax_back.GetEncoder(rev::CANEncoder::EncoderType::kQuadrature, 4096);
+	// encoder.SetInverted(invertMotor);
+
+	// //set controller's feedback device 
+	// pidController_back.SetFeedbackDevice(encoder_back);
 
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32(speedTopic.c_str(),1,speedCallback);
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
