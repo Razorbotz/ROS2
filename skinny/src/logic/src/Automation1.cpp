@@ -52,30 +52,34 @@ void Automation1::automate(){
     //state if marker is found
     else if(robotState == GO_TO_DUMPSITE) {
         //Variables for calcuating robot position in arena
-        double distanceFromLeft;
-        double distanceFromRight;
-        double markerDistance;
-        double markerAngle;
 
 
-        if (distanceFromLeft == distanceFromRight) {
+        if (position.y == 0) {
+            double current_y = position.y;
+
             //1. turn robot left x distance
-            changeSpeed(0.15, -0.15);
+            //some sort of while loop with time or rotations
+            changeSpeed(-0.15, 0.15);
+            
             //2. go forward to center line
-            changeSpeed(0.15, 0.15)
-            //3. turn robot right until center line
-            changeSpeed(-0.15, 0.15)
+            while(position.z > 1.5)
+                changeSpeed(0.15, 0.15)
 
-        } else if (distanceFromLeft > distanceFromRight) {
+
+        } 
+
+        // y may be other sign (needs testing)
+        else if (position.y > 0) {
             //1. turn left
 
-            //2. move forqard calculated distance
+            //2. move forward calculated distance
             
             //3. turn right 90 degrees
 
             //4. go forward until aruco marker distance d
 
-        } else if (distanceFromLeft < distanceFromRight) {
+        
+        } else if (position.y < 0) {
             //1. turn right
 
             //2. move foward calculated distance
