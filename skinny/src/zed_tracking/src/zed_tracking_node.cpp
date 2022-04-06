@@ -25,12 +25,16 @@
  * 
  * The variables ox, oy, oz, and ow are the orientation vectors. The orientation data is also known as "quaternion" data. These vectors help with calculating three-dimensional rotations.
  * To learn more about quaternion, see https://en.wikipedia.org/wiki/Quaternion
- * \see ZedPosition.msg
  * 
  * The variable "aruco_visible" tells whether or not that at least one marker is detected.
  * 
- * To read more about the nodes that subscribe to this one
+ * \see ZedPosition.msg
+ * 
+ * Zed camera currently using WVGA mode which has a FOV of 56(V) and 87(H).
+ * 
+ * Nodes that subscribe to the published Zed topics include the logic and autonomy node.
  * \see logic_node.cpp
+ * 
  * \see autonomy_node.cpp
  * 
  * 
@@ -50,6 +54,29 @@ int main(int argc, char **argv) {
 
     // Set configuration parameters
     sl::InitParameters init_params;
+
+    /*
+    Camera Resolution Options (https://www.stereolabs.com/docs/api/group__Video__group.html#gabd0374c748530a64a72872c43b2cc828)
+    HD2K 	
+    -2208*1242 (x2),
+    -available framerates: 15 fps
+    -FOV: 47(V), 76(H)
+
+    HD1080 	
+    -1920*1080 (x2)
+    -available framerates: 15, 30 fps
+   -FOV: 42(V), 69(H)
+
+    HD720 	
+    -1280*720 (x2)
+    -available framerates: 15, 30, 60 fps.
+   -FOV: 54(V), 85(H)
+
+    VGA	
+    -672*376 (x2)
+    -available framerates: 15, 30, 60, 100 fps.   
+    -FOV: 56(V), 87(H)
+    */
     init_params.camera_resolution = sl::RESOLUTION::VGA;
     init_params.coordinate_units = sl::UNIT::METER;
     init_params.coordinate_system = sl::COORDINATE_SYSTEM::IMAGE;    
