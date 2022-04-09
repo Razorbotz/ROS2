@@ -53,22 +53,32 @@ void Automation1::automate(){
     else if(robotState == GO_TO_DUMPSITE) {
         //Variables for calcuating robot position in arena
 
-
-        if (position.y == 0) {
+        //assuming perpendicular
+        if (position.y == y && orientation.roll != x) {
             double current_y = position.y;
 
-            //1. turn robot left x distance
-            //some sort of while loop with time or rotations
-            changeSpeed(-0.15, 0.15);
+            //stop if certain distance from marker
+            if(position.z < 1.5) {
+                changeSpeed(0,0);
+            }
+
+            //turn robot left x distance
+            //some sort of while loop with time or rotations            
+            // x = ?
+            else if(orientation.roll > x) {
+                changeSpeed(-0.15, 0.15);
+            }
             
-            //2. go forward to center line
-            while(position.z > 1.5)
-                changeSpeed(0.15, 0.15)
+            //go forward to center line
+            else {
+                changeSpeed(0.15, 0.15);
+            }
 
 
         } 
 
-        // y may be other sign (needs testing)
+
+        // y may be other sign (needs testing). Assuiming below perpendicular line
         else if (position.y > 0) {
             //1. turn left
 
@@ -77,7 +87,9 @@ void Automation1::automate(){
             //3. turn right 90 degrees
 
             //4. go forward until aruco marker distance d
-
+            else {
+                changeSpeed(0.15, 0.15);
+            }
         
         } else if (position.y < 0) {
             //1. turn right
