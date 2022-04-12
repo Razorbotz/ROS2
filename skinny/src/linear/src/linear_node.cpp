@@ -3,7 +3,7 @@
 #include <chrono>
 #include <thread>
 #include <unistd.h>
-
+#include <typeinfo>
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -35,7 +35,7 @@
 #include <ctre/phoenix/cci/Unmanaged_CCI.h>
 #include <ctre/phoenix/cci/Diagnostics_CCI.h>
 
-#include "messages/msg/talon_out.hpp"
+//#include "messages/msg/neo_out.hpp"
 
 using namespace ctre::phoenix;
 using namespace ctre::phoenix::platform;
@@ -153,7 +153,7 @@ T getParameter(std::string parameterName, std::string initialValue){
 	return value;
 }
 
-/** @brief Parameter function
+/** @brief Function to get the value of the specified parameter
  * 
  * Function that takes a string as a parameter containing the
  * name of the parameter that is being parsed from the launch
@@ -161,29 +161,24 @@ T getParameter(std::string parameterName, std::string initialValue){
  * gets the parameter, casts it as the desired type, displays 
  * the value of the parameter on the command line and the log 
  * file, then returns the parsed value of the parameter.
- * The type parameter uses the following values:
- * 0 - Int
- * 1 - Bool
- * 2 - Double
  * @param parametername String of the name of the parameter
  * @param initialValue Initial value of the parameter
- * @param type Specifies the desired type
  * @return value Value of the parameter
  * */
 template <typename T>
-T getParameter(std::string parameterName, int initialValue, int type){
+T getParameter(std::string parameterName, int initialValue){
 	nodeHandle->declare_parameter<T>(parameterName, initialValue);
 	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
 	T value;
-	switch(type){
-		case 0:
+	switch(typeid(value).name()){
+		case typeid(int).name():
 			value = param.as_int();
 			break;
-		case 1:
-			value = param.as_bool();
-			break;
-		case 2:
+		case typeid(double).name():
 			value = param.as_double();
+			break;
+		case typeid(bool).name():
+			value = param.as_bool();
 			break;
 	}
 	std::cout << parameterName << ": " << value << std::endl;
@@ -199,14 +194,15 @@ int main(int argc,char** argv){
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting talon");
 
-	int motorNumber = getParameter<int>("motor_number", 1, 0);
+	int motorNumber = getParameter<int>("motor_number", 1);
 
-	int portNumber = getParameter<int>("diagnostics_port", 1, 0);
+	int portNumber = getParameter<int>("diagnostics_port", 1);
 	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
 
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
+	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 
-	bool invertMotor = getParameter<bool>("invert_motor", 0, 1);
+	bool invertMotor = getParameter<bool>("invert_motor", 0);
 
     ctre::phoenix::platform::can::SetCANInterface("can0");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
@@ -231,6 +227,7 @@ int main(int argc,char** argv){
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
+	//auto linearPublisher=nodeHandle->create_publisher<messages::msg::NeoOut>(infoTopic.c_str(),1);
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
 	rclcpp::Rate rate(20);

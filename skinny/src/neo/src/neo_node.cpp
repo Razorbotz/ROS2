@@ -3,6 +3,7 @@
 #include <chrono>
 #include <thread>
 #include <unistd.h>
+#include <typeinfo>
 
 
 #include <unistd.h>
@@ -140,7 +141,7 @@ T getParameter(std::string parameterName, std::string initialValue){
 	return value;
 }
 
-/** @brief Parameter function
+/** @brief Function to get the value of the specified parameter
  * 
  * Function that takes a string as a parameter containing the
  * name of the parameter that is being parsed from the launch
@@ -148,29 +149,24 @@ T getParameter(std::string parameterName, std::string initialValue){
  * gets the parameter, casts it as the desired type, displays 
  * the value of the parameter on the command line and the log 
  * file, then returns the parsed value of the parameter.
- * The type parameter uses the following values:
- * 0 - Int
- * 1 - Bool
- * 2 - Double
  * @param parametername String of the name of the parameter
  * @param initialValue Initial value of the parameter
- * @param type Specifies the desired type
  * @return value Value of the parameter
  * */
 template <typename T>
-T getParameter(std::string parameterName, int initialValue, int type){
+T getParameter(std::string parameterName, int initialValue){
 	nodeHandle->declare_parameter<T>(parameterName, initialValue);
 	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
 	T value;
-	switch(type){
-		case 0:
+	switch(typeid(value).name()){
+		case typeid(int).name():
 			value = param.as_int();
 			break;
-		case 1:
-			value = param.as_bool();
-			break;
-		case 2:
+		case typeid(double).name():
 			value = param.as_double();
+			break;
+		case typeid(bool).name():
+			value = param.as_bool();
 			break;
 	}
 	std::cout << parameterName << ": " << value << std::endl;
@@ -183,13 +179,13 @@ int main(int argc, char** argv){
 	rclcpp::init(argc,argv);
 	nodeHandle = rclcpp::Node::make_shared("neo");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting neo");
-	int motorNumber = getParameter<int>("motor_number", 1, 0);
+	int motorNumber = getParameter<int>("motor_number", 1);
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
-	bool invertMotor = getParameter<bool>("invert_motor", 0, 1);
-	useVelocity = getParameter<bool>("use_velocity", 0, 1);
-	velocityMultiplier = getParameter<int>("velocity_multiplier", 0, 0);
-	testSpeed = getParameter<int>("test_speed", 0, 0);
+	bool invertMotor = getParameter<bool>("invert_motor", 0);
+	useVelocity = getParameter<bool>("use_velocity", 0);
+	velocityMultiplier = getParameter<int>("velocity_multiplier", 0);
+	testSpeed = getParameter<int>("test_speed", 0);
 
 	rev::CANSparkMax sparkMax{motorNumber, rev::CANSparkMax::MotorType::kBrushless};
 	sparkMax.RestoreFactoryDefaults();
