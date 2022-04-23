@@ -1,0 +1,4 @@
+int32 device_id
+float32 bus_voltage
+float32 output_voltage
+float32 output_percent
