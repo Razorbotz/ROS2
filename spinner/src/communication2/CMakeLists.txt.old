@@ -1,0 +1,48 @@
+cmake_minimum_required(VERSION 3.5)
+project(communication)
+
+if(NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(messages REQUIRED)   #this isn't working properly which forces me to add in the pertinent information below
+
+include_directories(
+        include
+	/home/ros/foxy/include
+	#	/home/team/SoftwareDevelopment/ROS2/skinny/install/messages/include
+)
+
+link_directories(
+	#/home/team/SoftwareDevelopment/ROS2/skinny/install/messages/lib
+)
+
+add_executable(${PROJECT_NAME}_node
+        src/communication_node.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_node 
+	#libnew_msg__python.so            
+	#libnew_msg__rosidl_typesupport_cpp.so  
+	#libnew_msg__rosidl_typesupport_fastrtps_cpp.so  
+	#libnew_msg__rosidl_typesupport_introspection_cpp.so  
+	#libnew_msg__rosidl_generator_c.so  
+	#libnew_msg__rosidl_typesupport_c.so    
+	#libnew_msg__rosidl_typesupport_fastrtps_c.so    
+	#libnew_msg__rosidl_typesupport_introspection_c.so
+)
+
+install(TARGETS ${PROJECT_NAME}_node
+        DESTINATION lib/${PROJECT_NAME}
+)
+
+ament_package()
+ament_target_dependencies(${PROJECT_NAME}_node rclcpp std_msgs messages)
+
