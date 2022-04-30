@@ -106,6 +106,7 @@ bool useVelocity=false;
 int velocityMultiplier=0;
 int testSpeed=0;
 TalonSRX* talonSRX;
+TalonSRX* talonSRX2;
 
 /** @brief Speed Callback Function
  * 
@@ -194,9 +195,13 @@ int main(int argc,char** argv){
 	//int success;
 
 	int motorNumber = getParameter<int>("motor_number", 1);
+    int motorNumber2 = getParameter<int>("motor_number2", 1);
 	int portNumber = getParameter<int>("diagnostics_port", 1);	
 	c_Phoenix_Diagnostics_Create1(portNumber);
+    portNumber++;
+    c_Phoenix_Diagnostics_Create2(portNumber);
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
+    std::string infoTopic2 = getParameter<std::string>("info_topic2", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
 	bool invertMotor = getParameter<bool>("invert_motor", 0);
 	useVelocity = getParameter<bool>("use_velocity", 0);
@@ -213,6 +218,7 @@ int main(int argc,char** argv){
 	int kTimeoutMs=30;
 	int kPIDLoopIdx=0;
 	talonSRX=new TalonSRX(motorNumber);
+    talonSRX2=new TalonSRX(motorNumber2);
 	RCLCPP_INFO(nodeHandle->get_logger(),"created talon instance");
 
 	talonSRX->SetInverted(invertMotor);
@@ -231,6 +237,20 @@ int main(int argc,char** argv){
 	talonSRX->Config_kD(kPIDLoopIdx, kD, kTimeoutMs);
 	talonSRX->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
 
+    talonSRX2->SelectProfileSlot(0,0);
+	talonSRX2->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, kTimeoutMs);
+	talonSRX2->ConfigClosedloopRamp(2);
+	talonSRX2->ConfigNominalOutputForward(0, kTimeoutMs);
+	talonSRX2->ConfigNominalOutputReverse(0, kTimeoutMs);
+	talonSRX2->ConfigPeakOutputForward(1, kTimeoutMs);
+	talonSRX2->ConfigPeakOutputReverse(-1, kTimeoutMs);
+	talonSRX2->Config_kF(kPIDLoopIdx, kF, kTimeoutMs);
+	talonSRX2->Config_kP(kPIDLoopIdx, kP, kTimeoutMs);
+	talonSRX2->Config_kI(kPIDLoopIdx, kI, kTimeoutMs);
+	talonSRX2->Config_kD(kPIDLoopIdx, kD, kTimeoutMs);
+	talonSRX2->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
+    talonSRX2->Follow(talonSRX);
+
 	talonSRX->Set(ControlMode::PercentOutput, 0);
 	talonSRX->Set(ControlMode::Velocity, 0);
 
@@ -240,6 +260,7 @@ int main(int argc,char** argv){
 
 	messages::msg::TalonOut talonOut;
 	auto talonOutPublisher=nodeHandle->create_publisher<messages::msg::TalonOut>(infoTopic.c_str(),1);
+    auto talonOutPublisher2=nodeHandle->create_publisher<messages::msg::TalonOut>(infoTopic2.c_str(),1);
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
 
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
@@ -280,7 +301,35 @@ int main(int argc,char** argv){
 			talonOut.error_derivative=errorDerivative0;
 
 			talonOutPublisher->publish(talonOut);
-        		start = std::chrono::high_resolution_clock::now();
+
+            int deviceID=talonSRX2->GetDeviceID();
+			double busVoltage=talonSRX2->GetBusVoltage();
+			double outputCurrent=talonSRX2->GetOutputCurrent();
+			bool isInverted=talonSRX2->GetInverted();
+			double motorOutputVoltage=talonSRX2->GetMotorOutputVoltage();
+			double motorOutputPercent=talonSRX2->GetMotorOutputPercent();
+			double temperature=talonSRX2->GetTemperature();
+			int sensorPosition0=talonSRX2->GetSelectedSensorPosition(0);
+			int sensorVelocity0=talonSRX2->GetSelectedSensorVelocity(0);
+			int closedLoopError0=talonSRX2->GetClosedLoopError(0);
+			double integralAccumulator0=talonSRX2->GetIntegralAccumulator(0);
+			double errorDerivative0=talonSRX2->GetErrorDerivative(0);
+		
+			talonOut.device_id=deviceID;	
+			talonOut.bus_voltage=busVoltage;
+			talonOut.output_current=outputCurrent;
+			talonOut.output_voltage=motorOutputVoltage;
+			talonOut.output_percent=motorOutputPercent;
+			talonOut.temperature=temperature;
+			talonOut.sensor_position=sensorPosition0;
+			talonOut.sensor_velocity=sensorVelocity0;
+			talonOut.closed_loop_error=closedLoopError0;
+			talonOut.integral_accumulator=integralAccumulator0;
+			talonOut.error_derivative=errorDerivative0;
+
+			talonOutPublisher->publish(talonOut);
+            start = std::chrono::high_resolution_clock::now();
+
 		}
 
 		if(count++>200 && GO){
