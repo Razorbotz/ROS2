@@ -105,8 +105,8 @@ void goCallback(std_msgs::msg::Empty::SharedPtr empty){
 bool useVelocity=false;
 int velocityMultiplier=0;
 int testSpeed=0;
-TalonSRX* talonSRX;
-TalonSRX* talonSRX2;
+TalonFX* talonFX;
+TalonFX* talonFX2;
 
 /** @brief Speed Callback Function
  * 
@@ -123,10 +123,10 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	//std::cout << "---------->>>  " << speed->data << std::endl;
 
 	if(useVelocity){
-        	talonSRX->Set(ControlMode::Velocity, int(speed->data*velocityMultiplier));
-		//talonSRX->Set(ControlMode::Velocity, testSpeed);
+        	talonFX->Set(ControlMode::Velocity, int(speed->data*velocityMultiplier));
+		//talonFX->Set(ControlMode::Velocity, testSpeed);
 	}else{
-        	talonSRX->Set(ControlMode::PercentOutput, speed->data);
+        	talonFX->Set(ControlMode::PercentOutput, speed->data);
 	}
 }
 
@@ -217,46 +217,49 @@ int main(int argc,char** argv){
 
 	int kTimeoutMs=30;
 	int kPIDLoopIdx=0;
-	talonSRX=new TalonSRX(motorNumber);
-    talonSRX2=new TalonSRX(motorNumber2);
+	talonFX=new TalonFX(motorNumber);
+    talonFX2=new TalonFX(motorNumber2);
 	RCLCPP_INFO(nodeHandle->get_logger(),"created talon instance");
 
-	talonSRX->SetInverted(invertMotor);
+	if(invertMotor)
+		talonFX->SetInverted(TalonFXInvertType::CounterClockwise);
+	else
+		talonFX->SetInverted(TalonFXInvertType::Clockwise);
 	RCLCPP_INFO(nodeHandle->get_logger(),"here 1");
 
-	talonSRX->SelectProfileSlot(0,0);
-	talonSRX->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, kTimeoutMs);
-	talonSRX->ConfigClosedloopRamp(2);
-	talonSRX->ConfigNominalOutputForward(0, kTimeoutMs);
-	talonSRX->ConfigNominalOutputReverse(0, kTimeoutMs);
-	talonSRX->ConfigPeakOutputForward(1, kTimeoutMs);
-	talonSRX->ConfigPeakOutputReverse(-1, kTimeoutMs);
-	talonSRX->Config_kF(kPIDLoopIdx, kF, kTimeoutMs);
-	talonSRX->Config_kP(kPIDLoopIdx, kP, kTimeoutMs);
-	talonSRX->Config_kI(kPIDLoopIdx, kI, kTimeoutMs);
-	talonSRX->Config_kD(kPIDLoopIdx, kD, kTimeoutMs);
-	talonSRX->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
+	talonFX->SelectProfileSlot(0,0);
+	talonFX->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, kTimeoutMs);
+	talonFX->ConfigClosedloopRamp(2);
+	talonFX->ConfigNominalOutputForward(0, kTimeoutMs);
+	talonFX->ConfigNominalOutputReverse(0, kTimeoutMs);
+	talonFX->ConfigPeakOutputForward(1, kTimeoutMs);
+	talonFX->ConfigPeakOutputReverse(-1, kTimeoutMs);
+	talonFX->Config_kF(kPIDLoopIdx, kF, kTimeoutMs);
+	talonFX->Config_kP(kPIDLoopIdx, kP, kTimeoutMs);
+	talonFX->Config_kI(kPIDLoopIdx, kI, kTimeoutMs);
+	talonFX->Config_kD(kPIDLoopIdx, kD, kTimeoutMs);
+	talonFX->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
 
-    talonSRX2->SelectProfileSlot(0,0);
-	talonSRX2->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, kTimeoutMs);
-	talonSRX2->ConfigClosedloopRamp(2);
-	talonSRX2->ConfigNominalOutputForward(0, kTimeoutMs);
-	talonSRX2->ConfigNominalOutputReverse(0, kTimeoutMs);
-	talonSRX2->ConfigPeakOutputForward(1, kTimeoutMs);
-	talonSRX2->ConfigPeakOutputReverse(-1, kTimeoutMs);
-	talonSRX2->Config_kF(kPIDLoopIdx, kF, kTimeoutMs);
-	talonSRX2->Config_kP(kPIDLoopIdx, kP, kTimeoutMs);
-	talonSRX2->Config_kI(kPIDLoopIdx, kI, kTimeoutMs);
-	talonSRX2->Config_kD(kPIDLoopIdx, kD, kTimeoutMs);
-	talonSRX2->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
-    talonSRX2->Follow(talonSRX);
+    talonFX2->SelectProfileSlot(0,0);
+	talonFX2->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, kTimeoutMs);
+	talonFX2->ConfigClosedloopRamp(2);
+	talonFX2->ConfigNominalOutputForward(0, kTimeoutMs);
+	talonFX2->ConfigNominalOutputReverse(0, kTimeoutMs);
+	talonFX2->ConfigPeakOutputForward(1, kTimeoutMs);
+	talonFX2->ConfigPeakOutputReverse(-1, kTimeoutMs);
+	talonFX2->Config_kF(kPIDLoopIdx, kF, kTimeoutMs);
+	talonFX2->Config_kP(kPIDLoopIdx, kP, kTimeoutMs);
+	talonFX2->Config_kI(kPIDLoopIdx, kI, kTimeoutMs);
+	talonFX2->Config_kD(kPIDLoopIdx, kD, kTimeoutMs);
+	talonFX2->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
+    talonFX2->Follow(talonFX);
 
-	talonSRX->Set(ControlMode::PercentOutput, 0);
-	talonSRX->Set(ControlMode::Velocity, 0);
+	talonFX->Set(ControlMode::PercentOutput, 0);
+	talonFX->Set(ControlMode::Velocity, 0);
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"configured talon");
 
-	TalonSRXConfiguration allConfigs;
+	TalonFXConfiguration allConfigs;
 
 	messages::msg::TalonOut talonOut;
 	auto talonOutPublisher=nodeHandle->create_publisher<messages::msg::TalonOut>(infoTopic.c_str(),1);
@@ -275,18 +278,18 @@ int main(int argc,char** argv){
 		auto finish = std::chrono::high_resolution_clock::now();
 
 		if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() > 250000000){
-			int deviceID=talonSRX->GetDeviceID();
-			double busVoltage=talonSRX->GetBusVoltage();
-			double outputCurrent=talonSRX->GetOutputCurrent();
-			bool isInverted=talonSRX->GetInverted();
-			double motorOutputVoltage=talonSRX->GetMotorOutputVoltage();
-			double motorOutputPercent=talonSRX->GetMotorOutputPercent();
-			double temperature=talonSRX->GetTemperature();
-			int sensorPosition0=talonSRX->GetSelectedSensorPosition(0);
-			int sensorVelocity0=talonSRX->GetSelectedSensorVelocity(0);
-			int closedLoopError0=talonSRX->GetClosedLoopError(0);
-			double integralAccumulator0=talonSRX->GetIntegralAccumulator(0);
-			double errorDerivative0=talonSRX->GetErrorDerivative(0);
+			int deviceID=talonFX->GetDeviceID();
+			double busVoltage=talonFX->GetBusVoltage();
+			double outputCurrent=talonFX->GetOutputCurrent();
+			bool isInverted=talonFX->GetInverted();
+			double motorOutputVoltage=talonFX->GetMotorOutputVoltage();
+			double motorOutputPercent=talonFX->GetMotorOutputPercent();
+			double temperature=talonFX->GetTemperature();
+			int sensorPosition0=talonFX->GetSelectedSensorPosition(0);
+			int sensorVelocity0=talonFX->GetSelectedSensorVelocity(0);
+			int closedLoopError0=talonFX->GetClosedLoopError(0);
+			double integralAccumulator0=talonFX->GetIntegralAccumulator(0);
+			double errorDerivative0=talonFX->GetErrorDerivative(0);
 		
 			talonOut.device_id=deviceID;	
 			talonOut.bus_voltage=busVoltage;
@@ -302,18 +305,18 @@ int main(int argc,char** argv){
 
 			talonOutPublisher->publish(talonOut);
 
-            int deviceID=talonSRX2->GetDeviceID();
-			double busVoltage=talonSRX2->GetBusVoltage();
-			double outputCurrent=talonSRX2->GetOutputCurrent();
-			bool isInverted=talonSRX2->GetInverted();
-			double motorOutputVoltage=talonSRX2->GetMotorOutputVoltage();
-			double motorOutputPercent=talonSRX2->GetMotorOutputPercent();
-			double temperature=talonSRX2->GetTemperature();
-			int sensorPosition0=talonSRX2->GetSelectedSensorPosition(0);
-			int sensorVelocity0=talonSRX2->GetSelectedSensorVelocity(0);
-			int closedLoopError0=talonSRX2->GetClosedLoopError(0);
-			double integralAccumulator0=talonSRX2->GetIntegralAccumulator(0);
-			double errorDerivative0=talonSRX2->GetErrorDerivative(0);
+            int deviceID=talonFX2->GetDeviceID();
+			double busVoltage=talonFX2->GetBusVoltage();
+			double outputCurrent=talonFX2->GetOutputCurrent();
+			bool isInverted=talonFX2->GetInverted();
+			double motorOutputVoltage=talonFX2->GetMotorOutputVoltage();
+			double motorOutputPercent=talonFX2->GetMotorOutputPercent();
+			double temperature=talonFX2->GetTemperature();
+			int sensorPosition0=talonFX2->GetSelectedSensorPosition(0);
+			int sensorVelocity0=talonFX2->GetSelectedSensorVelocity(0);
+			int closedLoopError0=talonFX2->GetClosedLoopError(0);
+			double integralAccumulator0=talonFX2->GetIntegralAccumulator(0);
+			double errorDerivative0=talonFX2->GetErrorDerivative(0);
 		
 			talonOut.device_id=deviceID;	
 			talonOut.bus_voltage=busVoltage;
@@ -333,10 +336,10 @@ int main(int argc,char** argv){
 		}
 
 		if(count++>200 && GO){
-			std::cout <<"V=" << talonSRX->GetSelectedSensorVelocity(kPIDLoopIdx) <<"  "
-				<< "  E=" << talonSRX->GetClosedLoopError(kPIDLoopIdx) 
-				<< "  IA=" << talonSRX->GetIntegralAccumulator(kPIDLoopIdx)
-				<< "  ED=" << talonSRX->GetErrorDerivative(kPIDLoopIdx) 
+			std::cout <<"V=" << talonFX->GetSelectedSensorVelocity(kPIDLoopIdx) <<"  "
+				<< "  E=" << talonFX->GetClosedLoopError(kPIDLoopIdx) 
+				<< "  IA=" << talonFX->GetIntegralAccumulator(kPIDLoopIdx)
+				<< "  ED=" << talonFX->GetErrorDerivative(kPIDLoopIdx) 
 				<< std::endl;
 			count=0;
 		}
