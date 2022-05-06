@@ -129,6 +129,7 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	}
 }
 
+
 /** @brief String parameter function
  * 
  * Function that takes a string as a parameter containing the
@@ -212,6 +213,7 @@ int main(int argc,char** argv){
 
 	int kTimeoutMs=30;
 	int kPIDLoopIdx=0;
+
 	talonSRX=new TalonSRX(motorNumber);
 	RCLCPP_INFO(nodeHandle->get_logger(),"created talon instance");
 
@@ -230,6 +232,7 @@ int main(int argc,char** argv){
 	talonSRX->Config_kI(kPIDLoopIdx, kI, kTimeoutMs);
 	talonSRX->Config_kD(kPIDLoopIdx, kD, kTimeoutMs);
 	talonSRX->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
+
 
 	talonSRX->Set(ControlMode::PercentOutput, 0);
 	talonSRX->Set(ControlMode::Velocity, 0);
