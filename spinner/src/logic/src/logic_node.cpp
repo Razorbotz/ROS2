@@ -49,12 +49,15 @@ float joystick1Yaw=0;
 float joystick1Throttle=1;
 
 bool automationGo=false;
+bool invertDrum = false;
+bool excavationGo = false;
 
 Automation* automation=new Automation1();
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > dumpBinSpeedPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > shoulderSpeedPublisher;
 //std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > driveStatePublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > excavationArmPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > excavationDrumPublisher;
@@ -80,7 +83,7 @@ void updateSpeed(){
     
     std_msgs::msg::Float32 speedLeft;
     std_msgs::msg::Float32 speedRight;
-    float maxSpeed = 0.4;
+    float maxSpeed = 0.2;
     
     //Linear transformation of cordinate planes
     speedLeft.data  = (joystick1Pitch + joystick1Roll);
@@ -94,6 +97,29 @@ void updateSpeed(){
 
     driveLeftSpeedPublisher->publish(speedLeft);
     driveRightSpeedPublisher->publish(speedRight);
+}
+
+void stopSpeed(){
+    std_msgs::msg::Float32 speed;
+    speed.data = 0.0;
+    driveLeftSpeedPublisher->publish(speed);
+    driveRightSpeedPublisher->publish(speed);
+}
+
+void updateExcavation(){
+     std_msgs::msg::Float32 shoulderSpeed;
+     shoulderSpeed.data = -joystick1Pitch;
+     shoulderSpeedPublisher->publish(shoulderSpeed);
+     std_msgs::msg::Float32 armSpeed;
+     armSpeed.data = joystick1Yaw;
+     excavationArmPublisher->publish(armSpeed);
+}
+
+void stopExcavation(){
+    std_msgs::msg::Float32 speed;
+    speed.data = 0.0;
+    shoulderSpeedPublisher->publish(speed);
+    excavationArmPublisher->publish(speed);
 }
 
 /** @brief Callback function for joystick axis topic
@@ -145,10 +171,21 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
         updateSpeed();
     }else if(axisState->axis==1){
         joystick1Pitch = axisState->state;
-        updateSpeed();
+        if(excavationGo)
+            updateExcavation();
+        else
+            updateSpeed();
     }else if(axisState->axis==2){
         joystick1Yaw = axisState->state;
+        if(excavationGo)
+            updateExcavation();
     }else if(axisState->axis==3){
+        if(excavationGo){
+            std_msgs::msg::Float32 speed;
+            joystick1Throttle = axisState->state/2 + 0.5;
+            speed.data = (invertDrum)? -joystick1Throttle : joystick1Throttle;
+            excavationDrumPublisher->publish(speed);
+        }
     }
 }
 
@@ -166,17 +203,24 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
 
     switch (buttonState->button) {
 
-        case 0: //ESTOP
-//            DO NOT USE!!!
+        case 0:
             break;
         case 1: //toggles driving and digging
+            if(buttonState->state){
+                excavationGo = !excavationGo;
+                if(!excavationGo)
+                    stopExcavation();
+                else
+                    stopSpeed();
+            }
+            RCLCPP_INFO(nodeHandle->get_logger(), "Button 2");
             break;
         case 2:
+            if(buttonState->state)
+                invertDrum = !invertDrum;
+            RCLCPP_INFO(nodeHandle->get_logger(), "Button 3 invertDrum: %d", invertDrum);
             break;
         case 3:
-            if (buttonState->state) {
-            }else{
-            }
             break;
         case 4:
             if(buttonState->state) {
@@ -184,29 +228,14 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             }
             break;
         case 5: 
-            if(buttonState->state) {
-            }else {
-            }
             break;
         case 6:
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 7");
-            speed.data = 1;
-            excavationArmPublisher->publish(speed);
             break;
         case 7:
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 8");
-            speed.data = -1;
-            excavationArmPublisher->publish(speed);
             break;
         case 8:
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 9");
-            speed.data = 1;
-            excavationDrumPublisher->publish(speed);
             break;
         case 9:
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 10");
-            speed.data = -1;
-            excavationDrumPublisher->publish(speed);
             break;
         case 10:
             break;
@@ -224,15 +253,16 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
  * @return void
  * */
 void joystickHatCallback(const messages::msg::HatState::SharedPtr hatState){
-    //std::cout << "Hat " << (int)hatState->joystick << " " << (int)hatState->hat << " " << (int)hatState->state << std::endl;
+    std::cout << "Hat " << (int)hatState->joystick << " " << (int)hatState->hat << " " << (int)hatState->state << std::endl;
 
     std_msgs::msg::Float32 dumpSpeed;
+    std_msgs::msg::Float32 shoulderSpeed;
     if((int)hatState->state == 1 ){
-	dumpSpeed.data=0.2;
+	dumpSpeed.data=1.0;
         dumpBinSpeedPublisher->publish(dumpSpeed);
     }
     if((int)hatState->state == 4 ){
-	dumpSpeed.data=-0.2;
+	dumpSpeed.data=-1.0;
         dumpBinSpeedPublisher->publish(dumpSpeed);
     }
     if((int)hatState->state == 0 ){
@@ -314,6 +344,7 @@ int main(int argc, char **argv){
     driveRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
     //driveStatePublisher= nodeHandle->create_publisher<std_msgs::msg::Bool>("drive_state",1);
     dumpBinSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("dump_bin_speed",1);
+    shoulderSpeedPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("shoulder_speed",1);
     excavationArmPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("excavationArm",1);
     excavationDrumPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("excavationDrum",1);
  
