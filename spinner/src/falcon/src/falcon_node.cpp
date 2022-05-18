@@ -199,8 +199,8 @@ int main(int argc,char** argv){
 	int motorNumber2 = getParameter<int>("motor_number2", 1);
 	int portNumber = getParameter<int>("diagnostics_port", 1);
 	c_Phoenix_Diagnostics_Create1(portNumber);
-    	portNumber++;
-    	c_Phoenix_Diagnostics_Create1(portNumber);
+	portNumber++;
+	c_Phoenix_Diagnostics_Create1(portNumber);
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 	std::string infoTopic2 = getParameter<std::string>("info_topic2", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
@@ -253,7 +253,7 @@ int main(int argc,char** argv){
 	talonFX2->Config_kI(kPIDLoopIdx, kI, kTimeoutMs);
 	talonFX2->Config_kD(kPIDLoopIdx, kD, kTimeoutMs);
 	talonFX2->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
-    	talonFX2->Follow(*talonFX);
+	talonFX2->Follow(*talonFX);
 
 	talonFX->Set(ControlMode::PercentOutput, 0);
 	talonFX->Set(ControlMode::Velocity, 0);
@@ -264,7 +264,7 @@ int main(int argc,char** argv){
 
 	messages::msg::TalonOut talonOut;
 	auto talonOutPublisher=nodeHandle->create_publisher<messages::msg::TalonOut>(infoTopic.c_str(),1);
-    	auto talonOutPublisher2=nodeHandle->create_publisher<messages::msg::TalonOut>(infoTopic2.c_str(),1);
+	auto talonOutPublisher2=nodeHandle->create_publisher<messages::msg::TalonOut>(infoTopic2.c_str(),1);
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
 
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);

@@ -30,4 +30,19 @@ class Automation{
 
     EulerAngles toEulerAngles(Quaternion q); 
 
+    void changeDumpBinSpeed(float speed);
+
+    void changeShoulderSpeed(float speed);
+
+    void changeArmSpeed(float speed);
+
+    void changeDrumSpeed(float speed);
+
+    void changeShoulderSpeed(float speed);
+
+    void changeArmSpeed(float speed);
+    
+    void changeLockServoSpeed(float speed);
+    
+    void changeArmServoSpeed(float speed);
 };

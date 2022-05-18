@@ -29,6 +29,7 @@ ros2 run demo_nodes_py listener
 ```
 
 ## Understanding the Codebase
+The codebase currently holds the code for both Skinny, the 2021 robot that is used for testing, and Spinner, the 2022 robot that  is currently under development.  Although Skinny is no longer under active development, it is still a good reference and can be used if Spinner is not operational.
 
 ### Structure of the packages
 ROS2 packages all contain the following:
@@ -39,15 +40,15 @@ ROS2 packages all contain the following:
 The src folder within a package contains the .cpp files that define nodes and supporting files for classes/objects/functions relevant to that package.  To read more about ROS2 packages, please refer to the [ROS2 tutorial](https://docs.ros.org/en/foxy/Tutorials/Creating-Your-First-ROS2-Package.html).
 
 The ROS2 packages currently in this project are as follows:
-* [Autonomy](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/autonomy)
-* [Communication](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/communication)
-* [Excavation](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/excavation)
-* [Linear](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/linear)
-* [Logic](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/logic)
-* [Neo](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/logic)
-* [Power Distribution Panel](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/poewr_distribution_panel)
-* [Talon](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/talon)
-* [Zed Tracking](https://github.com/Razorbotz/ROS2/tree/master/skinny/src/zed_tracking)
+* [Autonomy](https://github.com/Razorbotz/ROS2/tree/master/spinner/src/autonomy)
+* [Communication](https://github.com/Razorbotz/ROS2/tree/master/spinner/src/communication)
+* [Excavation](https://github.com/Razorbotz/ROS2/tree/master/spinner/src/excavation)
+* [Linear](https://github.com/Razorbotz/ROS2/tree/master/spinner/src/linear)
+* [Logic](https://github.com/Razorbotz/ROS2/tree/master/spinner/src/logic)
+* [Falcon](https://github.com/Razorbotz/ROS2/tree/master/spinner/src/falcon)
+* [Power Distribution Panel](https://github.com/Razorbotz/ROS2/tree/master/spinner/src/power_distribution_panel)
+* [Talon](https://github.com/Razorbotz/ROS2/tree/master/spinner/src/talon)
+* [Zed Tracking](https://github.com/Razorbotz/ROS2/tree/master/spinner/src/zed_tracking)
 
 ## Documentation
 This project uses [Doxygen](https://www.doxygen.nl/index.html) to generate documentation for the files automatically.  **To make documentation easier for all users, Doxygen is hosted on the Github and does not need to be downloaded by contributers.**  To learn more about the Doxygen formatting, please refer to the [Documenting the code](https://www.doxygen.nl/manual/docblocks.html) section of the Doxygen docs.  The documentation for this project can be found at the project website that is found [here](https://razorbotz.github.io/ROS2/).

@@ -129,6 +129,57 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	}
 }
 
+/** @brief String parameter function
+ * 
+ * Function that takes a string as a parameter containing the
+ * name of the parameter that is being parsed from the launch
+ * file and the initial value of the parameter as inputs, then
+ * gets the parameter, casts it as a string, displays the value
+ * of the parameter on the command line and the log file, then
+ * returns the parsed value of the parameter.
+ * @param parametername String of the name of the parameter
+ * @param initialValue Initial value of the parameter
+ * @return value Value of the parameter
+ * */
+template <typename T>
+T getParameter(std::string parameterName, std::string initialValue){
+	nodeHandle->declare_parameter<T>(parameterName, initialValue);
+	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
+	T value = param.as_string();
+	std::cout << parameterName << ": " << value << std::endl;
+	std::string output = parameterName + ": " + value;
+	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
+	return value;
+}
+
+/** @brief Function to get the value of the specified parameter
+ * 
+ * Function that takes a string as a parameter containing the
+ * name of the parameter that is being parsed from the launch
+ * file and the initial value of the parameter as inputs, then
+ * gets the parameter, casts it as the desired type, displays 
+ * the value of the parameter on the command line and the log 
+ * file, then returns the parsed value of the parameter.
+ * @param parametername String of the name of the parameter
+ * @param initialValue Initial value of the parameter
+ * @return value Value of the parameter
+ * */
+template <typename T>
+T getParameter(std::string parameterName, int initialValue){
+	nodeHandle->declare_parameter<T>(parameterName, initialValue);
+	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
+	T value;
+	if(typeid(value).name() == typeid(int).name())
+		value = param.as_int();
+	if(typeid(value).name() == typeid(double).name())
+		value = param.as_double();
+	if(typeid(value).name() == typeid(bool).name())
+		value = param.as_bool();
+	std::cout << parameterName << ": " << value << std::endl;
+	std::string output = parameterName + ": " + std::to_string(value);
+	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
+	return value;
+}
 
 int main(int argc,char** argv){
 	rclcpp::init(argc,argv);
@@ -137,106 +188,23 @@ int main(int argc,char** argv){
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting talon");
 	//int success;
 
-	//int motorNumber=0;
-	//success=nodeHandleP.getParam("motor_number", motorNumber);
-	//nodeHandle->declare_parameter<int>("motor_number",1);
-	//rclcpp::Parameter motorNumberParameter = nodeHandle->get_parameter("motor_number");
-	//int motorNumber = motorNumberParameter.as_int();
-	//std::cout << "motor_number: " << motorNumber << std::endl;
-	//RCLCPP_INFO(nodeHandle->get_logger(),"motorNumber: %d", motorNumber);
-	nodeHandle->declare_parameter<int>("motor_number", 1);
-	rclcpp::Parameter motorNumberParameter = nodeHandle->get_parameter("motor_number");
-	int motorNumber = motorNumberParameter.as_int();
-	std::cout << "motor_number: " << motorNumber << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(), "motorNumber: %d", motorNumber);
-
-
-	nodeHandle->declare_parameter<int>("diagnostics_port",1);
-	rclcpp::Parameter portNumberParameter = nodeHandle->get_parameter("diagnostics_port");
-	int portNumber = portNumberParameter.as_int();
-	std::cout << "diagnostics_port: " << portNumber <<std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(), "diagnosticsPort: %d", portNumber);
+	int motorNumber = getParameter<int>("motor_number", 1);
+	int portNumber = getParameter<int>("diagnostics_port", 1);
 	//c_SetPhoenixDiagnosticsStartTime(-1); //Disables the Phoenix Diagnostics server, but does not allow the Talons to run
 	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
 	
-	//std::string infoTopic;
-	//success=nodeHandleP.getParam("info_topic", infoTopic);
-	nodeHandle->declare_parameter<std::string>("info_topic","unset");
-        rclcpp::Parameter infoTopicParameter = nodeHandle->get_parameter("info_topic");
-        std::string infoTopic = infoTopicParameter.as_string();
-	std::cout << "info_topic: " << infoTopic << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(),"infoTopic: %s",infoTopic.c_str());
+	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
+	std::string speedTopic = getParemter<std::string("speed_topic", "unset");
+	bool invertMotor = getParameter<bool>("invert_motor", 0);
+	useVelocity = getParameter<bool>("use_velocity", 0);
+	velocityMultiplier = getParameter<int>("velocity_multiplier", 0);
+	testSpeed = getParameter<int>("test_speed", 0);
+	double kP = getParamter<double>("kP", 1);
+	double kI = getParameter<double>("kI", 0);
+	double kD = getParameter<double>("kD", 0);
+	double kF = getParameter<double>("kF", 0);
 
-	//std::string speedTopic;
-	//success=nodeHandleP.getParam("speed_topic", speedTopic);
-	nodeHandle->declare_parameter<std::string>("speed_topic","unset");
-        rclcpp::Parameter speedTopicParameter = nodeHandle->get_parameter("speed_topic");
-        std::string speedTopic = speedTopicParameter.as_string();
-	std::cout << "speed_topic: " << speedTopic << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(),"speedTopic: %s",speedTopic.c_str());
-
-	//bool invertMotor=false;
-	//success=nodeHandleP.getParam("invert_motor", invertMotor);
-	nodeHandle->declare_parameter<bool>("invert_motor",false);
-        rclcpp::Parameter invertMotorParameter = nodeHandle->get_parameter("invert_motor");
-        bool invertMotor = invertMotorParameter.as_bool();
-	std::cout << "invert_motor: " << invertMotor << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(),"invertMotor: %d",invertMotor);
-
-	//success=nodeHandleP.getParam("use_velocity", useVelocity);
-	nodeHandle->declare_parameter<bool>("use_velocity",false);
-        rclcpp::Parameter useVelocityParameter = nodeHandle->get_parameter("use_velocity");
-        useVelocity = useVelocityParameter.as_bool();
-	std::cout << "use_velocity: " << useVelocity << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(),"useVelocity: %d",useVelocity);
-
-	//success=nodeHandleP.getParam("velocity_multiplier", velocityMultiplier);
-	nodeHandle->declare_parameter<int>("velocity_multiplier",0);
-        rclcpp::Parameter velocityMultiplierParameter = nodeHandle->get_parameter("velocity_multiplier");
-        velocityMultiplier = velocityMultiplierParameter.as_int();
-	std::cout << "velocity_multiplier: " << velocityMultiplier << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(),"velocityMultiplier: %d",velocityMultiplier);
-
-	//success=nodeHandleP.getParam("test_speed", testSpeed);
-	nodeHandle->declare_parameter<int>("test_speed",0);
-        rclcpp::Parameter testSpeedParameter = nodeHandle->get_parameter("test_speed");
-        testSpeed = testSpeedParameter.as_int();
-	std::cout << "test_speed: " << testSpeed << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(),"testSpeed: %d",testSpeed);
-
-	//double kP=0;
-	//success=nodeHandleP.getParam("kP", kP);
-	nodeHandle->declare_parameter<double>("kP",1);
-        rclcpp::Parameter kPParameter = nodeHandle->get_parameter("kP");
-        double kP= kPParameter.as_double();
-	std::cout << "kP: " << kP << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(),"kP: %f",kP);
-
-	//double kI=0;
-	//success=nodeHandleP.getParam("kI", kI);
-	nodeHandle->declare_parameter<double>("kI",0);
-        rclcpp::Parameter kIParameter = nodeHandle->get_parameter("kI");
-        double kI= kIParameter.as_double();
-	std::cout << "kI: " << kI << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(),"kI: %f",kI);
-
-	//double kD=0;
-	//success=nodeHandleP.getParam("kD", kD);
-	nodeHandle->declare_parameter<double>("kD",0);
-        rclcpp::Parameter kDParameter = nodeHandle->get_parameter("kD");
-        double kD= kDParameter.as_double();
-	std::cout << "kD: " << kD << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(),"kD: %f",kD);
-
-	//double kF=0;
-	//success=nodeHandleP.getParam("kF", kF);
-	nodeHandle->declare_parameter<double>("kF",0);
-        rclcpp::Parameter kFParameter = nodeHandle->get_parameter("kF");
-        double kF= kFParameter.as_double();
-	std::cout << "kF: " << kF << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(),"kF: %f",kF);
-
-        ctre::phoenix::platform::can::SetCANInterface("can0");
+	ctre::phoenix::platform::can::SetCANInterface("can0");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
 
 	int kTimeoutMs=30;
@@ -262,24 +230,18 @@ int main(int argc,char** argv){
 	talonSRX->Config_kD(kPIDLoopIdx, kD, kTimeoutMs);
 	talonSRX->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
 
-        talonSRX->Set(ControlMode::PercentOutput, 0);
-        talonSRX->Set(ControlMode::Velocity, 0);
+	talonSRX->Set(ControlMode::PercentOutput, 0);
+	talonSRX->Set(ControlMode::Velocity, 0);
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"configured talon");
 
-	//TalonSRXPIDSetConfiguration pid;
 	TalonSRXConfiguration allConfigs;
-	//StatusFrame statusFrame;
 
 	messages::msg::TalonOut talonOut;
-	//ros::Publisher talonOutPublisher=nodeHandle.advertise<messages::TalonOut>(infoTopic.c_str(),1);
 	auto talonOutPublisher=nodeHandle->create_publisher<messages::msg::TalonOut>(infoTopic.c_str(),1);
-	//ros::Subscriber speedSubscriber=nodeHandle.subscribe(speedTopic.c_str(),1,speedCallback);
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
 
-	//ros::Subscriber stopSubscriber=nodeHandle.subscribe("STOP",1,stopCallback); 
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
-	//ros::Subscriber goSubscriber=nodeHandle.subscribe("GO",1,goCallback); 
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
@@ -328,34 +290,7 @@ int main(int argc,char** argv){
 				<< std::endl;
 			count=0;
 		}
-
-/*
-		//talonSRX->GetPIDConfigs(pid, 0,0);
-		talonSRX->GetAllConfigs(allConfigs);
-
-		int id=talonSRX->GetDeviceID();
-		double voltage=talonSRX->GetBusVoltage();
-		double outputCurrent=talonSRX->GetOutputCurrent();
-		bool isInverted=talonSRX->GetInverted();
-		double motorOutputPercent=talonSRX->GetMotorOutputPercent();
-		double motorOutputVoltage=talonSRX->GetMotorOutputVoltage();
-		double temperature=talonSRX->GetTemperature();
-		int sensorPosition0=talonSRX->GetSelectedSensorPosition(0);
-		int sensorVelocity0=talonSRX->GetSelectedSensorVelocity(0);
-		int cloosedLoopError0=talonSRX->GetClosedLoopError(0);
-		double integralAccumulator0=talonSRX->GetIntegralAccumulator(0);
-		double errorDerivative0=talonSRX->GetErrorDerivative(0);
-		double closedLoopTargeti0=talonSRX->GetClosedLoopTarget(0);
-		int activeTrajectoryPosition0=talonSRX->GetActiveTrajectoryPosition(0);
-		int activeTrajectoryVelocity0=talonSRX->GetActiveTrajectoryVelocity(0);
-		double activeTrajectoryArbFeedFwd0=talonSRX->GetActiveTrajectoryArbFeedFwd(0);
-		bool isMotionProfileFinished=talonSRX->IsMotionProfileFinished();
-		bool isMotionProfileTopLevelBufferFull=talonSRX->IsMotionProfileTopLevelBufferFull();
-		ctre::phoenix::ErrorCode errorCode=talonSRX->GetLastError();
-		int firmwareVersion=talonSRX->GetFirmwareVersion();
-		bool hasRestOccured=talonSRX->HasResetOccurred();
-*/
-                rate.sleep();
+		rate.sleep();
 		rclcpp::spin_some(nodeHandle);
         }
 }
