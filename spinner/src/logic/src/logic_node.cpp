@@ -34,10 +34,15 @@
  * The topics that are being published are as follows:
  * \li \b drive_left_speed
  * \li \b drive_right_speed
- * \li \b drive_state
+ * \li \b dump_bin_speed
+ * \li \b shoulder_speed
+ * \li \b excavationArm
+ * \li \b excavationDrum
  * 
  * To read more about the nodes that subscribe to this one
  * \see talon_node.cpp
+ * \see excavation_node.py
+ * \see falcon_node.cpp
  * 
  * */
 
@@ -58,16 +63,27 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > dumpBinSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > shoulderSpeedPublisher;
-//std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > driveStatePublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > excavationArmPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > excavationDrumPublisher;
 
+/** @brief Function to initialize the motors to zero
+ * 
+ * This function is called on start of the node and
+ * sends a message with a zero message to all motors
+ * to ensure that the motors are not set to an old 
+ * value.
+ * @return void
+ * */
 void initSetSpeed(){
     std_msgs::msg::Float32 speed;
     speed.data = 0.0;
     
     driveLeftSpeedPublisher->publish(speed);
     driveRightSpeedPublisher->publish(speed);
+    dumpBinSpeedPublisher->publish(speed);
+    shoulderSpeedPublisher->publish(speed);
+    excavationArmPublisher->publish(speed);
+    excavationDrumPublisher->publish(speed);
     //RCLCPP_INFO(nodeHandle->get_logger(), "Set init motor speeds to 0.0");
 }
 
@@ -83,6 +99,9 @@ void updateSpeed(){
     
     std_msgs::msg::Float32 speedLeft;
     std_msgs::msg::Float32 speedRight;
+    //Might need to lower this due to very low gear ratio
+    //Estimated max speed for motors is roughly 1000 rpm
+    //with an 8:1 gear ratio.
     float maxSpeed = 0.2;
     
     //Linear transformation of cordinate planes
@@ -99,6 +118,14 @@ void updateSpeed(){
     driveRightSpeedPublisher->publish(speedRight);
 }
 
+/** @brief Function to stop drive train motors
+ * 
+ * This function is called when toggle excavation 
+ * button is pressed and switches to the excavation
+ * state.  It publishes a speed of 0.0 for both the
+ * right and left wheels.
+ * @return void
+ * */
 void stopSpeed(){
     std_msgs::msg::Float32 speed;
     speed.data = 0.0;
@@ -106,6 +133,14 @@ void stopSpeed(){
     driveRightSpeedPublisher->publish(speed);
 }
 
+/** @brief Function to update excavation motor speeds
+ * 
+ * This function is called when the node receives 
+ * joystick information and is in the excavation 
+ * state.  The function publishes the shoulder speed,
+ * the arm speed, and the drum speeed.
+ * @return void
+ * */
 void updateExcavation(){
      std_msgs::msg::Float32 shoulderSpeed;
      shoulderSpeed.data = -joystick1Pitch;
@@ -113,13 +148,27 @@ void updateExcavation(){
      std_msgs::msg::Float32 armSpeed;
      armSpeed.data = joystick1Yaw;
      excavationArmPublisher->publish(armSpeed);
+     std_msgs::msg::Float32 drumSpeed;
+     drumSpeed.data = (invertDrum)? -joystick1Throttle : joystick1Throttle;
+     excavationDrumPublisher->publish(drumSpeed);
 }
 
+/** @brief Function to stop excavation motors
+ * 
+ * This function is called when the thumb
+ * button is pressed and switches to the drive
+ * state.  It publishes a speed of 0.0 for
+ * the shoulder, excavation arm, drum, and
+ * dump bin.
+ * @return void
+ * */
 void stopExcavation(){
     std_msgs::msg::Float32 speed;
     speed.data = 0.0;
     shoulderSpeedPublisher->publish(speed);
     excavationArmPublisher->publish(speed);
+    excavationDrumPublisher->publish(speed);
+    dumpBinPublisher->publish(speed);
 }
 
 /** @brief Callback function for joystick axis topic
@@ -127,50 +176,26 @@ void stopExcavation(){
  * This function is called when the node receives the
  * topic joystick_axis, then converts the joystick
  * input using a series of linear transformations 
- * before calling UpdateSpeed()
+ * before calling updateSpeed() or updateExcavation()
+ * depending on the current state.
  * @param axisState \see AxisState.msg
  * @return void
  * */
 void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     //RCLCPP_INFO(nodeHandle->get_logger(),"Axis %d %d %f", axisState->joystick, axisState->axis, axisState->state);
-    //RCLCPP_INFO(nodeHandle->get_logger(),"Axis %d %f %f %f", axisState->joystick, axisState->state0, axisState->state1, axisState->state2);
-    /*
-    float deadZone = 0.1;
-    //std_msgs::msg::Float32 auger;
-    joystick1Roll = -axisState->state0;
-    joystick1Roll = (fabs(joystick1Roll)<deadZone)? 0.0 : joystick1Roll;
-    joystick1Roll = (joystick1Roll>0)?joystick1Roll-deadZone:joystick1Roll;
-    joystick1Roll = (joystick1Roll<0)?joystick1Roll+deadZone:joystick1Roll;
-    joystick1Pitch = axisState->state1;
-    joystick1Pitch = (fabs(joystick1Pitch)<deadZone)? 0.0 : joystick1Pitch;
-    joystick1Pitch = (joystick1Pitch>0)?joystick1Pitch-deadZone:joystick1Pitch;
-    joystick1Pitch = (joystick1Pitch<0)?joystick1Pitch+deadZone:joystick1Pitch;
-    joystick1Yaw = axisState->state2;
-    updateSpeed();
-    */
-    /*
+    //RCLCPP_INFO(nodeHandle->get_logger(),"Axis %d %f %f %f %f", axisState->joystick, axisState->state0, axisState->state1, axisState->state2, axisState->state3);
+   float deadZone = 0.1;
     if(axisState->axis==0){
         joystick1Roll = -axisState->state;
         joystick1Roll = (fabs(joystick1Roll)<deadZone)? 0.0 : joystick1Roll;
-	joystick1Roll = (joystick1Roll>0)?joystick1Roll-deadZone:joystick1Roll;
-	joystick1Roll = (joystick1Roll<0)?joystick1Roll+deadZone:joystick1Roll;
+        joystick1Roll = (joystick1Roll>0)?joystick1Roll-deadZone:joystick1Roll;
+        joystick1Roll = (joystick1Roll<0)?joystick1Roll+deadZone:joystick1Roll;
         updateSpeed();
     }else if(axisState->axis==1){
         joystick1Pitch = axisState->state;
         joystick1Pitch = (fabs(joystick1Pitch)<deadZone)? 0.0 : joystick1Pitch;
-	joystick1Pitch = (joystick1Pitch>0)?joystick1Pitch-deadZone:joystick1Pitch;
-	joystick1Pitch = (joystick1Pitch<0)?joystick1Pitch+deadZone:joystick1Pitch;
-        updateSpeed();
-    }else if(axisState->axis==2){
-        joystick1Yaw = axisState->state;
-    }else if(axisState->axis==3){
-    }
-    */
-    if(axisState->axis==0){
-        joystick1Roll = -axisState->state;
-        updateSpeed();
-    }else if(axisState->axis==1){
-        joystick1Pitch = axisState->state;
+        joystick1Pitch = (joystick1Pitch>0)?joystick1Pitch-deadZone:joystick1Pitch;
+        joystick1Pitch = (joystick1Pitch<0)?joystick1Pitch+deadZone:joystick1Pitch;
         if(excavationGo)
             updateExcavation();
         else
@@ -180,20 +205,20 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
         if(excavationGo)
             updateExcavation();
     }else if(axisState->axis==3){
-        if(excavationGo){
-            std_msgs::msg::Float32 speed;
-            joystick1Throttle = axisState->state/2 + 0.5;
-            speed.data = (invertDrum)? -joystick1Throttle : joystick1Throttle;
-            excavationDrumPublisher->publish(speed);
-        }
+        joystick1Throttle = axisState->state/2 + 0.5;
+        if(excavationGo)
+            updateExcavation();
     }
 }
 
 /** @brief Callback function for joystick buttons
  * 
  * This function is called when the node receives a
- * topic with the name joystick_button.  It currently
- * prints the button pressed to the screen.
+ * topic with the name joystick_button.  Button 2 
+ * toggles the drive and excavation states while
+ * button 3 inverts the direction of the drum.  
+ * Buttons 6 and 7 control the locking servo and 
+ * buttons 8 and 9 control the arm servo.
  * @param buttonState \see ButtonState.msg
  * @return void
  * */
@@ -223,17 +248,18 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
         case 3:
             break;
         case 4:
-            if(buttonState->state) {
-            }else {
-            }
             break;
         case 5: 
+            // Raise lock servo
             break;
         case 6:
+            // Lower lock servo
             break;
         case 7:
+            // Raise arm servo
             break;
         case 8:
+            // Lower arm servo
             break;
         case 9:
             break;
@@ -247,8 +273,8 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
 /** @brief Callback function for joystick hat
  * 
  * This function is called when the node receives a
- * topic with the name joystick_hat.  It currently
- * prints the hat state to the screen.
+ * topic with the name joystick_hat.  It publishes
+ * the dump bin speed based on the hat.
  * @param hatState \see HatState.msg
  * @return void
  * */
@@ -256,7 +282,6 @@ void joystickHatCallback(const messages::msg::HatState::SharedPtr hatState){
     std::cout << "Hat " << (int)hatState->joystick << " " << (int)hatState->hat << " " << (int)hatState->state << std::endl;
 
     std_msgs::msg::Float32 dumpSpeed;
-    std_msgs::msg::Float32 shoulderSpeed;
     if((int)hatState->state == 1 ){
 	dumpSpeed.data=1.0;
         dumpBinSpeedPublisher->publish(dumpSpeed);
@@ -352,8 +377,8 @@ int main(int argc, char **argv){
 
     rclcpp::Rate rate(20);
     while(rclcpp::ok()){
-	if(automationGo) automation->automate();
+        if(automationGo) automation->automate();
         rclcpp::spin_some(nodeHandle);
-	rate.sleep();
+        rate.sleep();
     }
 }

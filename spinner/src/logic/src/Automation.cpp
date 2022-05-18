@@ -14,6 +14,10 @@ void Automation::setNode(rclcpp::Node::SharedPtr node){
     this->node=node;
     driveLeftSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
     driveRightSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
+    dumpBinSpeedPublisher = this->node->create_publisher<std_msgs::msg::Float32>("dump_bin_speed",1);
+    shoulderSpeedPublisher = this->node->create_publisher<std_msgs::msg::Float32>("shoulder_speed",1);
+    excavationArmPublisher = this->node->create_publisher<std_msgs::msg::Float32>("excavationArm",1);
+    excavationDrumPublisher = this->node->create_publisher<std_msgs::msg::Float32>("excavationDrum",1);
 }
 
 
@@ -60,4 +64,49 @@ EulerAngles Automation::toEulerAngles(Quaternion q) {
     angles.yaw = std::atan2(siny_cosp, cosy_cosp);
 
     return angles;
+}
+
+void Automation::changeDumpBinSpeed(float speed){
+    std_msgs::msg::Float32 dumpBinSpeed;
+    dumpBinSpeed.data = speed;
+    dumpBinSpeedPublisher->publish(dumpBinSpeed);
+}
+
+void Automation::changeShoulderSpeed(float speed){
+    std_msgs::msg::Float32 shoulderSpeed;
+    shoulderSpeed.data = speed;
+    shoulderSpeedPublisher->publish(shoulderSpeed);
+}
+
+void Automation::changeArmSpeed(float speed){
+    std_msgs::msg::Float32 armSpeed;
+    armSpeed.data = speed;
+    excavationArmPublisher->publish(armSpeed);
+}
+
+void Automation::changeDrumSpeed(float speed){
+    std_msgs::msg::Float32 drumSpeed;
+    drumSpeed.data = speed;
+    excavationDrumPublisher->publish(drumSpeed);
+}
+
+//TODO: Implement this method
+void Automation::changeShoulderSpeed(float speed){
+
+}
+
+//This might change to position controlled instead of velocity controlled
+//TODO: Implement this method
+void Automation::changeArmSpeed(float speed){
+
+}
+
+//TODO: Implement this method
+void Automation::changeLockServoSpeed(float speed){
+
+}
+
+//TODO: Implement this method
+void Automation::changeArmServoSpeed(float speed){
+
 }
