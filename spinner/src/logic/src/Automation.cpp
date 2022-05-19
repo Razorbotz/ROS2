@@ -91,17 +91,6 @@ void Automation::changeDrumSpeed(float speed){
 }
 
 //TODO: Implement this method
-void Automation::changeShoulderSpeed(float speed){
-
-}
-
-//This might change to position controlled instead of velocity controlled
-//TODO: Implement this method
-void Automation::changeArmSpeed(float speed){
-
-}
-
-//TODO: Implement this method
 void Automation::changeLockServoSpeed(float speed){
 
 }

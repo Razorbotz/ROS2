@@ -194,12 +194,12 @@ int main(int argc,char** argv){
 	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
 	
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
-	std::string speedTopic = getParemter<std::string("speed_topic", "unset");
+	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
 	bool invertMotor = getParameter<bool>("invert_motor", 0);
 	useVelocity = getParameter<bool>("use_velocity", 0);
 	velocityMultiplier = getParameter<int>("velocity_multiplier", 0);
 	testSpeed = getParameter<int>("test_speed", 0);
-	double kP = getParamter<double>("kP", 1);
+	double kP = getParameter<double>("kP", 1);
 	double kI = getParameter<double>("kI", 0);
 	double kD = getParameter<double>("kD", 0);
 	double kF = getParameter<double>("kF", 0);
