@@ -32,6 +32,7 @@ class ExcavationNode(Node):
                 self.calibrated = False
                 self.GO = False
                 self.errorState = False
+                self.restarted = False
                 self.findODriveObjects()
                 self.get_logger().info("Found ODriveObjects")
                 self.calibrate()

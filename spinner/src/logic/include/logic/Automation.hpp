@@ -11,6 +11,10 @@ class Automation{
 
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > dumpBinSpeedPublisher;
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > shoulderSpeedPublisher;
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > excavationArmPublisher;
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > excavationDrumPublisher;
 
     rclcpp::Node::SharedPtr node;
     Position position;
@@ -37,12 +41,8 @@ class Automation{
     void changeArmSpeed(float speed);
 
     void changeDrumSpeed(float speed);
-
-    void changeShoulderSpeed(float speed);
-
-    void changeArmSpeed(float speed);
     
     void changeLockServoSpeed(float speed);
-    
+
     void changeArmServoSpeed(float speed);
 };

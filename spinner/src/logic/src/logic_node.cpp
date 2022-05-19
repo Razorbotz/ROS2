@@ -65,6 +65,7 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > shoulderSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > excavationArmPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > excavationDrumPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > servoStatePublisher;
 
 /** @brief Function to initialize the motors to zero
  * 
@@ -190,7 +191,10 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
         joystick1Roll = (fabs(joystick1Roll)<deadZone)? 0.0 : joystick1Roll;
         joystick1Roll = (joystick1Roll>0)?joystick1Roll-deadZone:joystick1Roll;
         joystick1Roll = (joystick1Roll<0)?joystick1Roll+deadZone:joystick1Roll;
-        updateSpeed();
+
+        if(!excavationGo)
+            updateSpeed();
+            
     }else if(axisState->axis==1){
         joystick1Pitch = axisState->state;
         joystick1Pitch = (fabs(joystick1Pitch)<deadZone)? 0.0 : joystick1Pitch;
@@ -249,11 +253,15 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             break;
         case 4:
             break;
-        case 5: 
-            // Raise lock servo
+        case 5:
+            std_msgs::msg::Bool state;
+            state.data = true;
+            servoStatePublisher->publish(state);
             break;
         case 6:
-            // Lower lock servo
+            std_msgs::msg::Bool state;
+            state.data = false;
+            servoStatePublisher->publish(state);
             break;
         case 7:
             // Raise arm servo
@@ -372,7 +380,8 @@ int main(int argc, char **argv){
     shoulderSpeedPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("shoulder_speed",1);
     excavationArmPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("excavationArm",1);
     excavationDrumPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("excavationDrum",1);
- 
+    servoStatePublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("servo_state", 1);
+
     initSetSpeed();
 
     rclcpp::Rate rate(20);
