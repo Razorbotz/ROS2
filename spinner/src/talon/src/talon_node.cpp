@@ -195,6 +195,7 @@ int main(int argc,char** argv){
 	
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
+
 	bool invertMotor = getParameter<bool>("invert_motor", 0);
 	useVelocity = getParameter<bool>("use_velocity", 0);
 	velocityMultiplier = getParameter<int>("velocity_multiplier", 0);

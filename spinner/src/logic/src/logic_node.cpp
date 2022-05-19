@@ -66,6 +66,7 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > excavationArmPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > excavationDrumPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > servoStatePublisher;
+
 /** @brief Function to initialize the motors to zero
  * 
  * This function is called on start of the node and
@@ -190,8 +191,10 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
         joystick1Roll = (fabs(joystick1Roll)<deadZone)? 0.0 : joystick1Roll;
         joystick1Roll = (joystick1Roll>0)?joystick1Roll-deadZone:joystick1Roll;
         joystick1Roll = (joystick1Roll<0)?joystick1Roll+deadZone:joystick1Roll;
+
         if(!excavationGo)
             updateSpeed();
+            
     }else if(axisState->axis==1){
         joystick1Pitch = axisState->state;
         joystick1Pitch = (fabs(joystick1Pitch)<deadZone)? 0.0 : joystick1Pitch;
@@ -261,8 +264,10 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             servoStatePublisher->publish(state);
             break;
         case 7:
+            // Raise arm servo
             break;
         case 8:
+            // Lower arm servo
             break;
         case 9:
             break;
