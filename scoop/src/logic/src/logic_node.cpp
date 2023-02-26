@@ -56,12 +56,17 @@ float joystick1Throttle=0;
 float maxSpeed=0.1;
 
 bool automationGo=false;
-bool invertDrum = false;
+bool excavationGo = false;
+bool invertBucket = false;
 
 Automation* automation=new Automation1();
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > shoulderPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > dumpPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > neoPublisher;
+
 
 /** @brief Function to initialize the motors to zero
  * 
@@ -77,6 +82,9 @@ void initSetSpeed(){
     
     driveLeftSpeedPublisher->publish(speed);
     driveRightSpeedPublisher->publish(speed);
+    shoulderPublisher->publish(speed);
+    dumpPublisher->publish(speed);
+    neoPublisher->publish(speed);
     //RCLCPP_INFO(nodeHandle->get_logger(), "Set init motor speeds to 0.0");
 }
 
@@ -131,7 +139,9 @@ void stopSpeed(){
  * @return void
  * */
 void updateExcavation(){
-
+    std_msgs::msg::Float32 speed;
+    speed.data = joystick1Pitch;
+    shoulderPublisher->publish(speed);
 }
 
 /** @brief Function to stop excavation motors
@@ -189,6 +199,12 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     float deadZone = 0.1;
     if(axisState->axis==0){
         joystick1Roll = transformJoystickInfo(-axisState->state, deadZone);
+        if(excavationGo){
+            updateExcavation();
+        }
+        else{
+            updateSpeed();
+        }
     }
     else if(axisState->axis==1){
         joystick1Pitch = transformJoystickInfo(axisState->state, deadZone);
@@ -200,6 +216,9 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     }
     else if(axisState->axis==3){
         joystick1Throttle = axisState->state/2 + 0.5;
+        if(excavationGo){
+            updateExcavation();
+        }
     }
 }
 
@@ -225,6 +244,9 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
         case 1: //toggles driving and digging
             if(buttonState->state){
                 stopSpeed();
+            }
+            else{
+                stopExcavation();
             }
             RCLCPP_INFO(nodeHandle->get_logger(), "Button 2");
             break;
