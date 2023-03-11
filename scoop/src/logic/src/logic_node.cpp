@@ -66,6 +66,7 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > shoulderPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > dumpPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > neoPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > automationGoPublisher;
 
 
 /** @brief Function to initialize the motors to zero
@@ -140,7 +141,7 @@ void stopSpeed(){
  * */
 void updateExcavation(){
     std_msgs::msg::Float32 speed;
-    speed.data = joystick1Pitch;
+    speed.data = -joystick1Pitch;
     shoulderPublisher->publish(speed);
 }
 
@@ -156,6 +157,8 @@ void updateExcavation(){
 void stopExcavation(){
     std_msgs::msg::Float32 speed;
     speed.data = 0.0;
+    shoulderSpeedPublisher->publish(speed);
+    dumpPublisher->publish(speed);
 }
 
 /**
@@ -199,16 +202,15 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     float deadZone = 0.1;
     if(axisState->axis==0){
         joystick1Roll = transformJoystickInfo(-axisState->state, deadZone);
-        if(excavationGo){
-            updateExcavation();
-        }
-        else{
+        if(!excavationGo)
             updateSpeed();
-        }
     }
     else if(axisState->axis==1){
         joystick1Pitch = transformJoystickInfo(axisState->state, deadZone);
-        updateSpeed();
+        if(excavationGo)
+            updateExcavation();
+        else
+            updateSpeed();
     }
     else if(axisState->axis==2){
         joystick1Yaw = transformJoystickInfo(axisState->state, deadZone);
@@ -243,10 +245,11 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             break;
         case 1: //toggles driving and digging
             if(buttonState->state){
-                stopSpeed();
-            }
-            else{
-                stopExcavation();
+                excavationGo = !excavationGo;
+                if(!excavationGo)
+                    stopExcavation();
+                else
+                    stopSpeed();
             }
             RCLCPP_INFO(nodeHandle->get_logger(), "Button 2");
             break;
@@ -284,6 +287,19 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
 void joystickHatCallback(const messages::msg::HatState::SharedPtr hatState){
     std::cout << "Hat " << (int)hatState->joystick << " " << (int)hatState->hat << " " << (int)hatState->state << std::endl;
 
+    std_msgs::msg::Float32 dumpSpeed;
+    if((int)hatState->state == 1 ){
+	    dumpSpeed.data=1.0;
+        dumpPublisher->publish(dumpSpeed);
+    }
+    if((int)hatState->state == 4 ){
+	    dumpSpeed.data=-1.0;
+        dumpPublisher->publish(dumpSpeed);
+    }
+    if((int)hatState->state == 0 ){
+	    dumpSpeed.data=0.0;
+        dumpPublisher->publish(dumpSpeed);
+    }
 }
 
 /** @brief Function to update max speed multiplier
@@ -325,6 +341,9 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
 
     if(keyState->key==115 && keyState->state==1){
         automationGo= !automationGo;
+        std_msgs::msg::Bool msg;
+        msg.data = automationGo;
+        automationGoPublisher->publish(msg);
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
     }
     if(keyState->key==45 && keyState->state==1){
@@ -389,6 +408,10 @@ int main(int argc, char **argv){
     
     driveLeftSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
     driveRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
+    shoulderPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("shoulder_speed",1);
+    dumpPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("dump_speed",1);
+    neoPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("neo_speed",1);
+    automationGoPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
 
     initSetSpeed();
 

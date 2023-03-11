@@ -1,0 +1,9 @@
+float32 speed
+int32 potentiometer
+int32 timeWithoutChange
+int32 max
+int32 min
+string error
+bool run
+bool at_min
+bool at_max

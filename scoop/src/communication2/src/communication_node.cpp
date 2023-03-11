@@ -296,6 +296,58 @@ void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     send("Talon 4",talonOut);
 }
 
+/** @brief Callback function for the Talon topic
+ * 
+ * This function receives the talonOut message published by the first 
+ * Talon and uses the send function to send the data to the client side
+ * GUI.
+ * @param talonOut
+ * @return void
+ * */
+void falcon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+    //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
+    send("Falcon 1",talonOut);
+}
+
+/** @brief Callback function for the Talon topic
+ * 
+ * This function receives the talonOut message published by the first 
+ * Talon and uses the send function to send the data to the client side
+ * GUI.
+ * @param talonOut
+ * @return void
+ * */
+void falcon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+    //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
+    send("Falcon 2",talonOut);
+}
+
+/** @brief Callback function for the Talon topic
+ * 
+ * This function receives the talonOut message published by the first 
+ * Talon and uses the send function to send the data to the client side
+ * GUI.
+ * @param talonOut
+ * @return void
+ * */
+void falcon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+    //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
+    send("Falcon 3",talonOut);
+}
+
+/** @brief Callback function for the Talon topic
+ * 
+ * This function receives the talonOut message published by the first 
+ * Talon and uses the send function to send the data to the client side
+ * GUI.
+ * @param talonOut
+ * @return void
+ * */
+void falcon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+    //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
+    send("Falcon 4",talonOut);
+}
+
 /** @brief Receives the ZED camera image
  * 
  * This function hasn't been fully implemented yet.  In the future, this
@@ -459,6 +511,10 @@ int main(int argc, char **argv){
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,talon1Callback);
     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,talon2Callback);
+    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_10_info",1,falcon1Callback);
+    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_11_info",1,falcon2Callback);
+    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_12_info",1,falcon3Callback);
+    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_13_info",1,falcon4Callback);
     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
     auto zedImageSubscriber = nodeHandle->create_subscription<sensor_msgs::msg::Image>("zed_image", 10, zedImageCallback);
 

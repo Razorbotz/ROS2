@@ -39,7 +39,7 @@ def generate_launch_description():
                 {"motor_number": 14},
                 {"diagnostics_port": 56715},
                 {"invert_motor": True},
-                {"speed_topic": "shoulder_speed"},
+                {"speed_topic": "talon_14_speed"},
                 {"info_topic": "talon_14_info"},
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
@@ -60,7 +60,7 @@ def generate_launch_description():
                 {"motor_number": 15},
                 {"diagnostics_port": 56714},
                 {"invert_motor": True},
-                {"speed_topic": "dump_bin_speed"},
+                {"speed_topic": "talon_15_speed"},
                 {"info_topic": "talon_15_info"},
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
@@ -86,7 +86,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 10},
                 {"diagnostics_port": 72340},
-                {"invert_motor": True},
+                {"invert_motor": False},
                 {"speed_topic": "drive_right_speed"},
                 {"info_topic": "talon_10_info"},
                 {"use_velocity": False},
@@ -146,7 +146,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 13},
                 {"diagnostics_port": 72343},
-                {"invert_motor": False},
+                {"invert_motor": True},
                 {"speed_topic": "drive_left_speed"},
                 {"info_topic": "talon_13_info"},
                 {"use_velocity": False},
@@ -158,11 +158,17 @@ def generate_launch_description():
                 {"kF": 0.0}
             ]
         )
+        ,
+        Node(
+            package='zed_tracking',
+            name='zed_tracking',
+            executable='zed_tracking_node'
+        )
 #        ,
 #        Node(
-#            package='zed',
-#            name='zed',
-#            executable='zed_node'
+#            package='autonomy',
+#            name='autonomy',
+#            executable='autonomy_node'
 #        )
     ]
 )
