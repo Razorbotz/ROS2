@@ -5,16 +5,7 @@ from std_msgs.msg import Int16MultiArray
 import serial
 
 ## @file
-# @brief Node controlling excavation motors
-# 
-# This node listens for several topics, and sends the information
-# to the ODrive excavation motors.  The topics this node subscribes to
-# are as follows:
-#
-# \li \b excavationDrum
-# \li \b excavationArm
-# \li \b STOP
-# \li \b GO
+# @brief Node for publishing the potentiometer data
 # 
 # To read more about the nodes that publish these topics
 # \see logic_node.cpp
@@ -27,8 +18,11 @@ class ArduinoNode(Node):
                 self.potentPublisher = self.create_publisher(Int16MultiArray, 'potentiometer_data', 5)
                 timer_period = 0.5
                 self.timer = self.create_timer(timer_period, self.getData)
-                self.arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
-
+                try:
+                        self.arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+                        self.arduinoInitialized = True
+                except:
+                        self.arduinoInitialized = False
         
         def getData(self):
                 try:
@@ -43,8 +37,10 @@ class ArduinoNode(Node):
         
         def publishData(self):
                 msg = Int16MultiArray()
-                
-                msg.data = [int(self.data[0]), int(self.data[1])]
+                try:
+                        msg.data = [int(self.data[0]), int(self.data[1])]
+                except:
+                        msg.data = [-1, -1]
                 self.potentPublisher.publish(msg)
         
 

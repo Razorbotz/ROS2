@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>excavation</name>
+  <name>neo</name>
   <version>1.0.0</version>
-  <description>The excavation package</description>
+  <description>The neo package</description>
   <maintainer email="andrewburroughs17@gmail.com">Andrew Burroughs</maintainer>
   <author>Andrew Burroughs</author>
   <license>none</license>

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(excavation)
+project(neo)
 
 if(NOT CMAKE_CXX_STANDARD)
 	set(CMAKE_CXX_STANDARD 14)
@@ -15,7 +15,7 @@ include_directories(
 )
 
 add_executable(${PROJECT_NAME}_node
-	src/excavation_node.cpp
+	src/neo_node.cpp
 )
 
 install(TARGETS ${PROJECT_NAME}_node

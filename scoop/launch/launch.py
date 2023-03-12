@@ -8,6 +8,12 @@ from launch_ros.actions import Node
 def generate_launch_description():
     return LaunchDescription([
         Node(
+            package='arduino',
+            name='arduino',
+            executable='arduino_node'
+        )
+        ,
+        Node(
             package='logic',
             name='logic',
             executable='logic_node',

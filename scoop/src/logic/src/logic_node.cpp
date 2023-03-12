@@ -157,7 +157,7 @@ void updateExcavation(){
 void stopExcavation(){
     std_msgs::msg::Float32 speed;
     speed.data = 0.0;
-    shoulderSpeedPublisher->publish(speed);
+    shoulderPublisher->publish(speed);
     dumpPublisher->publish(speed);
 }
 

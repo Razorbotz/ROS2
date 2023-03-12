@@ -1,4 +1,5 @@
 float32 voltage
+float32 temperature
 float32 current0
 float32 current1
 float32 current2
