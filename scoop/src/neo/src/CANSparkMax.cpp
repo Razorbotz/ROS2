@@ -572,7 +572,7 @@ void CANSparkMax::process_periodic_status_0(struct can_frame& frame){
 
 
 void CANSparkMax::process_periodic_status_1(struct can_frame& frame){
-    std::cout << "process_periodic_status_1 " << std::hex << frame.can_id << std::endl;
+    //std::cout << "process_periodic_status_1 " << std::hex << frame.can_id << std::endl;
     this->motor_velocity  = frame.data[0];
     this->motor_velocity |= frame.data[1] << 8;
     this->motor_velocity |= frame.data[2] << 16;
@@ -581,7 +581,7 @@ void CANSparkMax::process_periodic_status_1(struct can_frame& frame){
     this->motor_temperature = int(frame.data[4]);
     //std::cout << "motor temperature: " << this->motor_temperature << std::endl;
     this->motor_voltage = frame.data[5];
-    std::cout << "motor voltage: " << float(this->motor_voltage) << std::endl;
+    //std::cout << "motor voltage: " << float(this->motor_voltage) << std::endl;
     this->motor_current = int(frame.data[6]) & 0xf0 >> 4;
     this->motor_current |= int(frame.data[7]) << 4;
     //std::cout << "motor current: " << this->motor_current << std::endl;
@@ -650,7 +650,7 @@ void CANSparkMax::loop(){
 	this->send_heartbeat();    
 //        this->broadcast_enumerate();	
 //        this->send_commands();
-        this->receive();
+    this->receive();
 	usleep(100);
     }
 }

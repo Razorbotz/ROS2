@@ -25,6 +25,7 @@ float currentSpeed = 0.0;
 void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
 	RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
 	GO=false;
+    speed = 0.0;
 } 
 
 

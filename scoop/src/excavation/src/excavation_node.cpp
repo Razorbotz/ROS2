@@ -13,6 +13,30 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon15Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon16Publisher;
 
+/** @file
+ * @brief Node to control excavation motors
+ * 
+ * This node receives information intended to control the
+ * linear actuators, then modifies the data to synchronize the
+ * two linear actuators attached to the excavation assembly. 
+ * This node also sends information about the linear actuators
+ * back to the client-side GUI to integrate information about the
+ * position data and error state. This node subscribes to the 
+ * following topics:
+ * \li \b potentiometer_data
+ * \li \b shoulder_speed
+ * \li \b automationGo
+ * 
+ * 
+ * This node publishes the following topics:
+ * \li \b talon_14_speed
+ * \li \b talon_15_speed
+ * \li \b talon_15_speed
+ * \li \b linearOut1
+ * \li \b linearOut2
+ * \li \b linearOut3
+ * 
+ */
 
 
 enum Error {
@@ -20,7 +44,6 @@ enum Error {
     ActuatorNotMovingError,
     PotentiometerError,
     ConnectionError,
-    InitializationError,
     None
 };
 
@@ -28,6 +51,7 @@ enum Error {
 std::map<Error, const char*> errorMap = {{ActuatorsSyncError, "ActuatorsSyncError"},
     {ActuatorNotMovingError, "ActuatorNotMovingError"},
     {PotentiometerError, "PotentiometerError"},
+    {ConnectionError, "ConnectionError"},
     {None, "None"}};
 
 
@@ -37,11 +61,12 @@ struct LinearActuator{
     int timeWithoutChange = 0;
     int max = 0;
     int min = 1024;
-    Error error = InitializationError;
+    Error error = ConnectionError;
     bool run = true;
     bool atMin = false;
     bool atMax = false;
     float stroke = 11.8;
+    float extended = 0.0;
 };
 
 
@@ -49,7 +74,7 @@ LinearActuator linear1;
 LinearActuator linear2;
 LinearActuator linear3;
 
-float speed = 0;
+float currentSpeed = 0;
 int thresh1 = 60;
 int thresh2 = 120;
 int thresh3 = 180;
@@ -59,11 +84,9 @@ bool automationGo = false;
 
 void sync(){
     float diff = abs(linear1.potentiometer - linear2.potentiometer);
-    if(speed > 0){
+    if(currentSpeed > 0){
         if (diff > thresh3){
             (linear1.potentiometer > linear2.potentiometer) ? linear1.speed = 0 : linear2.speed = 0;
-            linear1.error = ActuatorsSyncError;
-            linear2.error = ActuatorsSyncError;
         }
         else if (diff > thresh2){
             (linear1.potentiometer > linear2.potentiometer) ? linear1.speed *= 0.5 : linear2.speed *= 0.5;
@@ -71,16 +94,10 @@ void sync(){
         else if (diff > thresh1){
             (linear1.potentiometer > linear2.potentiometer) ? linear1.speed *= 0.9 : linear2.speed *= 0.9;
         }
-        else{
-            linear1.error = None;
-            linear2.error = None;
-        }
     }
     else{
         if (diff > thresh3){
             (linear1.potentiometer < linear2.potentiometer) ? linear1.speed = 0 : linear2.speed = 0;
-            linear1.error = ActuatorsSyncError;
-            linear2.error = ActuatorsSyncError;
         }
         else if (diff > thresh2){
             (linear1.potentiometer < linear2.potentiometer) ? linear1.speed *= 0.5 : linear2.speed *= 0.5;
@@ -88,21 +105,54 @@ void sync(){
         else if (diff > thresh1){
             (linear1.potentiometer < linear2.potentiometer) ? linear1.speed *= 0.9 : linear2.speed *= 0.9;
         }
-        else{
-            linear1.error = None;
-            linear2.error = None;
-        }
     }
 }
 
 
+/** @brief Shoulder Callback Function
+ * 
+ * Callback function triggered when the node receives
+ * a topic with the topic name of shoulder_speed. This
+ * function checks if the automationGo value is true; if
+ * it is false, the linear actuators are set to the speed 
+ * value, even if the linear actuators are in an error state.
+ * It is assumed that the user is watching the motors and is
+ * intending to override the error checking logic. If the 
+ * automationGo value is true, the speeds are only set if the
+ * actuators don't have a PotentiometerError, then syncs the
+ * actuators. To better understand the logic, please take a
+ * look at the Excavation Speed Flow Diagram.
+ * @param speed
+ * @return void
+ * */
 void shoulderCallback(const std_msgs::msg::Float32::SharedPtr speed){
-    speed = speed->data;
-    if(linear1.error == None || !automationGo)
+    currentSpeed = speed->data;
+    if(!automationGo){
         linear1.speed = speed->data;
-    if(linear2.error == None || !automationGo)
         linear2.speed = speed->data;
-    //sync();
+    }
+    else{
+        if(linear1.error != ConnectionError && linear1.error != PotentiometerError && linear2.error != PotentiometerError){
+            linear1.speed = speed->data;
+            linear2.speed = speed->data;
+        }
+    }
+    if(linear1.error != ConnectionError && linear1.error != PotentiometerError && linear2.error != PotentiometerError){
+        if(linear1.atMax && currentSpeed > 0){
+            linear1.speed = 0.0;
+        }
+        if(linear2.atMax && currentSpeed > 0){
+            linear2.speed = 0.0;
+        }
+        if(linear1.atMin && currentSpeed < 0){
+            linear1.speed = 0.0;
+        }
+        if(linear2.atMin && currentSpeed < 0){
+            linear2.speed = 0.0;
+        }
+        sync();
+    }
+
     talon14Publisher->publish(linear1.speed);
     talon15Publisher->publish(linear2.speed);
 }
@@ -111,89 +161,98 @@ void shoulderCallback(const std_msgs::msg::Float32::SharedPtr speed){
 void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr potent){
     RCLCPP_INFO(nodeHandle->get_logger(),"Potentiometer %d %d", potent->data[0], potent->data[1]);
     
+    if(potent->data[0] == -1 || potent->data[1] == -1){
+        linear1.error = ConnectionError;
+        linear2.error = ConnectionError;
+    }
     if(potent->data[0] == 1024){
         linear1.error = PotentiometerError;
     }
-    else if(potent->data[0] == -1){
-        linear1.error = ConnectionError;
-    }
-    else{
-        if(linear1.error == InitializationError){
-            linear1.error = None;
-        }
-    }
-
     if(potent->data[1] == 1024){
         linear2.error = PotentiometerError;
     }
-    else if(potent->data[1] == -1){
-        linear2.error = ConnectionError;
-    }
-    else{
-        if(linear2.error == InitializationError){
-            linear2.error = None;
+    
+    if(linear1.error != ConnectionError && linear1.error != PotentiometerError && linear2.error != PotentiometerError){
+        if(potent->data[0] < linear1.min){
+            linear1.min = potent->data[0];
         }
-    }
+        if(potent->data[1] < linear2.min){
+            linear2.min = potent->data[1];
+        }
 
-    if(linear1.potentiometer == potent->data[0] && linear1.speed != 0){
-        linear1.count += 1;
-    }
-    else{
-        linear1.count = 0;
-        linear1.error = None;
-    }
-    if(potent->data[0] < linear1.min){
-        linear1.min = potent->data[0];
-    }
-    if(potent->data[0] > linear1.max){
-        linear1.max = potent->data[0];
-    }
-    if(linear1.count == 5 && potent->data[0] == linear1.min && linear1.speed < 0){
-        linear1.speed = 0;
-        linear1.atMax = true;
-    }
-    if(linear1.count == 5 && potent->data[0] == linear1.max && linear1.speed > 0){
-        linear1.speed = 0;
-        linear1.atMax = true;
-    }
-    if(linear1.count == 5 && potent->data[0] != linear1.max && potent->data[0] != linear1.min && linear1.speed != 0){
-        linear1.error = PotentiometerError;
-        linear2.error = PotentiometerError;
-        linear1.speed = 0;
-        linear2.speed2 = 0;
-    }
+        if(potent->data[0] > linear1.max){
+            linear1.max = potent->data[0];
+        }
+        if(potent->data[1] > linear2.max){
+            linear2.max = potent->data[1];
+        }
 
-    if(linear2.potentiometer == potent->data[1] && linear2.speed != 0){
-        linear2.count += 1;
-    }
-    else{
-        linear2.count = 0;
-        linear2.error = None;
-    }
-    if(potent->data[1] < linear2.min){
-        linear2.min = potent->data[1];
-    }
-    if(potent->data[1] > linear2.max){
-        linear2.max = potent->data[1];
-    }
-    if(linear2.count == 5 && potent->data[1] == linear2.min && linear2.speed < 0){
-        linear2.speed = 0;
-        linear2.atMin = true;
-    }
-    if(linear2.count == 5 && potent->data[1] == linear2.max && linear2.speed > 0){
-        linear2.speed = 0;
-        linear2.atMin = true;
-    }
-    if(linear2.count == 5 && potent->data[1] != linear2.max && potent->data[1] != linear2.min && linear2.speed != 0){
-        linear1.error = PotentiometerError;
-        linear2.error = PotentiometerError;
-        linear1.speed = 0;
-        linear2.speed = 0;
-    }
+        if(linear1.potentiometer == potent->data[0]){
+            if(linear1.speed != 0.0){
+                linear1.count += 1;
+                if(linear1.count >= 5){
+                    if(potent->data[0] == linear1.max){
+                        linear1.atMax = true;
+                    }
+                    else if(potent->data[0] == linear1.min){
+                        linear1.atMin = true;
+                    }
+                    else{
+                        if(linear1.error == None){
+                            linear1.error = ActuatorNotMovingError;
+                        }
+                    }
+                }   
+            } 
+        }
+        else{
+            linear1.count = 0;
+            if(linear1.error == ActuatorNotMovingError){
+                linear1.error = None;
+            }
+            linear1.atMax = false;
+            linear1.atMin = false;
+        }
 
-    linear1.potentiometer = potent->data[0];
-    linear2.potentiometer = potent->data[1];
-    //sync();
+        if(linear2.potentiometer == potent->data[1]){
+            if(linear2.speed != 0.0){
+                linear2.count += 1;
+                if(linear2.count >= 5){
+                    if(potent->data[1] == linear2.max){
+                        linear2.atMax = true;
+                    }
+                    else if(potent->data[1] == linear2.min){
+                        linear2.atMin = true;
+                    }
+                    else{
+                        if(linear2.error == None){
+                            linear2.error = ActuatorNotMovingError;
+                        }
+                    }
+                }   
+            } 
+        }
+
+        if(abs(potent->data[0] - potent->data[1]) > thresh1){
+            if(linear1.error == None){
+                linear1.error = ActuatorsSyncError;
+            }
+            if(linear2.error == None){
+                linear2.error = ActuatorsSyncError;
+            }
+        }
+        else{
+            if(linear1.error == ActuatorsSyncError){
+                linear1.error = None;
+            }
+            if(linear2.error == ActuatorNotMovingError){
+                linear2.error = None;
+            }
+        }
+        linear1.potentiometer = potent->data[0];
+        linear2.potentiometer = potent->data[1];
+        sync();
+    }
     
 }
 

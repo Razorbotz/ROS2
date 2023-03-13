@@ -143,6 +143,9 @@ void updateExcavation(){
     std_msgs::msg::Float32 speed;
     speed.data = -joystick1Pitch;
     shoulderPublisher->publish(speed);
+    std_msgs::msg::Float32 throttleSpeed;
+    throttleSpeed = joystick1Throttle * 0.1;
+    neoPublisher->publish(throttleSpeed);
 }
 
 /** @brief Function to stop excavation motors
@@ -159,6 +162,7 @@ void stopExcavation(){
     speed.data = 0.0;
     shoulderPublisher->publish(speed);
     dumpPublisher->publish(speed);
+    neoPublisher->publish(speed);
 }
 
 /**
