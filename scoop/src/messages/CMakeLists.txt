@@ -48,6 +48,8 @@ rosidl_generate_interfaces(messages
   "msg/KeyState.msg"
   "msg/TalonOut.msg"
   "msg/ZedPosition.msg"
+  "msg/NeoOut.msg"
+  "msg/LinearOut.msg"
 
   DEPENDENCIES builtin_interfaces
 )

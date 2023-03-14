@@ -16,6 +16,7 @@ include_directories(
 
 add_executable(${PROJECT_NAME}_node
 	src/neo_node.cpp
+	src/CANSparkMax.cpp
 )
 
 install(TARGETS ${PROJECT_NAME}_node

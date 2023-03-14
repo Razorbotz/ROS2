@@ -215,7 +215,7 @@ void send(std::string messageLabel, const messages::msg::LinearOut::SharedPtr li
 
     message.addElementFloat32("Speed", linear->speed);
     message.addElementInt32("Potentiometer", linear->potentiometer);
-    message.addElementInt32("Time Without Change", linear->timeWithoutChange);
+    message.addElementInt32("Time Without Change", linear->time_without_change);
     message.addElementInt32("Max", linear->max);
     message.addElementInt32("Min", linear->min);
     message.addElementString("Error", linear->error);

@@ -144,7 +144,7 @@ void updateExcavation(){
     speed.data = -joystick1Pitch;
     shoulderPublisher->publish(speed);
     std_msgs::msg::Float32 throttleSpeed;
-    throttleSpeed = joystick1Throttle * 0.1;
+    throttleSpeed.data = joystick1Throttle * 0.1;
     neoPublisher->publish(throttleSpeed);
 }
 

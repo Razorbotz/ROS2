@@ -79,6 +79,7 @@ class CANSparkMax{
     void nack();
     void ack();
     void sync();
+    void parameterAccess(int parameterID, float parameterValue);
     void telemetry_update_position(int position);        // not sure about he parameter
     void telemetry_update_accumulator(int accumulator);  // not sure about the parameter
 

@@ -61,6 +61,7 @@ struct LinearActuator{
     int timeWithoutChange = 0;
     int max = 0;
     int min = 1024;
+    int count = 0;
     Error error = ConnectionError;
     bool run = true;
     bool atMin = false;
@@ -289,10 +290,10 @@ int main(int argc, char **argv){
         if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() > 250000000){
             linearOut1.speed = linear1.speed;
             linearOut1.potentiometer = linear1.potentiometer;
-            linearOut1.timeWithoutChange = linear1.timeWithoutChange;
+            linearOut1.time_without_change = linear1.timeWithoutChange;
             linearOut1.max = linear1.max;
             linearOut1.min = linear1.min;
-            linearOut1.error = errorMap->linear1.error;
+            linearOut1.error = errorMap.at(linear1.error);
             linearOut1.run = linear1.run;
             linearOut1.at_min = linear1.atMin;
             linearOut1.at_max = linear1.atMin;
@@ -300,10 +301,10 @@ int main(int argc, char **argv){
 
             linearOut2.speed = linear2.speed;
             linearOut2.potentiometer = linear2.potentiometer;
-            linearOut2.timeWithoutChange = linear2.timeWithoutChange;
+            linearOut2.time_without_change = linear2.timeWithoutChange;
             linearOut2.max = linear2.max;
             linearOut2.min = linear2.min;
-            linearOut2.error = errorMap->linear2.error;
+            linearOut2.error = errorMap.at(linear2.error);
             linearOut2.run = linear2.run;
             linearOut2.at_min = linear2.atMin;
             linearOut2.at_max = linear2.atMin;
@@ -311,10 +312,10 @@ int main(int argc, char **argv){
 
             linearOut3.speed = linear3.speed;
             linearOut3.potentiometer = linear3.potentiometer;
-            linearOut3.timeWithoutChange = linear3.timeWithoutChange;
+            linearOut3.time_without_change = linear3.timeWithoutChange;
             linearOut3.max = linear3.max;
             linearOut3.min = linear3.min;
-            linearOut3.error = errorMap->linear3.error;
+            linearOut3.error = errorMap.at(linear3.error);
             linearOut3.run = linear3.run;
             linearOut3.at_min = linear3.atMin;
             linearOut3.at_max = linear3.atMin;

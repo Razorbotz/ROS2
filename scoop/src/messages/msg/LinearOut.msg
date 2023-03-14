@@ -1,6 +1,6 @@
 float32 speed
 int32 potentiometer
-int32 timeWithoutChange
+int32 time_without_change
 int32 max
 int32 min
 string error

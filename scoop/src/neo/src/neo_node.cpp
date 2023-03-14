@@ -25,7 +25,8 @@ float currentSpeed = 0.0;
 void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
 	RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
 	GO=false;
-    speed = 0.0;
+    currentSpeed = 0.0;
+    canSparkMax.set_duty_cycle(currentSpeed, 0);
 } 
 
 
@@ -56,8 +57,10 @@ void goCallback(std_msgs::msg::Empty::SharedPtr empty){
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
-    currentSpeed = speed->data;
-	canSparkMax.set_duty_cycle(speed->data, 0);
+    if(GO){
+        currentSpeed = speed->data;
+	    canSparkMax.set_duty_cycle(speed->data, 0);
+    }
 }
 
 
