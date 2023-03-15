@@ -63,6 +63,59 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     }
 }
 
+/** @brief String parameter function
+ * 
+ * Function that takes a string as a parameter containing the
+ * name of the parameter that is being parsed from the launch
+ * file and the initial value of the parameter as inputs, then
+ * gets the parameter, casts it as a string, displays the value
+ * of the parameter on the command line and the log file, then
+ * returns the parsed value of the parameter.
+ * @param parametername String of the name of the parameter
+ * @param initialValue Initial value of the parameter
+ * @return value Value of the parameter
+ * */
+template <typename T>
+T getParameter(std::string parameterName, std::string initialValue){
+	nodeHandle->declare_parameter<T>(parameterName, initialValue);
+	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
+	T value = param.as_string();
+	std::cout << parameterName << ": " << value << std::endl;
+	std::string output = parameterName + ": " + value;
+	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
+	return value;
+}
+
+
+/** @brief Function to get the value of the specified parameter
+ * 
+ * Function that takes a string as a parameter containing the
+ * name of the parameter that is being parsed from the launch
+ * file and the initial value of the parameter as inputs, then
+ * gets the parameter, casts it as the desired type, displays 
+ * the value of the parameter on the command line and the log 
+ * file, then returns the parsed value of the parameter.
+ * @param parametername String of the name of the parameter
+ * @param initialValue Initial value of the parameter
+ * @return value Value of the parameter
+ * */
+template <typename T>
+T getParameter(std::string parameterName, int initialValue){
+	nodeHandle->declare_parameter<T>(parameterName, initialValue);
+	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
+	T value;
+	if(typeid(value).name() == typeid(int).name())
+		value = param.as_int();
+	if(typeid(value).name() == typeid(double).name())
+		value = param.as_double();
+	if(typeid(value).name() == typeid(bool).name())
+		value = param.as_bool();
+	std::cout << parameterName << ": " << value << std::endl;
+	std::string output = parameterName + ": " + std::to_string(value);
+	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
+	return value;
+}
+
 
 int main(int argc,char** argv){
 	rclcpp::init(argc,argv);
@@ -70,9 +123,14 @@ int main(int argc,char** argv){
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting neo");
 
+    int motorNumber = getParameter<int>("motor_number", 1);
+
+    std::string infoTopic = getParameter<std::string>("info_topic", "unset");
+    std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
+
     messages::msg::NeoOut neoOut;
-    auto neoOutPublisher = nodeHandle->create_publisher<messages::msg::NeoOut>("neo_out",1);
-    auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>("neo_speed",1,speedCallback);
+    auto neoOutPublisher = nodeHandle->create_publisher<messages::msg::NeoOut>(infoTopic.c_str(),1);
+    auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
 
     auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);

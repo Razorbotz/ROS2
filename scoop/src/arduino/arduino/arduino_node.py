@@ -22,6 +22,7 @@ class ArduinoNode(Node):
                         self.arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
                         self.arduinoInitialized = True
                 except:
+                        self.arduino = None
                         self.arduinoInitialized = False
         
         def getData(self):
@@ -31,7 +32,8 @@ class ArduinoNode(Node):
                         self.data = byteString.strip().split(', ')
                         print(self.data)
                 except:
-                        self.arduino.close()
+                        if(self.arduinoInitialized):
+                                self.arduino.close()
                 self.publishData()
         
         

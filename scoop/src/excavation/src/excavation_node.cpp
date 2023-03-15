@@ -95,6 +95,10 @@ void sync(){
         else if (diff > thresh1){
             (linear1.potentiometer > linear2.potentiometer) ? linear1.speed *= 0.9 : linear2.speed *= 0.9;
         }
+        else{
+            linear1.speed = currentSpeed;
+            linear2.speed = currentSpeed;
+        }
     }
     else{
         if (diff > thresh3){
@@ -105,6 +109,10 @@ void sync(){
         }
         else if (diff > thresh1){
             (linear1.potentiometer < linear2.potentiometer) ? linear1.speed *= 0.9 : linear2.speed *= 0.9;
+        }
+        else{
+            linear1.speed = currentSpeed;
+            linear2.speed = currentSpeed;
         }
     }
 }
@@ -128,14 +136,15 @@ void sync(){
  * */
 void shoulderCallback(const std_msgs::msg::Float32::SharedPtr speed){
     currentSpeed = speed->data;
+    RCLCPP_INFO(nodeHandle->get_logger(),"currentSpeed: %f", currentSpeed);
     if(!automationGo){
-        linear1.speed = speed->data;
-        linear2.speed = speed->data;
+        linear1.speed = currentSpeed;
+        linear2.speed = currentSpeed;
     }
     else{
         if(linear1.error != ConnectionError && linear1.error != PotentiometerError && linear2.error != PotentiometerError){
-            linear1.speed = speed->data;
-            linear2.speed = speed->data;
+            linear1.speed = currentSpeed;
+            linear2.speed = currentSpeed;
         }
     }
     if(linear1.error != ConnectionError && linear1.error != PotentiometerError && linear2.error != PotentiometerError){
@@ -153,9 +162,12 @@ void shoulderCallback(const std_msgs::msg::Float32::SharedPtr speed){
         }
         sync();
     }
-
-    talon14Publisher->publish(linear1.speed);
-    talon15Publisher->publish(linear2.speed);
+    std_msgs::msg::Float32 speed1;
+    speed1.data = linear1.speed;    
+    talon14Publisher->publish(speed1);
+    std_msgs::msg::Float32 speed2;
+    speed2.data = linear2.speed;
+    talon15Publisher->publish(speed2);
 }
 
 
@@ -165,6 +177,12 @@ void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr poten
     if(potent->data[0] == -1 || potent->data[1] == -1){
         linear1.error = ConnectionError;
         linear2.error = ConnectionError;
+    }
+    else{
+        if(linear1.error == ConnectionError){
+            linear1.error = None;
+            linear2.error = None;
+        }
     }
     if(potent->data[0] == 1024){
         linear1.error = PotentiometerError;
@@ -192,10 +210,10 @@ void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr poten
             if(linear1.speed != 0.0){
                 linear1.count += 1;
                 if(linear1.count >= 5){
-                    if(potent->data[0] == linear1.max){
+                    if(potent->data[0] >= linear1.max - 30){
                         linear1.atMax = true;
                     }
-                    else if(potent->data[0] == linear1.min){
+                    else if(potent->data[0] <= linear1.min + 30){
                         linear1.atMin = true;
                     }
                     else{
@@ -219,10 +237,10 @@ void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr poten
             if(linear2.speed != 0.0){
                 linear2.count += 1;
                 if(linear2.count >= 5){
-                    if(potent->data[1] == linear2.max){
+                    if(potent->data[1] >= linear2.max - 30){
                         linear2.atMax = true;
                     }
-                    else if(potent->data[1] == linear2.min){
+                    else if(potent->data[1] <= linear2.min + 30){
                         linear2.atMin = true;
                     }
                     else{
@@ -232,6 +250,14 @@ void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr poten
                     }
                 }   
             } 
+        }
+        else{
+            linear2.count = 0;
+            if(linear2.error == ActuatorNotMovingError){
+                linear2.error = None;
+            }
+            linear2.atMax = false;
+            linear2.atMin = false;
         }
 
         if(abs(potent->data[0] - potent->data[1]) > thresh1){
@@ -246,7 +272,7 @@ void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr poten
             if(linear1.error == ActuatorsSyncError){
                 linear1.error = None;
             }
-            if(linear2.error == ActuatorNotMovingError){
+            if(linear2.error == ActuatorsSyncError){
                 linear2.error = None;
             }
         }
@@ -283,7 +309,6 @@ int main(int argc, char **argv){
     auto linearOut2Publisher = nodeHandle->create_publisher<messages::msg::LinearOut>("linearOut2",1);
     auto linearOut3Publisher = nodeHandle->create_publisher<messages::msg::LinearOut>("linearOut3",1);
 
-    rclcpp::Rate rate(20);
     auto start = std::chrono::high_resolution_clock::now();
     while(rclcpp::ok()){
         auto finish = std::chrono::high_resolution_clock::now();
@@ -296,7 +321,7 @@ int main(int argc, char **argv){
             linearOut1.error = errorMap.at(linear1.error);
             linearOut1.run = linear1.run;
             linearOut1.at_min = linear1.atMin;
-            linearOut1.at_max = linear1.atMin;
+            linearOut1.at_max = linear1.atMax;
             linearOut1Publisher->publish(linearOut1);
 
             linearOut2.speed = linear2.speed;
@@ -307,7 +332,7 @@ int main(int argc, char **argv){
             linearOut2.error = errorMap.at(linear2.error);
             linearOut2.run = linear2.run;
             linearOut2.at_min = linear2.atMin;
-            linearOut2.at_max = linear2.atMin;
+            linearOut2.at_max = linear2.atMax;
             linearOut2Publisher->publish(linearOut2);
 
             linearOut3.speed = linear3.speed;
@@ -318,10 +343,9 @@ int main(int argc, char **argv){
             linearOut3.error = errorMap.at(linear3.error);
             linearOut3.run = linear3.run;
             linearOut3.at_min = linear3.atMin;
-            linearOut3.at_max = linear3.atMin;
+            linearOut3.at_max = linear3.atMax;
             linearOut3Publisher->publish(linearOut3);
         }
         rclcpp:spin_some(nodeHandle);
-        rate.sleep();
     }
 }

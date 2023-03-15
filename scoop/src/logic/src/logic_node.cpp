@@ -141,7 +141,7 @@ void stopSpeed(){
  * */
 void updateExcavation(){
     std_msgs::msg::Float32 speed;
-    speed.data = -joystick1Pitch;
+    speed.data = joystick1Pitch;
     shoulderPublisher->publish(speed);
     std_msgs::msg::Float32 throttleSpeed;
     throttleSpeed.data = joystick1Throttle * 0.1;
