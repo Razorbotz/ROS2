@@ -15,3 +15,10 @@ struct Quaternion {
 struct EulerAngles {
     double roll, pitch, yaw;
 };
+
+struct Linear {
+    float speed = 0.0;
+    std::string error = "ConnectionError";
+    bool atMin = false;
+    bool atMax = false;
+}

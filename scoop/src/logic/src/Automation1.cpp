@@ -1,4 +1,3 @@
-
 #include <cmath>
 #include <ctime>
 
@@ -73,36 +72,109 @@ void Automation1::automate(){
         //robotState = DIG;
     }
 
-    // After reaching teh excavation area, go through mining
+    // After reaching the excavation area, go through mining
     // sequence
     if(robotState==DIG){
+        if(excavationState == IDLE){
+            excavationState = LOWER_ASSEMBLY;
+        }
         //Lower assembly
-            //Set linear actuators to 0.4
+            //Set linear actuators to 0.8
+
             //Check for errors
-            //Handle errors
+
             //atMax, move to lower ladder
+        if(excavationState == LOWER_ASSEMBLY){
+            //Set linear actuators to 0.8
+            std_msgs::msg::Float32 speed;
+            speed.data = 0.8;
+            shoulderPublisher->publish(speed);
+            
+            if(checkErrors(linear1) || checkErrors(linear2)){
+                excavationState = ERROR_RECOVERY;
+                errorState = LOWER_ASSEMBLY_ERROR;
+            }
+
+            if(linear1.atMax && linear2.atMax){
+                std_msgs::msg::Float32 speed;
+                speed.data = 0.0;
+                shoulderPublisher->publish(speed);
+                excavationState = LOWER_LADDER;
+            }
+        }
 
         //Lower ladder
             //Set speed to 0.4
+            
             //Check for errors
+            
             //Handle errors
+            
             //atMax, move to dig
+        if(excavationState == LOWER_LADDER){
+
+            excavationState = DIG;
+        }
 
         //Dig
+        // Have ladder fully extended and spinning
+        // Back up robot to get more regolith
+        if(excavationState == DIG){
+
+            excavationState = RAISE_LADDER;
+        }
         
         //Raise ladder
             //Set speed to -0.4
+            
             //Check for errors
+            
             //Handle errors
+            
             //atMin, move to raise assembly
+        if(excavationState == RAISE_LADDER){
+
+            excavationState = RAISE_ASSEMBLY;
+        }
 
         //Raise assembly
-            //Set speed to -0.4
-            //Check for errors
-            //Handle errors
-            //atMin, move to Idle
+        if(excavationState == RAISE_ASSEMBLY){
+            std_msgs::msg::Float32 speed;
+            speed.data = -0.8;
+            shoulderPublisher->publish(speed);
+            
+            if(checkErrors(linear1) || checkErrors(linear2)){
+                excavationState = ERROR_RECOVERY;
+                errorState = RAISE_ASSEMBLY_ERROR;
+            }
 
-        //robotState = GO_TO_HOME;
+            if(linear1.atMin && linear2.atMin){
+                std_msgs::msg::Float32 speed;
+                speed.data = 0.0;
+                shoulderPublisher->publish(speed);
+                excavationState = IDLE;
+                robotState = GO_TO_HOME;
+            }
+        }
+
+        //Handle errors
+        // If Connection error, fail
+        // If potentiometer error, fail
+        if(excavationState == ERROR_RECOVERY){
+            if(errorState == RAISE_ASSEMBLY_ERROR){
+                if(linear1.error == "ActuatorNotMovingError"){
+                    // Move linear actuators
+                    // If it doesn't move, break
+                }
+                else if(linear2.error == "ActuatorNotMovingError"){
+                    // Move linear actuators
+                    // If it doesn't move, break
+                }
+                else{
+                    // Break
+                }
+            }
+        }
     }
 
     // After mining, return to start position

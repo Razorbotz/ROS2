@@ -27,6 +27,9 @@ void Automation::setNode(rclcpp::Node::SharedPtr node){
     driveLeftSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
     driveRightSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
     goPublisher = this->node->create_publisher<std_msgs::msg::Empty>("GO", 1);
+    shoulderPublisher = this->node->create_publisher<std_msgs::msg::Float32>("shoulder_speed",1);
+    dumpPublisher = this->node->create_publisher<std_msgs::msg::Float32>("dump_speed",1);
+    neoPublisher = this->node->create_publisher<std_msgs::msg::Float32>("neo_speed",1);
 }
 
 
@@ -103,4 +106,40 @@ EulerAngles Automation::toEulerAngles(Quaternion q) {
 void Automation::setGo(){
    std_msgs::msg::Empty empty;
    goPublisher->publish(empty);
+}
+
+void Automation::setLinear1(LinearOut linearOut){
+    this->linear1.speed = linearOut->speed;
+    this->linear1.atMax = linearOut->at_max;
+    this->linear1.atMin = linearOut->at_min;
+    this->linear1.error = linearout->error;
+}
+
+void Automation::setLinear2(LinearOut linearOut){
+    this->linear2.speed = linearOut->speed;
+    this->linear2.atMax = linearOut->at_max;
+    this->linear2.atMin = linearOut->at_min;
+    this->linear2.error = linearout->error;
+}
+
+void Automation::setLinear3(LinearOut linearOut){
+    this->linear3.speed = linearOut->speed;
+    this->linear3.atMax = linearOut->at_max;
+    this->linear3.atMin = linearOut->at_min;
+    this->linear3.error = linearout->error;
+}
+
+void Automation::setShoulderSpeed(float speed){
+    std_msgs::msg::Float32 Speed;
+    Speed.data = speed;
+    shoulderPublisher->publish(Speed);
+}
+
+bool Automation::checkErrors(Linear linear){
+    if(linear.error == "PotentiometerError" || linear.error == "ActuatorNotMovingError" || linear.error == "ConnectionError"){
+        return true;
+    }
+    else{
+        return false;
+    }
 }

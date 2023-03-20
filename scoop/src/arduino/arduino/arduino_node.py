@@ -40,9 +40,9 @@ class ArduinoNode(Node):
         def publishData(self):
                 msg = Int16MultiArray()
                 try:
-                        msg.data = [int(self.data[0]), int(self.data[1])]
+                        msg.data = [int(self.data[0]), int(self.data[1]), int(self.data[2])]
                 except:
-                        msg.data = [-1, -1]
+                        msg.data = [-1, -1, -1]
                 self.potentPublisher.publish(msg)
         
 

@@ -399,6 +399,33 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
 }
 
 
+/** @brief Callback function for the LinearOut topic
+ * 
+ * @param linearOut 
+ */
+void linearOut1Callback(const messages::msg::LinearOut::SharedPtr linearOut){
+    automation->setLinear1(linearOut);
+}
+
+
+/** @brief Callback function for the LinearOut topic
+ * 
+ * @param linearOut 
+ */
+void linearOut2Callback(const messages::msg::LinearOut::SharedPtr linearOut){
+    automation->setLinear2(linearOut);
+}
+
+
+/** @brief Callback function for the LinearOut topic
+ * 
+ * @param linearOut 
+ */
+void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
+    automation->setLinear3(linearOut);
+}
+
+
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("logic");
@@ -409,7 +436,10 @@ int main(int argc, char **argv){
     auto joystickHatSubscriber= nodeHandle->create_subscription<messages::msg::HatState>("joystick_hat",1,joystickHatCallback);
     auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
     auto zedPositionSubscriber= nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
-    
+    auto linearOut1Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut1",1,linearOut1Callback);
+    auto linearOut2Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut2",1,linearOut2Callback);
+    auto linearOut3Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut3",1,linearOut3Callback);
+
     driveLeftSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
     driveRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
     shoulderPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("shoulder_speed",1);

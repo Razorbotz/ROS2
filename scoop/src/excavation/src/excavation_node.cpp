@@ -25,13 +25,14 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
  * following topics:
  * \li \b potentiometer_data
  * \li \b shoulder_speed
+ * \li \b dump_speed
  * \li \b automationGo
  * 
  * 
  * This node publishes the following topics:
  * \li \b talon_14_speed
  * \li \b talon_15_speed
- * \li \b talon_15_speed
+ * \li \b talon_16_speed
  * \li \b linearOut1
  * \li \b linearOut2
  * \li \b linearOut3
@@ -85,36 +86,27 @@ bool automationGo = false;
 
 void sync(){
     float diff = abs(linear1.potentiometer - linear2.potentiometer);
-    if(currentSpeed > 0){
-        if (diff > thresh3){
-            (linear1.potentiometer > linear2.potentiometer) ? linear1.speed = 0 : linear2.speed = 0;
-        }
-        else if (diff > thresh2){
-            (linear1.potentiometer > linear2.potentiometer) ? linear1.speed *= 0.5 : linear2.speed *= 0.5;
-        }
-        else if (diff > thresh1){
-            (linear1.potentiometer > linear2.potentiometer) ? linear1.speed *= 0.9 : linear2.speed *= 0.9;
-        }
-        else{
-            linear1.speed = currentSpeed;
-            linear2.speed = currentSpeed;
-        }
+    bool val = (currentSpeed > 0) ? (linear1.potentiometer > linear2.potentiometer) : (linear1.potentiometer < linear2.potentiometer);
+    if (diff > thresh3){
+        (val) ? linear1.speed = 0 : linear2.speed = 0;
+    }
+    else if (diff > thresh2){
+        (val) ? linear1.speed *= 0.5 : linear2.speed *= 0.5;
+    }
+    else if (diff > thresh1){
+        (val) ? linear1.speed *= 0.9 : linear2.speed *= 0.9;
     }
     else{
-        if (diff > thresh3){
-            (linear1.potentiometer < linear2.potentiometer) ? linear1.speed = 0 : linear2.speed = 0;
-        }
-        else if (diff > thresh2){
-            (linear1.potentiometer < linear2.potentiometer) ? linear1.speed *= 0.5 : linear2.speed *= 0.5;
-        }
-        else if (diff > thresh1){
-            (linear1.potentiometer < linear2.potentiometer) ? linear1.speed *= 0.9 : linear2.speed *= 0.9;
-        }
-        else{
-            linear1.speed = currentSpeed;
-            linear2.speed = currentSpeed;
-        }
+        linear1.speed = currentSpeed;
+        linear2.speed = currentSpeed;
     }
+    std_msgs::msg::Float32 speed1;
+    speed1.data = linear1.speed;    
+    talon14Publisher->publish(speed1);
+    std_msgs::msg::Float32 speed2;
+    speed2.data = linear2.speed;
+    talon15Publisher->publish(speed2);
+     RCLCPP_INFO(nodeHandle->get_logger(),"Sync: %f, %f", linear1.speed, linear2.speed);
 }
 
 
@@ -162,33 +154,107 @@ void shoulderCallback(const std_msgs::msg::Float32::SharedPtr speed){
         }
         sync();
     }
-    std_msgs::msg::Float32 speed1;
-    speed1.data = linear1.speed;    
-    talon14Publisher->publish(speed1);
-    std_msgs::msg::Float32 speed2;
-    speed2.data = linear2.speed;
-    talon15Publisher->publish(speed2);
+    else{
+        std_msgs::msg::Float32 speed1;
+        speed1.data = linear1.speed;    
+        talon14Publisher->publish(speed1);
+        std_msgs::msg::Float32 speed2;
+        speed2.data = linear2.speed;
+        talon15Publisher->publish(speed2);
+    }
+}
+
+void setPotentiometerError(int potentData, LinearActuator *linear){
+    if(potentData == 1024){
+        linear->error = PotentiometerError;
+    }
+    else{
+        if(linear->error == PotentiometerError){
+            linear->error = None;
+        }
+    }
+}
+
+void processPotentiometerData(int potentData, LinearActuator *linear){
+    if(potentData < linear->min){
+        linear->min = potentData;
+    }
+
+    if(potentData > linear->max){
+        linear->max = potentData;
+    }
+
+    if(linear->potentiometer >= potentData - 20 && linear->potentiometer <= potentData + 20){
+        if(linear->speed != 0.0){
+            linear->count += 1;
+            if(linear->count >= 5){
+                if(potentData >= linear->max - 30){
+                    linear->atMax = true;
+                }
+                else if(potentData <= linear->min + 30){
+                    linear->atMin = true;
+                }
+                else{
+                    if(linear->error == None){
+                        linear->error = ActuatorNotMovingError;
+                    }
+                }
+            }
+        }
+    }
+    else{
+        linear->count = 0;
+        if(linear->error == ActuatorNotMovingError){
+            linear->error = None;
+        }
+        linear->atMax = false;
+        linear->atMin = false;
+    }
 }
 
 
+// TODO: Break this into smaller functions
 void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr potent){
-    RCLCPP_INFO(nodeHandle->get_logger(),"Potentiometer %d %d", potent->data[0], potent->data[1]);
+    RCLCPP_INFO(nodeHandle->get_logger(),"Potentiometer %d %d %d", potent->data[0], potent->data[1], potent->data[2]);
     
     if(potent->data[0] == -1 || potent->data[1] == -1){
         linear1.error = ConnectionError;
         linear2.error = ConnectionError;
+        linear3.error = ConnectionError;
     }
     else{
         if(linear1.error == ConnectionError){
             linear1.error = None;
             linear2.error = None;
+            linear3.error = None;
         }
     }
+
     if(potent->data[0] == 1024){
         linear1.error = PotentiometerError;
     }
+    else{
+        if(linear1.error == PotentiometerError){
+            linear1.error = None;
+        }
+    }
+
     if(potent->data[1] == 1024){
         linear2.error = PotentiometerError;
+    }
+    else{
+        if(linear2.error == PotentiometerError){
+            linear2.error = None;
+        }
+    }
+
+    if(potent->data[2] == 1024){
+        linear3.error = PotentiometerError;
+    }
+    else{
+        if(linear3.error == PotentiometerError){
+            linear3.error = None;
+        }
     }
     
     if(linear1.error != ConnectionError && linear1.error != PotentiometerError && linear2.error != PotentiometerError){
@@ -206,7 +272,7 @@ void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr poten
             linear2.max = potent->data[1];
         }
 
-        if(linear1.potentiometer == potent->data[0]){
+        if(linear1.potentiometer >= potent->data[0] - 20 && linear1.potentiometer <= potent->data[0] + 20){
             if(linear1.speed != 0.0){
                 linear1.count += 1;
                 if(linear1.count >= 5){
@@ -233,7 +299,7 @@ void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr poten
             linear1.atMin = false;
         }
 
-        if(linear2.potentiometer == potent->data[1]){
+        if(linear2.potentiometer >= potent->data[1] - 20 && linear2.potentiometer <= potent->data[1] + 20){
             if(linear2.speed != 0.0){
                 linear2.count += 1;
                 if(linear2.count >= 5){
@@ -280,9 +346,52 @@ void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr poten
         linear2.potentiometer = potent->data[1];
         sync();
     }
-    
+    // Get potentiometer 3 data
+    if(linear3.error != ConnectionError && linear3.error != PotentiometerError){
+        if(potent->data[2] < linear3.min){
+            linear3.min = potent->data[2];
+        }
+        if(potent->data[2] > linear3.max){
+            linear3.max = potent->data[2];
+        }
+        if(linear3.potentiometer >= potent->data[2] - 20 && linear3.potentiometer <= potent->data[2] + 20){
+            if(linear3.speed != 0.0){
+                linear3.count += 1;
+                if(linear3.count >= 5){
+                    if(potent->data[2] >= linear3.max - 30){
+                        linear3.atMax = true;
+                    }
+                    else if(potent->data[2] <= linear3.min + 30){
+                        linear3.atMin = true;
+                    }
+                    else{
+                        if(linear3.error == None){
+                            linear3.error = ActuatorNotMovingError;
+                        }
+                    }
+                }   
+            } 
+        }
+        else{
+            linear3.count = 0;
+            if(linear3.error == ActuatorNotMovingError){
+                linear3.error = None;
+            }
+            linear3.atMax = false;
+            linear3.atMin = false;
+        }
+        linear3.potentiometer = potent->data[2];
+    }
 }
 
+
+void dumpSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
+    if(!automationGo){
+        std_msgs::msg::Float32 speed1;
+        speed1.data = speed.data;    
+        talon16Publisher->publish(speed1);
+    }
+}
 
 void automationGoCallback(const std_msgs::msg::Bool::SharedPtr msg){
     automationGo = msg->data;
@@ -295,6 +404,7 @@ int main(int argc, char **argv){
 
     auto potentiometerSubscriber = nodeHandle->create_subscription<std_msgs::msg::Int16MultiArray>("potentiometer_data",1, potentiometerCallback);
     auto shoulderSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("shoulder_speed",1,shoulderCallback);
+    auto dumpSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("dump_speed",1,dumpSpeedCallback);
     auto automationGoSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>("automationGo",1,automationGoCallback);
 
     talon14Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_14_speed",1);

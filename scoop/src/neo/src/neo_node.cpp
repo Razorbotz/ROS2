@@ -10,6 +10,7 @@
 rclcpp::Node::SharedPtr nodeHandle;
 bool GO = false;
 
+// TODO: Change this from hardcoded value
 CANSparkMax canSparkMax("can0", 16);
 float currentSpeed = 0.0;
 
