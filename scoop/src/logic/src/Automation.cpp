@@ -108,25 +108,25 @@ void Automation::setGo(){
    goPublisher->publish(empty);
 }
 
-void Automation::setLinear1(LinearOut linearOut){
+void Automation::setLinear1(const messages::msg::LinearOut::SharedPtr linearOut){
     this->linear1.speed = linearOut->speed;
     this->linear1.atMax = linearOut->at_max;
     this->linear1.atMin = linearOut->at_min;
-    this->linear1.error = linearout->error;
+    this->linear1.error = linearOut->error;
 }
 
-void Automation::setLinear2(LinearOut linearOut){
+void Automation::setLinear2(const messages::msg::LinearOut::SharedPtr linearOut){
     this->linear2.speed = linearOut->speed;
     this->linear2.atMax = linearOut->at_max;
     this->linear2.atMin = linearOut->at_min;
-    this->linear2.error = linearout->error;
+    this->linear2.error = linearOut->error;
 }
 
-void Automation::setLinear3(LinearOut linearOut){
+void Automation::setLinear3(const messages::msg::LinearOut::SharedPtr linearOut){
     this->linear3.speed = linearOut->speed;
     this->linear3.atMax = linearOut->at_max;
     this->linear3.atMin = linearOut->at_min;
-    this->linear3.error = linearout->error;
+    this->linear3.error = linearOut->error;
 }
 
 void Automation::setShoulderSpeed(float speed){

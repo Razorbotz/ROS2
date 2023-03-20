@@ -26,7 +26,6 @@ class Automation{
     float currentLeftSpeed=0;
     float currentRightSpeed=0;
     Linear linear1, linear2, linear3;
-    ErrorState errorState;
 
     virtual void automate() = 0;
 
@@ -40,11 +39,11 @@ class Automation{
 
     void setGo();
 
-    void setLinear1(LinearOut linearOut);
+    void setLinear1(const messages::msg::LinearOut::SharedPtr linearOut);
 
-    void setLinear2(LinearOut linearOut);
+    void setLinear2(const messages::msg::LinearOut::SharedPtr linearOut);
 
-    void setLinear3(LinearOut linearOut);
+    void setLinear3(const messages::msg::LinearOut::SharedPtrv linearOut);
 
     void setShoulderSpeed(float speed);
 

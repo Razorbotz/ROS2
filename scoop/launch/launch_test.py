@@ -4,9 +4,9 @@ from launch_ros.actions import Node
 def generate_launch_description():
     return LaunchDescription([
         Node(
-            package='logic',
-            name='logic',
-            executable='logic_node',
+            package='excavation',
+            name='excavation',
+            executable='excavation_node',
             output={'stderr': 'screen', 'stdout': 'screen'}
         ),
         Node(

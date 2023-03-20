@@ -388,7 +388,7 @@ void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr poten
 void dumpSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     if(!automationGo){
         std_msgs::msg::Float32 speed1;
-        speed1.data = speed.data;    
+        speed1.data = speed->data;    
         talon16Publisher->publish(speed1);
     }
 }

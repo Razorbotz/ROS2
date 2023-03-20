@@ -18,9 +18,11 @@ int main(int argc, char **argv){
         
 		std_msgs::msg::Int16MultiArray pot;
 		int count = 0;
+		int val2 = 450;
+		int val3 = 30;
         while(rclcpp::ok()){
 			rclcpp::spin_some(nodeHandle);
-			pot.data = [count, 450, 30];
+			pot.data = {{count}, {val2}, {val3}};
 			potentiometerPublisher->publish(pot);
 			count += 10;
 			rate.sleep();

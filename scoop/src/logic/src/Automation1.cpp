@@ -74,7 +74,7 @@ void Automation1::automate(){
 
     // After reaching the excavation area, go through mining
     // sequence
-    if(robotState==DIG){
+    if(robotState==EXCAVATE){
         if(excavationState == IDLE){
             excavationState = LOWER_ASSEMBLY;
         }
