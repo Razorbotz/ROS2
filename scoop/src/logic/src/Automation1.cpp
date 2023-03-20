@@ -85,7 +85,6 @@ void Automation1::automate(){
 
             //atMax, move to lower ladder
         if(excavationState == LOWER_ASSEMBLY){
-            //Set linear actuators to 0.8
             std_msgs::msg::Float32 speed;
             speed.data = 0.8;
             shoulderPublisher->publish(speed);
@@ -161,7 +160,7 @@ void Automation1::automate(){
         // If Connection error, fail
         // If potentiometer error, fail
         if(excavationState == ERROR_RECOVERY){
-            if(errorState == RAISE_ASSEMBLY_ERROR){
+            if(errorState == LOWER_ASSEMBLY_ERROR || errorState == RAISE_ASSEMBLY_ERROR){
                 if(linear1.error == "ActuatorNotMovingError"){
                     // Move linear actuators
                     // If it doesn't move, break
