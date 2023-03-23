@@ -12,6 +12,7 @@ rclcpp::Node::SharedPtr nodeHandle;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon14Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon15Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon16Publisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon1Publisher;
 
 /** @file
  * @brief Node to control excavation motors
@@ -84,8 +85,21 @@ int thresh3 = 180;
 bool automationGo = false;
 
 
+/** @brief Function to sync the linear actuators
+ * 
+ * The sync function works by checking if the currentSpeed is
+ * greater than zero. If the speed is greater than zero, the val
+ * checks which actuator is more extended and sets the speed of
+ * the actuator to a lower value if the diff is greater than the 
+ * thresh values.  If the value is less than zero, the val checks 
+ * which actuator is less extended and sets the speed of the 
+ * actuator to a lower value. The function then publishes the 
+ * updated speed.
+ * @return void
+ * */
 void sync(){
     float diff = abs(linear1.potentiometer - linear2.potentiometer);
+    // Might change this from ternary to if statements to improve readability
     bool val = (currentSpeed > 0) ? (linear1.potentiometer > linear2.potentiometer) : (linear1.potentiometer < linear2.potentiometer);
     if (diff > thresh3){
         (val) ? linear1.speed = 0 : linear2.speed = 0;
@@ -164,6 +178,18 @@ void shoulderCallback(const std_msgs::msg::Float32::SharedPtr speed){
     }
 }
 
+
+/** @brief Function to set potentiometer error
+ * 
+ * Thsi function is used to set the value of the error
+ * of the linear object.  If the potentiometer is equal
+ * to 1024, which is the value that occurs when the
+ * potentiometer is disconnected from the Arduino. Refer
+ * to the ErrorState state diagram for more information.
+ * @param potentData - Int value of potentiometer
+ * @param *linear - Pointer to linear object
+ * @return void
+ * */
 void setPotentiometerError(int potentData, LinearActuator *linear){
     if(potentData == 1024){
         linear->error = PotentiometerError;
@@ -175,6 +201,28 @@ void setPotentiometerError(int potentData, LinearActuator *linear){
     }
 }
 
+
+/** @brief Function to process potentiometer data
+ * 
+ * This function processes the passed potentiometer data
+ * and adjusts the passed linear values accordingly. First
+ * the function sets the min and max values if the new data
+ * is beyond the previous limits. Next, the function checks
+ * if the value is within a threshold of the previous value
+ * that is stored in the linear->potentiometer variable. If
+ * the value is within this threshold, it's assumed that 
+ * the actuator isn't moving. If the speed isn't equal to
+ * zero, ie the actuator should be moving, the count
+ * variable gets increased. If the count is greater than 5,
+ * the function checks if the actuator is at the min or max
+ * positions and sets the corresponding values to true if
+ * it is.  If the data is outside of the threshold, the 
+ * actuator is moving as intended and is not at the min or
+ * max positions.
+ * @param potentData - Int value of potentiometer
+ * @param *linear - Pointer to linear object
+ * @return void
+ * */
 void processPotentiometerData(int potentData, LinearActuator *linear){
     if(potentData < linear->min){
         linear->min = potentData;
@@ -214,6 +262,23 @@ void processPotentiometerData(int potentData, LinearActuator *linear){
 }
 
 
+
+/** @brief Callback function for the potentiometer topic
+ * 
+ * This function receives the potentiometer topic and processes the
+ * information. If any of the values are equal to -1, the Arduino
+ * node isn't reading the data correctly and any data that is sent
+ * should be ignored, which is denoted by raising the ConnectionError
+ * error. If the values received are not equal to -1, the data is 
+ * being read and there is no ConnectionError. Next, the values
+ * are sent to the setPotentiometerError function to ensure that the
+ * received values are valid. If there is no connection error and the
+ * potentiometers are reading correctly, the first two linear actuators
+ * are compared to check if there is a synchronization error and are
+ * then synced. 
+ * @param potent - Array of ints containing potentiometer information
+ * @return void
+ * */
 void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr potent){
     RCLCPP_INFO(nodeHandle->get_logger(),"Potentiometer %d %d %d", potent->data[0], potent->data[1], potent->data[2]);
     
@@ -263,6 +328,13 @@ void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr poten
 }
 
 
+
+/** @brief Callback function for the dump_speed topic
+ * 
+ * 
+ * @param speed - ROS2 message containing the speed data
+ * @return void
+ * */
 void dumpSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     if(!automationGo){
         std_msgs::msg::Float32 speed1;
@@ -272,11 +344,40 @@ void dumpSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 }
 
 
+/** @brief Callback function for the automationGo topic
+ * 
+ * This function sets the automationGo value to the value
+ * in the message.
+ * @param msg - ROS2 message containing automationGo value
+ * @return void
+ * */
 void automationGoCallback(const std_msgs::msg::Bool::SharedPtr msg){
     automationGo = msg->data;
 }
 
 
+/** @brief Callback function for the ladder_speed topic
+ * 
+ * This function publishes the speed topic to the Talon 
+ * that controls the height of the bucket ladder.
+ * @param speed - ROS2 message containing the speed data
+ * @return void
+ * */
+void ladderSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
+    std_msgs::msg::Float32 speed1;
+    speed1.data = speed->data;    
+    talon17Publisher->publish(speed1);
+}
+
+
+/** @brief Function to get the LinearOut values
+ * 
+ * This function sets the values of the LinearOut message
+ * with the values from the linear actuator. 
+ * @param *linearOut - Pointer for the LinearOut object
+ * @param *linear - Pointer for the linear actuator
+ * @return void
+ * */
 void getLinearOut(messages::msg::LinearOut *linearOut, LinearActuator *linear){
     linearOut->speed = linear->speed;
     linearOut->potentiometer = linear->potentiometer;
@@ -298,10 +399,12 @@ int main(int argc, char **argv){
     auto shoulderSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("shoulder_speed",1,shoulderCallback);
     auto dumpSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("dump_speed",1,dumpSpeedCallback);
     auto automationGoSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>("automationGo",1,automationGoCallback);
+    auto ladderSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32("ladder_speed",1,ladderSpeedCallback);
 
     talon14Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_14_speed",1);
     talon15Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_15_speed",1);
     talon16Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_16_speed",1);
+    talon16Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_17_speed",1);
     
     messages::msg::LinearOut linearOut1;
     messages::msg::LinearOut linearOut2;

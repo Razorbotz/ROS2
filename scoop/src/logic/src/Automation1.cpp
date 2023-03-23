@@ -79,21 +79,19 @@ void Automation1::automate(){
             excavationState = LOWER_ASSEMBLY;
         }
         //Lower assembly
-            //Set linear actuators to 0.8
-
-            //Check for errors
-
-            //atMax, move to lower ladder
         if(excavationState == LOWER_ASSEMBLY){
+            //Set linear actuators to 0.8
             std_msgs::msg::Float32 speed;
             speed.data = 0.8;
             shoulderPublisher->publish(speed);
             
+            //Check for errors
             if(checkErrors(linear1) || checkErrors(linear2)){
                 excavationState = ERROR_RECOVERY;
                 errorState = LOWER_ASSEMBLY_ERROR;
             }
 
+            //atMax, move to lower ladder
             if(linear1.atMax && linear2.atMax){
                 std_msgs::msg::Float32 speed;
                 speed.data = 0.0;
@@ -162,7 +160,18 @@ void Automation1::automate(){
         if(excavationState == ERROR_RECOVERY){
             if(errorState == LOWER_ASSEMBLY_ERROR || errorState == RAISE_ASSEMBLY_ERROR){
                 if(linear1.error == "ActuatorNotMovingError"){
-                    // Move linear actuators
+                    // Move linear actuators down and up
+                    std_msgs::msg::Float32 speed;
+                    speed.data = -0.8;
+                    shoulderPublisher->publish(speed);
+                    auto start = std::chrono::high_resolution_clock::now();
+                    auto finish = std::chrono::high_resolution_clock::now();
+                    while((finish-start)<2){
+                        finish = std::chrono::high_resolution_clock::now();
+                    }
+                    if(linear.error == "None"){
+                        
+                    }
                     // If it doesn't move, break
                 }
                 else if(linear2.error == "ActuatorNotMovingError"){

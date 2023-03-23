@@ -67,6 +67,7 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > dumpPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > neoPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > automationGoPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > ladderPublisher;
 
 
 /** @brief Function to initialize the motors to zero
@@ -146,6 +147,9 @@ void updateExcavation(){
     std_msgs::msg::Float32 throttleSpeed;
     throttleSpeed.data = joystick1Throttle * 0.1;
     neoPublisher->publish(throttleSpeed);
+    std_msgs::msg::Float32 ladderSpeed;
+    ladderSpeed.data = joystick1Yaw;
+    ladderPublisher->publish(ladderSpeed);
 }
 
 /** @brief Function to stop excavation motors
@@ -218,7 +222,9 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     }
     else if(axisState->axis==2){
         joystick1Yaw = transformJoystickInfo(axisState->state, deadZone);
-
+        if(excavationGo){
+            updateExcavation();
+        }
     }
     else if(axisState->axis==3){
         joystick1Throttle = axisState->state/2 + 0.5;
@@ -446,6 +452,7 @@ int main(int argc, char **argv){
     dumpPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("dump_speed",1);
     neoPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("neo_speed",1);
     automationGoPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
+    ladderPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("ladder_speed",1);
 
     initSetSpeed();
 

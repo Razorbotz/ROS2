@@ -11,7 +11,7 @@ rclcpp::Node::SharedPtr nodeHandle;
 bool GO = false;
 
 // TODO: Change this from hardcoded value
-CANSparkMax canSparkMax("can0", 16);
+CANSparkMax* canSparkMax;
 float currentSpeed = 0.0;
 
 /** @brief STOP Callback
@@ -27,7 +27,7 @@ void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
 	RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
 	GO=false;
     currentSpeed = 0.0;
-    canSparkMax.set_duty_cycle(currentSpeed, 0);
+    canSparkMax->set_duty_cycle(currentSpeed, 0);
 } 
 
 
@@ -60,7 +60,7 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	//std::cout << "---------->>>  " << speed->data << std::endl;
     if(GO){
         currentSpeed = speed->data;
-	    canSparkMax.set_duty_cycle(speed->data, 0);
+	    canSparkMax->set_duty_cycle(speed->data, 0);
     }
 }
 
@@ -125,6 +125,7 @@ int main(int argc,char** argv){
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting neo");
 
     int motorNumber = getParameter<int>("motor_number", 1);
+	canSparkMax = new CANSparkMax("can0", motorNumber);
 
     std::string infoTopic = getParameter<std::string>("info_topic", "unset");
     std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
@@ -147,6 +148,6 @@ int main(int argc,char** argv){
         }
         rate.sleep();
         rclcpp::spin_some(nodeHandle);
-        canSparkMax.send_heartbeat();
+        canSparkMax->send_heartbeat();
     }
 }
