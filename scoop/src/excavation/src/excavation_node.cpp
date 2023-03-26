@@ -232,14 +232,14 @@ void processPotentiometerData(int potentData, LinearActuator *linear){
         linear->max = potentData;
     }
 
-    if(linear->potentiometer >= potentData - 20 && linear->potentiometer <= potentData + 20){
+    if(linear->potentiometer >= potentData - 1 && linear->potentiometer <= potentData + 1){
         if(linear->speed != 0.0){
             linear->count += 1;
             if(linear->count >= 5){
-                if(potentData >= linear->max - 30){
+                if(potentData >= linear->max - 10){
                     linear->atMax = true;
                 }
-                else if(potentData <= linear->min + 30){
+                else if(potentData <= linear->min + 10){
                     linear->atMin = true;
                 }
                 else{

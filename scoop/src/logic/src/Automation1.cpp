@@ -166,10 +166,10 @@ void Automation1::automate(){
                     shoulderPublisher->publish(speed);
                     auto start = std::chrono::high_resolution_clock::now();
                     auto finish = std::chrono::high_resolution_clock::now();
-                    while((finish-start)<2){
+                    while(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() < 2000000000){
                         finish = std::chrono::high_resolution_clock::now();
                     }
-                    if(linear.error == "None"){
+                    if(linear1.error == "None"){
                         
                     }
                     // If it doesn't move, break

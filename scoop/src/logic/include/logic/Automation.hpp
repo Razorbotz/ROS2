@@ -43,7 +43,7 @@ class Automation{
 
     void setLinear2(const messages::msg::LinearOut::SharedPtr linearOut);
 
-    void setLinear3(const messages::msg::LinearOut::SharedPtrv linearOut);
+    void setLinear3(const messages::msg::LinearOut::SharedPtr linearOut);
 
     void setShoulderSpeed(float speed);
 
