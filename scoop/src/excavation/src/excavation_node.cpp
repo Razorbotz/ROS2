@@ -12,7 +12,7 @@ rclcpp::Node::SharedPtr nodeHandle;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon14Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon15Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon16Publisher;
-std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon1Publisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon17Publisher;
 
 /** @file
  * @brief Node to control excavation motors
@@ -399,12 +399,12 @@ int main(int argc, char **argv){
     auto shoulderSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("shoulder_speed",1,shoulderCallback);
     auto dumpSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("dump_speed",1,dumpSpeedCallback);
     auto automationGoSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>("automationGo",1,automationGoCallback);
-    auto ladderSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32("ladder_speed",1,ladderSpeedCallback);
+    auto ladderSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("ladder_speed",1,ladderSpeedCallback);
 
     talon14Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_14_speed",1);
     talon15Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_15_speed",1);
     talon16Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_16_speed",1);
-    talon16Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_17_speed",1);
+    talon17Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_17_speed",1);
     
     messages::msg::LinearOut linearOut1;
     messages::msg::LinearOut linearOut2;
