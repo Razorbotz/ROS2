@@ -354,6 +354,7 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         std_msgs::msg::Bool msg;
         msg.data = automationGo;
         automationGoPublisher->publish(msg);
+        automation->setGo();
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
     }
     if(keyState->key==45 && keyState->state==1){

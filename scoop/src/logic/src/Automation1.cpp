@@ -78,24 +78,16 @@ void Automation1::automate(){
         if(excavationState == IDLE){
             excavationState = LOWER_ASSEMBLY;
         }
-        //Lower assembly
         if(excavationState == LOWER_ASSEMBLY){
-            //Set linear actuators to 0.8
-            std_msgs::msg::Float32 speed;
-            speed.data = 0.8;
-            shoulderPublisher->publish(speed);
+            setShoulderSpeed(0.8);
             
-            //Check for errors
             if(checkErrors(linear1) || checkErrors(linear2)){
                 excavationState = ERROR_RECOVERY;
                 errorState = LOWER_ASSEMBLY_ERROR;
             }
 
-            //atMax, move to lower ladder
             if(linear1.atMax && linear2.atMax){
-                std_msgs::msg::Float32 speed;
-                speed.data = 0.0;
-                shoulderPublisher->publish(speed);
+                setShoulderSpeed(0.0);
                 excavationState = LOWER_LADDER;
             }
         }
@@ -109,7 +101,7 @@ void Automation1::automate(){
             
             //atMax, move to dig
         if(excavationState == LOWER_LADDER){
-
+            setNeoSpeed(0.1);
             excavationState = DIG;
         }
 
@@ -130,15 +122,13 @@ void Automation1::automate(){
             
             //atMin, move to raise assembly
         if(excavationState == RAISE_LADDER){
-
+            setNeoSpeed(0.0);
             excavationState = RAISE_ASSEMBLY;
         }
 
         //Raise assembly
         if(excavationState == RAISE_ASSEMBLY){
-            std_msgs::msg::Float32 speed;
-            speed.data = -0.8;
-            shoulderPublisher->publish(speed);
+            setShoulderSpeed(-0.8);
             
             if(checkErrors(linear1) || checkErrors(linear2)){
                 excavationState = ERROR_RECOVERY;
@@ -146,9 +136,7 @@ void Automation1::automate(){
             }
 
             if(linear1.atMin && linear2.atMin){
-                std_msgs::msg::Float32 speed;
-                speed.data = 0.0;
-                shoulderPublisher->publish(speed);
+                setShoulderSpeed(0.0);
                 excavationState = IDLE;
                 robotState = GO_TO_HOME;
             }
@@ -159,7 +147,7 @@ void Automation1::automate(){
         // If potentiometer error, fail
         if(excavationState == ERROR_RECOVERY){
             if(errorState == LOWER_ASSEMBLY_ERROR || errorState == RAISE_ASSEMBLY_ERROR){
-                if(linear1.error == "ActuatorNotMovingError"){
+                if(linear1.error == "ActuatorNotMovingError" || linear2.error == "ActuatorNotMovingError"){
                     // Move linear actuators down and up
                     std_msgs::msg::Float32 speed;
                     speed.data = -0.8;
@@ -169,14 +157,26 @@ void Automation1::automate(){
                     while(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() < 2000000000){
                         finish = std::chrono::high_resolution_clock::now();
                     }
-                    if(linear1.error == "None"){
-                        
+                    speed.data = 0.8;
+                    shoulderPublisher->publish(speed);
+                    auto start = std::chrono::high_resolution_clock::now();
+                    auto finish = std::chrono::high_resolution_clock::now();
+                    while(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() < 2000000000){
+                        finish = std::chrono::high_resolution_clock::now();
+                    }
+                    if(linear1.error == "None" && linear2.error == "None"){
+                        if(errorState == LOWER_ASSEMBLY_ERROR){
+                            excavationState = LOWER_ASSEMBLY;
+                        }
+                        if(errorState == RAISE_ASSEMBLY_ERROR){
+                            excavationState = RAISE_ASSEMBLY;
+                        }
+                        errorState = None;
                     }
                     // If it doesn't move, break
-                }
-                else if(linear2.error == "ActuatorNotMovingError"){
-                    // Move linear actuators
-                    // If it doesn't move, break
+                    else{
+                        
+                    }
                 }
                 else{
                     // Break

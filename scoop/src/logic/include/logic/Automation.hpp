@@ -48,4 +48,6 @@ class Automation{
     void setShoulderSpeed(float speed);
 
     bool checkErrors(Linear linear);
+
+    void setNeoSpeed(float speed);
 };

@@ -143,3 +143,9 @@ bool Automation::checkErrors(Linear linear){
         return false;
     }
 }
+
+void setNeoSpeed(float speed){
+    std_msgs::msg::Float32 Speed;
+    Speed.data = speed;
+    neoPublisher->publish(Speed);
+}
