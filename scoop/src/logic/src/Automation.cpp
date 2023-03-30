@@ -144,7 +144,7 @@ bool Automation::checkErrors(Linear linear){
     }
 }
 
-void setNeoSpeed(float speed){
+void Automation::setNeoSpeed(float speed){
     std_msgs::msg::Float32 Speed;
     Speed.data = speed;
     neoPublisher->publish(Speed);

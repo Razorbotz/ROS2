@@ -159,8 +159,8 @@ void Automation1::automate(){
                     }
                     speed.data = 0.8;
                     shoulderPublisher->publish(speed);
-                    auto start = std::chrono::high_resolution_clock::now();
-                    auto finish = std::chrono::high_resolution_clock::now();
+                    start = std::chrono::high_resolution_clock::now();
+                    finish = std::chrono::high_resolution_clock::now();
                     while(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() < 2000000000){
                         finish = std::chrono::high_resolution_clock::now();
                     }
@@ -171,7 +171,7 @@ void Automation1::automate(){
                         if(errorState == RAISE_ASSEMBLY_ERROR){
                             excavationState = RAISE_ASSEMBLY;
                         }
-                        errorState = None;
+                        errorState = NONE;
                     }
                     // If it doesn't move, break
                     else{
