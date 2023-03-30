@@ -175,7 +175,9 @@ void Automation1::automate(){
                     }
                     // If it doesn't move, break
                     else{
-                        
+                        RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY ERROR: AcutatorNotMovingError. Ending Autonomy.")
+                        excavationState = IDLE;
+                        robotState = INACTIVE;
                     }
                 }
                 else{
