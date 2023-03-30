@@ -59,7 +59,7 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	//std::cout << "---------->>>  " << speed->data << std::endl;
     if(GO){
         currentSpeed = speed->data;
-	    canSparkMax->set_duty_cycle(speed->data, 0);
+	      canSparkMax->set_duty_cycle(speed->data, 0);
     }
 }
 
@@ -116,15 +116,14 @@ T getParameter(std::string parameterName, int initialValue){
 	return value;
 }
 
-
 int main(int argc,char** argv){
-	rclcpp::init(argc,argv);
+	  rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("neo");
 
-	RCLCPP_INFO(nodeHandle->get_logger(),"Starting neo");
+	  RCLCPP_INFO(nodeHandle->get_logger(),"Starting neo");
 
     int motorNumber = getParameter<int>("motor_number", 1);
-	canSparkMax = new CANSparkMax("can0", motorNumber);
+	  canSparkMax = new CANSparkMax("can0", motorNumber);
 
     std::string infoTopic = getParameter<std::string>("info_topic", "unset");
     std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
@@ -134,7 +133,7 @@ int main(int argc,char** argv){
     auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
 
     auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
-	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
+	  auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
     
     rclcpp::Rate rate(20);
     auto start = std::chrono::high_resolution_clock::now();

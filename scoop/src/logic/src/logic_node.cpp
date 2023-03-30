@@ -455,6 +455,7 @@ int main(int argc, char **argv){
     automationGoPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
     ladderPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("ladder_speed",1);
 
+
     initSetSpeed();
 
     rclcpp::Rate rate(20);

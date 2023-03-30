@@ -114,13 +114,6 @@ void sync(){
         linear1.speed = currentSpeed;
         linear2.speed = currentSpeed;
     }
-    std_msgs::msg::Float32 speed1;
-    speed1.data = linear1.speed;    
-    talon14Publisher->publish(speed1);
-    std_msgs::msg::Float32 speed2;
-    speed2.data = linear2.speed;
-    talon15Publisher->publish(speed2);
-    RCLCPP_INFO(nodeHandle->get_logger(),"Sync: %f, %f", linear1.speed, linear2.speed);
 }
 
 
@@ -168,14 +161,13 @@ void shoulderCallback(const std_msgs::msg::Float32::SharedPtr speed){
             linear2.speed = 0.0;
         }
     }
-    else{
-        std_msgs::msg::Float32 speed1;
-        speed1.data = linear1.speed;    
-        talon14Publisher->publish(speed1);
-        std_msgs::msg::Float32 speed2;
-        speed2.data = linear2.speed;
-        talon15Publisher->publish(speed2);
-    }
+    std_msgs::msg::Float32 speed1;
+    speed1.data = linear1.speed;    
+    talon14Publisher->publish(speed1);
+    std_msgs::msg::Float32 speed2;
+    speed2.data = linear2.speed;
+    talon15Publisher->publish(speed2);
+    RCLCPP_INFO(nodeHandle->get_logger(),"Shoulder speeds: %f, %f", linear1.speed, linear2.speed);
 }
 
 
