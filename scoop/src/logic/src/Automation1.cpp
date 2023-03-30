@@ -76,9 +76,11 @@ void Automation1::automate(){
     // sequence
     if(robotState==EXCAVATE){
         if(excavationState == IDLE){
+            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: IDLE STATE");
             excavationState = LOWER_ASSEMBLY;
         }
         if(excavationState == LOWER_ASSEMBLY){
+            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: LOWER_ASSEMBLY STATE");
             setShoulderSpeed(0.8);
             
             if(checkErrors(linear1) || checkErrors(linear2)){
@@ -101,6 +103,7 @@ void Automation1::automate(){
             
             //atMax, move to dig
         if(excavationState == LOWER_LADDER){
+            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: LOWER_LADDER STATE");
             setNeoSpeed(0.1);
             excavationState = DIG;
         }
@@ -109,7 +112,7 @@ void Automation1::automate(){
         // Have ladder fully extended and spinning
         // Back up robot to get more regolith
         if(excavationState == DIG){
-
+            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: DIG STATE");
             excavationState = RAISE_LADDER;
         }
         
@@ -122,12 +125,14 @@ void Automation1::automate(){
             
             //atMin, move to raise assembly
         if(excavationState == RAISE_LADDER){
+            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_LADDER STATE");
             setNeoSpeed(0.0);
             excavationState = RAISE_ASSEMBLY;
         }
 
         //Raise assembly
         if(excavationState == RAISE_ASSEMBLY){
+            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_ASSEMBLY STATE");
             setShoulderSpeed(-0.8);
             
             if(checkErrors(linear1) || checkErrors(linear2)){
@@ -146,6 +151,7 @@ void Automation1::automate(){
         // If Connection error, fail
         // If potentiometer error, fail
         if(excavationState == ERROR_RECOVERY){
+            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: IDLE STATE");
             if(errorState == LOWER_ASSEMBLY_ERROR || errorState == RAISE_ASSEMBLY_ERROR){
                 if(linear1.error == "ActuatorNotMovingError" || linear2.error == "ActuatorNotMovingError"){
                     // Move linear actuators down and up
@@ -181,7 +187,9 @@ void Automation1::automate(){
                     }
                 }
                 else{
-                    // Break
+                    RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY ERROR: PotentiometerError or ConnectionError. Ending Autonomy.");
+                    excavationState = IDLE;
+                    robotState = INACTIVE;
                 }
             }
         }

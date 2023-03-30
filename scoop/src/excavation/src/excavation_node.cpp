@@ -154,6 +154,7 @@ void shoulderCallback(const std_msgs::msg::Float32::SharedPtr speed){
         }
     }
     if(linear1.error != ConnectionError && linear1.error != PotentiometerError && linear2.error != PotentiometerError){
+        sync();
         if(linear1.atMax && currentSpeed > 0){
             linear1.speed = 0.0;
         }
@@ -166,7 +167,6 @@ void shoulderCallback(const std_msgs::msg::Float32::SharedPtr speed){
         if(linear2.atMin && currentSpeed < 0){
             linear2.speed = 0.0;
         }
-        sync();
     }
     else{
         std_msgs::msg::Float32 speed1;
@@ -236,18 +236,14 @@ void processPotentiometerData(int potentData, LinearActuator *linear){
         if(linear->speed != 0.0){
             linear->count += 1;
             if(linear->count >= 5){
-                if(linear->max > 800){
-                    if(potentData >= linear->max - 10){
-                        linear->atMax = true;
-                    }
+                if(linear->max > 800 && linear->speed > 0.0 && potentData >= linear->max - 10){
+                    linear->atMax = true;
                 }
-                else if(linear->min < 200){
-                    if(potentData <= linear->min + 10){
-                        linear->atMin = true;
-                    }
+                else if(linear->min < 200 && linear->speed < 0.0 && potentData <= linear->min + 10){
+                    linear->atMin = true;
                 }
                 else{
-                    if(linear->error == None){
+                    if(linear->error == None || linear->error == ActuatorsSyncError){
                         linear->error = ActuatorNotMovingError;
                     }
                 }
