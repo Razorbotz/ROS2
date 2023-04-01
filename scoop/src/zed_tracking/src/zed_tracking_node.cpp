@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    rclcpp::Rate rate(10);
+    rclcpp::Rate rate(50);
     while (rclcpp::ok()) {
         if (zed.grab() == sl::ERROR_CODE::SUCCESS) {
             // Retrieve the left image
@@ -171,7 +171,8 @@ int main(int argc, char **argv) {
             sl::POSITIONAL_TRACKING_STATE tracking_state = zed.getPosition(zedPose, sl::REFERENCE_FRAME::WORLD);
 
             if (tracking_state == sl::POSITIONAL_TRACKING_STATE::OK) {
-                for(int col=0;col<7;col++){    
+                /*
+		for(int col=0;col<7;col++){    
                     average[col]-=pastValues[currentRow][col]/ROW_COUNT;
                 }
 
@@ -188,8 +189,8 @@ int main(int argc, char **argv) {
                 }
                 currentRow++;
 
-                if(currentRow==ROW_COUNT)currentRow=0;
-
+                if(currentRow==ROW_COUNT)currentRow=0;*/
+/*
                 zedPosition.x=average[0];
                 zedPosition.y=average[1];
                 zedPosition.z=average[2];
@@ -197,14 +198,14 @@ int main(int argc, char **argv) {
                 zedPosition.oy=average[4];
                 zedPosition.oz=average[5];
                 zedPosition.ow=average[6];
-                
-    //	        zedPosition.x=zedPose.getTranslation().x;
-    //    	        zedPosition.y=zedPose.getTranslation().y;
-    //	        zedPosition.z=zedPose.getTranslation().z;
-    //	        zedPosition.ox=zedPose.getOrientation().ox;
-    //	        zedPosition.oy=zedPose.getOrientation().oy;
-    //	        zedPosition.oz=zedPose.getOrientation().oz;
-    //	        zedPosition.ow=zedPose.getOrientation().ow;
+*/
+    	        zedPosition.x=zedPose.getTranslation().x;
+        	zedPosition.y=zedPose.getTranslation().y;
+    	        zedPosition.z=zedPose.getTranslation().z;
+    	        zedPosition.ox=zedPose.getOrientation().ox;
+    	        zedPosition.oy=zedPose.getOrientation().oy;
+    	        zedPosition.oz=zedPose.getOrientation().oz;
+    	        zedPosition.ow=zedPose.getOrientation().ow;
 
                 zedPositionPublisher->publish(zedPosition);
             }

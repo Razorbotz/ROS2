@@ -58,6 +58,8 @@ void Automation::setPosition(Position position){
  * @return void
  * */
 void Automation::changeSpeed(float left, float right){
+    RCLCPP_INFO(this->node->get_logger(), "Current left: %f, Current right: %f", currentLeftSpeed, currentRightSpeed);
+    RCLCPP_INFO(this->node->get_logger(), "New left: %f, New right: %f", left, right);
     if(currentLeftSpeed==left && currentRightSpeed==right) return;
     currentLeftSpeed=left;
     currentRightSpeed=right;
@@ -158,21 +160,17 @@ void Automation::setNeoSpeed(float speed){
 
 void Automation::turnRobot(float degrees){
     double initialY = this->position.oy;
-    if(degrees > 0){
+    double radians = degrees * M_PI / 180.0;
+    if(radians > 0){
         changeSpeed(0.5, -0.5);
     }
     else{
         changeSpeed(-0.5, 0.5);
     }
-    while(this->position.oy != initialY + degrees);
-    changeSpeed(0.0, 0.0);
 }
 
 void Automation::driveRobot(float meters){
     double initialZ = this->position.x;
+    RCLCPP_INFO(this->node->get_logger(), "INITIAL Z: %f", initialZ);
     changeSpeed(0.5, 0.5);
-    while(this->position.x < initialZ + meters){
-
-    }
-    changeSpeed(0.0);
 }

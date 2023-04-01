@@ -458,7 +458,7 @@ int main(int argc, char **argv){
 
     initSetSpeed();
 
-    rclcpp::Rate rate(20);
+    rclcpp::Rate rate(50);
     while(rclcpp::ok()){
         if(automationGo) automation->automate();
         rclcpp::spin_some(nodeHandle);

@@ -47,7 +47,7 @@ class Automation{
 
     void setShoulderSpeed(float speed);
 
-    void setShoulderSpeed(float speed);
+    void setDumpSpeed(float speed);
 
     bool checkErrors(Linear linear);
 

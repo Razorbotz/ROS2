@@ -26,6 +26,7 @@ void Automation1::automate(){
             changeSpeed(0,0);
         }
     }
+/*    
     if(robotState==GO_TO_DIG_SITE){
         double yawRadians=this->orientation.roll;
 
@@ -53,23 +54,29 @@ void Automation1::automate(){
                 << "   \t" << facingUnitX << " " << facingUnitZ << "   " << yaw << " " << deltaYaw << " " << theta
               << "   \t" << position.arucoVisible << std::endl;
     }
-    else{
-        changeSpeed(0,0);
-    }
-    
+*/    
 
     // After finding the Aruco marker, turn the bot to 
     // align with the arena
     if(robotState==ALIGN){
-        driveRobot(1.0);
+        RCLCPP_INFO(this->node->get_logger(), "ALIGN");
+        setGo();
+	changeSpeed(0.25, 0.25);
         robotState = GO_TO_DIG_SITE;
     }
 
     // After aligning with the arena, navigate to the 
     // excavation area
     if(robotState==GO_TO_DIG_SITE){
-        turnRobot(45);
-        robotState = EXCAVATE;
+        RCLCPP_INFO(this->node->get_logger(), "GO_TO_DIG_SITE");
+        RCLCPP_INFO(this->node->get_logger(), "ZedPosition.z: %f", this->position.z);
+	if(this->position.z > 1.0){
+            changeSpeed(0.0, 0.0);
+            robotState = EXCAVATE;
+	}
+        else{
+            changeSpeed(0.25, 0.25);
+        }
     }
 
     // After reaching the excavation area, go through mining
@@ -247,9 +254,6 @@ void Automation1::automate(){
     if(robotState==RETURN_TO_START){
 
         robotState = ALIGN;
-    }
-    else{
-        changeSpeed(0,0);
     }
 }
     
