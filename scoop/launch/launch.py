@@ -39,7 +39,7 @@ def generate_launch_description():
         ,
         Node(
             package='talon',
-            name='shoulder',
+            name='shoulder_1',
             executable='talon_node',
             parameters=[
                 {"motor_number": 14},
@@ -60,7 +60,7 @@ def generate_launch_description():
         ,
         Node(
             package='talon',
-            name='dump',
+            name='shoulder_2',
             executable='talon_node',
             parameters=[
                 {"motor_number": 15},
@@ -68,6 +68,27 @@ def generate_launch_description():
                 {"invert_motor": True},
                 {"speed_topic": "talon_15_speed"},
                 {"info_topic": "talon_15_info"},
+                {"use_velocity": False},
+                {"velocity_multiplier": 3000},
+                {"test_speed": 100},
+                {"kP": 0.20},
+                {"kI": 0.000001},
+                {"kD": 0.000001},
+                {"kF": 0.0}
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'}
+        )
+        ,
+        Node(
+            package='talon',
+            name='dump',
+            executable='talon_node',
+            parameters=[
+                {"motor_number": 16},
+                {"diagnostics_port": 56714},
+                {"invert_motor": True},
+                {"speed_topic": "talon_16_speed"},
+                {"info_topic": "talon_16_info"},
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
                 {"test_speed": 100},

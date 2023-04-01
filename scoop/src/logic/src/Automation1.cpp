@@ -61,15 +61,15 @@ void Automation1::automate(){
     // After finding the Aruco marker, turn the bot to 
     // align with the arena
     if(robotState==ALIGN){
-
-        //robotState = GO_TO_DIG_SITE;
+        driveRobot(1.0);
+        robotState = GO_TO_DIG_SITE;
     }
 
     // After aligning with the arena, navigate to the 
     // excavation area
     if(robotState==GO_TO_DIG_SITE){
-        
-        //robotState = DIG;
+        turnRobot(45);
+        robotState = EXCAVATE;
     }
 
     // After reaching the excavation area, go through mining
@@ -79,6 +79,7 @@ void Automation1::automate(){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: IDLE STATE");
             excavationState = LOWER_ASSEMBLY;
         }
+        
         if(excavationState == LOWER_ASSEMBLY){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: LOWER_ASSEMBLY STATE");
             setShoulderSpeed(0.8);
@@ -198,26 +199,54 @@ void Automation1::automate(){
     // After mining, return to start position
     if(robotState==GO_TO_HOME){
 
-        //robotState = DOCK;
+        robotState = DOCK;
     }
 
     // After reaching start position, dock at dump bin
     if(robotState==DOCK){
 
-        //robotState = DUMP;
+        robotState = DUMP;
     }
 
     // Dump the collected rocks in the dump bin
     if(robotState==DUMP){
+        RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: LOWER_ASSEMBLY STATE");
+        setShoulderSpeed(0.8);
         
-        //robotState = RETURN_TO_START;
+        if(checkErrors(linear1) || checkErrors(linear2)){
+        }
+
+        while(!linear1.atMax || !linear2.atMax){}
+        setShoulderSpeed(0.0);
+
+        setDumpSpeed(0.8);
+
+        if(checkErrors(linear3)){
+
+        }
+
+        while(!linear3.atMax){}
+        setDumpSpeed(-0.8);
+
+        while(!linear3.atMin){}
+        setDumpSpeed(0.0);
+
+        RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_ASSEMBLY STATE");
+        setShoulderSpeed(-0.8);
+        
+        if(checkErrors(linear1) || checkErrors(linear2)){
+        }
+
+        while(!linear1.atMin || !linear2.atMin){}
+        setShoulderSpeed(0.0);
+        robotState = RETURN_TO_START;
     }
 
     // After dumping the rocks, return to start position and
     // start again
     if(robotState==RETURN_TO_START){
 
-        //robotState = ALIGN;
+        robotState = ALIGN;
     }
     else{
         changeSpeed(0,0);

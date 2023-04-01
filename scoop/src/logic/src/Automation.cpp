@@ -135,6 +135,12 @@ void Automation::setShoulderSpeed(float speed){
     shoulderPublisher->publish(Speed);
 }
 
+void Automation::setDumpSpeed(float speed){
+    std_msgs::msg::Float32 Speed;
+    Speed.data = speed;
+    dumpPublisher->publish(Speed);
+}
+
 bool Automation::checkErrors(Linear linear){
     if(linear.error == "PotentiometerError" || linear.error == "ActuatorNotMovingError" || linear.error == "ConnectionError"){
         return true;
@@ -148,4 +154,25 @@ void Automation::setNeoSpeed(float speed){
     std_msgs::msg::Float32 Speed;
     Speed.data = speed;
     neoPublisher->publish(Speed);
+}
+
+void Automation::turnRobot(float degrees){
+    double initialY = this->position.oy;
+    if(degrees > 0){
+        changeSpeed(0.5, -0.5);
+    }
+    else{
+        changeSpeed(-0.5, 0.5);
+    }
+    while(this->position.oy != initialY + degrees);
+    changeSpeed(0.0, 0.0);
+}
+
+void Automation::driveRobot(float meters){
+    double initialZ = this->position.x;
+    changeSpeed(0.5, 0.5);
+    while(this->position.x < initialZ + meters){
+
+    }
+    changeSpeed(0.0);
 }
