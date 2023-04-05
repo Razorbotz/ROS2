@@ -159,18 +159,9 @@ void Automation::setNeoSpeed(float speed){
 }
 
 void Automation::turnRobot(float degrees){
-    double initialY = this->position.oy;
-    double radians = degrees * M_PI / 180.0;
-    if(radians > 0){
-        changeSpeed(0.5, -0.5);
-    }
-    else{
-        changeSpeed(-0.5, 0.5);
-    }
+    this->destAngle = degrees;
 }
 
-void Automation::driveRobot(float meters){
-    double initialZ = this->position.x;
-    RCLCPP_INFO(this->node->get_logger(), "INITIAL Z: %f", initialZ);
-    changeSpeed(0.5, 0.5);
+void Automation::setDestDistance(float meters){
+    this->destDistance = meters;
 }

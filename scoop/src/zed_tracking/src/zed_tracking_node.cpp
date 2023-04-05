@@ -79,7 +79,8 @@ int main(int argc, char **argv) {
     */
     init_params.camera_resolution = sl::RESOLUTION::VGA;
     init_params.coordinate_units = sl::UNIT::METER;
-    init_params.coordinate_system = sl::COORDINATE_SYSTEM::IMAGE;    
+    init_params.coordinate_system = sl::COORDINATE_SYSTEM::IMAGE;
+    init_params.camera_fps = 30;    
 //    init_params.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Y_UP;
 //    init_params.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Z_UP;
 //    init_params.coordinate_system = sl::COORDINATE_SYSTEM::LEFT_HANDED_Y_UP;
@@ -144,7 +145,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    rclcpp::Rate rate(50);
+    rclcpp::Rate rate(30);
     while (rclcpp::ok()) {
         if (zed.grab() == sl::ERROR_CODE::SUCCESS) {
             // Retrieve the left image
@@ -200,7 +201,7 @@ int main(int argc, char **argv) {
                 zedPosition.ow=average[6];
 */
     	        zedPosition.x=zedPose.getTranslation().x;
-        	zedPosition.y=zedPose.getTranslation().y;
+        	    zedPosition.y=zedPose.getTranslation().y;
     	        zedPosition.z=zedPose.getTranslation().z;
     	        zedPosition.ox=zedPose.getOrientation().ox;
     	        zedPosition.oy=zedPose.getOrientation().oy;

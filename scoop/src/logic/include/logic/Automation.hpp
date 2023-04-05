@@ -26,6 +26,7 @@ class Automation{
     float currentLeftSpeed=0;
     float currentRightSpeed=0;
     Linear linear1, linear2, linear3;
+    float destDistance=0, destAngle=0;
 
     virtual void automate() = 0;
 
@@ -53,7 +54,7 @@ class Automation{
 
     void setNeoSpeed(float speed);
 
-    void turnRobot(float degrees);
+    void setDestAngle(float degrees);
 
-    void driveRobot(float meters);
+    void setDestDistance(float meters);
 };

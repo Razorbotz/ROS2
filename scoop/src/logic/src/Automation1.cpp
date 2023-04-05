@@ -59,9 +59,9 @@ void Automation1::automate(){
     // After finding the Aruco marker, turn the bot to 
     // align with the arena
     if(robotState==ALIGN){
-        RCLCPP_INFO(this->node->get_logger(), "ALIGN");
+        setDestDistance(1.0);
         setGo();
-	changeSpeed(0.25, 0.25);
+	    changeSpeed(0.25, 0.25);
         robotState = GO_TO_DIG_SITE;
     }
 
@@ -70,9 +70,9 @@ void Automation1::automate(){
     if(robotState==GO_TO_DIG_SITE){
         RCLCPP_INFO(this->node->get_logger(), "GO_TO_DIG_SITE");
         RCLCPP_INFO(this->node->get_logger(), "ZedPosition.z: %f", this->position.z);
-	if(this->position.z > 1.0){
-            changeSpeed(0.0, 0.0);
-            robotState = EXCAVATE;
+	if(this->position.z > this->destDistance){
+        changeSpeed(0.0, 0.0);
+        robotState = EXCAVATE;
 	}
         else{
             changeSpeed(0.25, 0.25);
