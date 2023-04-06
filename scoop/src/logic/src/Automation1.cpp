@@ -70,10 +70,16 @@ void Automation1::automate(){
     if(robotState==GO_TO_DIG_SITE){
         RCLCPP_INFO(this->node->get_logger(), "GO_TO_DIG_SITE");
         RCLCPP_INFO(this->node->get_logger(), "ZedPosition.z: %f", this->position.z);
-	if(this->position.z > this->destDistance){
-        changeSpeed(0.0, 0.0);
-        robotState = EXCAVATE;
-	}
+        if(this->position.z > this->destDistance){
+            changeSpeed(0.0, 0.0);
+            robotState = EXCAVATE;
+        }
+        else if(this->position.z > this->destDistance - 0.1){
+            changeSpeed(0.05, 0.05);
+        }
+        else if(this->position.z > this->destDistance - 0.25){
+            changeSpeed(0.15, 0.15);
+        }
         else{
             changeSpeed(0.25, 0.25);
         }

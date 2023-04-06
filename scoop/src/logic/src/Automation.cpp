@@ -158,7 +158,7 @@ void Automation::setNeoSpeed(float speed){
     neoPublisher->publish(Speed);
 }
 
-void Automation::turnRobot(float degrees){
+void Automation::setDestAngle(float degrees){
     this->destAngle = degrees;
 }
 

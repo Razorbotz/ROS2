@@ -207,7 +207,7 @@ int main(int argc, char **argv) {
     	        zedPosition.oy=zedPose.getOrientation().oy;
     	        zedPosition.oz=zedPose.getOrientation().oz;
     	        zedPosition.ow=zedPose.getOrientation().ow;
-
+                RCLCPP_INFO(nodeHandle->get_logger(),"Zed roation vector: %f, %f, %f", zedPose.getRotation()[0], zedPose.getRotation()[1], zedPose.getRotation()[2]);
                 zedPositionPublisher->publish(zedPosition);
             }
 
