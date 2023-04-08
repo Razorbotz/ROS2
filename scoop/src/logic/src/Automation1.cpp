@@ -21,9 +21,9 @@ void Automation1::automate(){
     if(robotState==LOCATE){
         changeSpeed(0.15,-0.15);
         if(position.arucoVisible==true){
-            if (abs(position.aruco_roll) < 30.0) {
+            if (abs(position.aruco_roll) < 90.0) {
                 left = 1;
-            } else if (abs(position.aruco_roll) > 150.0) { // dot on top
+            } else { // dot on top
                 left = -1;
             }
             position.pitch = 0;
