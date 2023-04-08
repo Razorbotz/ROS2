@@ -69,13 +69,14 @@ void Automation1::automate(){
     if(robotState==ALIGN){
         if (position.pitch > -90 && position.pitch < 90) {
             changeSpeed(0.15*left, -0.15*left);
+            RCLCPP_INFO(this->node->get_logger(), "Left: %f", left);
         } else {
             changeSpeed(0, 0);
+            setDestDistance(1.0);
+            setGo();
+            changeSpeed(0.25, 0.25);
             robotState = GO_TO_DIG_SITE;
         }
-        // setDestDistance(1.0);
-        // setGo();
-	    // changeSpeed(0.25, 0.25);
     }
 
     // After aligning with the arena, navigate to the 
@@ -172,6 +173,7 @@ void Automation1::automate(){
                 excavationState = IDLE;
                 destination.x=0;
                 destination.z=0;
+                setDestDistance(1.0);
                 robotState = GO_TO_HOME;
             }
         }
