@@ -75,7 +75,7 @@ void Automation1::automate(){
             robotState = EXCAVATE;
         }
         else if(this->position.z > this->destDistance - 0.1){
-            changeSpeed(0.05, 0.05);
+            changeSpeed(0.1, 0.1);
         }
         else if(this->position.z > this->destDistance - 0.25){
             changeSpeed(0.15, 0.15);
@@ -227,6 +227,7 @@ void Automation1::automate(){
         setShoulderSpeed(0.8);
         
         if(checkErrors(linear1) || checkErrors(linear2)){
+
         }
 
         while(!linear1.atMax || !linear2.atMax){}
@@ -248,9 +249,12 @@ void Automation1::automate(){
         setShoulderSpeed(-0.8);
         
         if(checkErrors(linear1) || checkErrors(linear2)){
+
         }
 
-        while(!linear1.atMin || !linear2.atMin){}
+        while(!linear1.atMin || !linear2.atMin){
+            
+        }
         setShoulderSpeed(0.0);
         robotState = RETURN_TO_START;
     }

@@ -125,6 +125,7 @@ int main(int argc, char **argv) {
     std::string zed_position_txt;
     std::string zed_rotation_txt;
     std::string aruco_position_txt;
+    sl::float3 anglels;
 
     int currentRow=0;
     float pastValues[ROW_COUNT][7];
@@ -161,7 +162,7 @@ int main(int argc, char **argv) {
                 arucoPose.setTranslation(sl::float3(tvecs[0](0), tvecs[0](1), tvecs[0](2)));
                 arucoPose.setRotationVector(sl::float3(rvecs[0](0), rvecs[0](1), rvecs[0](2)));
                 arucoPose.inverse();
-
+                angles = arucoPose.getEulerAngles(false);
                 zed.resetPositionalTracking(arucoPose);
 		        zedPosition.aruco_visible=true;
 	        } 
@@ -207,7 +208,9 @@ int main(int argc, char **argv) {
     	        zedPosition.oy=zedPose.getOrientation().oy;
     	        zedPosition.oz=zedPose.getOrientation().oz;
     	        zedPosition.ow=zedPose.getOrientation().ow;
-                RCLCPP_INFO(nodeHandle->get_logger(),"Zed roation vector: %f, %f, %f", zedPose.getRotation()[0], zedPose.getRotation()[1], zedPose.getRotation()[2]);
+                zedPosition.pitch = angles[2];
+                zedPosition.yaw = angles[1];
+                zedPosition.roll = angles[0];
                 zedPositionPublisher->publish(zedPosition);
             }
 

@@ -147,9 +147,9 @@ void updateExcavation(){
     std_msgs::msg::Float32 throttleSpeed;
     throttleSpeed.data = joystick1Throttle * 0.1;
     neoPublisher->publish(throttleSpeed);
-    std_msgs::msg::Float32 ladderSpeed;
-    ladderSpeed.data = joystick1Yaw;
-    ladderPublisher->publish(ladderSpeed);
+    std_msgs::msg::Float32 dumpSpeed;
+    dumpSpeed.data = joystick1Yaw;
+    dumpPublisher->publish(dumpSpeed);
 }
 
 /** @brief Function to stop excavation motors
@@ -354,7 +354,12 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         std_msgs::msg::Bool msg;
         msg.data = automationGo;
         automationGoPublisher->publish(msg);
-        automation->setGo();
+        if(automationGo){
+            automation->setGo();
+        }
+        else{
+            automatin->setStop();
+        }
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
     }
     if(keyState->key==45 && keyState->state==1){

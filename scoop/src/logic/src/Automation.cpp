@@ -27,6 +27,7 @@ void Automation::setNode(rclcpp::Node::SharedPtr node){
     driveLeftSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
     driveRightSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
     goPublisher = this->node->create_publisher<std_msgs::msg::Empty>("GO", 1);
+    stopPublisher = this->node->create_publisher<std_msgs::msg::Empty>("STOP",1);
     shoulderPublisher = this->node->create_publisher<std_msgs::msg::Float32>("shoulder_speed",1);
     dumpPublisher = this->node->create_publisher<std_msgs::msg::Float32>("dump_speed",1);
     neoPublisher = this->node->create_publisher<std_msgs::msg::Float32>("neo_speed",1);
@@ -108,6 +109,11 @@ EulerAngles Automation::toEulerAngles(Quaternion q) {
 void Automation::setGo(){
    std_msgs::msg::Empty empty;
    goPublisher->publish(empty);
+}
+
+void Automation::setStop(){
+    std_msgs::msg::Empty empty;
+    stopPublisher->publish(empty);
 }
 
 void Automation::setLinear1(const messages::msg::LinearOut::SharedPtr linearOut){
