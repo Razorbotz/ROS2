@@ -26,18 +26,14 @@ void Automation1::automate(){
             } else {
                 left = -1
             }
-            zed.x = 0;
+            position.pitch = 0;
             robotState=GO_TO_DIG_SITE;
             destination.x=-5;
             destination.z=2;
             changeSpeed(0,0);
         }
     }
-<<<<<<< Updated upstream
 /*  
-=======
-/*  changeSpeed(0.15*left, -0.15*left);
->>>>>>> Stashed changes
     if(robotState==GO_TO_DIG_SITE){
         double yawRadians=this->orientation.roll;
 
@@ -81,8 +77,10 @@ void Automation1::automate(){
     if(robotState==GO_TO_DIG_SITE){
         RCLCPP_INFO(this->node->get_logger(), "GO_TO_DIG_SITE");
         RCLCPP_INFO(this->node->get_logger(), "ZedPosition.z: %f", this->position.z);
-        while (zed.x > -90 && zed.x < 90) {
+        if (position.pitch > -90 && position.pitch < 90) {
             changeSpeed(0.15*left, -0.15*left);
+        } else {
+            changeSpeed(0, 0);
         }
         if(this->position.z > this->destDistance){
             changeSpeed(0.0, 0.0);
