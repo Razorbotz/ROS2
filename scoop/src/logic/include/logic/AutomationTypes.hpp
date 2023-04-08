@@ -1,7 +1,7 @@
 #pragma once
 
 struct Position{
-    double x,y,z,ox,oy,oz,ow,arucoVisible;
+    double x,y,z,ox,oy,oz,ow,arucoVisible,roll,pitch,yaw;
 };
 
 struct Location{

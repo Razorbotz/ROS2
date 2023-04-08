@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
     std::string zed_position_txt;
     std::string zed_rotation_txt;
     std::string aruco_position_txt;
-    sl::float3 anglels;
+    sl::float3 angles;
 
     int currentRow=0;
     float pastValues[ROW_COUNT][7];

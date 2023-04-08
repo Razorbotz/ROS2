@@ -579,6 +579,7 @@ int main(int argc, char **argv){
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,talon1Callback);
     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,talon2Callback);
+    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_16_info",1,talon3Callback);
     auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_10_info",1,falcon1Callback);
     auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_11_info",1,falcon2Callback);
     auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_12_info",1,falcon3Callback);

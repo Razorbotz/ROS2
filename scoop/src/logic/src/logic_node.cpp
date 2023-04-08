@@ -358,7 +358,7 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
             automation->setGo();
         }
         else{
-            automatin->setStop();
+            automation->setStop();
         }
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
     }
@@ -389,6 +389,9 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     position.oy=zedPosition->oy;	
     position.oz=zedPosition->oz;	
     position.ow=zedPosition->ow;	
+    position.roll=zedPosition->roll;
+    position.pitch=zedPosition->pitch;
+    position.yaw=zedPosition->yaw;
     position.arucoVisible=zedPosition->aruco_visible;	
     automation->setPosition(position);
     double yawRadians=automation->orientation.roll;
