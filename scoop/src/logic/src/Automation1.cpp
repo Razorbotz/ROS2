@@ -26,7 +26,7 @@ void Automation1::automate(){
             } else { // dot on top
                 left = -1;
             }
-            RCLCPP_INFO(this->node->get_logger(), "Left: %f", left);
+            RCLCPP_INFO(this->node->get_logger(), "Left: %d", left);
             position.pitch = 0;
             destination.x=-2;
             destination.z=1;
@@ -84,7 +84,7 @@ void Automation1::automate(){
     if(robotState==GO_TO_DIG_SITE){
         RCLCPP_INFO(this->node->get_logger(), "GO_TO_DIG_SITE");
         RCLCPP_INFO(this->node->get_logger(), "ZedPosition.z: %f", this->position.z);
-        RCLCPP_INFO(this->node->get_logger(), "Left: %f", left);
+        RCLCPP_INFO(this->node->get_logger(), "Left: %d", left);
         if(this->position.z > this->destDistance){
             changeSpeed(0.0, 0.0);
             robotState = EXCAVATE;
