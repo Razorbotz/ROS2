@@ -212,9 +212,9 @@ int main(int argc, char **argv) {
     	        zedPosition.oy=zedPose.getOrientation().oy;
     	        zedPosition.oz=zedPose.getOrientation().oz;
     	        zedPosition.ow=zedPose.getOrientation().ow;
-                zedPosition.pitch = angles[2];
+                zedPosition.pitch = angles[0];
                 zedPosition.yaw = angles[1];
-                zedPosition.roll = angles[0];
+                zedPosition.roll = angles[2];
                 zedPositionPublisher->publish(zedPosition);
             }
 
