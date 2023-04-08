@@ -33,7 +33,7 @@ void Automation1::automate(){
             changeSpeed(0,0);
         }
     }
-/*  changeSpeed(0.15*left, -0.15*left);
+/*  
     if(robotState==GO_TO_DIG_SITE){
         double yawRadians=this->orientation.roll;
 
@@ -77,6 +77,9 @@ void Automation1::automate(){
     if(robotState==GO_TO_DIG_SITE){
         RCLCPP_INFO(this->node->get_logger(), "GO_TO_DIG_SITE");
         RCLCPP_INFO(this->node->get_logger(), "ZedPosition.z: %f", this->position.z);
+        while (zed.x > -90 && zed.x < 90) {
+            changeSpeed(0.15*left, -0.15*left);
+        }
         if(this->position.z > this->destDistance){
             changeSpeed(0.0, 0.0);
             robotState = EXCAVATE;
