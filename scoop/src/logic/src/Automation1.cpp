@@ -22,9 +22,9 @@ void Automation1::automate(){
         changeSpeed(0.15,-0.15);
         if(position.arucoVisible==true){
             if (abs(position.aruco_roll) < 30.0) {
-                left = 1
+                left = 1;
             } else if (abs(position.aruco_roll) > 150.0) { // dot on top
-                left = -1
+                left = -1;
             }
             position.pitch = 0;
             destination.x=-5;
