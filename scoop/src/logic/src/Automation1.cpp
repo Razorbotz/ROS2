@@ -27,7 +27,7 @@ void Automation1::automate(){
                 left = -1;
             }
             RCLCPP_INFO(this->node->get_logger(), "Left: %d", left);
-            position.yaw = 0;
+            setDestAngle(position.yaw + 90.0);
             destination.x=-2;
             destination.z=1;
             changeSpeed(0,0);
@@ -68,7 +68,7 @@ void Automation1::automate(){
     // align with the arena
     if(robotState==ALIGN){
         RCLCPP_INFO(this->node->get_logger(), "Left: %d", left);
-        if (abs(position.yaw) < 90) {
+        if (abs(position.yaw) < this->destAngle+5 && abs(position.yaw) > this->destAngle-5) {
             changeSpeed(0.15*left, -0.15*left);
         } else {
             changeSpeed(0, 0);
@@ -175,6 +175,7 @@ void Automation1::automate(){
                 destination.x=0;
                 destination.z=0;
                 setDestDistance(1.0);
+                setDestAngle(position.yaw - 180.0);
                 robotState = GO_TO_HOME;
             }
         }
@@ -229,8 +230,7 @@ void Automation1::automate(){
 
     // After mining, return to start position
     if(robotState==GO_TO_HOME){
-        position.yaw = 0;
-        if (abs(position.yaw) < 175) {
+        if (abs(position.yaw) < this->destAngle+5 && abs(position.yaw) > this->destAngle-5) {
             changeSpeed(0.15, -0.15);
         }
         if(this->position.z > this->destDistance){
