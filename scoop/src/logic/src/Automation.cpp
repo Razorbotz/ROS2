@@ -165,7 +165,12 @@ void Automation::setNeoSpeed(float speed){
 }
 
 void Automation::setDestAngle(float degrees){
-    this->destAngle = degrees;
+    if(degrees > 180){
+        this->destAngle = degrees - 360;
+    }
+    else{
+        this->destAngle = degrees;
+    }
 }
 
 void Automation::setDestDistance(float meters){
