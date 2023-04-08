@@ -70,11 +70,11 @@ void Automation1::automate(){
             changeSpeed(0.15*left, -0.15*left);
         } else {
             changeSpeed(0, 0);
+            robotState = GO_TO_DIG_SITE;
         }
         // setDestDistance(1.0);
         // setGo();
 	    // changeSpeed(0.25, 0.25);
-        robotState = GO_TO_DIG_SITE;
     }
 
     // After aligning with the arena, navigate to the 
