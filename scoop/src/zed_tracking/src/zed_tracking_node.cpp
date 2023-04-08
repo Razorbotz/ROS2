@@ -163,6 +163,10 @@ int main(int argc, char **argv) {
                 arucoPose.setRotationVector(sl::float3(rvecs[0](0), rvecs[0](1), rvecs[0](2)));
                 arucoPose.inverse();
                 zed.resetPositionalTracking(arucoPose);
+                angles = zedPose.getEulerAngles(false);
+                zedPosition.aruco_pitch = angles[2];
+                zedPosition.aruco_yaw = angles[1];
+                zedPosition.aruco_roll = angles[0];
 		        zedPosition.aruco_visible=true;
 	        } 
             else {

@@ -9,3 +9,6 @@ bool aruco_visible
 float32 pitch
 float32 yaw
 float32 roll
+float32 aruco_pitch
+float32 aruco_yaw
+float32 aruco_roll

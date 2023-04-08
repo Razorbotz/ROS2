@@ -392,6 +392,9 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     position.roll=zedPosition->roll;
     position.pitch=zedPosition->pitch;
     position.yaw=zedPosition->yaw;
+    position.aruco_roll=zedPosition->aruco_roll;
+    position.aruco_pitch=zedPosition->aruco_pitch;
+    position.aruco_yaw=zedPosition->aruco_yaw;
     position.arucoVisible=zedPosition->aruco_visible;	
     automation->setPosition(position);
     double yawRadians=automation->orientation.roll;
