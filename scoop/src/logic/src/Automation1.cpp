@@ -68,7 +68,7 @@ void Automation1::automate(){
     // align with the arena
     if(robotState==ALIGN){
         RCLCPP_INFO(this->node->get_logger(), "Left: %d", left);
-        if (abs(position.yaw) < this->destAngle+5 && abs(position.yaw) > this->destAngle-5) {
+        if (position.yaw < this->destAngle+5 && position.yaw > this->destAngle-5) {
             changeSpeed(0.15*left, -0.15*left);
         } else {
             changeSpeed(0, 0);
