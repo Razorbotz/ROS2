@@ -346,6 +346,7 @@ void dumpSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
         std_msgs::msg::Float32 speed1;
         speed1.data = speed->data;    
         talon16Publisher->publish(speed1);
+        linear3.speed = speed->data;
     }
 }
 

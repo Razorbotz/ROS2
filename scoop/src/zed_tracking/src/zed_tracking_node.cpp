@@ -162,7 +162,6 @@ int main(int argc, char **argv) {
                 arucoPose.setTranslation(sl::float3(tvecs[0](0), tvecs[0](1), tvecs[0](2)));
                 arucoPose.setRotationVector(sl::float3(rvecs[0](0), rvecs[0](1), rvecs[0](2)));
                 arucoPose.inverse();
-                angles = arucoPose.getEulerAngles(false);
                 zed.resetPositionalTracking(arucoPose);
 		        zedPosition.aruco_visible=true;
 	        } 
@@ -201,6 +200,7 @@ int main(int argc, char **argv) {
                 zedPosition.oz=average[5];
                 zedPosition.ow=average[6];
 */
+                angles = zedPose.getEulerAngles(false);
     	        zedPosition.x=zedPose.getTranslation().x;
         	    zedPosition.y=zedPose.getTranslation().y;
     	        zedPosition.z=zedPose.getTranslation().z;
