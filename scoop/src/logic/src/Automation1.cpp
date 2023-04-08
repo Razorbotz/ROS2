@@ -17,16 +17,23 @@
 void Automation1::automate(){
     // Initially start with locating the Aruco marker
     // Turn slowly until it's seen
+    int left = 0;
     if(robotState==LOCATE){
         changeSpeed(0.15,-0.15);
         if(position.arucoVisible==true){
+            if (position.aruco_pitch < 0.0) {
+                left = 1
+            } else {
+                left = -1
+            }
+            zed.x = 0;
             robotState=GO_TO_DIG_SITE;
             destination.x=-5;
             destination.z=2;
             changeSpeed(0,0);
         }
     }
-/*    
+/*  changeSpeed(0.15*left, -0.15*left);
     if(robotState==GO_TO_DIG_SITE){
         double yawRadians=this->orientation.roll;
 
