@@ -4,6 +4,7 @@
 #include "logic/Automation.hpp"
 #include "logic/Automation1.hpp"
 
+int left = 0;
 
 /** @file
  *
@@ -17,7 +18,6 @@
 void Automation1::automate(){
     // Initially start with locating the Aruco marker
     // Turn slowly until it's seen
-    int left = 0;
     if(robotState==LOCATE){
         changeSpeed(0.15,-0.15);
         if(position.arucoVisible==true){
