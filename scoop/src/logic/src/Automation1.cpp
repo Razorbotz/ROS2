@@ -27,7 +27,7 @@ void Automation1::automate(){
                 left = -1;
             }
             RCLCPP_INFO(this->node->get_logger(), "Left: %d", left);
-            position.pitch = 0;
+            position.yaw = 0;
             destination.x=-2;
             destination.z=1;
             changeSpeed(0,0);
