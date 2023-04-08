@@ -33,7 +33,11 @@ void Automation1::automate(){
             changeSpeed(0,0);
         }
     }
+<<<<<<< Updated upstream
 /*  
+=======
+/*  changeSpeed(0.15*left, -0.15*left);
+>>>>>>> Stashed changes
     if(robotState==GO_TO_DIG_SITE){
         double yawRadians=this->orientation.roll;
 
