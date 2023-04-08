@@ -67,7 +67,7 @@ void Automation1::automate(){
     // After finding the Aruco marker, turn the bot to 
     // align with the arena
     if(robotState==ALIGN){
-        RCLCPP_INFO(this->node->get_logger(), "Left: %f", left);
+        RCLCPP_INFO(this->node->get_logger(), "Left: %d", left);
         if (position.pitch > -90 && position.pitch < 90) {
             changeSpeed(0.15*left, -0.15*left);
         } else {
