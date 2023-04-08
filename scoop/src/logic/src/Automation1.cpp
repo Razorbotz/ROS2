@@ -169,6 +169,8 @@ void Automation1::automate(){
             if(linear1.atMin && linear2.atMin){
                 setShoulderSpeed(0.0);
                 excavationState = IDLE;
+                destination.x=0;
+                destination.z=0;
                 robotState = GO_TO_HOME;
             }
         }
@@ -223,8 +225,23 @@ void Automation1::automate(){
 
     // After mining, return to start position
     if(robotState==GO_TO_HOME){
-
-        robotState = DOCK;
+        position.pitch = 0
+        if (abs(position.pitch) < 175) {
+            changeSpeed(0.15, -0.15);
+        }
+        if(this->position.z > this->destDistance){
+            changeSpeed(0.0, 0.0);
+            robotState = DOCK;
+        }
+        else if(this->position.z < this->destDistance - 0.1){
+            changeSpeed(0.1, 0.1);
+        }
+        else if(this->position.z < this->destDistance - 0.25){
+            changeSpeed(0.15, 0.15);
+        }
+        else{
+            changeSpeed(0.25, 0.25);
+        }
     }
 
     // After reaching start position, dock at dump bin
