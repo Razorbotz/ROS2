@@ -229,8 +229,8 @@ void Automation1::automate(){
 
     // After mining, return to start position
     if(robotState==GO_TO_HOME){
-        position.pitch = 0;
-        if (abs(position.pitch) < 175) {
+        position.yaw = 0;
+        if (abs(position.yaw) < 175) {
             changeSpeed(0.15, -0.15);
         }
         if(this->position.z > this->destDistance){
