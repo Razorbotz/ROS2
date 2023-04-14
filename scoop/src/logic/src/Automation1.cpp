@@ -93,7 +93,7 @@ void Automation1::automate(){
             destination.x=0;
             destination.z=0;
             setDestDistance(1.0);
-            setDestAngle(position.yaw + left*180.0);
+            setDestAngle(position.yaw - 180.0);
             robotState = GO_TO_HOME;
         }
         else if(abs(this->position.x) > abs(this->destDistance) - 0.1){
@@ -241,14 +241,14 @@ void Automation1::automate(){
         if (!(position.yaw < this->destAngle+5 && position.yaw > this->destAngle-5)) {
             changeSpeed(0.15, -0.15);
         }
-        if(this->position.z > this->destDistance){
+        if(abs(this->position.x) > abs(this->destDistance)){
             changeSpeed(0.0, 0.0);
             robotState = DOCK;
         }
-        else if(this->position.z < this->destDistance - 0.1){
+        else if(abs(this->position.x) > abs(this->destDistance) - 0.1){
             changeSpeed(0.1, 0.1);
         }
-        else if(this->position.z < this->destDistance - 0.25){
+        else if(abs(this->position.x) > abs(this->destDistance) - 0.25){
             changeSpeed(0.15, 0.15);
         }
         else{
@@ -264,7 +264,7 @@ void Automation1::automate(){
 
     // Dump the collected rocks in the dump bin
     if(robotState==DUMP){
-        RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: LOWER_ASSEMBLY STATE");
+        RCLCPP_INFO(this->node->get_logger(), "DUMP AUTONOMY: LOWER_ASSEMBLY STATE");
         setShoulderSpeed(0.8);
         
         if(checkErrors(linear1) || checkErrors(linear2)){
