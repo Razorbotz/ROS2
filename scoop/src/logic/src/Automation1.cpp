@@ -68,7 +68,7 @@ void Automation1::automate(){
     // align with the arena
     if(robotState==ALIGN){
         RCLCPP_INFO(this->node->get_logger(), "Left: %d", left);
-        if (position.yaw < this->destAngle+5 && position.yaw > this->destAngle-5) {
+        if (!(position.yaw < this->destAngle+5 && position.yaw > this->destAngle-5)) {
             changeSpeed(0.15*left, -0.15*left);
         } else {
             changeSpeed(0, 0);
@@ -85,14 +85,14 @@ void Automation1::automate(){
         RCLCPP_INFO(this->node->get_logger(), "GO_TO_DIG_SITE");
         RCLCPP_INFO(this->node->get_logger(), "ZedPosition.z: %f", this->position.z);
         RCLCPP_INFO(this->node->get_logger(), "Left: %d", left);
-        if(this->position.z > this->destDistance){
+        if(abs(this->position.z) > abs(this->destDistance)){
             changeSpeed(0.0, 0.0);
             robotState = EXCAVATE;
         }
-        else if(this->position.z > this->destDistance - 0.1){
+        else if(abs(this->position.z) > abs(this->destDistance - 0.1)){
             changeSpeed(0.1, 0.1);
         }
-        else if(this->position.z > this->destDistance - 0.25){
+        else if(abs(this->position.z) > abs(this->destDistance - 0.25)){
             changeSpeed(0.15, 0.15);
         }
         else{
@@ -175,7 +175,7 @@ void Automation1::automate(){
                 destination.x=0;
                 destination.z=0;
                 setDestDistance(1.0);
-                setDestAngle(position.yaw - 180.0);
+                setDestAngle(position.yaw + left*180.0);
                 robotState = GO_TO_HOME;
             }
         }
@@ -230,7 +230,7 @@ void Automation1::automate(){
 
     // After mining, return to start position
     if(robotState==GO_TO_HOME){
-        if (abs(position.yaw) < this->destAngle+5 && abs(position.yaw) > this->destAngle-5) {
+        if (!(position.yaw < this->destAngle+5 && position.yaw > this->destAngle-5)) {
             changeSpeed(0.15, -0.15);
         }
         if(this->position.z > this->destDistance){
