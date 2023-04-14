@@ -241,7 +241,7 @@ void Automation1::automate(){
         if (!(position.yaw < this->destAngle+5 && position.yaw > this->destAngle-5)) {
             changeSpeed(0.15, -0.15);
         }
-        if(abs(this->position.x) > abs(this->destDistance)){
+        else if(abs(this->position.x) > abs(this->destDistance)){
             changeSpeed(0.0, 0.0);
             robotState = DOCK;
         }
