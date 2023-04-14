@@ -87,7 +87,14 @@ void Automation1::automate(){
         RCLCPP_INFO(this->node->get_logger(), "Left: %d", left);
         if(abs(this->position.x) > abs(this->destDistance)){
             changeSpeed(0.0, 0.0);
-            robotState = EXCAVATE;
+            // robotState = EXCAVATE;
+            setShoulderSpeed(0.0);
+            // excavationState = IDLE;
+            destination.x=0;
+            destination.z=0;
+            setDestDistance(1.0);
+            setDestAngle(position.yaw + left*180.0);
+            robotState = GO_TO_HOME;
         }
         else if(abs(this->position.x) > abs(this->destDistance) - 0.1){
             changeSpeed(0.1, 0.1);
