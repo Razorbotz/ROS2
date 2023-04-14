@@ -72,7 +72,7 @@ void Automation1::automate(){
             changeSpeed(0.15*left, -0.15*left);
         } else {
             changeSpeed(0, 0);
-            setDestDistance(1.0);
+            setDestDistance(position.z + 1.0);
             setGo();
             changeSpeed(0.25, 0.25);
             robotState = GO_TO_DIG_SITE;
@@ -89,10 +89,10 @@ void Automation1::automate(){
             changeSpeed(0.0, 0.0);
             robotState = EXCAVATE;
         }
-        else if(abs(this->position.z) > abs(this->destDistance - 0.1)){
+        else if(abs(this->position.z) > abs(this->destDistance) - 0.1){
             changeSpeed(0.1, 0.1);
         }
-        else if(abs(this->position.z) > abs(this->destDistance - 0.25)){
+        else if(abs(this->position.z) > abs(this->destDistance) - 0.25){
             changeSpeed(0.15, 0.15);
         }
         else{
