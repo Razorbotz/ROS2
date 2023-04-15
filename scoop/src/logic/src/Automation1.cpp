@@ -93,7 +93,7 @@ void Automation1::automate(){
             destination.x=0;
             destination.z=0;
             setDestDistance(1.0);
-            setDestAngle(position.yaw - 180.0);
+            setDestAngle(((position.yaw - 180.0) % 360) - 180);
             robotState = GO_TO_HOME;
         }
         else if(abs(this->position.x) > abs(this->destDistance) - 0.1){
