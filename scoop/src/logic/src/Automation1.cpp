@@ -93,9 +93,9 @@ void Automation1::automate(){
             destination.x=0;
             destination.z=0;
             setDestDistance(1.0);
-            double adjPos = position.yaw - 180.0
+            double adjPos = position.yaw - 180.0;
             if (adjPos < -180.0) {
-                adjPos = abs(adjPos) - 2.0 * (adjPos + 180)
+                adjPos = abs(adjPos) - 2.0 * (adjPos + 180);
             }
             setDestAngle(adjPos);
             robotState = GO_TO_HOME;
