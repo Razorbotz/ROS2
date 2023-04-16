@@ -103,8 +103,8 @@ void Automation1::automate(){
     // After reaching the excavation area, go through mining
     // sequence
     if(robotState==EXCAVATE){
-        if(excavationState == IDLE){
-            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: IDLE STATE");
+        if(excavationState == EXCAVATION_IDLE){
+            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: EXCAVATION_IDLE STATE");
             excavationState = LOWER_ASSEMBLY;
         }
         
@@ -171,7 +171,7 @@ void Automation1::automate(){
 
             if(linear1.atMin && linear2.atMin){
                 // setShoulderSpeed(0.0);
-                // excavationState = IDLE;
+                // excavationState = EXCAVATION_IDLE;
                 // destination.x=0;
                 // destination.z=0;
                 // setDestDistance(1.0);
@@ -179,7 +179,7 @@ void Automation1::automate(){
                 // robotState = GO_TO_HOME;
 
                 setShoulderSpeed(0.0);
-                excavationState = IDLE;
+                excavationState = EXCAVATION_IDLE;
                 destination.x=0;
                 destination.z=0;
                 setDestDistance(1.0);
@@ -196,7 +196,7 @@ void Automation1::automate(){
         // If Connection error, fail
         // If potentiometer error, fail
         if(excavationState == ERROR_RECOVERY){
-            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: IDLE STATE");
+            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: EXCAVATION_IDLE STATE");
             if(errorState == LOWER_ASSEMBLY_ERROR || errorState == RAISE_ASSEMBLY_ERROR){
                 if(linear1.error == "ActuatorNotMovingError" || linear2.error == "ActuatorNotMovingError"){
                     // Move linear actuators down and up
@@ -227,13 +227,13 @@ void Automation1::automate(){
                     // If it doesn't move, break
                     else{
                         RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY ERROR: AcutatorNotMovingError. Ending Autonomy.");
-                        excavationState = IDLE;
+                        excavationState = EXCAVATION_IDLE;
                         robotState = INACTIVE;
                     }
                 }
                 else{
                     RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY ERROR: PotentiometerError or ConnectionError. Ending Autonomy.");
-                    excavationState = IDLE;
+                    excavationState = EXCAVATION_IDLE;
                     robotState = INACTIVE;
                 }
             }
@@ -268,40 +268,74 @@ void Automation1::automate(){
 
     // Dump the collected rocks in the dump bin
     if(robotState==DUMP){
-        RCLCPP_INFO(this->node->get_logger(), "DUMP AUTONOMY: LOWER_ASSEMBLY STATE");
-        setShoulderSpeed(0.8);
+        if(dumpState == DUMP_IDLE){
+            dumpState = DUMP_LOWER_ASSEMBLY;
+        }
         
-        if(checkErrors(linear1) || checkErrors(linear2)){
+        if(dumpState == DUMP_LOWER_ASSEMBLY){
+            RCLCPP_INFO(this->node->get_logger(), "DUMP AUTONOMY: DUMP_LOWER_ASSEMBLY STATE");
+            setShoulderSpeed(0.8);
+                
+            if(checkErrors(linear1) || checkErrors(linear2)){
+                dumpState = DUMP_ERROR_RECOVERY;
+                errorState = LOWER_ASSEMBLY_ERROR;
+            }
 
+            if(linear1.atMax && linear2.atMax){
+                setShoulderSpeed(0.0);
+                dumpState = RAISE_BIN;
+            }
         }
 
-        while(!linear1.atMax || !linear2.atMax){}
-        setShoulderSpeed(0.0);
-
-        setDumpSpeed(0.8);
-
-        if(checkErrors(linear3)){
-
-        }
-
-        while(!linear3.atMax){}
-        setDumpSpeed(-0.8);
-
-        while(!linear3.atMin){}
-        setDumpSpeed(0.0);
-
-        RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_ASSEMBLY STATE");
-        setShoulderSpeed(-0.8);
-        
-        if(checkErrors(linear1) || checkErrors(linear2)){
-
-        }
-
-        while(!linear1.atMin || !linear2.atMin){
+        if(dumpState == RAISE_BIN){
+            RCLCPP_INFO(this->node->get_logger(), "DUMP AUTONOMY: RAISE_BIN STATE");
+            setDumpSpeed(0.8);
             
+            if(checkErrors(linear3)){
+                dumpState = DUMP_ERROR_RECOVERY;
+                errorState = RAISE_BIN_ERROR;
+            }
+
+            if(linear3.atMax){
+                setDumpSpeed(0.0);
+                dumpState = SERVO;
+            }
         }
-        setShoulderSpeed(0.0);
-        robotState = RETURN_TO_START;
+
+        if(dumpState == SERVO){
+            dumpState = LOWER_BIN;
+        }
+
+        if(dumpState == LOWER_BIN){
+            RCLCPP_INFO(this->node->get_logger(), "DUMP AUTONOMY: LOWER_BIN STATE");
+            setDumpSpeed(-0.8);
+            
+            if(checkErrors(linear3)){
+                dumpState = DUMP_ERROR_RECOVERY;
+                errorState = LOWER_BIN_ERROR;
+            }
+
+            if(linnear3.atMin){
+                setDumpSpeed(0.0);
+                dumpState = DUMP_RAISE_ASSEMBLY;
+            }
+        }
+
+        if(dumpState == DUMP_RAISE_ASSEMBLY){
+            RCLCPP_INFO(this->node->get_logger(), "DUMP AUTONOMY: DUMP_RAISE_ASSEMBLY STATE");
+            setShoulderSpeed(-0.8);
+                
+            if(checkErrors(linear1) || checkErrors(linear2)){
+                dumpState = DUMP_ERROR_RECOVERY;
+                errorState = RAISE_ASSEMBLY_ERROR;
+            }
+
+            if(linear1.atMax && linear2.atMax){
+                setShoulderSpeed(0.0);
+                dumpState = DUMP_IDLE;
+                robotState = RETURN_TO_START;
+            }
+        }
     }
 
     // After dumping the rocks, return to start position and
