@@ -299,11 +299,11 @@ void joystickHatCallback(const messages::msg::HatState::SharedPtr hatState){
 
     std_msgs::msg::Float32 dumpSpeed;
     if((int)hatState->state == 1 ){
-	    dumpSpeed.data=1.0;
+	    dumpSpeed.data=0.2;
         dumpPublisher->publish(dumpSpeed);
     }
     if((int)hatState->state == 4 ){
-	    dumpSpeed.data=-1.0;
+	    dumpSpeed.data=-0.2;
         dumpPublisher->publish(dumpSpeed);
     }
     if((int)hatState->state == 0 ){
@@ -465,6 +465,7 @@ int main(int argc, char **argv){
     neoPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("neo_speed",1);
     automationGoPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
     ladderPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("ladder_speed",1);
+    talon19Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_19_speed",1);
 
 
     initSetSpeed();

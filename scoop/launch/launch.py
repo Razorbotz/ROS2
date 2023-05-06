@@ -101,6 +101,27 @@ def generate_launch_description():
         )
         ,
         Node(
+            package='talon',
+            name='dump',
+            executable='talon_node',
+            parameters=[
+                {"motor_number": 19},
+                {"diagnostics_port": 56712},
+                {"invert_motor": True},
+                {"speed_topic": "talon_19_speed"},
+                {"info_topic": "talon_19_info"},
+                {"use_velocity": False},
+                {"velocity_multiplier": 3000},
+                {"test_speed": 100},
+                {"kP": 0.20},
+                {"kI": 0.000001},
+                {"kD": 0.000001},
+                {"kF": 0.0}
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'}
+        )
+        ,
+        Node(
             package='excavation',
             name='excavation',
             executable='excavation_node'
@@ -197,16 +218,10 @@ def generate_launch_description():
             name='neo',
             executable='neo_node',
             parameters=[
-                {"motor_number": 16},
+                {"motor_number": 18},
                 {"info_topic": "neoOut"},
                 {"speed_topic": "neo_speed"}
             ]
         )
-#        ,
-#        Node(
-#            package='autonomy',
-#            name='autonomy',
-#            executable='autonomy_node'
-#        )
     ]
 )
