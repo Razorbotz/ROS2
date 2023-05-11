@@ -3,6 +3,7 @@
 
 #include "logic/Automation.hpp"
 #include "logic/Automation1.hpp"
+#include <messages/msg/automation_out.hpp>
 
 int left = 0;
 
@@ -346,3 +347,12 @@ void Automation1::automate(){
     }
 }
     
+
+messages::msg::AutomationOut Automation1::getAutomationOut(){
+    messages::msg::AutomationOut automationOut;
+    automationOut.robot_state = robotStateMap.at(robotState);
+    automationOut.excavation_state = excavationStateMap.at(excavationState);
+    automationOut.error_state = errorMap.at(errorState);
+    automationOut.dump_state = dumpStateMap.at(dumpState);
+    return automationOut;
+}

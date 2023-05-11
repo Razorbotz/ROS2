@@ -12,9 +12,11 @@
 #include <messages/msg/axis_state.hpp>
 #include <messages/msg/key_state.hpp>
 #include <messages/msg/zed_position.hpp>
+#include <messages/msg/autonomy_out.hpp>
 
 #include "logic/Automation1.hpp"
 #include "logic/AutomationTypes.hpp"
+
 
 /** @file
  * @brief Node handling logic for robot
@@ -69,6 +71,7 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > automationGoPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon19Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > stepperPublisher;
+std::shared_ptr<rclcpp::Publisher<messages::msg::AutomationOut_<std::allocator<void> >, std::allocator<void> > > automationOutPublisher;
 
 
 /** @brief Function to initialize the motors to zero
@@ -483,12 +486,16 @@ int main(int argc, char **argv){
     automationGoPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
     talon19Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_19_speed",1);
     stepperPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("stepper_speed",1);
+    automationOutPublisher = nodeHandle->create_publisher<messages::msg::AutomationOut>("automation_out",1);
 
     initSetSpeed();
 
     rclcpp::Rate rate(30);
     while(rclcpp::ok()){
-        if(automationGo) automation->automate();
+        if(automationGo){
+            automation->automate();
+            automationOutPublisher->publish(automation->getAutomationOut());
+        } 
         rclcpp::spin_some(nodeHandle);
         rate.sleep();
     }

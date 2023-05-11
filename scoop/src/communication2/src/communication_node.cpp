@@ -33,6 +33,7 @@
 #include <messages/msg/zed_position.hpp>
 #include <messages/msg/linear_out.hpp>
 #include <messages/msg/neo_out.hpp>
+#include <messages/msg/autonomy_out.hpp>
 
 #include <BinaryMessage.hpp>
 
@@ -238,6 +239,19 @@ void send(std::string messageLabel, const messages::msg::NeoOut::SharedPtr neo){
 }
 
 
+void send(std::string messageLabel, const messages::msg::AutonomyOut::SharedPtr autonomy){
+    if(silentRunning)return;
+
+    BinaryMessage message(messageLabel);
+    message.addElementString("Robot State", autonomy->robot_state);
+    message.addElementString("Excavation State", autonomy->excavation_state);
+    message.addElementString("Error State", autonomy->error_state);
+    message.addElementString("Dump State", autonomy->dump_state);
+    
+    send(message);
+}
+
+
 /** @brief Callback function that publishes position data to the client
  * 
  * This function is called when the node receives position data from the
@@ -432,6 +446,11 @@ void neoOutCallback(const messages::msg::NeoOut::SharedPtr neoOut){
     send("Neo", neoOut);
 }
 
+
+void autonomyOutCallback(const messages::msg::AutonomyOut::SharedPtr autonomyOut){
+    send("Autonomy", autonomyOut);
+}
+
 /** @brief Returns the address string of the rover.
  * 
  * This function is called when the node
@@ -597,6 +616,7 @@ int main(int argc, char **argv){
     auto neoOutSubscriber = nodeHandle->create_subscription<messages::msg::NeoOut>("neo_out",1,neoOutCallback);
     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
     auto zedImageSubscriber = nodeHandle->create_subscription<sensor_msgs::msg::Image>("zed_image", 10, zedImageCallback);
+    auto autonomyOutSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyOut>("autonomy_out", 10, autonomyOutCallback);
 
     int server_fd, bytesRead; 
     struct sockaddr_in address; 

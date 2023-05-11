@@ -50,6 +50,7 @@ rosidl_generate_interfaces(messages
   "msg/ZedPosition.msg"
   "msg/NeoOut.msg"
   "msg/LinearOut.msg"
+  "msg/AutonomyOut.msg"
 
   DEPENDENCIES builtin_interfaces
 )
