@@ -137,7 +137,8 @@ void Automation1::automate(){
         // Back up robot to get more regolith
         if(excavationState == DIG){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: DIG STATE");
-            if((std::chrono::high_resolution_clock::now() - startTime) > 20){
+            auto finish = std::chrono::high_resolution_clock::now();
+		    if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-this->startTime).count() > 250000000)
                 setStartTime(std::chrono::high_resolution_clock::now());
                 setStepperSpeed(-1);
                 excavationState = RAISE_LADDER;
@@ -148,7 +149,8 @@ void Automation1::automate(){
         if(excavationState == RAISE_LADDER){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_LADDER STATE");
             setNeoSpeed(0.0);
-            if((std::chrono::high_resolution_clock::now() - startTime) > 20){
+            auto finish = std::chrono::high_resolution_clock::now();
+		    if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-this->startTime).count() > 250000000)
                 excavationState = RAISE_ASSEMBLY;
             }
         }
