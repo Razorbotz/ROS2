@@ -5,7 +5,7 @@
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/empty.hpp>
 #include <messages/msg/linear_out.hpp>
-#include <messages/msg/automation_out.hpp>
+#include <messages/msg/autonomy_out.hpp>
 
 #include "AutomationTypes.hpp"
 
