@@ -124,16 +124,11 @@ void Automation1::automate(){
         }
 
         //Lower ladder
-            //Set speed to 0.4
-            
-            //Check for errors
-            
-            //Handle errors
-            
-            //atMax, move to dig
         if(excavationState == LOWER_LADDER){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: LOWER_LADDER STATE");
             setNeoSpeed(0.1);
+            setStepperSpeed(1);
+            setStartTime(std::chrono::high_resolution_clock::now());
             excavationState = DIG;
         }
 
@@ -142,21 +137,20 @@ void Automation1::automate(){
         // Back up robot to get more regolith
         if(excavationState == DIG){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: DIG STATE");
-            excavationState = RAISE_LADDER;
+            if((std::chrono::high_resolution_clock::now() - startTime) > 20){
+                setStartTime(std::chrono::high_resolution_clock::now());
+                setStepperSpeed(-1);
+                excavationState = RAISE_LADDER;
+            }
         }
         
         //Raise ladder
-            //Set speed to -0.4
-            
-            //Check for errors
-            
-            //Handle errors
-            
-            //atMin, move to raise assembly
         if(excavationState == RAISE_LADDER){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_LADDER STATE");
             setNeoSpeed(0.0);
-            excavationState = RAISE_ASSEMBLY;
+            if((std::chrono::high_resolution_clock::now() - startTime) > 20){
+                excavationState = RAISE_ASSEMBLY;
+            }
         }
 
         //Raise assembly

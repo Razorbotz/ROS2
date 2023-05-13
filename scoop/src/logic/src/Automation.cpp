@@ -31,6 +31,7 @@ void Automation::setNode(rclcpp::Node::SharedPtr node){
     shoulderPublisher = this->node->create_publisher<std_msgs::msg::Float32>("shoulder_speed",1);
     dumpPublisher = this->node->create_publisher<std_msgs::msg::Float32>("dump_speed",1);
     neoPublisher = this->node->create_publisher<std_msgs::msg::Float32>("neo_speed",1);
+    stepperPublisher = this->node->create_publisher<std_msgs::msg::Float32>("stepper_speed",1);
     autonomyOutPublisher = this->node->create_publisher<messages::msg::AutonomyOut>("autonomy_out",1);
 }
 
@@ -165,6 +166,12 @@ void Automation::setNeoSpeed(float speed){
     neoPublisher->publish(Speed);
 }
 
+void Automation::setStepperSpeed(float speed){
+    std_msgs::msg::Float32 Speed;
+    Speed.data = speed;
+    stepperPublisher->publish(Speed);
+}
+
 void Automation::setDestAngle(float degrees){
     if(degrees > 180){
         this->destAngle = degrees - 360;
@@ -185,4 +192,8 @@ void Automation::publishAutonomyOut(std::string robotStateString, std::string ex
     aOut.error_state = errorStateString;
     aOut.dump_state = dumpStateString;
     autonomyOutPublisher->publish(aOut);
+}
+
+void Automation::setStartTime(std::chrono::time_point StartTime){
+    this->startTime = StartTime;
 }

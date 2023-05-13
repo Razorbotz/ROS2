@@ -20,6 +20,7 @@ class Automation{
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > shoulderPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > dumpPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > neoPublisher;
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > stepperPublisher;
     std::shared_ptr<rclcpp::Publisher<messages::msg::AutonomyOut_<std::allocator<void> >, std::allocator<void> > > autonomyOutPublisher;
 
     rclcpp::Node::SharedPtr node;
@@ -30,6 +31,7 @@ class Automation{
     float currentRightSpeed=0;
     Linear linear1, linear2, linear3;
     float destDistance=0, destAngle=0;
+    std::chrono::time_point startTime;
 
     virtual void automate() = 0;
 
@@ -61,9 +63,13 @@ class Automation{
 
     void setNeoSpeed(float speed);
 
+    void setStepperSpeed(float speed);
+
     void setDestAngle(float degrees);
 
     void setDestDistance(float meters);
 
     void publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string dumpStateString);
+
+    void setStartTime(std::chrono::time_point StartTime);
 };
