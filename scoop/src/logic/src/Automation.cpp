@@ -31,6 +31,7 @@ void Automation::setNode(rclcpp::Node::SharedPtr node){
     shoulderPublisher = this->node->create_publisher<std_msgs::msg::Float32>("shoulder_speed",1);
     dumpPublisher = this->node->create_publisher<std_msgs::msg::Float32>("dump_speed",1);
     neoPublisher = this->node->create_publisher<std_msgs::msg::Float32>("neo_speed",1);
+    autonomyOutPublisher = this->node->create_publisher<messages::msg::AutonomyOut>("autonomy_out",1);
 }
 
 
