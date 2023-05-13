@@ -72,4 +72,6 @@ class Automation{
     void publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string dumpStateString);
 
     void setStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime);
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> getStartTime();
 };

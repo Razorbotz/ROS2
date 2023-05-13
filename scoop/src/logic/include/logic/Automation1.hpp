@@ -15,6 +15,8 @@ class Automation1 : public Automation{
     DumpState dumpState = DUMP_IDLE;
     Location destination;
 
+    int excavationDuration = 25;
+
     std::map<RobotState, const char*> robotStateMap = {
         {LOCATE, "Locate"},
         {ALIGN, "Align"},
