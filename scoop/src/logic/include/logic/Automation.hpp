@@ -31,7 +31,7 @@ class Automation{
     float currentRightSpeed=0;
     Linear linear1, linear2, linear3;
     float destDistance=0, destAngle=0;
-    std::chrono::time_point startTime;
+    std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
 
     virtual void automate() = 0;
 
@@ -71,5 +71,5 @@ class Automation{
 
     void publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string dumpStateString);
 
-    void setStartTime(std::chrono::time_point StartTime);
+    void setStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime);
 };

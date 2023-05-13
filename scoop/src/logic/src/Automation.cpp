@@ -194,6 +194,6 @@ void Automation::publishAutonomyOut(std::string robotStateString, std::string ex
     autonomyOutPublisher->publish(aOut);
 }
 
-void Automation::setStartTime(std::chrono::time_point StartTime){
+void Automation::setStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime){
     this->startTime = StartTime;
 }
