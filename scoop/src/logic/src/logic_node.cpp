@@ -55,7 +55,7 @@ float joystick1Pitch=0;
 float joystick1Yaw=0;
 float joystick1Throttle=0;
 
-float maxSpeed=0.1;
+float maxSpeed=0.4;
 
 bool automationGo=false;
 bool excavationGo = false;
@@ -381,10 +381,10 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         }
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
     }
-    if(keyState->key==45 && keyState->state==1){
+    if(keyState->key==43 && keyState->state==1){
         updateMaxSpeed(0.1);
     }
-    if(keyState->key==43 && keyState->state==1){
+    if(keyState->key==45 && keyState->state==1){
         updateMaxSpeed(-0.1);
     }
 }

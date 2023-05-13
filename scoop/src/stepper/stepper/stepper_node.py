@@ -12,13 +12,22 @@ class StepperNode(Node):
         self.servoStateSubscriber = self.create_subscription(Float32, 'stepper_speed', self.stepperCallback, 10)
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(18, GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup(16, GPIO.OUT, initial=GPIO.LOW)
 
     
     def stepperCallback(self, msg):
+        # Extend Stepper, 18 HIGH, 16 LOW
         if msg.data == 1:
-            print("1")
+            GPIO.output(18, GPIO.HIGH)
+            GPIO.output(16, GPIO.LOW)
+        # Retract Stepper, 18 HIGH, 16 HIGH
         elif msg.data == -1:
-            print("-1")
+            GPIO.output(18, GPIO.HIGH)
+            GPIO.output(16, GPIO.HIGH)
+        # Do nothing, 18 LOW, 16 LOW
+        else:
+            GPIO.output(18, GPIO.LOW)
+            GPIO.output(16, GPIO.LOW)
 
     
 def main(args=None):
