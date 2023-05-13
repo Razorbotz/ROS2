@@ -128,7 +128,9 @@ void Automation1::automate(){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: LOWER_LADDER STATE");
             setNeoSpeed(0.1);
             setStepperSpeed(1);
-            setStartTime(std::chrono::high_resolution_clock::now());
+            auto start = std::chrono::high_resolution_clock::now()
+            setStartTime(start);
+            RCLCPP_INFO(this->node->get_logger(), start);
             excavationState = DIG;
         }
 
@@ -138,8 +140,10 @@ void Automation1::automate(){
         if(excavationState == DIG){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: DIG STATE");
             auto finish = std::chrono::high_resolution_clock::now();
-		    if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-getStartTime()).count() > (excavationDuration * 10000000)){
+            RCLCPP_INFO(this->node->get_logger(), finish);
+		    if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-getStartTime()).count() > (excavationDuration * 1000000000)){
                 setStartTime(std::chrono::high_resolution_clock::now());
+                RCLCPP_INFO(this->node->get_logger(), start);
                 setStepperSpeed(-1);
                 excavationState = RAISE_LADDER;
             }
@@ -150,7 +154,8 @@ void Automation1::automate(){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_LADDER STATE");
             setNeoSpeed(0.0);
             auto finish = std::chrono::high_resolution_clock::now();
-		    if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-getStartTime()).count() > (excavationDuration * 10000000)){
+            RCLCPP_INFO(this->node->get_logger(), finish);
+		    if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-getStartTime()).count() > (excavationDuration * 1000000000)){
                 excavationState = RAISE_ASSEMBLY;
             }
         }
