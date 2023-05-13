@@ -5,6 +5,7 @@
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/empty.hpp>
 #include <messages/msg/linear_out.hpp>
+#include <messages/msg/automation_out.hpp>
 
 #include "AutomationTypes.hpp"
 
@@ -19,6 +20,7 @@ class Automation{
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > shoulderPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > dumpPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > neoPublisher;
+    std::shared_ptr<rclcpp::Publisher<messages::msg::AutonomyOut_<std::allocator<void> >, std::allocator<void> > > autonomyOutPublisher;
 
     rclcpp::Node::SharedPtr node;
     Position position;
@@ -60,4 +62,6 @@ class Automation{
     void setDestAngle(float degrees);
 
     void setDestDistance(float meters);
+
+    void publishAutonomyOut();
 };

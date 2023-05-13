@@ -2,7 +2,6 @@
 
 #include "Automation.hpp"
 
-#include "messages/msg/autonomy_out.hpp"
 
 class Automation1 : public Automation{
 
@@ -61,6 +60,6 @@ class Automation1 : public Automation{
 
     void automate();
 
-    messages::msg::AutomationOut getAutomationOut()
+    void publishAutomationOut();
 
 };

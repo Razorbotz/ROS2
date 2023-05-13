@@ -176,3 +176,12 @@ void Automation::setDestAngle(float degrees){
 void Automation::setDestDistance(float meters){
     this->destDistance = meters;
 }
+
+void Automation::publishAutonomyOut(std::string robotState, std::string excavationState, std::string errorState, std::string dumpState){
+    messages::msg::AutonomyOut aOut;
+    aOut.robot_state = "";
+    aOut.excavation_state = "";
+    aOut.error_state = "";
+    aOut.dump_state = "";
+    autonomyOutPublisher->publish(aOut);
+}

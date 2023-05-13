@@ -3,7 +3,6 @@
 
 #include "logic/Automation.hpp"
 #include "logic/Automation1.hpp"
-#include <messages/msg/automation_out.hpp>
 
 int left = 0;
 
@@ -229,13 +228,13 @@ void Automation1::automate(){
                     else{
                         RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY ERROR: AcutatorNotMovingError. Ending Autonomy.");
                         excavationState = EXCAVATION_IDLE;
-                        robotState = INACTIVE;
+                        robotState = ROBOT_IDLE;
                     }
                 }
                 else{
                     RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY ERROR: PotentiometerError or ConnectionError. Ending Autonomy.");
                     excavationState = EXCAVATION_IDLE;
-                    robotState = INACTIVE;
+                    robotState = ROBOT_IDLE;
                 }
             }
         }
@@ -316,7 +315,7 @@ void Automation1::automate(){
                 errorState = LOWER_BIN_ERROR;
             }
 
-            if(linnear3.atMin){
+            if(linear3.atMin){
                 setDumpSpeed(0.0);
                 dumpState = DUMP_RAISE_ASSEMBLY;
             }
@@ -348,11 +347,10 @@ void Automation1::automate(){
 }
     
 
-messages::msg::AutomationOut Automation1::getAutomationOut(){
-    messages::msg::AutomationOut automationOut;
-    automationOut.robot_state = robotStateMap.at(robotState);
-    automationOut.excavation_state = excavationStateMap.at(excavationState);
-    automationOut.error_state = errorMap.at(errorState);
-    automationOut.dump_state = dumpStateMap.at(dumpState);
-    return automationOut;
+void Automation1::publishAutomationOut(){
+    std::string robotstate = robotStateMap.at(robotState);
+    std::string excavationstate = excavationStateMap.at(excavationState);
+    std::string errorstate = errorMap.at(errorState);
+    std::string dumpstate = dumpStateMap.at(dumpState);
+    publishAutonomyOut(robotstate, excavationstate, errorstate, dumpstate);
 }

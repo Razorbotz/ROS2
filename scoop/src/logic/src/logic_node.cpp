@@ -71,7 +71,6 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > automationGoPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon19Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > stepperPublisher;
-std::shared_ptr<rclcpp::Publisher<messages::msg::AutomationOut_<std::allocator<void> >, std::allocator<void> > > automationOutPublisher;
 
 
 /** @brief Function to initialize the motors to zero
@@ -274,7 +273,7 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             else{
                 speed.data = 0.0;
             }
-            stepperPublisher.publish(speed);
+            stepperPublisher->publish(speed);
             RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
             break;
         case 3:
@@ -284,7 +283,7 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             else{
                 speed.data = 0.0;
             }
-            stepperPublisher.publish(speed);
+            stepperPublisher->publish(speed);
             RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
             break;
         case 4:
@@ -486,7 +485,6 @@ int main(int argc, char **argv){
     automationGoPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
     talon19Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_19_speed",1);
     stepperPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("stepper_speed",1);
-    automationOutPublisher = nodeHandle->create_publisher<messages::msg::AutomationOut>("automation_out",1);
 
     initSetSpeed();
 
@@ -494,7 +492,7 @@ int main(int argc, char **argv){
     while(rclcpp::ok()){
         if(automationGo){
             automation->automate();
-            automationOutPublisher->publish(automation->getAutomationOut());
+            automation->publishAutomationOut();
         } 
         rclcpp::spin_some(nodeHandle);
         rate.sleep();
