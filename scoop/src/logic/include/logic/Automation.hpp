@@ -33,6 +33,8 @@ class Automation{
 
     virtual void automate() = 0;
 
+    virtual void publishAutomationOut() = 0;
+
     void setNode(rclcpp::Node::SharedPtr node);
 
     void setPosition(Position position);
