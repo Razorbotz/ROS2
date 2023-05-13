@@ -63,5 +63,5 @@ class Automation{
 
     void setDestDistance(float meters);
 
-    void publishAutonomyOut(std::string robotState, std::string excavationState, std::string errorState, std::string dumpState);
+    void publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string dumpStateString);
 };

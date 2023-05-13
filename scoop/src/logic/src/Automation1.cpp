@@ -348,9 +348,9 @@ void Automation1::automate(){
     
 
 void Automation1::publishAutomationOut(){
-    std::string robotstate = robotStateMap.at(robotState);
-    std::string excavationstate = excavationStateMap.at(excavationState);
-    std::string errorstate = errorStateMap.at(errorState);
-    std::string dumpstate = dumpStateMap.at(dumpState);
-    publishAutonomyOut(robotstate, excavationstate, errorstate, dumpstate);
+    std::string robotStateString = robotStateMap.at(robotState);
+    std::string excavationStateString = excavationStateMap.at(excavationState);
+    std::string errorStateString = errorStateMap.at(errorState);
+    std::string dumpStateString = dumpStateMap.at(dumpState);
+    publishAutonomyOut(robotStateString, excavationStateString, errorStateString, dumpStateString);
 }

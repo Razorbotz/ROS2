@@ -177,7 +177,7 @@ void Automation::setDestDistance(float meters){
     this->destDistance = meters;
 }
 
-void Automation::publishAutonomyOut(std::string robotState, std::string excavationState, std::string errorState, std::string dumpState){
+void Automation::publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string dumpStateString){
     messages::msg::AutonomyOut aOut;
     aOut.robot_state = "";
     aOut.excavation_state = "";
