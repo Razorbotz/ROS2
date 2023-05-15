@@ -15,7 +15,14 @@ class Automation1 : public Automation{
     DumpState dumpState = DUMP_IDLE;
     Location destination;
 
-    int excavationDuration = 25;
+// To change the amount of time that it takes to lower the stepper motor
+    int extensionDuration = 25;
+    // Controls how long the robot will mine for
+    int excavationDuration = 30;
+    // Controls the speed at which the bucket ladder moves
+    float neoSpeed = 0.1;
+    // Controls the speed at which the robot backs up during mining
+    float reverseSpeed = -0.05;
 
     std::map<RobotState, const char*> robotStateMap = {
         {LOCATE, "Locate"},

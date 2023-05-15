@@ -119,6 +119,10 @@ void Automation1::automate(){
 
             if(linear1.atMax && linear2.atMax){
                 setShoulderSpeed(0.0);
+                setNeoSpeed(neoSpeed);
+                setStepperSpeed(1);
+                auto start = std::chrono::high_resolution_clock::now();
+                setStartTime(start);
                 excavationState = LOWER_LADDER;
             }
         }
@@ -126,11 +130,13 @@ void Automation1::automate(){
         //Lower ladder
         if(excavationState == LOWER_LADDER){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: LOWER_LADDER STATE");
-            setNeoSpeed(0.1);
-            setStepperSpeed(1);
-            auto start = std::chrono::high_resolution_clock::now();
-            setStartTime(start);
-            excavationState = DIG;
+            auto finish = std::chrono::high_resolution_clock::now();
+            if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > (extensionDuration)){
+                auto start = std::chrono::high_resolution_clock::now();
+                setStartTime(start);
+                changeSpeed(reverseSpeed, reverseSpeed);
+                excavationState = DIG;
+            }
         }
 
         //Dig
@@ -143,6 +149,7 @@ void Automation1::automate(){
                 auto start = std::chrono::high_resolution_clock::now();
                 setStartTime(start);
                 setStepperSpeed(-1);
+                changeSpeed(0, 0);
                 excavationState = RAISE_LADDER;
             }
         }
@@ -186,7 +193,7 @@ void Automation1::automate(){
                     adjPos = abs(adjPos) - 2.0 * (adjPos + 180);
                 }
                 setDestAngle(adjPos);
-                robotState = GO_TO_HOME;
+                robotState = EXCAVATE;
             }
         }
 
