@@ -22,7 +22,7 @@ class Automation1 : public Automation{
     // Controls the speed at which the bucket ladder moves
     float neoSpeed = 0.1;
     // Controls the speed at which the robot backs up during mining
-    float reverseSpeed = -0.05;
+    float reverseSpeed = -0.08;
 
     std::map<RobotState, const char*> robotStateMap = {
         {LOCATE, "Locate"},
