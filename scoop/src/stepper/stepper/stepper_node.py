@@ -20,10 +20,12 @@ class StepperNode(Node):
         if msg.data == 1:
             GPIO.output(18, GPIO.HIGH)
             GPIO.output(16, GPIO.LOW)
+            self.get_logger().info('Stepper: HIGH')
         # Retract Stepper, 18 HIGH, 16 HIGH
         elif msg.data == -1:
             GPIO.output(18, GPIO.HIGH)
             GPIO.output(16, GPIO.HIGH)
+            self.get_logger().info('Stepper: LOW')
         # Do nothing, 18 LOW, 16 LOW
         else:
             GPIO.output(18, GPIO.LOW)
