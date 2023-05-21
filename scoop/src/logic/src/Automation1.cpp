@@ -134,6 +134,7 @@ void Automation1::automate(){
             if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > (extensionDuration)){
                 auto start = std::chrono::high_resolution_clock::now();
                 setStartTime(start);
+                setGo();
                 changeSpeed(reverseSpeed, reverseSpeed);
                 excavationState = DIG;
             }
@@ -240,6 +241,7 @@ void Automation1::automate(){
                     RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY ERROR: PotentiometerError or ConnectionError. Ending Autonomy.");
                     excavationState = EXCAVATION_IDLE;
                     robotState = ROBOT_IDLE;
+                    setStop();
                 }
             }
         }
