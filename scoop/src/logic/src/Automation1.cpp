@@ -245,6 +245,7 @@ void Automation1::automate(){
                     excavationState = EXCAVATION_IDLE;
                     robotState = ROBOT_IDLE;
                     setStop();
+                    std_msgs::msg::Float32 speed;
                     speed.data = 0.8;
                     shoulderPublisher->publish(speed);
                 }
