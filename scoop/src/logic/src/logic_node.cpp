@@ -279,13 +279,13 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             break;
         case 3:
             if(buttonState->state){
-                speed.data = 1.0;
+                speed.data = -0.25;
             }
             else{
                 speed.data = 0.0;
             }
             dumpBinPublisher->publish(speed);
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
+            RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
             break;
         case 4:
             if(buttonState->state){
@@ -295,17 +295,17 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
                 speed.data = 0.0;
             }
             stepperPublisher->publish(speed);
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
+            RCLCPP_INFO(nodeHandle->get_logger(), "Button 5");
             break;
         case 5:
             if(buttonState->state){
-                speed.data = 1.0;
+                speed.data = 0.25;
             }
             else{
                 speed.data = 0.0;
             }
             dumpBinPublisher->publish(speed);
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
+            RCLCPP_INFO(nodeHandle->get_logger(), "Button 6");
             break;
         case 6:
             break;
