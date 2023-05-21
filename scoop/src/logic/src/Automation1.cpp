@@ -240,6 +240,15 @@ void Automation1::automate(){
                         shoulderPublisher->publish(speed);
                     }
                 }
+                else if(linear1.error == "None" && linear2.error == "None"){
+                    if(errorState == LOWER_ASSEMBLY_ERROR){
+                        excavationState = LOWER_ASSEMBLY;
+                    }
+                    if(errorState == RAISE_ASSEMBLY_ERROR){
+                        excavationState = RAISE_ASSEMBLY;
+                    }
+                    errorState = NONE;
+                }
                 else{
                     RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY ERROR: PotentiometerError or ConnectionError. Ending Autonomy.");
                     excavationState = EXCAVATION_IDLE;

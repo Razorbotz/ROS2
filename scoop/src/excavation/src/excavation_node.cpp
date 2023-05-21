@@ -185,6 +185,7 @@ void shoulderCallback(const std_msgs::msg::Float32::SharedPtr speed){
 void setPotentiometerError(int potentData, LinearActuator *linear){
     if(potentData == 1024){
         linear->error = PotentiometerError;
+        RCLCPP_INFO(nodeHandle->get_logger(),"EXCAVATION ERROR: PotentiometerError");
     }
     else{
         if(linear->error == PotentiometerError){
@@ -237,6 +238,7 @@ void processPotentiometerData(int potentData, LinearActuator *linear){
                 else{
                     if(linear->error == None || linear->error == ActuatorsSyncError){
                         linear->error = ActuatorNotMovingError;
+                        RCLCPP_INFO(nodeHandle->get_logger(),"EXCAVATION ERROR: ActuatorNotMovingError");
                     }
                 }
             }
@@ -292,6 +294,7 @@ void potentiometerCallback(const std_msgs::msg::Int16MultiArray::SharedPtr poten
         linear1.error = ConnectionError;
         linear2.error = ConnectionError;
         linear3.error = ConnectionError;
+        RCLCPP_INFO(nodeHandle->get_logger(),"EXCAVATION ERROR: ConnectionError");
     }
     else{
         if(linear1.error == ConnectionError){
@@ -424,7 +427,7 @@ int main(int argc, char **argv){
     auto start = std::chrono::high_resolution_clock::now();
     while(rclcpp::ok()){
         auto finish = std::chrono::high_resolution_clock::now();
-        if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() > 250000000){
+        if(std::chrono::duration_cast<std::chrono::seconds>(finish-start).count() > 2){
             getLinearOut(&linearOut1, &linear1);
             linearOut1Publisher->publish(linearOut1);
 
