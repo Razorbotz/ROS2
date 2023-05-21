@@ -69,7 +69,7 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > dumpPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > neoPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > automationGoPublisher;
-std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon19Publisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > dumpBinPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > stepperPublisher;
 
 
@@ -170,6 +170,7 @@ void stopExcavation(){
     shoulderPublisher->publish(speed);
     dumpPublisher->publish(speed);
     neoPublisher->publish(speed);
+    dumpBinPublisher->publish(speed);
 }
 
 /**
@@ -277,7 +278,17 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
             break;
         case 3:
-        if(buttonState->state){
+            if(buttonState->state){
+                speed.data = 1.0;
+            }
+            else{
+                speed.data = 0.0;
+            }
+            dumpBinPublisher->publish(speed);
+            RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
+            break;
+        case 4:
+            if(buttonState->state){
                 speed.data = -1.0;
             }
             else{
@@ -286,9 +297,15 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             stepperPublisher->publish(speed);
             RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
             break;
-        case 4:
-            break;
         case 5:
+            if(buttonState->state){
+                speed.data = 1.0;
+            }
+            else{
+                speed.data = 0.0;
+            }
+            dumpBinPublisher->publish(speed);
+            RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
             break;
         case 6:
             break;
@@ -316,18 +333,11 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
 void joystickHatCallback(const messages::msg::HatState::SharedPtr hatState){
     std::cout << "Hat " << (int)hatState->joystick << " " << (int)hatState->hat << " " << (int)hatState->state << std::endl;
 
-    std_msgs::msg::Float32 dumpSpeed;
     if((int)hatState->state == 1 ){
-	    dumpSpeed.data=0.2;
-        dumpPublisher->publish(dumpSpeed);
     }
     if((int)hatState->state == 4 ){
-	    dumpSpeed.data=-0.2;
-        dumpPublisher->publish(dumpSpeed);
     }
     if((int)hatState->state == 0 ){
-	    dumpSpeed.data=0.0;
-        dumpPublisher->publish(dumpSpeed);
     }
 }
 
@@ -483,7 +493,7 @@ int main(int argc, char **argv){
     dumpPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("dump_speed",1);
     neoPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("neo_speed",1);
     automationGoPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
-    talon19Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_19_speed",1);
+    dumpBinPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("dump_bin_speed",1);
     stepperPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("stepper_speed",1);
 
     initSetSpeed();

@@ -370,7 +370,7 @@ void automationGoCallback(const std_msgs::msg::Bool::SharedPtr msg){
  * @param speed - ROS2 message containing the speed data
  * @return void
  * */
-void ladderSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
+void dumpBinSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     std_msgs::msg::Float32 speed1;
     speed1.data = speed->data;    
     talon17Publisher->publish(speed1);
@@ -406,7 +406,7 @@ int main(int argc, char **argv){
     auto shoulderSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("shoulder_speed",1,shoulderCallback);
     auto dumpSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("dump_speed",1,dumpSpeedCallback);
     auto automationGoSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>("automationGo",1,automationGoCallback);
-    auto ladderSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("ladder_speed",1,ladderSpeedCallback);
+    auto dumpBinSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("dump_bin_speed",1,dumpBinSpeedCallback);
 
     talon14Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_14_speed",1);
     talon15Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_15_speed",1);

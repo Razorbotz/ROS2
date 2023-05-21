@@ -105,7 +105,7 @@ def generate_launch_description():
             name='dump',
             executable='talon_node',
             parameters=[
-                {"motor_number": 19},
+                {"motor_number": 17},
                 {"diagnostics_port": 56712},
                 {"invert_motor": True},
                 {"speed_topic": "talon_19_speed"},
