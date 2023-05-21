@@ -235,6 +235,7 @@ void Automation1::automate(){
                         RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY ERROR: AcutatorNotMovingError. Ending Autonomy.");
                         excavationState = EXCAVATION_IDLE;
                         robotState = ROBOT_IDLE;
+                        std_msgs::msg::Float32 speed;
                         speed.data = 0.8;
                         shoulderPublisher->publish(speed);
                     }
