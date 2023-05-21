@@ -233,6 +233,7 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     }
     else if(axisState->axis==3){
         joystick1Throttle = axisState->state/2 + 0.5;
+        joystick1Throttle = transformJoystickInfo(joystick1Throttle, deadZone * maxNeoSpeed);
         if(excavationGo){
             updateExcavation();
         }

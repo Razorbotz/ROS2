@@ -151,6 +151,7 @@ void Automation1::automate(){
                 setStartTime(start);
                 setStepperSpeed(-1);
                 changeSpeed(0, 0);
+                setNeoSpeed(0.0);
                 excavationState = RAISE_LADDER;
             }
         }
@@ -158,7 +159,6 @@ void Automation1::automate(){
         //Raise ladder
         if(excavationState == RAISE_LADDER){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_LADDER STATE");
-            setNeoSpeed(0.0);
             auto finish = std::chrono::high_resolution_clock::now();
 		    if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > (extensionDuration)){
                 excavationState = RAISE_ASSEMBLY;
