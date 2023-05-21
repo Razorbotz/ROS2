@@ -207,19 +207,19 @@ def generate_launch_description():
             ]
         )
         ,
-        Node(
-            package='zed_tracking',
-            name='zed_tracking',
-            executable='zed_tracking_node'
-        )
-        ,
+#        Node(
+#            package='zed_tracking',
+#            name='zed_tracking',
+#            executable='zed_tracking_node'
+#        )
+#        ,
         Node(
             package='neo',
             name='neo',
             executable='neo_node',
             parameters=[
                 {"motor_number": 18},
-                {"info_topic": "neoOut"},
+                {"info_topic": "neo_out"},
                 {"speed_topic": "neo_speed"}
             ]
         )
