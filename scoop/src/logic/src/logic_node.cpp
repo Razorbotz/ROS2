@@ -56,6 +56,7 @@ float joystick1Yaw=0;
 float joystick1Throttle=0;
 
 float maxSpeed=0.4;
+float maxNeoSpeed = 0.1;
 
 bool automationGo=false;
 bool excavationGo = false;
@@ -148,7 +149,7 @@ void updateExcavation(){
     speed.data = joystick1Pitch;
     shoulderPublisher->publish(speed);
     std_msgs::msg::Float32 throttleSpeed;
-    throttleSpeed.data = joystick1Throttle * 0.1;
+    throttleSpeed.data = joystick1Throttle * maxNeoSpeed;
     neoPublisher->publish(throttleSpeed);
     std_msgs::msg::Float32 dumpSpeed;
     dumpSpeed.data = joystick1Yaw;
@@ -363,6 +364,18 @@ void updateMaxSpeed(float deltaSpeed){
     RCLCPP_INFO(nodeHandle->get_logger(), "maxSpeed: %f", maxSpeed);
 }
 
+
+void updateMaxNeoSpeed(float deltaSpeed){
+    maxNeoSpeed += deltaSpeed;
+    if(maxNeoSpeed <= 0){
+        maxNeoSpeed = 0.1;
+    }
+    if(maxNeoSpeed > 1){
+        maxNeoSpeed = 1;
+    }
+    RCLCPP_INFO(nodeHandle->get_logger(), "maxNeoSpeed: %f", maxNeoSpeed);
+}
+
 /** @brief Callback function for the keys
  * 
  * This function is called when the node receives a
@@ -396,6 +409,12 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     }
     if(keyState->key==45 && keyState->state==1){
         updateMaxSpeed(-0.1);
+    }
+    if(keyState->key==104 && keyState->state==1){
+        updateMaxNeoSpeed(0.1);
+    }
+    if(keyState->key==108 && keyState->state==1){
+        updateMaxNeoSpeed(-0.1);
     }
 }
 
