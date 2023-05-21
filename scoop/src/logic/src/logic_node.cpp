@@ -401,6 +401,7 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         }
         else{
             automation->setStop();
+            automation->stopActuators();
         }
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
     }

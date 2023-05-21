@@ -118,6 +118,13 @@ void Automation::setStop(){
     stopPublisher->publish(empty);
 }
 
+void Automation::stopActuators(){
+    std_msgs::msg::Float32 Speed;
+    Speed.data = 0.0;
+    shoulderPublisher->publish(Speed);
+    dumpPublisher->publish(Speed);
+}
+
 void Automation::setLinear1(const messages::msg::LinearOut::SharedPtr linearOut){
     this->linear1.speed = linearOut->speed;
     this->linear1.atMax = linearOut->at_max;

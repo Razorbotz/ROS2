@@ -49,6 +49,8 @@ class Automation{
 
     void setStop();
 
+    void stopActuators();
+
     void setLinear1(const messages::msg::LinearOut::SharedPtr linearOut);
 
     void setLinear2(const messages::msg::LinearOut::SharedPtr linearOut);
