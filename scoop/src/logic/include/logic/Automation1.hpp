@@ -16,7 +16,7 @@ class Automation1 : public Automation{
     Location destination;
 
 // To change the amount of time that it takes to lower the stepper motor
-    int extensionDuration = 5;
+    int extensionDuration = 40;
     // Controls how long the robot will mine for
     int excavationDuration = 30;
     // Controls the speed at which the bucket ladder moves
