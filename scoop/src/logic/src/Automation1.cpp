@@ -202,7 +202,7 @@ void Automation1::automate(){
         // If Connection error, fail
         // If potentiometer error, fail
         if(excavationState == ERROR_RECOVERY){
-            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: EXCAVATION_IDLE STATE");
+            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: ERROR_RECOVERY STATE");
             if(errorState == LOWER_ASSEMBLY_ERROR || errorState == RAISE_ASSEMBLY_ERROR){
                 if(linear1.error == "ActuatorNotMovingError" || linear2.error == "ActuatorNotMovingError"){
                     // Move linear actuators down and up
