@@ -32,6 +32,7 @@ class Automation{
     Linear linear1, linear2, linear3;
     float destDistance=0, destAngle=0;
     std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
+    std::chrono::time_point<std::chrono::high_resolution_clock> startBackupTime;
 
     virtual void automate() = 0;
 
@@ -75,5 +76,9 @@ class Automation{
 
     void setStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime);
 
+    void setBackupStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime);
+
     std::chrono::time_point<std::chrono::high_resolution_clock> getStartTime();
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> getBackupStartTime();
 };

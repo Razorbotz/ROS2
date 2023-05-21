@@ -134,6 +134,7 @@ void Automation1::automate(){
             if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > (extensionDuration)){
                 auto start = std::chrono::high_resolution_clock::now();
                 setStartTime(start);
+                setBackupStartTime(start);
                 setGo();
                 changeSpeed(reverseSpeed, reverseSpeed);
                 excavationState = DIG;
@@ -146,6 +147,15 @@ void Automation1::automate(){
         if(excavationState == DIG){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: DIG STATE");
             auto finish = std::chrono::high_resolution_clock::now();
+            if(std::chrono::duration_cast<std::chrono::seconds>(finish-getBackupStartTime()).count() > (stopDuration)){
+                if(std::chrono::duration_cast<std::chrono::seconds>(finish-getBackupStartTime()).count() > (stopDuration + reverseDuration)){
+                    setBackupStartTime(finish);
+                    changeSpeed(0, 0);
+                }
+                else{
+                    changeSpeed(reverseSpeed, reverseSpeed);
+                }
+            }
 		    if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > (excavationDuration)){
                 auto start = std::chrono::high_resolution_clock::now();
                 setStartTime(start);
@@ -162,6 +172,7 @@ void Automation1::automate(){
             auto finish = std::chrono::high_resolution_clock::now();
 		    if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > (extensionDuration)){
                 excavationState = RAISE_ASSEMBLY;
+                setStepperSpeed(0);
             }
         }
 

@@ -205,6 +205,14 @@ void Automation::setStartTime(std::chrono::time_point<std::chrono::high_resoluti
     this->startTime = StartTime;
 }
 
+void Automation::setBackupStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime){
+    this->startBackupTime = StartTime;
+}
+
 std::chrono::time_point<std::chrono::high_resolution_clock> Automation::getStartTime(){
     return this->startTime;
+}
+
+std::chrono::time_point<std::chrono::high_resolution_clock> Automation::getBackupStartTime(){
+    return this->startBackupTime;
 }
