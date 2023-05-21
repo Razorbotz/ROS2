@@ -239,6 +239,8 @@ void processPotentiometerData(int potentData, LinearActuator *linear){
                     if(linear->error == None || linear->error == ActuatorsSyncError){
                         linear->error = ActuatorNotMovingError;
                         RCLCPP_INFO(nodeHandle->get_logger(),"EXCAVATION ERROR: ActuatorNotMovingError");
+                        RCLCPP_INFO(nodeHandle->get_logger(),"linear.count: %d", linear.count);
+                        RCLCPP_INFO(nodeHandle->get_logger(),"linear.speed: %f", linear.speed);
                     }
                 }
             }
