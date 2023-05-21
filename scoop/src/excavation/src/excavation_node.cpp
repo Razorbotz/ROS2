@@ -227,7 +227,7 @@ void processPotentiometerData(int potentData, LinearActuator *linear){
     if(linear->potentiometer >= potentData - 10 && linear->potentiometer <= potentData + 10){
         if(linear->speed != 0.0){
             linear->count += 1;
-            if(linear->count >= 30){
+            if(linear->count >= 15){
                 if(linear->max > 800 && linear->speed > 0.0 && potentData >= linear->max - 20){
                     linear->atMax = true;
                 }

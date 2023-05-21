@@ -134,7 +134,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 10},
                 {"diagnostics_port": 72340},
-                {"invert_motor": False},
+                {"invert_motor": True},
                 {"speed_topic": "drive_right_speed"},
                 {"info_topic": "talon_10_info"},
                 {"use_velocity": False},
@@ -154,7 +154,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 11},
                 {"diagnostics_port": 72341},
-                {"invert_motor": True},
+                {"invert_motor": False},
                 {"speed_topic": "drive_left_speed"},
                 {"info_topic": "talon_11_info"},
                 {"use_velocity": False},
@@ -174,7 +174,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 12},
                 {"diagnostics_port": 72342},
-                {"invert_motor": False},
+                {"invert_motor": True},
                 {"speed_topic": "drive_right_speed"},
                 {"info_topic": "talon_12_info"},
                 {"use_velocity": False},
@@ -194,7 +194,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 13},
                 {"diagnostics_port": 72343},
-                {"invert_motor": True},
+                {"invert_motor": False},
                 {"speed_topic": "drive_left_speed"},
                 {"info_topic": "talon_13_info"},
                 {"use_velocity": False},
