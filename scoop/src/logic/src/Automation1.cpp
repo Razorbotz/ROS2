@@ -136,7 +136,6 @@ void Automation1::automate(){
                 setStartTime(start);
                 setBackupStartTime(start);
                 setGo();
-                changeSpeed(reverseSpeed, reverseSpeed);
                 excavationState = DIG;
             }
         }
