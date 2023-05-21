@@ -14,6 +14,12 @@ def generate_launch_description():
         )
         ,
         Node(
+            package='stepper',
+            name='stepper',
+            executable='stepper_node'
+        )
+        ,
+        Node(
             package='logic',
             name='logic',
             executable='logic_node',
@@ -212,7 +218,7 @@ def generate_launch_description():
 #            name='zed_tracking',
 #            executable='zed_tracking_node'
 #        )
-#        ,
+        ,
         Node(
             package='neo',
             name='neo',
