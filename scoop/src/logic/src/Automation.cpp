@@ -123,6 +123,7 @@ void Automation::stopActuators(){
     Speed.data = 0.0;
     shoulderPublisher->publish(Speed);
     dumpPublisher->publish(Speed);
+    stepperPublisher->publish(Speed);
 }
 
 void Automation::setLinear1(const messages::msg::LinearOut::SharedPtr linearOut){

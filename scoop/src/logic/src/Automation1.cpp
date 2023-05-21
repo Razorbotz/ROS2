@@ -135,6 +135,7 @@ void Automation1::automate(){
                 auto start = std::chrono::high_resolution_clock::now();
                 setStartTime(start);
                 setBackupStartTime(start);
+                setStepperSpeed(0);
                 setGo();
                 excavationState = DIG;
             }
