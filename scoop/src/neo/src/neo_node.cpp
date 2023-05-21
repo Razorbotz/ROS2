@@ -143,7 +143,7 @@ int main(int argc,char** argv){
         if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() > 250000000){
             neoOut.speed = currentSpeed;
             neoOutPublisher->publish(neoOut);
-			RCLCPP_INFO(this->node->get_logger(), "Neo motor position: %d", canSparkMax->get_motor_position());
+			RCLCPP_INFO(nodeHandle->get_logger(), "Neo motor position: %d", canSparkMax->get_motor_position());
         }
         rate.sleep();
         rclcpp::spin_some(nodeHandle);
