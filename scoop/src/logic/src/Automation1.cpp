@@ -159,24 +159,11 @@ void Automation1::automate(){
 		    if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > (excavationDuration)){
                 auto start = std::chrono::high_resolution_clock::now();
                 setStartTime(start);
-                setStepperSpeed(-1);
                 changeSpeed(0, 0);
                 setNeoSpeed(0.0);
-                excavationState = RAISE_LADDER;
-            }
-        }
-        
-        //Raise ladder
-        if(excavationState == RAISE_LADDER){
-            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_LADDER STATE");
-            auto finish = std::chrono::high_resolution_clock::now();
-		    if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > (extensionDuration)){
                 excavationState = RAISE_ASSEMBLY;
-                setStepperSpeed(0);
             }
         }
-
-        //Raise assembly
         if(excavationState == RAISE_ASSEMBLY){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_ASSEMBLY STATE");
             setShoulderSpeed(-0.8);
@@ -196,7 +183,7 @@ void Automation1::automate(){
                 // robotState = GO_TO_HOME;
 
                 setShoulderSpeed(0.0);
-                excavationState = EXCAVATION_IDLE;
+                excavationState = RAISE_LADDER;
                 destination.x=0;
                 destination.z=0;
                 setDestDistance(1.0);
@@ -206,8 +193,23 @@ void Automation1::automate(){
                 }
                 setDestAngle(adjPos);
                 robotState = EXCAVATE;
+                setStepperSpeed(-1);
+                auto start = std::chrono::high_resolution_clock::now();
+                setStartTime(start);
             }
         }
+        //Raise ladder
+        if(excavationState == RAISE_LADDER){
+            RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_LADDER STATE");
+            auto finish = std::chrono::high_resolution_clock::now();
+		    if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > (extensionDuration)){
+                excavationState = EXCAVATION_IDLE;
+                setStepperSpeed(0);
+            }
+        }
+
+        //Raise assembly
+        
 
         //Handle errors
         // If Connection error, fail
