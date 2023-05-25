@@ -213,6 +213,7 @@ void Automation1::automate(){
                     auto start = std::chrono::high_resolution_clock::now();
                     setStartTime(start);
                 }
+            }
             else{
                 auto finish = std::chrono::high_resolution_clock::now();
                 if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > 25){
