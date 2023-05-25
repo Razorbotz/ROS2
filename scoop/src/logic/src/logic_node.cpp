@@ -61,6 +61,7 @@ float maxNeoSpeed = 0.1;
 bool automationGo=false;
 bool excavationGo = false;
 bool invertBucket = false;
+bool runSensorlessly = false;
 
 Automation* automation=new Automation1();
 
@@ -405,6 +406,10 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
             automation->stopActuators();
         }
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
+    }
+    if(keyState->key==120 && keyState->state==1){
+        runSensorlessly = !runSensorlessly;
+        automation->setRunSensorlessly(runSensorlessly);
     }
     if(keyState->key==43 && keyState->state==1){
         updateMaxSpeed(0.1);

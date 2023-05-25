@@ -106,24 +106,39 @@ void Automation1::automate(){
         if(excavationState == EXCAVATION_IDLE){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: EXCAVATION_IDLE STATE");
             excavationState = LOWER_ASSEMBLY;
+            auto start = std::chrono::high_resolution_clock::now();
+            setStartTime(start);
         }
         
         if(excavationState == LOWER_ASSEMBLY){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: LOWER_ASSEMBLY STATE");
             setShoulderSpeed(0.8);
             
-            if(checkErrors(linear1) || checkErrors(linear2)){
-                excavationState = ERROR_RECOVERY;
-                errorState = LOWER_ASSEMBLY_ERROR;
-            }
+            if(!runSensorlessly){
+                if(checkErrors(linear1) || checkErrors(linear2)){
+                    excavationState = ERROR_RECOVERY;
+                    errorState = LOWER_ASSEMBLY_ERROR;
+                }
 
-            if(linear1.atMax && linear2.atMax){
-                setShoulderSpeed(0.0);
-                setNeoSpeed(neoSpeed);
-                setStepperSpeed(1);
-                auto start = std::chrono::high_resolution_clock::now();
-                setStartTime(start);
-                excavationState = LOWER_LADDER;
+                if(linear1.atMax && linear2.atMax){
+                    setShoulderSpeed(0.0);
+                    setNeoSpeed(neoSpeed);
+                    setStepperSpeed(1);
+                    auto start = std::chrono::high_resolution_clock::now();
+                    setStartTime(start);
+                    excavationState = LOWER_LADDER;
+                }
+            }
+            else{
+                auto finish = std::chrono::high_resolution_clock::now();
+                if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > 25){
+                    setShoulderSpeed(0.0);
+                    setNeoSpeed(neoSpeed);
+                    setStepperSpeed(1);
+                    auto start = std::chrono::high_resolution_clock::now();
+                    setStartTime(start);
+                    excavationState = LOWER_LADDER;
+                }
             }
         }
 
@@ -168,34 +183,46 @@ void Automation1::automate(){
             RCLCPP_INFO(this->node->get_logger(), "EXCAVATION AUTONOMY: RAISE_ASSEMBLY STATE");
             setShoulderSpeed(-0.8);
             
-            if(checkErrors(linear1) || checkErrors(linear2)){
-                excavationState = ERROR_RECOVERY;
-                errorState = RAISE_ASSEMBLY_ERROR;
-            }
-
-            if(linear1.atMin && linear2.atMin){
-                // setShoulderSpeed(0.0);
-                // excavationState = EXCAVATION_IDLE;
-                // destination.x=0;
-                // destination.z=0;
-                // setDestDistance(1.0);
-                // setDestAngle(position.yaw + left*180.0);
-                // robotState = GO_TO_HOME;
-
-                setShoulderSpeed(0.0);
-                excavationState = RAISE_LADDER;
-                destination.x=0;
-                destination.z=0;
-                setDestDistance(1.0);
-                double adjPos = position.yaw - 180.0;
-                if (adjPos < -180.0) {
-                    adjPos = abs(adjPos) - 2.0 * (adjPos + 180);
+            if(!runSensorlessly){
+                if(checkErrors(linear1) || checkErrors(linear2)){
+                    excavationState = ERROR_RECOVERY;
+                    errorState = RAISE_ASSEMBLY_ERROR;
                 }
-                setDestAngle(adjPos);
-                robotState = EXCAVATE;
-                setStepperSpeed(-1);
-                auto start = std::chrono::high_resolution_clock::now();
-                setStartTime(start);
+
+                if(linear1.atMin && linear2.atMin){
+                    // setShoulderSpeed(0.0);
+                    // excavationState = EXCAVATION_IDLE;
+                    // destination.x=0;
+                    // destination.z=0;
+                    // setDestDistance(1.0);
+                    // setDestAngle(position.yaw + left*180.0);
+                    // robotState = GO_TO_HOME;
+
+                    setShoulderSpeed(0.0);
+                    excavationState = RAISE_LADDER;
+                    //destination.x=0;
+                    //destination.z=0;
+                    //setDestDistance(1.0);
+                    //double adjPos = position.yaw - 180.0;
+                    //if (adjPos < -180.0) {
+                    //    adjPos = abs(adjPos) - 2.0 * (adjPos + 180);
+                    //}
+                    //setDestAngle(adjPos);
+                    robotState = EXCAVATE;
+                    setStepperSpeed(-1);
+                    auto start = std::chrono::high_resolution_clock::now();
+                    setStartTime(start);
+                }
+            else{
+                auto finish = std::chrono::high_resolution_clock::now();
+                if(std::chrono::duration_cast<std::chrono::seconds>(finish-getStartTime()).count() > 25){
+                    setShoulderSpeed(0.0);
+                    excavationState = RAISE_LADDER;
+                    robotState = EXCAVATE;
+                    setStepperSpeed(-1);
+                    auto start = std::chrono::high_resolution_clock::now();
+                    setStartTime(start);
+                }
             }
         }
         //Raise ladder

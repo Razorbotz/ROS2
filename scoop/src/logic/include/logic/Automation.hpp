@@ -34,6 +34,8 @@ class Automation{
     std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
     std::chrono::time_point<std::chrono::high_resolution_clock> startBackupTime;
 
+    bool runSensorlessly = false;
+
     virtual void automate() = 0;
 
     virtual void publishAutomationOut() = 0;
@@ -81,4 +83,6 @@ class Automation{
     std::chrono::time_point<std::chrono::high_resolution_clock> getStartTime();
 
     std::chrono::time_point<std::chrono::high_resolution_clock> getBackupStartTime();
+
+    void setRunSensorlessly(bool value);
 };

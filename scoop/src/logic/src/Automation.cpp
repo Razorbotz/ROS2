@@ -217,3 +217,7 @@ std::chrono::time_point<std::chrono::high_resolution_clock> Automation::getStart
 std::chrono::time_point<std::chrono::high_resolution_clock> Automation::getBackupStartTime(){
     return this->startBackupTime;
 }
+
+void Automation::setRunSensorlessly(bool value){
+    this->runSensorlessly = value;
+}
