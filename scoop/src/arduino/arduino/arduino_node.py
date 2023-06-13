@@ -22,8 +22,12 @@ class ArduinoNode(Node):
                         self.arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
                         self.arduinoInitialized = True
                 except:
-                        self.arduino = None
-                        self.arduinoInitialized = False
+                        try:
+                                self.arduino = serial.Serial('/dev/ttyUSB1', 9600, timeout=1)
+                                self.arduinoInitialized = True
+                        except:
+                                self.arduino = None
+                                self.arduinoInitialized = False
         
         def getData(self):
                 try:
