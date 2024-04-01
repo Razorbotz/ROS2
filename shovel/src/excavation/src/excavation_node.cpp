@@ -151,6 +151,7 @@ void sync2(){
 }
 
 
+
 void syncDistance(){
     float diff = abs(linear1.distance - linear2.distance);
     bool val = (currentSpeed > 0) ? (linear1.distance > linear2.distance) : (linear1.distance < linear2.distance);
