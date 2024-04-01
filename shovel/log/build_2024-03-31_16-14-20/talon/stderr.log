@@ -1,0 +1,12 @@
+[01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:[m[K In function ‘[01m[Kvoid stopCallback(std_msgs::msg::Empty_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:87:51:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kempty[m[K’ [[01;35m[K-Wunused-parameter[m[K]
+   87 | void stopCallback([01;35m[Kstd_msgs::msg::Empty::SharedPtr empty[m[K){
+      |                   [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:[m[K In function ‘[01m[Kvoid goCallback(std_msgs::msg::Empty_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:101:49:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kempty[m[K’ [[01;35m[K-Wunused-parameter[m[K]
+  101 | void goCallback([01;35m[Kstd_msgs::msg::Empty::SharedPtr empty[m[K){
+      |                 [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:266:9:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[KisInverted[m[K’ [[01;35m[K-Wunused-variable[m[K]
+  266 |    bool [01;35m[KisInverted[m[K=talonSRX->GetInverted();
+      |         [01;35m[K^~~~~~~~~~[m[K

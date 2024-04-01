@@ -1,0 +1,8 @@
+source;share/logic/hook/cmake_prefix_path.ps1
+source;share/logic/hook/cmake_prefix_path.dsv
+source;share/logic/hook/cmake_prefix_path.sh
+source;share/logic/local_setup.bash
+source;share/logic/local_setup.dsv
+source;share/logic/local_setup.ps1
+source;share/logic/local_setup.sh
+source;share/logic/local_setup.zsh

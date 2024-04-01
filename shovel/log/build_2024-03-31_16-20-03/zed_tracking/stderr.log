@@ -1,0 +1,30 @@
+CMake Deprecation Warning at CMakeLists.txt:15 (cmake_policy):
+  The OLD behavior for policy CMP0003 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+CMake Deprecation Warning at CMakeLists.txt:16 (cmake_policy):
+  The OLD behavior for policy CMP0015 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+[01m[K/home/team/SoftwareDevelopment/shovel/src/zed_tracking/src/zed_tracking_node.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/zed_tracking/src/zed_tracking_node.cpp:100:44:[m[K [01;31m[Kerror: [m[K‘[01m[Kstruct sl::CameraInformation[m[K’ has no member named ‘[01m[Kcamera_resolution[m[K’
+  100 |     sl::Resolution image_size = cameraInfo.[01;31m[Kcamera_resolution[m[K;
+      |                                            [01;31m[K^~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/zed_tracking/src/zed_tracking_node.cpp:106:33:[m[K [01;31m[Kerror: [m[K‘[01m[Kstruct sl::CameraInformation[m[K’ has no member named ‘[01m[Kcalibration_parameters[m[K’
+  106 |     auto calibInfo = cameraInfo.[01;31m[Kcalibration_parameters[m[K.left_cam;
+      |                                 [01;31m[K^~~~~~~~~~~~~~~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/zed_tracking_node.dir/build.make:76: CMakeFiles/zed_tracking_node.dir/src/zed_tracking_node.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:105: CMakeFiles/zed_tracking_node.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

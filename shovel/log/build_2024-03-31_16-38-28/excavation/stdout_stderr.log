@@ -1,0 +1,111 @@
+[35m[1mScanning dependencies of target excavation_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o[0m
+In file included from [01m[K/opt/ros/galactic/include/rclcpp/client.hpp:40[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/callback_group.hpp:23[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/memory_strategy.hpp:25[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executor_options.hpp:20[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executor.hpp:36[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executors/multi_threaded_executor.hpp:26[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/rclcpp.hpp:156[m[K,
+                 from [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:3[m[K:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:[m[K In function ‘[01m[Kvoid updateMotorPositions(int)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:551:43:[m[K [01;35m[Kwarning: [m[Kformat ‘[01m[K%d[m[K’ expects argument of type ‘[01m[Kint[m[K’, but argument 5 has type ‘[01m[Kdouble[m[K’ [[01;35m[K-Wformat=[m[K]
+  551 |     RCLCPP_INFO(nodeHandle->get_logger(), [01;35m[K"Linear 1 Distance: %d"[m[K, [32m[Klinear1.distance[m[K);
+      |                                           [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~[m[K  [32m[K~~~~~~~~~~~~~~~~[m[K
+      |                                                                            [32m[K|[m[K
+      |                                                                            [32m[Kdouble[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:551:64:[m[K [01;36m[Knote: [m[Kformat string is defined here
+  551 |     RCLCPP_INFO(nodeHandle->get_logger(), "Linear 1 Distance: [01;36m[K%d[m[K", linear1.distance);
+      |                                                               [01;36m[K~^[m[K
+      |                                                                [01;36m[K|[m[K
+      |                                                                [01;36m[Kint[m[K
+      |                                                               [32m[K%f[m[K
+In file included from [01m[K/opt/ros/galactic/include/rclcpp/client.hpp:40[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/callback_group.hpp:23[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/memory_strategy.hpp:25[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executor_options.hpp:20[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executor.hpp:36[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executors/multi_threaded_executor.hpp:26[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/rclcpp.hpp:156[m[K,
+                 from [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:3[m[K:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:566:43:[m[K [01;35m[Kwarning: [m[Kformat ‘[01m[K%d[m[K’ expects argument of type ‘[01m[Kint[m[K’, but argument 5 has type ‘[01m[Kdouble[m[K’ [[01;35m[K-Wformat=[m[K]
+  566 |     RCLCPP_INFO(nodeHandle->get_logger(), [01;35m[K"Linear 2 Distance: %d"[m[K, [32m[Klinear2.distance[m[K);
+      |                                           [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~[m[K  [32m[K~~~~~~~~~~~~~~~~[m[K
+      |                                                                            [32m[K|[m[K
+      |                                                                            [32m[Kdouble[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:566:64:[m[K [01;36m[Knote: [m[Kformat string is defined here
+  566 |     RCLCPP_INFO(nodeHandle->get_logger(), "Linear 2 Distance: [01;36m[K%d[m[K", linear2.distance);
+      |                                                               [01;36m[K~^[m[K
+      |                                                                [01;36m[K|[m[K
+      |                                                                [01;36m[Kint[m[K
+      |                                                               [32m[K%f[m[K
+In file included from [01m[K/opt/ros/galactic/include/rclcpp/client.hpp:40[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/callback_group.hpp:23[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/memory_strategy.hpp:25[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executor_options.hpp:20[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executor.hpp:36[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executors/multi_threaded_executor.hpp:26[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/rclcpp.hpp:156[m[K,
+                 from [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:3[m[K:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:581:43:[m[K [01;35m[Kwarning: [m[Kformat ‘[01m[K%d[m[K’ expects argument of type ‘[01m[Kint[m[K’, but argument 5 has type ‘[01m[Kdouble[m[K’ [[01;35m[K-Wformat=[m[K]
+  581 |     RCLCPP_INFO(nodeHandle->get_logger(), [01;35m[K"Linear 3 Distance: %d"[m[K, [32m[Klinear3.distance[m[K);
+      |                                           [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~[m[K  [32m[K~~~~~~~~~~~~~~~~[m[K
+      |                                                                            [32m[K|[m[K
+      |                                                                            [32m[Kdouble[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:581:64:[m[K [01;36m[Knote: [m[Kformat string is defined here
+  581 |     RCLCPP_INFO(nodeHandle->get_logger(), "Linear 3 Distance: [01;36m[K%d[m[K", linear3.distance);
+      |                                                               [01;36m[K~^[m[K
+      |                                                                [01;36m[K|[m[K
+      |                                                                [01;36m[Kint[m[K
+      |                                                               [32m[K%f[m[K
+In file included from [01m[K/opt/ros/galactic/include/rclcpp/client.hpp:40[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/callback_group.hpp:23[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/memory_strategy.hpp:25[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executor_options.hpp:20[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executor.hpp:36[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executors/multi_threaded_executor.hpp:26[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/rclcpp.hpp:156[m[K,
+                 from [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:3[m[K:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:596:43:[m[K [01;35m[Kwarning: [m[Kformat ‘[01m[K%d[m[K’ expects argument of type ‘[01m[Kint[m[K’, but argument 5 has type ‘[01m[Kdouble[m[K’ [[01;35m[K-Wformat=[m[K]
+  596 |     RCLCPP_INFO(nodeHandle->get_logger(), [01;35m[K"Linear 4 Distance: %d"[m[K, [32m[Klinear4.distance[m[K);
+      |                                           [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~[m[K  [32m[K~~~~~~~~~~~~~~~~[m[K
+      |                                                                            [32m[K|[m[K
+      |                                                                            [32m[Kdouble[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:596:64:[m[K [01;36m[Knote: [m[Kformat string is defined here
+  596 |     RCLCPP_INFO(nodeHandle->get_logger(), "Linear 4 Distance: [01;36m[K%d[m[K", linear4.distance);
+      |                                                               [01;36m[K~^[m[K
+      |                                                                [01;36m[K|[m[K
+      |                                                                [01;36m[Kint[m[K
+      |                                                               [32m[K%f[m[K
+[100%] [32m[1mLinking CXX executable excavation_node[0m
+[100%] Built target excavation_node
+-- Install configuration: ""
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/lib/excavation/excavation_node
+-- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/excavation/lib/excavation/excavation_node" to ""
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/package_run_dependencies/excavation
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/parent_prefix_path/excavation
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/ament_prefix_path.sh
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/path.sh
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/path.dsv
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.bash
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.sh
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.zsh
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.dsv
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/packages/excavation
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/cmake/excavationConfig.cmake
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/cmake/excavationConfig-version.cmake
+-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.xml

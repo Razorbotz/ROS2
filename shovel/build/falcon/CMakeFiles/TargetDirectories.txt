@@ -1,0 +1,10 @@
+/home/team/SoftwareDevelopment/shovel/build/falcon/CMakeFiles/install/strip.dir
+/home/team/SoftwareDevelopment/shovel/build/falcon/CMakeFiles/install/local.dir
+/home/team/SoftwareDevelopment/shovel/build/falcon/CMakeFiles/edit_cache.dir
+/home/team/SoftwareDevelopment/shovel/build/falcon/CMakeFiles/test.dir
+/home/team/SoftwareDevelopment/shovel/build/falcon/CMakeFiles/falcon_node.dir
+/home/team/SoftwareDevelopment/shovel/build/falcon/CMakeFiles/install.dir
+/home/team/SoftwareDevelopment/shovel/build/falcon/CMakeFiles/list_install_components.dir
+/home/team/SoftwareDevelopment/shovel/build/falcon/CMakeFiles/rebuild_cache.dir
+/home/team/SoftwareDevelopment/shovel/build/falcon/CMakeFiles/falcon_uninstall.dir
+/home/team/SoftwareDevelopment/shovel/build/falcon/CMakeFiles/uninstall.dir

@@ -84,10 +84,10 @@ struct LinearActuator{
 };
 
 
-LinearActuator linear1{0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 5.9, 5.9, 0.0, 0.0};
-LinearActuator linear2{0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 5.9, 5.9, 0.0, 0.0};
-LinearActuator linear3{0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 11.8, 11.8, 0.0, 0.0};;
-LinearActuator linear4{0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 11.8, 11.8, 0.0, 0.0};;
+LinearActuator linear1{0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 5.9, 0.0, 0.69, 8.5};
+LinearActuator linear2{0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 5.9, 0.0, 0.69, 8.5};
+LinearActuator linear3{0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 9.8, 0.0, 0.85, 11.5};;
+LinearActuator linear4{0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 9.8, 0.0, 0.89, 11.0};;
 
 float currentSpeed = 0.0;
 float currentSpeed2 = 0.0;
@@ -151,6 +151,44 @@ void sync2(){
 }
 
 
+void syncDistance(){
+    float diff = abs(linear1.distance - linear2.distance);
+    bool val = (currentSpeed > 0) ? (linear1.distance > linear2.distance) : (linear1.distance < linear2.distance);
+    if (diff > thresh3) {
+        (val) ? linear1.speed = 0 : linear2.speed = 0;
+    }
+    else if (diff > thresh2){
+        (val) ? linear1.speed *= 0.5 : linear2.speed *= 0.5;
+    }
+    else if (diff > thresh1) {
+        (val) ? linear1.speed *= 0.9 : linear2.speed *= 0.9;
+    }
+    else{
+        linear1.speed = currentSpeed;
+	linear2.speed = currentSpeed;
+    }
+}
+
+
+void syncDistance2(){
+    float diff = abs(linear3.distance - linear4.distance);
+    bool val = (currentSpeed > 0) ? (linear3.distance > linear4.distance) : (linear3.distance < linear4.distance);
+    if (diff > thresh3) {
+        (val) ? linear3.speed = 0 : linear4.speed = 0;
+    }
+    else if (diff > thresh2){
+        (val) ? linear3.speed *= 0.5 : linear4.speed *= 0.5;
+    }
+    else if (diff > thresh1){
+        (val) ? linear3.speed *= 0.9 : linear4.speed *= 0.9;
+    }
+    else{
+        linear3.speed = currentSpeed2;
+	linear4.speed = currentSpeed2;
+    }
+}
+
+
 void setSpeeds(){
     if(!automationGo){
         linear1.speed = currentSpeed;
@@ -196,15 +234,49 @@ void setSpeeds2(){
         if(linear3.atMax && currentSpeed2 > 0){
             linear3.speed = 0.0;
         }
-        if(linear2.atMax && currentSpeed2 > 0){
+        if(linear4.atMax && currentSpeed2 > 0){
             linear4.speed = 0.0;
         }
         if(linear3.atMin && currentSpeed2 < 0){
             linear3.speed = 0.0;
         }
-        if(linear2.atMin && currentSpeed2 < 0){
+        if(linear4.atMin && currentSpeed2 < 0){
             linear4.speed = 0.0;
         }
+    }
+}
+
+
+void setSpeedsDistance(){
+    syncDistance();
+    if(linear1.atMax && currentSpeed > 0){
+        linear1.speed = 0.0;
+    }
+    if(linear2.atMax && currentSpeed > 0){
+        linear2.speed = 0.0;
+    }
+    if(linear1.atMin && currentSpeed < 0){
+        linear1.speed = 0.0;
+    }
+    if(linear2.atMin && currentSpeed < 0){
+        linear2.speed = 0.0;
+    }
+}
+
+
+void setSpeedsDistance2(){
+    syncDistance2();
+    if(linear3.atMax && currentSpeed2 > 0){
+        linear3.speed = 0.0;
+    }
+    if(linear4.atMax && currentSpeed2 > 0){
+        linear4.speed = 0.0;
+    }
+    if(linear3.atMin && currentSpeed < 0){
+        linear3.speed = 0.0;
+    }
+    if(linear4.atMin && currentSpeed < 0){
+        linear4.speed = 0.0;
     }
 }
 
@@ -475,7 +547,7 @@ void armSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 
 
 void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
-    currentSpeed = speed->data;
+    currentSpeed2 = speed->data;
     RCLCPP_INFO(nodeHandle->get_logger(),"currentSpeed: %f", currentSpeed);
     if(!automationGo){
         linear3.speed = currentSpeed;
@@ -489,16 +561,16 @@ void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     }
     if(linear3.error != ConnectionError && linear3.error != PotentiometerError && linear4.error != PotentiometerError){
         sync2();
-        if(linear3.atMax && currentSpeed > 0){
+        if(linear3.atMax && currentSpeed2 > 0){
             linear3.speed = 0.0;
         }
-        if(linear4.atMax && currentSpeed > 0){
+        if(linear4.atMax && currentSpeed2 > 0){
             linear4.speed = 0.0;
         }
-        if(linear3.atMin && currentSpeed < 0){
+        if(linear3.atMin && currentSpeed2 < 0){
             linear3.speed = 0.0;
         }
-        if(linear4.atMin && currentSpeed < 0){
+        if(linear4.atMin && currentSpeed2 < 0){
             linear4.speed = 0.0;
         }
     }
@@ -508,7 +580,7 @@ void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     std_msgs::msg::Float32 speed2;
     speed2.data = linear4.speed;
     talon17Publisher->publish(speed2);
-    RCLCPP_INFO(nodeHandle->get_logger(),"Bucket speeds: %f, %f", linear3.speed, linear2.speed);
+    RCLCPP_INFO(nodeHandle->get_logger(),"Bucket speeds: %f, %f", linear3.speed, linear4.speed);
 
 }
 
@@ -548,6 +620,7 @@ void updateMotorPositions(int millis){
         linear1.atMin = false;
         linear1.atMax = false;
     }
+    RCLCPP_INFO(nodeHandle->get_logger(), "Linear 1 Distance: %f", linear1.distance);
 
     linear2.distance = linear2.speed * linear2.extensionSpeed * (millis / 1000.0) + linear2.distance;
     if(linear2.distance > linear2.stroke){
@@ -562,7 +635,9 @@ void updateMotorPositions(int millis){
         linear2.atMin = false;
         linear2.atMax = false;
     }
-    
+    RCLCPP_INFO(nodeHandle->get_logger(), "Linear 2 Distance: %f", linear2.distance);
+    setSpeedsDistance();
+
     linear3.distance = linear3.speed * linear3.extensionSpeed * (millis / 1000.0) + linear3.distance;
     if(linear3.distance > linear3.stroke){
         linear3.distance = linear3.stroke;
@@ -576,6 +651,7 @@ void updateMotorPositions(int millis){
         linear3.atMin = false;
         linear3.atMax = false;
     }
+    RCLCPP_INFO(nodeHandle->get_logger(), "Linear 3 Distance: %f", linear3.distance);
     
     linear4.distance = linear4.speed * linear4.extensionSpeed * (millis / 1000.0) + linear4.distance;
     if(linear4.distance > linear4.stroke){
@@ -590,11 +666,14 @@ void updateMotorPositions(int millis){
         linear4.atMin = false;
         linear4.atMax = false;
     }
+    RCLCPP_INFO(nodeHandle->get_logger(), "Linear 4 Distance: %f", linear4.distance);
+    setSpeedsDistance2();
 }
 
 
 void sensorlessCallback(const std_msgs::msg::Empty::SharedPtr empty){
     sensorless = !sensorless;
+    RCLCPP_INFO(nodeHandle->get_logger(), "Excavation sensorless mode: %d", sensorless);
 }
 
 
@@ -635,7 +714,7 @@ int main(int argc, char **argv){
     while(rclcpp::ok()){
         finish = std::chrono::high_resolution_clock::now();
         if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > 100){
-            if(!sensorless)
+            if(sensorless)
                 updateMotorPositions(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() );
             count += 1;
             start = std::chrono::high_resolution_clock::now();

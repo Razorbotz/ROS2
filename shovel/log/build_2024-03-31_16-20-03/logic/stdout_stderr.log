@@ -1,0 +1,8 @@
+[35m[1mScanning dependencies of target logic_node[0m
+[ 20%] [32mBuilding CXX object CMakeFiles/logic_node.dir/src/logic_node.cpp.o[0m
+[01m[K/home/team/SoftwareDevelopment/shovel/src/logic/src/logic_node.cpp:[m[K In function ‘[01m[Kvoid zedPositionCallback(messages::msg::ZedPosition_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/logic/src/logic_node.cpp:397:12:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[KyawTolerance[m[K’ [[01;35m[K-Wunused-variable[m[K]
+  397 |     double [01;35m[KyawTolerance[m[K=5;
+      |            [01;35m[K^~~~~~~~~~~~[m[K
+[ 40%] [32m[1mLinking CXX executable logic_node[0m
+[100%] Built target logic_node

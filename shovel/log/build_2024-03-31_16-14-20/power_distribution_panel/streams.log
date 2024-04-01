@@ -1,0 +1,66 @@
+[0.082s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/power_distribution_panel -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/power_distribution_panel
+[0.279s] -- The C compiler identification is GNU 9.4.0
+[0.475s] -- The CXX compiler identification is GNU 9.4.0
+[0.482s] -- Check for working C compiler: /usr/bin/cc
+[0.731s] -- Check for working C compiler: /usr/bin/cc -- works
+[0.736s] -- Detecting C compiler ABI info
+[0.986s] -- Detecting C compiler ABI info - done
+[1.013s] -- Detecting C compile features
+[1.014s] -- Detecting C compile features - done
+[1.020s] -- Check for working CXX compiler: /usr/bin/c++
+[1.291s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[1.294s] -- Detecting CXX compiler ABI info
+[1.561s] -- Detecting CXX compiler ABI info - done
+[1.587s] -- Detecting CXX compile features
+[1.588s] -- Detecting CXX compile features - done
+[1.592s] -- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)
+[1.656s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+[1.656s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[1.906s] -- Found rclcpp: 9.2.2 (/opt/ros/galactic/share/rclcpp/cmake)
+[1.997s] -- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c
+[2.008s] -- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)
+[2.049s] -- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp
+[2.177s] -- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)
+[2.183s] -- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)
+[2.228s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[2.231s] -- Looking for pthread.h
+[2.451s] -- Looking for pthread.h - found
+[2.452s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[2.806s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+[2.815s] -- Looking for pthread_create in pthreads
+[3.200s] -- Looking for pthread_create in pthreads - not found
+[3.200s] -- Looking for pthread_create in pthread
+[3.462s] -- Looking for pthread_create in pthread - found
+[3.465s] -- Found Threads: TRUE  
+[3.744s] -- Found messages: 0.0.0 (/home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake)
+[3.938s] -- Configuring done
+[3.963s] -- Generating done
+[3.964s] -- Build files have been written to: /home/team/SoftwareDevelopment/shovel/build/power_distribution_panel
+[4.018s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/power_distribution_panel -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/power_distribution_panel
+[4.019s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/power_distribution_panel -- -j6 -l6
+[4.115s] [35m[1mScanning dependencies of target power_distribution_panel_node[0m
+[4.475s] [ 33%] [32mBuilding CXX object CMakeFiles/power_distribution_panel_node.dir/src/power_distribution_panel_node.cpp.o[0m
+[4.483s] [ 66%] [32mBuilding CXX object CMakeFiles/power_distribution_panel_node.dir/src/PowerDistributionPanel.cpp.o[0m
+[20.606s] [100%] [32m[1mLinking CXX executable power_distribution_panel_node[0m
+[21.733s] [100%] Built target power_distribution_panel_node
+[21.904s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/power_distribution_panel -- -j6 -l6
+[22.361s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/power_distribution_panel
+[29.577s] -- Install configuration: ""
+[29.577s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/lib/power_distribution_panel/power_distribution_panel_node
+[29.577s] -- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/lib/power_distribution_panel/power_distribution_panel_node" to ""
+[29.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/ament_index/resource_index/package_run_dependencies/power_distribution_panel
+[29.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/ament_index/resource_index/parent_prefix_path/power_distribution_panel
+[29.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/environment/ament_prefix_path.sh
+[29.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/environment/ament_prefix_path.dsv
+[29.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/environment/path.sh
+[29.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/environment/path.dsv
+[29.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/local_setup.bash
+[29.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/local_setup.sh
+[29.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/local_setup.zsh
+[29.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/local_setup.dsv
+[29.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/package.dsv
+[29.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/ament_index/resource_index/packages/power_distribution_panel
+[29.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/cmake/power_distribution_panelConfig.cmake
+[29.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/cmake/power_distribution_panelConfig-version.cmake
+[29.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/package.xml
+[29.585s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/power_distribution_panel

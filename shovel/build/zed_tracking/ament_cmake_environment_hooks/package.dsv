@@ -1,0 +1,4 @@
+source;share/zed_tracking/local_setup.bash
+source;share/zed_tracking/local_setup.dsv
+source;share/zed_tracking/local_setup.sh
+source;share/zed_tracking/local_setup.zsh

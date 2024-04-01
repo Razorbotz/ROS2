@@ -1,0 +1,22 @@
+[0.161s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/talon': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/talon -- -j6 -l6
+[0.337s] [100%] Built target talon_node
+[0.413s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/talon' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/talon -- -j6 -l6
+[0.512s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/talon': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/talon
+[0.557s] -- Install configuration: ""
+[0.558s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/lib/talon/talon_node
+[0.564s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/ament_index/resource_index/package_run_dependencies/talon
+[0.565s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/ament_index/resource_index/parent_prefix_path/talon
+[0.566s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/environment/ament_prefix_path.sh
+[0.566s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/environment/ament_prefix_path.dsv
+[0.566s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/environment/path.sh
+[0.566s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/environment/path.dsv
+[0.566s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/local_setup.bash
+[0.566s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/local_setup.sh
+[0.566s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/local_setup.zsh
+[0.566s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/local_setup.dsv
+[0.567s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/package.dsv
+[0.567s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/ament_index/resource_index/packages/talon
+[0.567s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/cmake/talonConfig.cmake
+[0.567s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/cmake/talonConfig-version.cmake
+[0.567s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/package.xml
+[0.573s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/talon' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/talon

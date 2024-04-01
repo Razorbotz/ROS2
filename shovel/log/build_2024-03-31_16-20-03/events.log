@@ -1,0 +1,1199 @@
+[0.000000] (-) TimerEvent: {}
+[0.000569] (messages) JobQueued: {'identifier': 'messages', 'dependencies': OrderedDict()}
+[0.000907] (communication2) JobQueued: {'identifier': 'communication2', 'dependencies': OrderedDict([('messages', '/home/team/SoftwareDevelopment/shovel/install/messages')])}
+[0.001128] (excavation) JobQueued: {'identifier': 'excavation', 'dependencies': OrderedDict([('messages', '/home/team/SoftwareDevelopment/shovel/install/messages')])}
+[0.001653] (falcon) JobQueued: {'identifier': 'falcon', 'dependencies': OrderedDict([('messages', '/home/team/SoftwareDevelopment/shovel/install/messages')])}
+[0.001930] (logic) JobQueued: {'identifier': 'logic', 'dependencies': OrderedDict([('messages', '/home/team/SoftwareDevelopment/shovel/install/messages')])}
+[0.002156] (power_distribution_panel) JobQueued: {'identifier': 'power_distribution_panel', 'dependencies': OrderedDict([('messages', '/home/team/SoftwareDevelopment/shovel/install/messages')])}
+[0.002251] (talon) JobQueued: {'identifier': 'talon', 'dependencies': OrderedDict([('messages', '/home/team/SoftwareDevelopment/shovel/install/messages')])}
+[0.002415] (test) JobQueued: {'identifier': 'test', 'dependencies': OrderedDict([('messages', '/home/team/SoftwareDevelopment/shovel/install/messages')])}
+[0.002491] (zed_tracking) JobQueued: {'identifier': 'zed_tracking', 'dependencies': OrderedDict([('messages', '/home/team/SoftwareDevelopment/shovel/install/messages')])}
+[0.002539] (messages) JobStarted: {'identifier': 'messages'}
+[0.074827] (messages) JobProgress: {'identifier': 'messages', 'progress': 'cmake'}
+[0.076068] (messages) JobProgress: {'identifier': 'messages', 'progress': 'build'}
+[0.077521] (messages) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/team/SoftwareDevelopment/shovel/build/messages', '--', '-j6', '-l6'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/messages', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64:'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/messages'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[0.099293] (-) TimerEvent: {}
+[0.200157] (-) TimerEvent: {}
+[0.223769] (messages) StdoutLine: {'line': b'[  3%] Built target messages__cpp\n'}
+[0.224757] (messages) StdoutLine: {'line': b'[ 16%] Built target messages__rosidl_generator_c\n'}
+[0.284355] (messages) StdoutLine: {'line': b'[ 48%] Built target messages__rosidl_typesupport_introspection_cpp\n'}
+[0.285148] (messages) StdoutLine: {'line': b'[ 48%] Built target messages__rosidl_typesupport_introspection_c\n'}
+[0.300382] (-) TimerEvent: {}
+[0.341160] (messages) StdoutLine: {'line': b'[ 79%] Built target messages__rosidl_typesupport_c\n'}
+[0.342080] (messages) StdoutLine: {'line': b'[ 79%] Built target messages__rosidl_typesupport_cpp\n'}
+[0.390209] (messages) StdoutLine: {'line': b'[ 79%] Built target messages\n'}
+[0.400562] (-) TimerEvent: {}
+[0.442266] (messages) StdoutLine: {'line': b'[ 80%] Built target messages__py\n'}
+[0.500906] (-) TimerEvent: {}
+[0.510999] (messages) StdoutLine: {'line': b'[ 95%] Built target messages__python\n'}
+[0.567589] (messages) StdoutLine: {'line': b'[100%] Built target messages__rosidl_typesupport_c__pyext\n'}
+[0.568355] (messages) StdoutLine: {'line': b'[100%] Built target messages__rosidl_typesupport_introspection_c__pyext\n'}
+[0.600349] (messages) CommandEnded: {'returncode': 0}
+[0.601664] (-) TimerEvent: {}
+[0.702804] (-) TimerEvent: {}
+[0.803946] (-) TimerEvent: {}
+[0.858223] (messages) JobProgress: {'identifier': 'messages', 'progress': 'install'}
+[0.893295] (messages) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/team/SoftwareDevelopment/shovel/build/messages'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/messages', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64:'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/messages'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/opt/ros/galactic')]), 'shell': False}
+[0.904092] (-) TimerEvent: {}
+[0.921682] (messages) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[0.922378] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/ament_index/resource_index/rosidl_interfaces/messages\n'}
+[0.922876] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages\n'}
+[0.923247] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg\n'}
+[0.923679] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/button_state.h\n'}
+[0.924096] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/zed_position.h\n'}
+[0.924527] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/rosidl_generator_c__visibility_control.h\n'}
+[0.924870] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/key_state.h\n'}
+[0.925190] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/hat_state.h\n'}
+[0.925433] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/victor_out.h\n'}
+[0.925653] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail\n'}
+[0.925917] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__functions.c\n'}
+[0.926154] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__struct.h\n'}
+[0.926500] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__functions.c\n'}
+[0.926921] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__functions.c\n'}
+[0.927386] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__functions.h\n'}
+[0.927726] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__functions.h\n'}
+[0.927916] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__type_support.h\n'}
+[0.928146] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__functions.c\n'}
+[0.928330] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__struct.h\n'}
+[0.928509] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__functions.h\n'}
+[0.928727] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__struct.h\n'}
+[0.928905] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__type_support.h\n'}
+[0.929249] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__type_support.h\n'}
+[0.929557] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__functions.h\n'}
+[0.930226] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__struct.h\n'}
+[0.930833] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__type_support.h\n'}
+[0.932176] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__struct.h\n'}
+[0.932425] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__functions.c\n'}
+[0.932639] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__struct.h\n'}
+[0.933288] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__type_support.h\n'}
+[0.933456] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__functions.h\n'}
+[0.933671] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__struct.h\n'}
+[0.933865] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__functions.h\n'}
+[0.934009] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__functions.h\n'}
+[0.934144] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__functions.c\n'}
+[0.934273] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__struct.h\n'}
+[0.934489] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__type_support.h\n'}
+[0.934685] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__functions.c\n'}
+[0.934812] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__type_support.h\n'}
+[0.934935] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__functions.c\n'}
+[0.935056] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__functions.c\n'}
+[0.935174] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__type_support.h\n'}
+[0.935294] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__functions.h\n'}
+[0.935411] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__functions.c\n'}
+[0.935527] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__struct.h\n'}
+[0.935644] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__struct.h\n'}
+[0.935763] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__type_support.h\n'}
+[0.935879] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__functions.c\n'}
+[0.935995] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__type_support.h\n'}
+[0.936112] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__struct.h\n'}
+[0.936229] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__functions.h\n'}
+[0.936346] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__functions.h\n'}
+[0.936461] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__struct.h\n'}
+[0.936596] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__functions.h\n'}
+[0.936725] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__type_support.h\n'}
+[0.936844] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__functions.h\n'}
+[0.936960] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__functions.c\n'}
+[0.937077] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__type_support.h\n'}
+[0.937192] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/joystick_command.h\n'}
+[0.937306] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/linear_out.h\n'}
+[0.937420] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/power.h\n'}
+[0.937534] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/autonomy_out.h\n'}
+[0.937680] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/axis_state.h\n'}
+[0.937802] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/camera.h\n'}
+[0.937920] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/talon_out.h\n'}
+[0.938063] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/library_path.sh\n'}
+[0.938180] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/library_path.dsv\n'}
+[0.938297] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_generator_c.so\n'}
+[0.938416] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages\n'}
+[0.938534] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg\n'}
+[0.938650] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail\n'}
+[0.938764] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__type_support.c\n'}
+[0.938879] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__rosidl_typesupport_introspection_c.h\n'}
+[0.938995] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__rosidl_typesupport_introspection_c.h\n'}
+[0.939109] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__rosidl_typesupport_introspection_c.h\n'}
+[0.939224] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__type_support.c\n'}
+[0.939338] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__type_support.c\n'}
+[0.939451] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__rosidl_typesupport_introspection_c.h\n'}
+[0.939578] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__type_support.c\n'}
+[0.939693] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__type_support.c\n'}
+[0.939804] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__rosidl_typesupport_introspection_c.h\n'}
+[0.939916] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__rosidl_typesupport_introspection_c.h\n'}
+[0.940029] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__type_support.c\n'}
+[0.940142] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__rosidl_typesupport_introspection_c.h\n'}
+[0.940256] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__type_support.c\n'}
+[0.940367] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__rosidl_typesupport_introspection_c.h\n'}
+[0.940493] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__type_support.c\n'}
+[0.940609] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__type_support.c\n'}
+[0.940723] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__type_support.c\n'}
+[0.940837] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__rosidl_typesupport_introspection_c.h\n'}
+[0.940952] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__rosidl_typesupport_introspection_c.h\n'}
+[0.941068] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__rosidl_typesupport_introspection_c.h\n'}
+[0.941182] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__rosidl_typesupport_introspection_c.h\n'}
+[0.941295] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__type_support.c\n'}
+[0.941408] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__type_support.c\n'}
+[0.941520] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/rosidl_typesupport_introspection_c__visibility_control.h\n'}
+[0.941655] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_introspection_c.so\n'}
+[0.941802] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_c.so\n'}
+[0.941920] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages\n'}
+[0.942035] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg\n'}
+[0.942148] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail\n'}
+[0.942280] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__builder.hpp\n'}
+[0.942396] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__builder.hpp\n'}
+[0.942510] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__builder.hpp\n'}
+[0.942624] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__traits.hpp\n'}
+[0.942740] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__traits.hpp\n'}
+[0.942855] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__struct.hpp\n'}
+[0.942969] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__traits.hpp\n'}
+[0.943082] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__traits.hpp\n'}
+[0.943195] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__traits.hpp\n'}
+[0.943307] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__builder.hpp\n'}
+[0.943418] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__struct.hpp\n'}
+[0.943532] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__struct.hpp\n'}
+[0.943645] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__builder.hpp\n'}
+[0.943758] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__traits.hpp\n'}
+[0.943871] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__struct.hpp\n'}
+[0.943985] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__builder.hpp\n'}
+[0.944109] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__struct.hpp\n'}
+[0.944224] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__builder.hpp\n'}
+[0.944337] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__traits.hpp\n'}
+[0.944450] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__builder.hpp\n'}
+[0.944562] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__struct.hpp\n'}
+[0.944675] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__builder.hpp\n'}
+[0.944787] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__traits.hpp\n'}
+[0.944900] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__struct.hpp\n'}
+[0.945026] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__traits.hpp\n'}
+[0.945139] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__struct.hpp\n'}
+[0.945252] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__builder.hpp\n'}
+[0.945367] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__builder.hpp\n'}
+[0.945480] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__struct.hpp\n'}
+[0.945593] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__traits.hpp\n'}
+[0.945758] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__traits.hpp\n'}
+[0.945876] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__builder.hpp\n'}
+[0.945989] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__struct.hpp\n'}
+[0.946103] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__struct.hpp\n'}
+[0.946215] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__struct.hpp\n'}
+[0.946327] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__traits.hpp\n'}
+[0.946438] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/key_state.hpp\n'}
+[0.946549] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/axis_state.hpp\n'}
+[0.946660] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/autonomy_out.hpp\n'}
+[0.946771] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/victor_out.hpp\n'}
+[0.946881] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/power.hpp\n'}
+[0.946991] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/button_state.hpp\n'}
+[0.947101] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/camera.hpp\n'}
+[0.947213] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/talon_out.hpp\n'}
+[0.947325] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/zed_position.hpp\n'}
+[0.947437] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/linear_out.hpp\n'}
+[0.947549] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/joystick_command.hpp\n'}
+[0.947660] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/hat_state.hpp\n'}
+[0.947773] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages\n'}
+[0.947908] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg\n'}
+[0.948021] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail\n'}
+[0.948133] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.948247] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__type_support.cpp\n'}
+[0.948359] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__type_support.cpp\n'}
+[0.948472] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.948585] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__type_support.cpp\n'}
+[0.948697] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.948809] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.948921] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__type_support.cpp\n'}
+[0.949033] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.949146] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.949260] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.949372] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__type_support.cpp\n'}
+[0.949486] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__type_support.cpp\n'}
+[0.949636] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.949762] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__type_support.cpp\n'}
+[0.949876] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.949990] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__type_support.cpp\n'}
+[0.950101] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__type_support.cpp\n'}
+[0.950213] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.950326] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__type_support.cpp\n'}
+[0.950437] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.950565] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.950677] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__type_support.cpp\n'}
+[0.950790] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__type_support.cpp\n'}
+[0.950901] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_introspection_cpp.so\n'}
+[0.951014] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_cpp.so\n'}
+[0.951137] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/pythonpath.sh\n'}
+[0.951254] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/pythonpath.dsv\n'}
+[0.951366] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/__init__.py\n'}
+[1.004275] (-) TimerEvent: {}
+[1.010097] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg\n'}
+[1.011318] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_linear_out.py\n'}
+[1.011612] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_talon_out_s.c\n'}
+[1.011872] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_key_state.py\n'}
+[1.012171] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/__init__.py\n'}
+[1.012401] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_axis_state_s.c\n'}
+[1.012615] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_talon_out.py\n'}
+[1.012820] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_hat_state_s.c\n'}
+[1.013086] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_axis_state.py\n'}
+[1.013298] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_joystick_command_s.c\n'}
+[1.013505] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_linear_out_s.c\n'}
+[1.013752] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_button_state.py\n'}
+[1.014036] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_zed_position.py\n'}
+[1.014299] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_victor_out.py\n'}
+[1.014742] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_zed_position_s.c\n'}
+[1.015180] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_hat_state.py\n'}
+[1.015476] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_autonomy_out.py\n'}
+[1.015714] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_power_s.c\n'}
+[1.016381] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_key_state_s.c\n'}
+[1.016844] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_button_state_s.c\n'}
+[1.017294] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_camera.py\n'}
+[1.017818] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_joystick_command.py\n'}
+[1.018302] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_camera_s.c\n'}
+[1.018597] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_power.py\n'}
+[1.018859] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_victor_out_s.c\n'}
+[1.019171] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_autonomy_out_s.c\n'}
+[1.019519] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/messages_s__rosidl_typesupport_introspection_c.cpython-38-aarch64-linux-gnu.so\n'}
+[1.019831] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/messages_s__rosidl_typesupport_c.cpython-38-aarch64-linux-gnu.so\n'}
+[1.020163] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__python.so\n'}
+[1.020507] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/AxisState.idl\n'}
+[1.020808] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/Camera.idl\n'}
+[1.021140] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/JoystickCommand.idl\n'}
+[1.021386] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/Power.idl\n'}
+[1.021856] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/VictorOut.idl\n'}
+[1.022196] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/ButtonState.idl\n'}
+[1.022583] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/HatState.idl\n'}
+[1.022873] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/KeyState.idl\n'}
+[1.023103] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/TalonOut.idl\n'}
+[1.023327] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/ZedPosition.idl\n'}
+[1.023587] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/LinearOut.idl\n'}
+[1.023834] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/AutonomyOut.idl\n'}
+[1.024089] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/AxisState.msg\n'}
+[1.024329] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/Camera.msg\n'}
+[1.024561] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/JoystickCommand.msg\n'}
+[1.024795] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/Power.msg\n'}
+[1.025028] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/VictorOut.msg\n'}
+[1.025260] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/ButtonState.msg\n'}
+[1.025492] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/HatState.msg\n'}
+[1.025812] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/KeyState.msg\n'}
+[1.026030] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/TalonOut.msg\n'}
+[1.026292] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/ZedPosition.msg\n'}
+[1.026517] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/LinearOut.msg\n'}
+[1.026768] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/AutonomyOut.msg\n'}
+[1.026994] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/ament_index/resource_index/package_run_dependencies/messages\n'}
+[1.027205] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/ament_index/resource_index/parent_prefix_path/messages\n'}
+[1.027408] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/ament_prefix_path.sh\n'}
+[1.027606] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/ament_prefix_path.dsv\n'}
+[1.027806] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/path.sh\n'}
+[1.028016] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/path.dsv\n'}
+[1.028219] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/local_setup.bash\n'}
+[1.028415] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/local_setup.sh\n'}
+[1.028611] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/local_setup.zsh\n'}
+[1.028871] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/local_setup.dsv\n'}
+[1.029009] (messages) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/package.dsv\n'}
+[1.029145] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/ament_index/resource_index/packages/messages\n'}
+[1.029348] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_generator_cExport.cmake\n'}
+[1.029472] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_generator_cExport-noconfig.cmake\n'}
+[1.029591] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_introspection_cExport.cmake\n'}
+[1.029724] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_introspection_cExport-noconfig.cmake\n'}
+[1.029844] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_cExport.cmake\n'}
+[1.029961] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_cExport-noconfig.cmake\n'}
+[1.030075] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_generator_cppExport.cmake\n'}
+[1.030200] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_introspection_cppExport.cmake\n'}
+[1.030635] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_introspection_cppExport-noconfig.cmake\n'}
+[1.031485] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_cppExport.cmake\n'}
+[1.034144] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_cppExport-noconfig.cmake\n'}
+[1.034764] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/rosidl_cmake-extras.cmake\n'}
+[1.035455] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[1.035804] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[1.036884] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[1.037754] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[1.038214] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake\n'}
+[1.038648] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messagesConfig.cmake\n'}
+[1.038947] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messagesConfig-version.cmake\n'}
+[1.039397] (messages) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/package.xml\n'}
+[1.039853] (messages) CommandEnded: {'returncode': 0}
+[1.104510] (-) TimerEvent: {}
+[1.205409] (-) TimerEvent: {}
+[1.306456] (-) TimerEvent: {}
+[1.371018] (messages) JobEnded: {'identifier': 'messages', 'rc': 0}
+[1.374204] (communication2) JobStarted: {'identifier': 'communication2'}
+[1.386827] (excavation) JobStarted: {'identifier': 'excavation'}
+[1.403761] (falcon) JobStarted: {'identifier': 'falcon'}
+[1.406683] (-) TimerEvent: {}
+[1.423564] (logic) JobStarted: {'identifier': 'logic'}
+[1.435984] (power_distribution_panel) JobStarted: {'identifier': 'power_distribution_panel'}
+[1.449653] (talon) JobStarted: {'identifier': 'talon'}
+[1.467047] (communication2) JobProgress: {'identifier': 'communication2', 'progress': 'cmake'}
+[1.468931] (communication2) JobProgress: {'identifier': 'communication2', 'progress': 'build'}
+[1.469685] (communication2) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/team/SoftwareDevelopment/shovel/build/communication2', '--', '-j6', '-l6'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/communication2', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/communication2'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[1.480121] (excavation) JobProgress: {'identifier': 'excavation', 'progress': 'cmake'}
+[1.483096] (excavation) JobProgress: {'identifier': 'excavation', 'progress': 'build'}
+[1.483930] (excavation) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/team/SoftwareDevelopment/shovel/build/excavation', '--', '-j6', '-l6'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/excavation', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/excavation'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[1.494246] (falcon) JobProgress: {'identifier': 'falcon', 'progress': 'cmake'}
+[1.495969] (falcon) JobProgress: {'identifier': 'falcon', 'progress': 'build'}
+[1.496791] (falcon) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/team/SoftwareDevelopment/shovel/build/falcon', '--', '-j6', '-l6'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/falcon', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/falcon'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[1.506875] (-) TimerEvent: {}
+[1.508166] (logic) JobProgress: {'identifier': 'logic', 'progress': 'cmake'}
+[1.509981] (logic) JobProgress: {'identifier': 'logic', 'progress': 'build'}
+[1.510878] (logic) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/team/SoftwareDevelopment/shovel/build/logic', '--', '-j6', '-l6'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/logic', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/logic'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[1.522094] (power_distribution_panel) JobProgress: {'identifier': 'power_distribution_panel', 'progress': 'cmake'}
+[1.525096] (power_distribution_panel) JobProgress: {'identifier': 'power_distribution_panel', 'progress': 'build'}
+[1.525924] (power_distribution_panel) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel', '--', '-j6', '-l6'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[1.565717] (talon) JobProgress: {'identifier': 'talon', 'progress': 'cmake'}
+[1.568116] (talon) JobProgress: {'identifier': 'talon', 'progress': 'build'}
+[1.568800] (talon) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/team/SoftwareDevelopment/shovel/build/talon', '--', '-j6', '-l6'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/talon', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/talon'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[1.607242] (-) TimerEvent: {}
+[1.630471] (excavation) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target excavation_node\x1b[0m\n'}
+[1.643738] (falcon) StdoutLine: {'line': b'[100%] Built target falcon_node\n'}
+[1.656774] (logic) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target logic_node\x1b[0m\n'}
+[1.660943] (communication2) StdoutLine: {'line': b'[100%] Built target communication2_node\n'}
+[1.686415] (falcon) CommandEnded: {'returncode': 0}
+[1.710655] (communication2) CommandEnded: {'returncode': 0}
+[1.714006] (-) TimerEvent: {}
+[1.720132] (power_distribution_panel) StdoutLine: {'line': b'[100%] Built target power_distribution_panel_node\n'}
+[1.751494] (power_distribution_panel) CommandEnded: {'returncode': 0}
+[1.761287] (logic) StdoutLine: {'line': b'[ 20%] \x1b[32mBuilding CXX object CMakeFiles/logic_node.dir/src/logic_node.cpp.o\x1b[0m\n'}
+[1.761912] (excavation) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o\x1b[0m\n'}
+[1.762181] (talon) StdoutLine: {'line': b'[100%] Built target talon_node\n'}
+[1.769019] (falcon) JobProgress: {'identifier': 'falcon', 'progress': 'install'}
+[1.770012] (falcon) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/team/SoftwareDevelopment/shovel/build/falcon'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/falcon', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/falcon'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[1.795123] (talon) CommandEnded: {'returncode': 0}
+[1.809511] (communication2) JobProgress: {'identifier': 'communication2', 'progress': 'install'}
+[1.810194] (communication2) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/team/SoftwareDevelopment/shovel/build/communication2'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/communication2', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/communication2'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[1.814272] (falcon) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[1.814923] (-) TimerEvent: {}
+[1.816027] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/lib/falcon/falcon_node\n'}
+[1.819852] (falcon) StdoutLine: {'line': b'-- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/falcon/lib/falcon/falcon_node" to ""\n'}
+[1.820368] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/ament_index/resource_index/package_run_dependencies/falcon\n'}
+[1.820726] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/ament_index/resource_index/parent_prefix_path/falcon\n'}
+[1.821176] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/environment/ament_prefix_path.sh\n'}
+[1.821490] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/environment/ament_prefix_path.dsv\n'}
+[1.822189] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/environment/path.sh\n'}
+[1.822488] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/environment/path.dsv\n'}
+[1.822784] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/local_setup.bash\n'}
+[1.823255] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/local_setup.sh\n'}
+[1.823500] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/local_setup.zsh\n'}
+[1.823720] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/local_setup.dsv\n'}
+[1.824102] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/package.dsv\n'}
+[1.824421] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/ament_index/resource_index/packages/falcon\n'}
+[1.824842] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/cmake/falconConfig.cmake\n'}
+[1.825270] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/cmake/falconConfig-version.cmake\n'}
+[1.825552] (falcon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/falcon/share/falcon/package.xml\n'}
+[1.835202] (falcon) CommandEnded: {'returncode': 0}
+[1.851815] (communication2) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[1.854425] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/lib/communication2/communication2_node\n'}
+[1.877966] (communication2) StdoutLine: {'line': b'-- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/communication2/lib/communication2/communication2_node" to ""\n'}
+[1.880371] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/ament_index/resource_index/package_run_dependencies/communication2\n'}
+[1.881099] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/ament_index/resource_index/parent_prefix_path/communication2\n'}
+[1.881272] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/environment/ament_prefix_path.sh\n'}
+[1.881566] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/environment/ament_prefix_path.dsv\n'}
+[1.882386] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/environment/path.sh\n'}
+[1.882665] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/environment/path.dsv\n'}
+[1.882824] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/local_setup.bash\n'}
+[1.882972] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/local_setup.sh\n'}
+[1.883111] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/local_setup.zsh\n'}
+[1.883311] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/local_setup.dsv\n'}
+[1.883457] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/package.dsv\n'}
+[1.883651] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/ament_index/resource_index/packages/communication2\n'}
+[1.884031] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/cmake/communication2Config.cmake\n'}
+[1.884291] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/cmake/communication2Config-version.cmake\n'}
+[1.884498] (communication2) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/communication2/share/communication2/package.xml\n'}
+[1.893443] (power_distribution_panel) JobProgress: {'identifier': 'power_distribution_panel', 'progress': 'install'}
+[1.894055] (power_distribution_panel) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/power_distribution_panel'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[1.913123] (talon) JobProgress: {'identifier': 'talon', 'progress': 'install'}
+[1.914003] (talon) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/team/SoftwareDevelopment/shovel/build/talon'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/talon', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/talon'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[1.915494] (-) TimerEvent: {}
+[1.922493] (power_distribution_panel) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[1.923790] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/lib/power_distribution_panel/power_distribution_panel_node\n'}
+[1.924021] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/ament_index/resource_index/package_run_dependencies/power_distribution_panel\n'}
+[1.924197] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/ament_index/resource_index/parent_prefix_path/power_distribution_panel\n'}
+[1.924337] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/environment/ament_prefix_path.sh\n'}
+[1.924469] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/environment/ament_prefix_path.dsv\n'}
+[1.924598] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/environment/path.sh\n'}
+[1.924739] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/environment/path.dsv\n'}
+[1.924861] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/local_setup.bash\n'}
+[1.924983] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/local_setup.sh\n'}
+[1.925103] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/local_setup.zsh\n'}
+[1.925224] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/local_setup.dsv\n'}
+[1.925342] (power_distribution_panel) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/package.dsv\n'}
+[1.925462] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/ament_index/resource_index/packages/power_distribution_panel\n'}
+[1.927321] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/cmake/power_distribution_panelConfig.cmake\n'}
+[1.927539] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/cmake/power_distribution_panelConfig-version.cmake\n'}
+[1.927698] (power_distribution_panel) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/power_distribution_panel/share/power_distribution_panel/package.xml\n'}
+[1.932289] (communication2) CommandEnded: {'returncode': 0}
+[1.955641] (talon) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[1.956854] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/lib/talon/talon_node\n'}
+[1.968423] (talon) StdoutLine: {'line': b'-- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/talon/lib/talon/talon_node" to ""\n'}
+[1.969180] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/ament_index/resource_index/package_run_dependencies/talon\n'}
+[1.969497] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/ament_index/resource_index/parent_prefix_path/talon\n'}
+[1.971689] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/environment/ament_prefix_path.sh\n'}
+[1.972214] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/environment/ament_prefix_path.dsv\n'}
+[1.973513] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/environment/path.sh\n'}
+[1.975396] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/environment/path.dsv\n'}
+[1.975688] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/local_setup.bash\n'}
+[1.975971] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/local_setup.sh\n'}
+[1.976188] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/local_setup.zsh\n'}
+[1.976411] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/local_setup.dsv\n'}
+[1.976634] (power_distribution_panel) CommandEnded: {'returncode': 0}
+[1.981844] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/package.dsv\n'}
+[1.982275] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/ament_index/resource_index/packages/talon\n'}
+[1.982443] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/cmake/talonConfig.cmake\n'}
+[1.982596] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/cmake/talonConfig-version.cmake\n'}
+[1.982741] (talon) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/talon/share/talon/package.xml\n'}
+[2.016251] (-) TimerEvent: {}
+[2.039578] (falcon) JobEnded: {'identifier': 'falcon', 'rc': 0}
+[2.042112] (talon) CommandEnded: {'returncode': 0}
+[2.066285] (test) JobStarted: {'identifier': 'test'}
+[2.116566] (-) TimerEvent: {}
+[2.119059] (communication2) JobEnded: {'identifier': 'communication2', 'rc': 0}
+[2.122349] (zed_tracking) JobStarted: {'identifier': 'zed_tracking'}
+[2.168101] (power_distribution_panel) JobEnded: {'identifier': 'power_distribution_panel', 'rc': 0}
+[2.173897] (test) JobProgress: {'identifier': 'test', 'progress': 'cmake'}
+[2.174632] (test) Command: {'cmd': ['/usr/bin/cmake', '/home/team/SoftwareDevelopment/shovel/src/test', '-DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/test'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/test', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/test'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[2.214898] (talon) JobEnded: {'identifier': 'talon', 'rc': 0}
+[2.222593] (-) TimerEvent: {}
+[2.223697] (zed_tracking) JobProgress: {'identifier': 'zed_tracking', 'progress': 'cmake'}
+[2.223842] (zed_tracking) Command: {'cmd': ['/usr/bin/cmake', '/home/team/SoftwareDevelopment/shovel/src/zed_tracking', '-DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/zed_tracking'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/zed_tracking', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/zed_tracking'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[2.322856] (-) TimerEvent: {}
+[2.351783] (test) StdoutLine: {'line': b'-- The C compiler identification is GNU 9.4.0\n'}
+[2.365348] (zed_tracking) StdoutLine: {'line': b'-- The C compiler identification is GNU 9.4.0\n'}
+[2.428576] (-) TimerEvent: {}
+[2.529827] (-) TimerEvent: {}
+[2.544568] (zed_tracking) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[2.546051] (test) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[2.554588] (zed_tracking) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc\n'}
+[2.558248] (test) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc\n'}
+[2.630111] (-) TimerEvent: {}
+[2.731354] (-) TimerEvent: {}
+[2.795790] (zed_tracking) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc -- works\n'}
+[2.799326] (test) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc -- works\n'}
+[2.799838] (zed_tracking) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[2.802366] (test) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[2.831649] (-) TimerEvent: {}
+[2.932909] (-) TimerEvent: {}
+[3.034172] (-) TimerEvent: {}
+[3.039333] (test) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[3.059385] (test) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[3.060511] (test) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[3.065779] (test) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++\n'}
+[3.072465] (zed_tracking) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[3.092218] (zed_tracking) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[3.094099] (zed_tracking) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[3.100123] (zed_tracking) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++\n'}
+[3.134441] (-) TimerEvent: {}
+[3.236001] (-) TimerEvent: {}
+[3.329480] (test) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ -- works\n'}
+[3.330335] (zed_tracking) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ -- works\n'}
+[3.331566] (zed_tracking) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[3.331762] (test) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[3.336084] (-) TimerEvent: {}
+[3.437064] (-) TimerEvent: {}
+[3.538357] (-) TimerEvent: {}
+[3.600582] (zed_tracking) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[3.601436] (test) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[3.611764] (zed_tracking) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[3.612697] (zed_tracking) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[3.614946] (zed_tracking) StderrLine: {'line': b'CMake Deprecation Warning at CMakeLists.txt:15 (cmake_policy):\n'}
+[3.615368] (zed_tracking) StderrLine: {'line': b'  The OLD behavior for policy CMP0003 will be removed from a future version\n'}
+[3.615557] (zed_tracking) StderrLine: {'line': b'  of CMake.\n'}
+[3.615708] (zed_tracking) StderrLine: {'line': b'\n'}
+[3.615844] (zed_tracking) StderrLine: {'line': b'  The cmake-policies(7) manual explains that the OLD behaviors of all\n'}
+[3.615975] (zed_tracking) StderrLine: {'line': b'  policies are deprecated and that a policy should be set to OLD only under\n'}
+[3.616100] (zed_tracking) StderrLine: {'line': b'  specific short-term circumstances.  Projects should be ported to the NEW\n'}
+[3.616221] (zed_tracking) StderrLine: {'line': b'  behavior and not rely on setting a policy to OLD.\n'}
+[3.616339] (zed_tracking) StderrLine: {'line': b'\n'}
+[3.616483] (zed_tracking) StderrLine: {'line': b'\n'}
+[3.616597] (zed_tracking) StderrLine: {'line': b'CMake Deprecation Warning at CMakeLists.txt:16 (cmake_policy):\n'}
+[3.616714] (zed_tracking) StderrLine: {'line': b'  The OLD behavior for policy CMP0015 will be removed from a future version\n'}
+[3.616828] (zed_tracking) StderrLine: {'line': b'  of CMake.\n'}
+[3.616940] (zed_tracking) StderrLine: {'line': b'\n'}
+[3.617049] (zed_tracking) StderrLine: {'line': b'  The cmake-policies(7) manual explains that the OLD behaviors of all\n'}
+[3.617350] (zed_tracking) StderrLine: {'line': b'  policies are deprecated and that a policy should be set to OLD only under\n'}
+[3.617497] (zed_tracking) StderrLine: {'line': b'  specific short-term circumstances.  Projects should be ported to the NEW\n'}
+[3.617757] (zed_tracking) StderrLine: {'line': b'  behavior and not rely on setting a policy to OLD.\n'}
+[3.617926] (zed_tracking) StderrLine: {'line': b'\n'}
+[3.618046] (zed_tracking) StderrLine: {'line': b'\n'}
+[3.618164] (zed_tracking) StdoutLine: {'line': b'-- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)\n'}
+[3.619639] (test) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[3.621125] (test) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[3.625878] (test) StdoutLine: {'line': b'-- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)\n'}
+[3.638526] (-) TimerEvent: {}
+[3.674774] (zed_tracking) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") \n'}
+[3.675527] (zed_tracking) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[3.689509] (test) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") \n'}
+[3.690260] (test) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[3.738731] (-) TimerEvent: {}
+[3.840171] (-) TimerEvent: {}
+[3.866949] (zed_tracking) StdoutLine: {'line': b'-- Found rclcpp: 9.2.2 (/opt/ros/galactic/share/rclcpp/cmake)\n'}
+[3.891428] (test) StdoutLine: {'line': b'-- Found rclcpp: 9.2.2 (/opt/ros/galactic/share/rclcpp/cmake)\n'}
+[3.940435] (-) TimerEvent: {}
+[3.954459] (zed_tracking) StdoutLine: {'line': b'-- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c\n'}
+[3.967308] (zed_tracking) StdoutLine: {'line': b'-- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)\n'}
+[3.978463] (test) StdoutLine: {'line': b'-- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c\n'}
+[3.990349] (test) StdoutLine: {'line': b'-- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)\n'}
+[4.012423] (zed_tracking) StdoutLine: {'line': b'-- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp\n'}
+[4.030048] (test) StdoutLine: {'line': b'-- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp\n'}
+[4.040540] (-) TimerEvent: {}
+[4.141541] (-) TimerEvent: {}
+[4.143234] (zed_tracking) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)\n'}
+[4.148179] (zed_tracking) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)\n'}
+[4.154073] (test) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)\n'}
+[4.159053] (test) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)\n'}
+[4.191352] (zed_tracking) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[4.193181] (zed_tracking) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[4.196839] (test) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[4.198848] (test) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[4.241814] (-) TimerEvent: {}
+[4.343020] (-) TimerEvent: {}
+[4.437948] (test) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[4.438811] (zed_tracking) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[4.439052] (zed_tracking) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[4.439210] (test) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[4.443071] (-) TimerEvent: {}
+[4.543871] (-) TimerEvent: {}
+[4.704962] (-) TimerEvent: {}
+[4.806129] (-) TimerEvent: {}
+[4.851072] (test) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed\n'}
+[4.852015] (zed_tracking) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed\n'}
+[4.852250] (test) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads\n'}
+[4.852408] (zed_tracking) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads\n'}
+[4.906392] (-) TimerEvent: {}
+[5.007611] (-) TimerEvent: {}
+[5.108790] (-) TimerEvent: {}
+[5.209290] (test) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads - not found\n'}
+[5.210317] (-) TimerEvent: {}
+[5.210819] (zed_tracking) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads - not found\n'}
+[5.211338] (zed_tracking) StdoutLine: {'line': b'-- Looking for pthread_create in pthread\n'}
+[5.211706] (test) StdoutLine: {'line': b'-- Looking for pthread_create in pthread\n'}
+[5.310648] (-) TimerEvent: {}
+[5.412229] (-) TimerEvent: {}
+[5.457888] (zed_tracking) StdoutLine: {'line': b'-- Looking for pthread_create in pthread - found\n'}
+[5.458722] (test) StdoutLine: {'line': b'-- Looking for pthread_create in pthread - found\n'}
+[5.459493] (zed_tracking) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[5.460660] (test) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[5.512467] (-) TimerEvent: {}
+[5.613705] (-) TimerEvent: {}
+[5.714950] (-) TimerEvent: {}
+[5.751907] (zed_tracking) StdoutLine: {'line': b'-- Found messages: 0.0.0 (/home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake)\n'}
+[5.765248] (test) StdoutLine: {'line': b'-- Found messages: 0.0.0 (/home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake)\n'}
+[5.815051] (-) TimerEvent: {}
+[5.915993] (-) TimerEvent: {}
+[5.925557] (zed_tracking) StdoutLine: {'line': b'-- Looking for sgemm_\n'}
+[5.940025] (test) StdoutLine: {'line': b'-- Configuring done\n'}
+[5.982035] (test) StdoutLine: {'line': b'-- Generating done\n'}
+[5.982851] (test) StdoutLine: {'line': b'-- Build files have been written to: /home/team/SoftwareDevelopment/shovel/build/test\n'}
+[5.985241] (test) CommandEnded: {'returncode': 0}
+[5.987207] (test) JobProgress: {'identifier': 'test', 'progress': 'build'}
+[5.987944] (test) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/team/SoftwareDevelopment/shovel/build/test', '--', '-j6', '-l6'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/test', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/test'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[6.016306] (-) TimerEvent: {}
+[6.099811] (test) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target test_node\x1b[0m\n'}
+[6.116537] (-) TimerEvent: {}
+[6.217743] (-) TimerEvent: {}
+[6.248690] (zed_tracking) StdoutLine: {'line': b'-- Looking for sgemm_ - not found\n'}
+[6.318015] (-) TimerEvent: {}
+[6.318990] (test) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/test_node.dir/src/test_node.cpp.o\x1b[0m\n'}
+[6.418299] (-) TimerEvent: {}
+[6.519501] (-) TimerEvent: {}
+[6.559938] (zed_tracking) StdoutLine: {'line': b'-- Looking for sgemm_\n'}
+[6.619784] (-) TimerEvent: {}
+[6.721011] (-) TimerEvent: {}
+[6.822259] (-) TimerEvent: {}
+[6.923441] (-) TimerEvent: {}
+[7.024631] (-) TimerEvent: {}
+[7.125812] (-) TimerEvent: {}
+[7.215398] (zed_tracking) StdoutLine: {'line': b'-- Looking for sgemm_ - found\n'}
+[7.216509] (zed_tracking) StdoutLine: {'line': b'-- Found BLAS: /usr/lib/aarch64-linux-gnu/libopenblas.so  \n'}
+[7.225941] (-) TimerEvent: {}
+[7.327184] (-) TimerEvent: {}
+[7.428430] (-) TimerEvent: {}
+[7.529655] (-) TimerEvent: {}
+[7.589190] (zed_tracking) StdoutLine: {'line': b'-- Found CUDA: /usr/local/cuda-11.4 (found suitable version "11.4", minimum required is "11.4") \n'}
+[7.629875] (-) TimerEvent: {}
+[7.731052] (-) TimerEvent: {}
+[7.776287] (zed_tracking) StdoutLine: {'line': b'-- Found OpenCV: /usr (found version "4.5.4") \n'}
+[7.795876] (zed_tracking) StdoutLine: {'line': b'-- Found CUDA: /usr/local/cuda-11.4 (found suitable exact version "11.4") \n'}
+[7.831229] (-) TimerEvent: {}
+[7.932336] (-) TimerEvent: {}
+[7.963666] (zed_tracking) StdoutLine: {'line': b'-- Configuring done\n'}
+[8.032613] (-) TimerEvent: {}
+[8.133843] (-) TimerEvent: {}
+[8.143734] (zed_tracking) StdoutLine: {'line': b'-- Generating done\n'}
+[8.147637] (zed_tracking) StdoutLine: {'line': b'-- Build files have been written to: /home/team/SoftwareDevelopment/shovel/build/zed_tracking\n'}
+[8.178576] (zed_tracking) CommandEnded: {'returncode': 0}
+[8.188018] (zed_tracking) JobProgress: {'identifier': 'zed_tracking', 'progress': 'build'}
+[8.188757] (zed_tracking) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/team/SoftwareDevelopment/shovel/build/zed_tracking', '--', '-j6', '-l6'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/zed_tracking', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/zed_tracking'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[8.234143] (-) TimerEvent: {}
+[8.313033] (zed_tracking) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target zed_tracking_node\x1b[0m\n'}
+[8.334341] (-) TimerEvent: {}
+[8.435471] (-) TimerEvent: {}
+[8.536662] (-) TimerEvent: {}
+[8.637841] (-) TimerEvent: {}
+[8.739029] (-) TimerEvent: {}
+[8.840232] (-) TimerEvent: {}
+[8.865848] (logic) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/logic/src/logic_node.cpp:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[Kvoid zedPositionCallback(messages::msg::ZedPosition_<std::allocator<void> >::SharedPtr)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[8.866756] (logic) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/logic/src/logic_node.cpp:397:12:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused variable \xe2\x80\x98\x1b[01m\x1b[KyawTolerance\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wunused-variable\x1b[m\x1b[K]\n'}
+[8.866962] (logic) StderrLine: {'line': b'  397 |     double \x1b[01;35m\x1b[KyawTolerance\x1b[m\x1b[K=5;\n'}
+[8.867105] (logic) StderrLine: {'line': b'      |            \x1b[01;35m\x1b[K^~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[8.883780] (zed_tracking) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/zed_tracking_node.dir/src/aruco.cpp.o\x1b[0m\n'}
+[8.908784] (zed_tracking) StdoutLine: {'line': b'[ 66%] \x1b[32mBuilding CXX object CMakeFiles/zed_tracking_node.dir/src/zed_tracking_node.cpp.o\x1b[0m\n'}
+[8.940539] (-) TimerEvent: {}
+[9.042172] (-) TimerEvent: {}
+[9.143389] (-) TimerEvent: {}
+[9.244576] (-) TimerEvent: {}
+[9.345917] (-) TimerEvent: {}
+[9.447128] (-) TimerEvent: {}
+[9.548345] (-) TimerEvent: {}
+[9.649931] (-) TimerEvent: {}
+[9.769099] (-) TimerEvent: {}
+[9.870391] (-) TimerEvent: {}
+[9.971606] (-) TimerEvent: {}
+[10.073279] (-) TimerEvent: {}
+[10.174656] (-) TimerEvent: {}
+[10.275942] (-) TimerEvent: {}
+[10.377253] (-) TimerEvent: {}
+[10.478560] (-) TimerEvent: {}
+[10.579845] (-) TimerEvent: {}
+[10.681209] (-) TimerEvent: {}
+[10.782603] (-) TimerEvent: {}
+[10.883925] (-) TimerEvent: {}
+[10.985247] (-) TimerEvent: {}
+[11.086581] (-) TimerEvent: {}
+[11.187954] (-) TimerEvent: {}
+[11.289296] (-) TimerEvent: {}
+[11.390644] (-) TimerEvent: {}
+[11.491970] (-) TimerEvent: {}
+[11.593278] (-) TimerEvent: {}
+[11.694665] (-) TimerEvent: {}
+[11.796059] (-) TimerEvent: {}
+[11.897884] (-) TimerEvent: {}
+[11.921499] (test) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/test/src/test_node.cpp:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[Kint main(int, char**)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[11.922547] (test) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/test/src/test_node.cpp:25:17:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Knarrowing conversion of \xe2\x80\x98\x1b[01m\x1b[Kcount\x1b[m\x1b[K\xe2\x80\x99 from \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99 to \xe2\x80\x98\x1b[01m\x1b[Kshort int\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wnarrowing\x1b[m\x1b[K]\n'}
+[11.922772] (test) StderrLine: {'line': b'   25 |    pot.data = {{\x1b[01;35m\x1b[Kcount\x1b[m\x1b[K}, {val2}, {val3}};\n'}
+[11.922923] (test) StderrLine: {'line': b'      |                 \x1b[01;35m\x1b[K^~~~~\x1b[m\x1b[K\n'}
+[11.923059] (test) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/test/src/test_node.cpp:25:26:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Knarrowing conversion of \xe2\x80\x98\x1b[01m\x1b[Kval2\x1b[m\x1b[K\xe2\x80\x99 from \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99 to \xe2\x80\x98\x1b[01m\x1b[Kshort int\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wnarrowing\x1b[m\x1b[K]\n'}
+[11.923209] (test) StderrLine: {'line': b'   25 |    pot.data = {{count}, {\x1b[01;35m\x1b[Kval2\x1b[m\x1b[K}, {val3}};\n'}
+[11.923374] (test) StderrLine: {'line': b'      |                          \x1b[01;35m\x1b[K^~~~\x1b[m\x1b[K\n'}
+[11.923499] (test) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/test/src/test_node.cpp:25:34:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Knarrowing conversion of \xe2\x80\x98\x1b[01m\x1b[Kval3\x1b[m\x1b[K\xe2\x80\x99 from \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99 to \xe2\x80\x98\x1b[01m\x1b[Kshort int\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wnarrowing\x1b[m\x1b[K]\n'}
+[11.923631] (test) StderrLine: {'line': b'   25 |    pot.data = {{count}, {val2}, {\x1b[01;35m\x1b[Kval3\x1b[m\x1b[K}};\n'}
+[11.923751] (test) StderrLine: {'line': b'      |                                  \x1b[01;35m\x1b[K^~~~\x1b[m\x1b[K\n'}
+[11.998174] (-) TimerEvent: {}
+[12.099819] (-) TimerEvent: {}
+[12.201480] (-) TimerEvent: {}
+[12.303169] (-) TimerEvent: {}
+[12.404835] (-) TimerEvent: {}
+[12.506486] (-) TimerEvent: {}
+[12.608081] (-) TimerEvent: {}
+[12.709776] (-) TimerEvent: {}
+[12.811370] (-) TimerEvent: {}
+[12.913059] (-) TimerEvent: {}
+[13.014770] (-) TimerEvent: {}
+[13.116419] (-) TimerEvent: {}
+[13.218142] (-) TimerEvent: {}
+[13.319778] (-) TimerEvent: {}
+[13.421479] (-) TimerEvent: {}
+[13.523144] (-) TimerEvent: {}
+[13.624786] (-) TimerEvent: {}
+[13.726519] (-) TimerEvent: {}
+[13.828208] (-) TimerEvent: {}
+[13.929880] (-) TimerEvent: {}
+[14.031591] (-) TimerEvent: {}
+[14.133224] (-) TimerEvent: {}
+[14.234968] (-) TimerEvent: {}
+[14.336598] (-) TimerEvent: {}
+[14.438344] (-) TimerEvent: {}
+[14.540088] (-) TimerEvent: {}
+[14.641754] (-) TimerEvent: {}
+[14.743398] (-) TimerEvent: {}
+[14.984914] (-) TimerEvent: {}
+[15.087361] (-) TimerEvent: {}
+[15.188902] (-) TimerEvent: {}
+[15.290578] (-) TimerEvent: {}
+[15.392199] (-) TimerEvent: {}
+[15.493981] (-) TimerEvent: {}
+[15.595680] (-) TimerEvent: {}
+[15.697368] (-) TimerEvent: {}
+[15.798945] (-) TimerEvent: {}
+[15.900534] (-) TimerEvent: {}
+[16.002206] (-) TimerEvent: {}
+[16.103844] (-) TimerEvent: {}
+[16.205448] (-) TimerEvent: {}
+[16.307240] (-) TimerEvent: {}
+[16.409105] (-) TimerEvent: {}
+[16.511011] (-) TimerEvent: {}
+[16.612676] (-) TimerEvent: {}
+[16.714467] (-) TimerEvent: {}
+[16.816263] (-) TimerEvent: {}
+[16.918041] (-) TimerEvent: {}
+[17.019715] (-) TimerEvent: {}
+[17.121437] (-) TimerEvent: {}
+[17.223232] (-) TimerEvent: {}
+[17.324894] (-) TimerEvent: {}
+[17.426694] (-) TimerEvent: {}
+[17.528468] (-) TimerEvent: {}
+[17.630309] (-) TimerEvent: {}
+[17.731975] (-) TimerEvent: {}
+[17.833789] (-) TimerEvent: {}
+[17.935445] (-) TimerEvent: {}
+[18.037047] (-) TimerEvent: {}
+[18.138707] (-) TimerEvent: {}
+[18.239901] (-) TimerEvent: {}
+[18.341505] (-) TimerEvent: {}
+[18.443095] (-) TimerEvent: {}
+[18.545026] (-) TimerEvent: {}
+[18.646411] (-) TimerEvent: {}
+[18.747735] (-) TimerEvent: {}
+[18.848998] (-) TimerEvent: {}
+[18.950253] (-) TimerEvent: {}
+[19.051468] (-) TimerEvent: {}
+[19.152925] (-) TimerEvent: {}
+[19.158779] (test) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable test_node\x1b[0m\n'}
+[19.253581] (-) TimerEvent: {}
+[19.355333] (-) TimerEvent: {}
+[19.456718] (-) TimerEvent: {}
+[19.558111] (-) TimerEvent: {}
+[19.659456] (-) TimerEvent: {}
+[19.761049] (-) TimerEvent: {}
+[19.910051] (test) StdoutLine: {'line': b'[100%] Built target test_node\n'}
+[19.910821] (-) TimerEvent: {}
+[19.958260] (test) CommandEnded: {'returncode': 0}
+[20.011073] (-) TimerEvent: {}
+[20.034736] (test) JobProgress: {'identifier': 'test', 'progress': 'install'}
+[20.035435] (test) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/team/SoftwareDevelopment/shovel/build/test'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/test', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/test'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic')]), 'shell': False}
+[20.068619] (test) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[20.069691] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/lib/test/test_node\n'}
+[20.072158] (test) StdoutLine: {'line': b'-- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/test/lib/test/test_node" to ""\n'}
+[20.072979] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/ament_index/resource_index/package_run_dependencies/test\n'}
+[20.073481] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/ament_index/resource_index/parent_prefix_path/test\n'}
+[20.073967] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/environment/ament_prefix_path.sh\n'}
+[20.074259] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/environment/ament_prefix_path.dsv\n'}
+[20.074549] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/environment/path.sh\n'}
+[20.074843] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/environment/path.dsv\n'}
+[20.075156] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/local_setup.bash\n'}
+[20.075436] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/local_setup.sh\n'}
+[20.075750] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/local_setup.zsh\n'}
+[20.076031] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/local_setup.dsv\n'}
+[20.076305] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/package.dsv\n'}
+[20.076695] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/ament_index/resource_index/packages/test\n'}
+[20.077059] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/cmake/testConfig.cmake\n'}
+[20.077278] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/cmake/testConfig-version.cmake\n'}
+[20.077562] (test) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/package.xml\n'}
+[20.089812] (test) CommandEnded: {'returncode': 0}
+[20.170770] (zed_tracking) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/zed_tracking/src/zed_tracking_node.cpp:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[Kint main(int, char**)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[20.171882] (-) TimerEvent: {}
+[20.172486] (zed_tracking) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/zed_tracking/src/zed_tracking_node.cpp:100:44:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kstruct sl::CameraInformation\x1b[m\x1b[K\xe2\x80\x99 has no member named \xe2\x80\x98\x1b[01m\x1b[Kcamera_resolution\x1b[m\x1b[K\xe2\x80\x99\n'}
+[20.172746] (zed_tracking) StderrLine: {'line': b'  100 |     sl::Resolution image_size = cameraInfo.\x1b[01;31m\x1b[Kcamera_resolution\x1b[m\x1b[K;\n'}
+[20.172903] (zed_tracking) StderrLine: {'line': b'      |                                            \x1b[01;31m\x1b[K^~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[20.173057] (zed_tracking) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/zed_tracking/src/zed_tracking_node.cpp:106:33:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kstruct sl::CameraInformation\x1b[m\x1b[K\xe2\x80\x99 has no member named \xe2\x80\x98\x1b[01m\x1b[Kcalibration_parameters\x1b[m\x1b[K\xe2\x80\x99\n'}
+[20.173263] (zed_tracking) StderrLine: {'line': b'  106 |     auto calibInfo = cameraInfo.\x1b[01;31m\x1b[Kcalibration_parameters\x1b[m\x1b[K.left_cam;\n'}
+[20.173399] (zed_tracking) StderrLine: {'line': b'      |                                 \x1b[01;31m\x1b[K^~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[20.247178] (test) JobEnded: {'identifier': 'test', 'rc': 0}
+[20.272152] (-) TimerEvent: {}
+[20.373256] (-) TimerEvent: {}
+[20.474498] (-) TimerEvent: {}
+[20.575754] (-) TimerEvent: {}
+[20.677012] (-) TimerEvent: {}
+[20.778259] (-) TimerEvent: {}
+[20.879384] (-) TimerEvent: {}
+[20.980577] (-) TimerEvent: {}
+[21.081713] (-) TimerEvent: {}
+[21.182939] (-) TimerEvent: {}
+[21.284210] (-) TimerEvent: {}
+[21.385422] (-) TimerEvent: {}
+[21.486768] (-) TimerEvent: {}
+[21.588027] (-) TimerEvent: {}
+[21.689259] (-) TimerEvent: {}
+[21.790512] (-) TimerEvent: {}
+[21.891793] (-) TimerEvent: {}
+[21.993043] (-) TimerEvent: {}
+[22.094309] (-) TimerEvent: {}
+[22.195548] (-) TimerEvent: {}
+[22.296766] (-) TimerEvent: {}
+[22.397943] (-) TimerEvent: {}
+[22.499173] (-) TimerEvent: {}
+[22.600399] (-) TimerEvent: {}
+[22.701639] (-) TimerEvent: {}
+[22.802895] (-) TimerEvent: {}
+[22.904126] (-) TimerEvent: {}
+[23.005338] (-) TimerEvent: {}
+[23.106548] (-) TimerEvent: {}
+[23.207761] (-) TimerEvent: {}
+[23.308951] (-) TimerEvent: {}
+[23.410176] (-) TimerEvent: {}
+[23.511379] (-) TimerEvent: {}
+[23.612604] (-) TimerEvent: {}
+[23.713841] (-) TimerEvent: {}
+[23.815370] (-) TimerEvent: {}
+[23.916633] (-) TimerEvent: {}
+[24.017825] (-) TimerEvent: {}
+[24.119000] (-) TimerEvent: {}
+[24.220152] (-) TimerEvent: {}
+[24.321281] (-) TimerEvent: {}
+[24.422512] (-) TimerEvent: {}
+[24.523694] (-) TimerEvent: {}
+[24.624888] (-) TimerEvent: {}
+[24.726184] (-) TimerEvent: {}
+[24.827366] (-) TimerEvent: {}
+[24.928634] (-) TimerEvent: {}
+[25.072727] (-) TimerEvent: {}
+[25.173877] (-) TimerEvent: {}
+[25.275058] (-) TimerEvent: {}
+[25.370372] (zed_tracking) StderrLine: {'line': b'make[2]: *** [CMakeFiles/zed_tracking_node.dir/build.make:76: CMakeFiles/zed_tracking_node.dir/src/zed_tracking_node.cpp.o] Error 1\n'}
+[25.371269] (zed_tracking) StderrLine: {'line': b'make[1]: *** [CMakeFiles/Makefile2:105: CMakeFiles/zed_tracking_node.dir/all] Error 2\n'}
+[25.371516] (zed_tracking) StderrLine: {'line': b'make: *** [Makefile:141: all] Error 2\n'}
+[25.375104] (-) TimerEvent: {}
+[25.377694] (zed_tracking) CommandEnded: {'returncode': 2}
+[25.453475] (zed_tracking) JobEnded: {'identifier': 'zed_tracking', 'rc': 2}
+[25.475378] (-) TimerEvent: {}
+[25.576509] (-) TimerEvent: {}
+[25.677666] (-) TimerEvent: {}
+[25.778792] (-) TimerEvent: {}
+[25.879958] (-) TimerEvent: {}
+[25.981129] (-) TimerEvent: {}
+[26.082357] (-) TimerEvent: {}
+[26.183540] (-) TimerEvent: {}
+[26.284739] (-) TimerEvent: {}
+[26.385880] (-) TimerEvent: {}
+[26.487087] (-) TimerEvent: {}
+[26.588318] (-) TimerEvent: {}
+[26.689495] (-) TimerEvent: {}
+[26.790710] (-) TimerEvent: {}
+[26.891821] (-) TimerEvent: {}
+[26.992930] (-) TimerEvent: {}
+[27.094082] (-) TimerEvent: {}
+[27.195193] (-) TimerEvent: {}
+[27.296317] (-) TimerEvent: {}
+[27.397425] (-) TimerEvent: {}
+[27.498578] (-) TimerEvent: {}
+[27.599687] (-) TimerEvent: {}
+[27.700808] (-) TimerEvent: {}
+[27.801912] (-) TimerEvent: {}
+[27.903001] (-) TimerEvent: {}
+[28.004102] (-) TimerEvent: {}
+[28.105192] (-) TimerEvent: {}
+[28.206277] (-) TimerEvent: {}
+[28.307379] (-) TimerEvent: {}
+[28.408507] (-) TimerEvent: {}
+[28.509648] (-) TimerEvent: {}
+[28.610771] (-) TimerEvent: {}
+[28.711894] (-) TimerEvent: {}
+[28.813046] (-) TimerEvent: {}
+[28.914218] (-) TimerEvent: {}
+[29.015331] (-) TimerEvent: {}
+[29.116400] (-) TimerEvent: {}
+[29.217470] (-) TimerEvent: {}
+[29.318598] (-) TimerEvent: {}
+[29.419693] (-) TimerEvent: {}
+[29.520794] (-) TimerEvent: {}
+[29.622301] (-) TimerEvent: {}
+[29.723429] (-) TimerEvent: {}
+[29.824549] (-) TimerEvent: {}
+[29.925695] (-) TimerEvent: {}
+[30.026875] (-) TimerEvent: {}
+[30.127922] (-) TimerEvent: {}
+[30.228950] (-) TimerEvent: {}
+[30.330022] (-) TimerEvent: {}
+[30.431074] (-) TimerEvent: {}
+[30.532149] (-) TimerEvent: {}
+[30.633218] (-) TimerEvent: {}
+[30.734331] (-) TimerEvent: {}
+[30.835394] (-) TimerEvent: {}
+[30.936436] (-) TimerEvent: {}
+[31.037470] (-) TimerEvent: {}
+[31.138571] (-) TimerEvent: {}
+[31.239683] (-) TimerEvent: {}
+[31.340763] (-) TimerEvent: {}
+[31.441866] (-) TimerEvent: {}
+[31.543007] (-) TimerEvent: {}
+[31.644164] (-) TimerEvent: {}
+[31.745310] (-) TimerEvent: {}
+[31.846518] (-) TimerEvent: {}
+[31.947686] (-) TimerEvent: {}
+[32.048771] (-) TimerEvent: {}
+[32.149835] (-) TimerEvent: {}
+[32.250883] (-) TimerEvent: {}
+[32.351964] (-) TimerEvent: {}
+[32.453012] (-) TimerEvent: {}
+[32.554105] (-) TimerEvent: {}
+[32.655150] (-) TimerEvent: {}
+[32.756227] (-) TimerEvent: {}
+[32.857280] (-) TimerEvent: {}
+[32.958414] (-) TimerEvent: {}
+[33.059490] (-) TimerEvent: {}
+[33.160546] (-) TimerEvent: {}
+[33.261652] (-) TimerEvent: {}
+[33.362784] (-) TimerEvent: {}
+[33.463911] (-) TimerEvent: {}
+[33.565099] (-) TimerEvent: {}
+[33.666299] (-) TimerEvent: {}
+[33.767504] (-) TimerEvent: {}
+[33.868665] (-) TimerEvent: {}
+[33.969825] (-) TimerEvent: {}
+[34.070935] (-) TimerEvent: {}
+[34.172035] (-) TimerEvent: {}
+[34.273159] (-) TimerEvent: {}
+[34.374304] (-) TimerEvent: {}
+[34.475374] (-) TimerEvent: {}
+[34.576478] (-) TimerEvent: {}
+[34.677553] (-) TimerEvent: {}
+[34.778653] (-) TimerEvent: {}
+[34.879725] (-) TimerEvent: {}
+[34.981095] (-) TimerEvent: {}
+[35.165734] (-) TimerEvent: {}
+[35.266810] (-) TimerEvent: {}
+[35.367877] (-) TimerEvent: {}
+[35.468996] (-) TimerEvent: {}
+[35.570161] (-) TimerEvent: {}
+[35.671282] (-) TimerEvent: {}
+[35.772389] (-) TimerEvent: {}
+[35.873504] (-) TimerEvent: {}
+[35.974632] (-) TimerEvent: {}
+[36.075735] (-) TimerEvent: {}
+[36.176812] (-) TimerEvent: {}
+[36.277888] (-) TimerEvent: {}
+[36.378996] (-) TimerEvent: {}
+[36.480019] (-) TimerEvent: {}
+[36.581079] (-) TimerEvent: {}
+[36.682178] (-) TimerEvent: {}
+[36.783298] (-) TimerEvent: {}
+[36.884397] (-) TimerEvent: {}
+[36.985526] (-) TimerEvent: {}
+[37.086639] (-) TimerEvent: {}
+[37.187675] (-) TimerEvent: {}
+[37.288657] (-) TimerEvent: {}
+[37.389569] (-) TimerEvent: {}
+[37.490662] (-) TimerEvent: {}
+[37.591782] (-) TimerEvent: {}
+[37.692892] (-) TimerEvent: {}
+[37.794274] (-) TimerEvent: {}
+[37.895340] (-) TimerEvent: {}
+[37.996354] (-) TimerEvent: {}
+[38.097257] (-) TimerEvent: {}
+[38.198359] (-) TimerEvent: {}
+[38.299406] (-) TimerEvent: {}
+[38.400491] (-) TimerEvent: {}
+[38.501710] (-) TimerEvent: {}
+[38.602869] (-) TimerEvent: {}
+[38.703994] (-) TimerEvent: {}
+[38.805101] (-) TimerEvent: {}
+[38.906223] (-) TimerEvent: {}
+[39.007567] (-) TimerEvent: {}
+[39.108660] (-) TimerEvent: {}
+[39.209981] (-) TimerEvent: {}
+[39.311019] (-) TimerEvent: {}
+[39.412076] (-) TimerEvent: {}
+[39.513114] (-) TimerEvent: {}
+[39.614167] (-) TimerEvent: {}
+[39.715254] (-) TimerEvent: {}
+[39.816302] (-) TimerEvent: {}
+[39.917382] (-) TimerEvent: {}
+[40.018486] (-) TimerEvent: {}
+[40.165737] (-) TimerEvent: {}
+[40.266773] (-) TimerEvent: {}
+[40.367863] (-) TimerEvent: {}
+[40.469073] (-) TimerEvent: {}
+[40.570265] (-) TimerEvent: {}
+[40.671386] (-) TimerEvent: {}
+[40.772480] (-) TimerEvent: {}
+[40.873656] (-) TimerEvent: {}
+[40.974835] (-) TimerEvent: {}
+[41.075880] (-) TimerEvent: {}
+[41.176969] (-) TimerEvent: {}
+[41.278108] (-) TimerEvent: {}
+[41.379199] (-) TimerEvent: {}
+[41.480317] (-) TimerEvent: {}
+[41.581449] (-) TimerEvent: {}
+[41.590684] (excavation) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable excavation_node\x1b[0m\n'}
+[41.681739] (-) TimerEvent: {}
+[41.782833] (-) TimerEvent: {}
+[41.883737] (-) TimerEvent: {}
+[41.984764] (-) TimerEvent: {}
+[42.086018] (-) TimerEvent: {}
+[42.187215] (-) TimerEvent: {}
+[42.288443] (-) TimerEvent: {}
+[42.389750] (-) TimerEvent: {}
+[42.490951] (-) TimerEvent: {}
+[42.592134] (-) TimerEvent: {}
+[42.693253] (-) TimerEvent: {}
+[42.794366] (-) TimerEvent: {}
+[42.895324] (-) TimerEvent: {}
+[42.996522] (-) TimerEvent: {}
+[43.097760] (-) TimerEvent: {}
+[43.199216] (-) TimerEvent: {}
+[43.300334] (-) TimerEvent: {}
+[43.401502] (-) TimerEvent: {}
+[43.408764] (excavation) StdoutLine: {'line': b'[100%] Built target excavation_node\n'}
+[43.501762] (-) TimerEvent: {}
+[43.555988] (excavation) JobEnded: {'identifier': 'excavation', 'rc': 'SIGINT'}
+[43.601940] (-) TimerEvent: {}
+[43.702844] (-) TimerEvent: {}
+[43.803753] (-) TimerEvent: {}
+[43.904798] (-) TimerEvent: {}
+[44.005835] (-) TimerEvent: {}
+[44.106861] (-) TimerEvent: {}
+[44.207985] (-) TimerEvent: {}
+[44.308993] (-) TimerEvent: {}
+[44.410006] (-) TimerEvent: {}
+[44.510980] (-) TimerEvent: {}
+[44.611968] (-) TimerEvent: {}
+[44.712924] (-) TimerEvent: {}
+[44.813854] (-) TimerEvent: {}
+[44.914728] (-) TimerEvent: {}
+[45.015632] (-) TimerEvent: {}
+[45.116537] (-) TimerEvent: {}
+[45.258127] (-) TimerEvent: {}
+[45.359192] (-) TimerEvent: {}
+[45.460507] (-) TimerEvent: {}
+[45.561630] (-) TimerEvent: {}
+[45.662633] (-) TimerEvent: {}
+[45.763598] (-) TimerEvent: {}
+[45.864857] (-) TimerEvent: {}
+[45.966098] (-) TimerEvent: {}
+[46.067161] (-) TimerEvent: {}
+[46.168029] (-) TimerEvent: {}
+[46.268792] (-) TimerEvent: {}
+[46.369430] (-) TimerEvent: {}
+[46.470183] (-) TimerEvent: {}
+[46.570964] (-) TimerEvent: {}
+[46.671844] (-) TimerEvent: {}
+[46.772641] (-) TimerEvent: {}
+[46.873208] (-) TimerEvent: {}
+[46.973678] (-) TimerEvent: {}
+[47.074100] (-) TimerEvent: {}
+[47.174497] (-) TimerEvent: {}
+[47.275007] (-) TimerEvent: {}
+[47.375383] (-) TimerEvent: {}
+[47.475790] (-) TimerEvent: {}
+[47.576128] (-) TimerEvent: {}
+[47.676447] (-) TimerEvent: {}
+[47.776836] (-) TimerEvent: {}
+[47.877401] (-) TimerEvent: {}
+[47.978029] (-) TimerEvent: {}
+[48.078766] (-) TimerEvent: {}
+[48.179658] (-) TimerEvent: {}
+[48.280548] (-) TimerEvent: {}
+[48.381464] (-) TimerEvent: {}
+[48.482343] (-) TimerEvent: {}
+[48.583259] (-) TimerEvent: {}
+[48.684103] (-) TimerEvent: {}
+[48.784672] (-) TimerEvent: {}
+[48.885135] (-) TimerEvent: {}
+[48.985664] (-) TimerEvent: {}
+[49.086393] (-) TimerEvent: {}
+[49.187445] (-) TimerEvent: {}
+[49.288282] (-) TimerEvent: {}
+[49.389059] (-) TimerEvent: {}
+[49.489791] (-) TimerEvent: {}
+[49.590657] (-) TimerEvent: {}
+[49.691757] (-) TimerEvent: {}
+[49.792606] (-) TimerEvent: {}
+[49.893405] (-) TimerEvent: {}
+[49.994123] (-) TimerEvent: {}
+[50.094856] (-) TimerEvent: {}
+[50.195719] (-) TimerEvent: {}
+[50.358729] (-) TimerEvent: {}
+[50.459603] (-) TimerEvent: {}
+[50.560457] (-) TimerEvent: {}
+[50.661245] (-) TimerEvent: {}
+[50.761984] (-) TimerEvent: {}
+[50.862658] (-) TimerEvent: {}
+[50.963316] (-) TimerEvent: {}
+[51.063974] (-) TimerEvent: {}
+[51.164614] (-) TimerEvent: {}
+[51.265271] (-) TimerEvent: {}
+[51.365952] (-) TimerEvent: {}
+[51.466633] (-) TimerEvent: {}
+[51.567292] (-) TimerEvent: {}
+[51.667952] (-) TimerEvent: {}
+[51.768618] (-) TimerEvent: {}
+[51.869354] (-) TimerEvent: {}
+[51.970169] (-) TimerEvent: {}
+[52.071024] (-) TimerEvent: {}
+[52.171866] (-) TimerEvent: {}
+[52.272663] (-) TimerEvent: {}
+[52.373502] (-) TimerEvent: {}
+[52.474408] (-) TimerEvent: {}
+[52.575261] (-) TimerEvent: {}
+[52.676107] (-) TimerEvent: {}
+[52.776945] (-) TimerEvent: {}
+[52.877765] (-) TimerEvent: {}
+[52.978810] (-) TimerEvent: {}
+[53.079694] (-) TimerEvent: {}
+[53.180585] (-) TimerEvent: {}
+[53.281402] (-) TimerEvent: {}
+[53.382325] (-) TimerEvent: {}
+[53.483379] (-) TimerEvent: {}
+[53.584416] (-) TimerEvent: {}
+[53.685457] (-) TimerEvent: {}
+[53.786276] (-) TimerEvent: {}
+[53.887430] (-) TimerEvent: {}
+[53.988218] (-) TimerEvent: {}
+[54.088691] (-) TimerEvent: {}
+[54.189371] (-) TimerEvent: {}
+[54.290201] (-) TimerEvent: {}
+[54.391211] (-) TimerEvent: {}
+[54.492131] (-) TimerEvent: {}
+[54.592905] (-) TimerEvent: {}
+[54.693655] (-) TimerEvent: {}
+[54.794381] (-) TimerEvent: {}
+[54.895110] (-) TimerEvent: {}
+[54.995834] (-) TimerEvent: {}
+[55.096545] (-) TimerEvent: {}
+[55.197262] (-) TimerEvent: {}
+[55.298171] (-) TimerEvent: {}
+[55.634487] (-) TimerEvent: {}
+[55.735490] (-) TimerEvent: {}
+[55.836507] (-) TimerEvent: {}
+[55.937767] (-) TimerEvent: {}
+[56.038782] (-) TimerEvent: {}
+[56.139776] (-) TimerEvent: {}
+[56.240989] (-) TimerEvent: {}
+[56.341993] (-) TimerEvent: {}
+[56.442923] (-) TimerEvent: {}
+[56.543838] (-) TimerEvent: {}
+[56.645025] (-) TimerEvent: {}
+[56.746003] (-) TimerEvent: {}
+[56.846960] (-) TimerEvent: {}
+[56.948189] (-) TimerEvent: {}
+[57.049456] (-) TimerEvent: {}
+[57.150773] (-) TimerEvent: {}
+[57.251884] (-) TimerEvent: {}
+[57.353008] (-) TimerEvent: {}
+[57.454375] (-) TimerEvent: {}
+[57.555743] (-) TimerEvent: {}
+[57.656832] (-) TimerEvent: {}
+[57.757984] (-) TimerEvent: {}
+[57.859417] (-) TimerEvent: {}
+[57.960809] (-) TimerEvent: {}
+[58.061901] (-) TimerEvent: {}
+[58.162949] (-) TimerEvent: {}
+[58.264006] (-) TimerEvent: {}
+[58.365111] (-) TimerEvent: {}
+[58.466412] (-) TimerEvent: {}
+[58.567485] (-) TimerEvent: {}
+[58.668870] (-) TimerEvent: {}
+[58.770378] (-) TimerEvent: {}
+[58.822702] (logic) StdoutLine: {'line': b'[ 40%] \x1b[32m\x1b[1mLinking CXX executable logic_node\x1b[0m\n'}
+[58.870631] (-) TimerEvent: {}
+[58.971715] (-) TimerEvent: {}
+[59.072739] (-) TimerEvent: {}
+[59.173718] (-) TimerEvent: {}
+[59.274896] (-) TimerEvent: {}
+[59.376089] (-) TimerEvent: {}
+[59.477356] (-) TimerEvent: {}
+[59.578561] (-) TimerEvent: {}
+[59.679732] (-) TimerEvent: {}
+[59.780899] (-) TimerEvent: {}
+[59.882164] (-) TimerEvent: {}
+[59.983314] (-) TimerEvent: {}
+[60.084431] (-) TimerEvent: {}
+[60.185442] (-) TimerEvent: {}
+[60.286379] (-) TimerEvent: {}
+[60.387208] (-) TimerEvent: {}
+[60.488077] (-) TimerEvent: {}
+[60.588830] (-) TimerEvent: {}
+[60.689798] (-) TimerEvent: {}
+[60.790718] (-) TimerEvent: {}
+[60.891783] (-) TimerEvent: {}
+[60.992851] (-) TimerEvent: {}
+[61.093981] (-) TimerEvent: {}
+[61.195079] (-) TimerEvent: {}
+[61.296131] (-) TimerEvent: {}
+[61.397241] (-) TimerEvent: {}
+[61.498343] (-) TimerEvent: {}
+[61.539887] (logic) StdoutLine: {'line': b'[100%] Built target logic_node\n'}
+[61.598558] (-) TimerEvent: {}
+[61.694792] (logic) JobEnded: {'identifier': 'logic', 'rc': 'SIGINT'}
+[61.698607] (-) TimerEvent: {}
+[61.706279] (-) EventReactorShutdown: {}

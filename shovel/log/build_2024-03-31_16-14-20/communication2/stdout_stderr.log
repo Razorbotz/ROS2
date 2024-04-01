@@ -1,0 +1,185 @@
+-- The C compiler identification is GNU 9.4.0
+-- The CXX compiler identification is GNU 9.4.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)
+-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Found rclcpp: 9.2.2 (/opt/ros/galactic/share/rclcpp/cmake)
+-- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c
+-- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)
+-- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp
+-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)
+-- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)
+-- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE  
+-- Found sensor_msgs: 2.2.4 (/opt/ros/galactic/share/sensor_msgs/cmake)
+-- Found messages: 0.0.0 (/home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake)
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/team/SoftwareDevelopment/shovel/build/communication2
+[35m[1mScanning dependencies of target communication2_node[0m
+[ 33%] [32mBuilding CXX object CMakeFiles/communication2_node.dir/src/BinaryMessage.cpp.o[0m
+[ 66%] [32mBuilding CXX object CMakeFiles/communication2_node.dir/src/communication_node.cpp.o[0m
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In constructor ‘[01m[KElement::Element(std::string, std::__cxx11::list<Data>, uint8_t, size_t, ...)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:23:28:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+   23 |     for(int index=0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                      [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In constructor ‘[01m[KBinaryMessage::BinaryMessage(std::__cxx11::list<unsigned char>&)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:321:14:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Ksize[m[K’ [[01;35m[K-Wunused-variable[m[K]
+  321 |     uint64_t [01;35m[Ksize[m[K = decodeSizeBytes(currentByte);
+      |              [01;35m[K^~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[KObject BinaryMessage::decodeObject(std::__cxx11::list<unsigned char>::iterator&)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:631:28:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kuint64_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  631 |     for(int index=0; [01;35m[Kindex < elementCount[m[K ; index++){
+      |                      [01;35m[K~~~~~~^~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:636:28:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kuint64_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  636 |     for(int index=0; [01;35m[Kindex < objectCount[m[K ; index++){
+      |                      [01;35m[K~~~~~~^~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kstd::string BinaryMessage::decodeLabel(std::__cxx11::list<unsigned char>::iterator&)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:652:28:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kuint64_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  652 |     for(int index=0; [01;35m[Kindex < size[m[K ; index++){
+      |                      [01;35m[K~~~~~~^~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[KElement BinaryMessage::decodeElement(std::__cxx11::list<unsigned char>::iterator&)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:814:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  814 |         for(int index = 0; [01;35m[Kindex < size[m[K ; index++){
+      |                            [01;35m[K~~~~~~^~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:823:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  823 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:837:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  837 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:851:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  851 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:865:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  865 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:881:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  881 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:901:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  901 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:929:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  929 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:943:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  943 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:959:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  959 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:979:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+  979 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1007:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1007 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1027:34:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1027 |         for(int index = 0; [01;35m[Kindex < dimensionCount[m[K; index++){
+      |                            [01;35m[K~~~~~~^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In static member function ‘[01m[Kstatic bool BinaryMessage::hasSize(std::__cxx11::list<unsigned char>&)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1162:27:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kstd::__cxx11::list<unsigned char>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} and ‘[01m[Kint[m[K’ [[01;35m[K-Wsign-compare[m[K]
+ 1162 |         if ([01;35m[Kmessage.size()>=byteCount[m[K){
+      |             [01;35m[K~~~~~~~~~~~~~~^~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementString(Object&, std::string, std::string)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1406:28:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::__cxx11::basic_string<char>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1406 |     for(int index=0; [01;35m[Kindex < string.size()[m[K; index++){
+      |                      [01;35m[K~~~~~~^~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementBooleanArray(Object&, std::string, std::vector<bool>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1419:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<bool>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1419 |     for (int index = 0; [01;35m[Kindex < booleanList.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementCharacterArray(Object&, std::string, std::vector<char>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1430:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<char>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1430 |     for (int index = 0; [01;35m[Kindex < characterList.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementInt8Array(Object&, std::string, std::vector<signed char>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1441:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<signed char>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1441 |     for (int index = 0; [01;35m[Kindex < int8List.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementInt16Array(Object&, std::string, std::vector<short int>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1452:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<short int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1452 |     for (int index = 0; [01;35m[Kindex < int16List.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementInt32Array(Object&, std::string, std::vector<int>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1463:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1463 |     for (int index = 0; [01;35m[Kindex < int32List.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementInt64Array(Object&, std::string, std::vector<long int>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1474:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<long int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1474 |     for (int index = 0; [01;35m[Kindex < int64List.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementUInt8Array(Object&, std::string, std::vector<unsigned char>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1485:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<unsigned char>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1485 |     for (int index = 0; [01;35m[Kindex < uint8List.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementUInt16Array(Object&, std::string, std::vector<short unsigned int>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1496:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<short unsigned int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1496 |     for (int index = 0; [01;35m[Kindex < uint16List.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/communication_node.cpp:[m[K In function ‘[01m[Kvoid zedImageCallback(sensor_msgs::msg::Image_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/communication_node.cpp:394:64:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[KinputImage[m[K’ [[01;35m[K-Wunused-parameter[m[K]
+  394 | void zedImageCallback([01;35m[Kconst sensor_msgs::msg::Image::SharedPtr inputImage[m[K){
+      |                       [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementUInt32Array(Object&, std::string, std::vector<unsigned int>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1507:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<unsigned int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1507 |     for (int index = 0; [01;35m[Kindex < uint32List.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementUInt64Array(Object&, std::string, std::vector<long unsigned int>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1518:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<long unsigned int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1518 |     for (int index = 0; [01;35m[Kindex < uint64List.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementFloat32Array(Object&, std::string, std::vector<float>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1529:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<float>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1529 |     for (int index = 0; [01;35m[Kindex < floatList.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::addElementFloat64Array(Object&, std::string, std::vector<double>, size_t, std::vector<long unsigned int>)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1540:31:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<double>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1540 |     for (int index = 0; [01;35m[Kindex < doubleList.size()[m[K; index++) {
+      |                         [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::encodeLabelBytes(std::shared_ptr<std::__cxx11::list<unsigned char> >, std::string)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1596:28:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::__cxx11::basic_string<char>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1596 |     for(int index=0; [01;35m[Kindex < label.size()[m[K; index++){
+      |                      [01;35m[K~~~~~~^~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kvoid BinaryMessage::encodeBytes(std::shared_ptr<std::__cxx11::list<unsigned char> >, Element)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1659:32:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<long unsigned int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1659 |         for(int index=0; [01;35m[Kindex < element.sizeList.size()[m[K; index++){
+      |                          [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1668:32:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<long unsigned int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1668 |         for(int index=0; [01;35m[Kindex < element.sizeList.size()[m[K; index++){
+      |                          [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1677:32:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<long unsigned int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1677 |         for(int index=0; [01;35m[Kindex < element.sizeList.size()[m[K; index++){
+      |                          [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1686:32:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<long unsigned int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1686 |         for(int index=0; [01;35m[Kindex < element.sizeList.size()[m[K; index++){
+      |                          [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1696:32:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<long unsigned int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1696 |         for(int index=0; [01;35m[Kindex < element.sizeList.size()[m[K; index++){
+      |                          [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/communication2/src/BinaryMessage.cpp:1708:32:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Kint[m[K’ and ‘[01m[Kstd::vector<long unsigned int>::size_type[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K-Wsign-compare[m[K]
+ 1708 |         for(int index=0; [01;35m[Kindex < element.sizeList.size()[m[K; index++){
+      |                          [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[100%] [32m[1mLinking CXX executable communication2_node[0m
+[100%] Built target communication2_node

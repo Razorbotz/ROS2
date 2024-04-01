@@ -1,0 +1,10 @@
+/home/team/SoftwareDevelopment/shovel/build/logic/CMakeFiles/install.dir
+/home/team/SoftwareDevelopment/shovel/build/logic/CMakeFiles/list_install_components.dir
+/home/team/SoftwareDevelopment/shovel/build/logic/CMakeFiles/rebuild_cache.dir
+/home/team/SoftwareDevelopment/shovel/build/logic/CMakeFiles/edit_cache.dir
+/home/team/SoftwareDevelopment/shovel/build/logic/CMakeFiles/test.dir
+/home/team/SoftwareDevelopment/shovel/build/logic/CMakeFiles/install/strip.dir
+/home/team/SoftwareDevelopment/shovel/build/logic/CMakeFiles/logic_node.dir
+/home/team/SoftwareDevelopment/shovel/build/logic/CMakeFiles/install/local.dir
+/home/team/SoftwareDevelopment/shovel/build/logic/CMakeFiles/logic_uninstall.dir
+/home/team/SoftwareDevelopment/shovel/build/logic/CMakeFiles/uninstall.dir

@@ -1,0 +1,82 @@
+[0.085s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/excavation': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/excavation -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/excavation
+[0.309s] -- The C compiler identification is GNU 9.4.0
+[0.512s] -- The CXX compiler identification is GNU 9.4.0
+[0.514s] -- Check for working C compiler: /usr/bin/cc
+[0.766s] -- Check for working C compiler: /usr/bin/cc -- works
+[0.768s] -- Detecting C compiler ABI info
+[1.038s] -- Detecting C compiler ABI info - done
+[1.069s] -- Detecting C compile features
+[1.070s] -- Detecting C compile features - done
+[1.076s] -- Check for working CXX compiler: /usr/bin/c++
+[1.324s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[1.330s] -- Detecting CXX compiler ABI info
+[1.626s] -- Detecting CXX compiler ABI info - done
+[1.649s] -- Detecting CXX compile features
+[1.650s] -- Detecting CXX compile features - done
+[1.654s] -- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)
+[1.721s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+[1.721s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[1.923s] -- Found rclcpp: 9.2.2 (/opt/ros/galactic/share/rclcpp/cmake)
+[2.010s] -- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c
+[2.020s] -- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)
+[2.057s] -- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp
+[2.178s] -- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)
+[2.182s] -- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)
+[2.222s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[2.225s] -- Looking for pthread.h
+[2.485s] -- Looking for pthread.h - found
+[2.486s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[2.853s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+[2.853s] -- Looking for pthread_create in pthreads
+[3.236s] -- Looking for pthread_create in pthreads - not found
+[3.249s] -- Looking for pthread_create in pthread
+[3.509s] -- Looking for pthread_create in pthread - found
+[3.512s] -- Found Threads: TRUE  
+[3.791s] -- Found messages: 0.0.0 (/home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake)
+[4.001s] -- Configuring done
+[4.014s] -- Generating done
+[4.019s] -- Build files have been written to: /home/team/SoftwareDevelopment/shovel/build/excavation
+[4.077s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/excavation' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/excavation -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/excavation
+[4.081s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/excavation': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/excavation -- -j6 -l6
+[4.190s] [35m[1mScanning dependencies of target excavation_node[0m
+[4.513s] [ 50%] [32mBuilding CXX object CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o[0m
+[14.507s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:[m[K In function ‘[01m[Kvoid setSpeeds()[m[K’:
+[14.508s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:165:30:[m[K [01;31m[Kerror: [m[Ktoo many arguments to function ‘[01m[Kvoid sync()[m[K’
+[14.508s]   165 |         sync(linear1, linear2[01;31m[K)[m[K;
+[14.508s]       |                              [01;31m[K^[m[K
+[14.508s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:113:6:[m[K [01;36m[Knote: [m[Kdeclared here
+[14.508s]   113 | void [01;36m[Ksync[m[K(){
+[14.508s]       |      [01;36m[K^~~~[m[K
+[14.604s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:[m[K At global scope:
+[14.604s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:595:46:[m[K [01;31m[Kerror: [m[K‘[01m[KEmpty[m[K’ in namespace ‘[01m[Kstd_msgs::msg[m[K’ does not name a type
+[14.604s]   595 | void sensorlessCallback(const std_msgs::msg::[01;31m[KEmpty[m[K::SharedPtr empty){
+[14.604s]       |                                              [01;31m[K^~~~~[m[K
+[14.605s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:595:63:[m[K [01;31m[Kerror: [m[Kexpected unqualified-id before ‘[01m[Kempty[m[K’
+[14.605s]   595 | void sensorlessCallback(const std_msgs::msg::Empty::SharedPtr [01;31m[Kempty[m[K){
+[14.605s]       |                                                               [01;31m[K^~~~~[m[K
+[14.605s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:595:62:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K)[m[K’ before ‘[01m[Kempty[m[K’
+[14.605s]   595 | void sensorlessCallback[34m[K([m[Kconst std_msgs::msg::Empty::SharedPtr[01;31m[K [m[K[32m[Kempty[m[K){
+[14.605s]       |                        [34m[K~[m[K                                     [01;31m[K^[m[K[32m[K~~~~~[m[K
+[14.605s]       |                                                              [32m[K)[m[K
+[14.606s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:595:63:[m[K [01;31m[Kerror: [m[Kexpected initializer before ‘[01m[Kempty[m[K’
+[14.606s]   595 | void sensorlessCallback(const std_msgs::msg::Empty::SharedPtr [01;31m[Kempty[m[K){
+[14.606s]       |                                                               [01;31m[K^~~~~[m[K
+[14.689s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[14.689s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:605:80:[m[K [01;31m[Kerror: [m[K‘[01m[KEmpty[m[K’ is not a member of ‘[01m[Kstd_msgs::msg[m[K’; did you mean ‘[01m[Krclcpp::Empty[m[K’?
+[14.689s]   605 |     auto sensorlessSubscriber = nodeHandle->create_subscription<std_msgs::msg::[01;31m[KEmpty[m[K>("sensorless",1,sensorlessCallback);
+[14.689s]       |                                                                                [01;31m[K^~~~~[m[K
+[14.689s] In file included from [01m[K/opt/ros/galactic/include/rclcpp/wait_result.hpp:25[m[K,
+[14.690s]                  from [01m[K/opt/ros/galactic/include/rclcpp/wait_set_policies/sequential_synchronization.hpp:32[m[K,
+[14.690s]                  from [01m[K/opt/ros/galactic/include/rclcpp/wait_set.hpp:26[m[K,
+[14.690s]                  from [01m[K/opt/ros/galactic/include/rclcpp/rclcpp.hpp:169[m[K,
+[14.690s]                  from [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:3[m[K:
+[14.690s] [01m[K/opt/ros/galactic/include/rclcpp/wait_result_kind.hpp:28:3:[m[K [01;36m[Knote: [m[K‘[01m[Krclcpp::Empty[m[K’ declared here
+[14.690s]    28 |   [01;36m[KEmpty[m[K,  //<! Kind used when trying to wait on an empty wait set.
+[14.690s]       |   [01;36m[K^~~~~[m[K
+[14.713s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:605:102:[m[K [01;31m[Kerror: [m[K‘[01m[KsensorlessCallback[m[K’ was not declared in this scope
+[14.713s]   605 |     auto sensorlessSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("sensorless",1,[01;31m[KsensorlessCallback[m[K);
+[14.714s]       |                                                                                                      [01;31m[K^~~~~~~~~~~~~~~~~~[m[K
+[29.591s] make[2]: *** [CMakeFiles/excavation_node.dir/build.make:63: CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o] Error 1
+[29.595s] make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/excavation_node.dir/all] Error 2
+[29.596s] make: *** [Makefile:141: all] Error 2
+[29.613s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/excavation' returned '2': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/excavation -- -j6 -l6

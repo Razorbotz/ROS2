@@ -1,0 +1,19 @@
+[100%] Built target logic_node
+-- Install configuration: ""
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/lib/logic/logic_node
+-- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/logic/lib/logic/logic_node" to ""
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/ament_index/resource_index/package_run_dependencies/logic
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/ament_index/resource_index/parent_prefix_path/logic
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/environment/ament_prefix_path.sh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/environment/ament_prefix_path.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/environment/path.sh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/environment/path.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/local_setup.bash
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/local_setup.sh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/local_setup.zsh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/local_setup.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/package.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/ament_index/resource_index/packages/logic
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/cmake/logicConfig.cmake
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/cmake/logicConfig-version.cmake
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/package.xml

@@ -1,0 +1,39 @@
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:[m[K In function ‘[01m[Kvoid setSpeeds()[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:165:30:[m[K [01;31m[Kerror: [m[Ktoo many arguments to function ‘[01m[Kvoid sync()[m[K’
+  165 |         sync(linear1, linear2[01;31m[K)[m[K;
+      |                              [01;31m[K^[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:113:6:[m[K [01;36m[Knote: [m[Kdeclared here
+  113 | void [01;36m[Ksync[m[K(){
+      |      [01;36m[K^~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:[m[K At global scope:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:595:46:[m[K [01;31m[Kerror: [m[K‘[01m[KEmpty[m[K’ in namespace ‘[01m[Kstd_msgs::msg[m[K’ does not name a type
+  595 | void sensorlessCallback(const std_msgs::msg::[01;31m[KEmpty[m[K::SharedPtr empty){
+      |                                              [01;31m[K^~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:595:63:[m[K [01;31m[Kerror: [m[Kexpected unqualified-id before ‘[01m[Kempty[m[K’
+  595 | void sensorlessCallback(const std_msgs::msg::Empty::SharedPtr [01;31m[Kempty[m[K){
+      |                                                               [01;31m[K^~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:595:62:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K)[m[K’ before ‘[01m[Kempty[m[K’
+  595 | void sensorlessCallback[34m[K([m[Kconst std_msgs::msg::Empty::SharedPtr[01;31m[K [m[K[32m[Kempty[m[K){
+      |                        [34m[K~[m[K                                     [01;31m[K^[m[K[32m[K~~~~~[m[K
+      |                                                              [32m[K)[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:595:63:[m[K [01;31m[Kerror: [m[Kexpected initializer before ‘[01m[Kempty[m[K’
+  595 | void sensorlessCallback(const std_msgs::msg::Empty::SharedPtr [01;31m[Kempty[m[K){
+      |                                                               [01;31m[K^~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:605:80:[m[K [01;31m[Kerror: [m[K‘[01m[KEmpty[m[K’ is not a member of ‘[01m[Kstd_msgs::msg[m[K’; did you mean ‘[01m[Krclcpp::Empty[m[K’?
+  605 |     auto sensorlessSubscriber = nodeHandle->create_subscription<std_msgs::msg::[01;31m[KEmpty[m[K>("sensorless",1,sensorlessCallback);
+      |                                                                                [01;31m[K^~~~~[m[K
+In file included from [01m[K/opt/ros/galactic/include/rclcpp/wait_result.hpp:25[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/wait_set_policies/sequential_synchronization.hpp:32[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/wait_set.hpp:26[m[K,
+                 from [01m[K/opt/ros/galactic/include/rclcpp/rclcpp.hpp:169[m[K,
+                 from [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:3[m[K:
+[01m[K/opt/ros/galactic/include/rclcpp/wait_result_kind.hpp:28:3:[m[K [01;36m[Knote: [m[K‘[01m[Krclcpp::Empty[m[K’ declared here
+   28 |   [01;36m[KEmpty[m[K,  //<! Kind used when trying to wait on an empty wait set.
+      |   [01;36m[K^~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:605:102:[m[K [01;31m[Kerror: [m[K‘[01m[KsensorlessCallback[m[K’ was not declared in this scope
+  605 |     auto sensorlessSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("sensorless",1,[01;31m[KsensorlessCallback[m[K);
+      |                                                                                                      [01;31m[K^~~~~~~~~~~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/excavation_node.dir/build.make:63: CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/excavation_node.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

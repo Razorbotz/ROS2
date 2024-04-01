@@ -1,0 +1,4 @@
+[35m[1mScanning dependencies of target excavation_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o[0m
+[100%] [32m[1mLinking CXX executable excavation_node[0m
+[100%] Built target excavation_node

@@ -1,0 +1,4 @@
+source;share/logic/local_setup.bash
+source;share/logic/local_setup.dsv
+source;share/logic/local_setup.sh
+source;share/logic/local_setup.zsh

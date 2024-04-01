@@ -1,0 +1,23 @@
+[0.089s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/logic': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/logic -- -j6 -l6
+[0.287s] [100%] Built target logic_node
+[0.318s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/logic' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/logic -- -j6 -l6
+[0.514s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/logic': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/logic
+[0.542s] -- Install configuration: ""
+[0.542s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/lib/logic/logic_node
+[0.562s] -- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/logic/lib/logic/logic_node" to ""
+[0.563s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/ament_index/resource_index/package_run_dependencies/logic
+[0.564s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/ament_index/resource_index/parent_prefix_path/logic
+[0.565s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/environment/ament_prefix_path.sh
+[0.566s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/environment/ament_prefix_path.dsv
+[0.566s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/environment/path.sh
+[0.566s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/environment/path.dsv
+[0.567s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/local_setup.bash
+[0.567s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/local_setup.sh
+[0.567s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/local_setup.zsh
+[0.567s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/local_setup.dsv
+[0.567s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/package.dsv
+[0.567s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/ament_index/resource_index/packages/logic
+[0.568s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/cmake/logicConfig.cmake
+[0.568s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/cmake/logicConfig-version.cmake
+[0.569s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/logic/share/logic/package.xml
+[0.651s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/logic' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/logic

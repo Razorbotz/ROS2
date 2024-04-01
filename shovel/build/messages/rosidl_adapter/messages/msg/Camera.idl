@@ -1,0 +1,14 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from messages/msg/Camera.msg
+// generated code does not contain a copyright notice
+
+
+module messages {
+  module msg {
+    struct Camera {
+      int32 port;
+
+      string address;
+    };
+  };
+};

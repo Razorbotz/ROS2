@@ -1,0 +1,531 @@
+[0.000000] (-) TimerEvent: {}
+[0.000649] (-) JobUnselected: {'identifier': 'communication2'}
+[0.001021] (-) JobUnselected: {'identifier': 'falcon'}
+[0.001263] (-) JobUnselected: {'identifier': 'logic'}
+[0.001722] (-) JobUnselected: {'identifier': 'messages'}
+[0.002023] (-) JobUnselected: {'identifier': 'power_distribution_panel'}
+[0.002263] (-) JobUnselected: {'identifier': 'talon'}
+[0.002367] (-) JobUnselected: {'identifier': 'test'}
+[0.002549] (excavation) JobQueued: {'identifier': 'excavation', 'dependencies': OrderedDict([('messages', '/home/team/SoftwareDevelopment/shovel/install/messages')])}
+[0.002663] (excavation) JobStarted: {'identifier': 'excavation'}
+[0.075985] (excavation) JobProgress: {'identifier': 'excavation', 'progress': 'cmake'}
+[0.077481] (excavation) JobProgress: {'identifier': 'excavation', 'progress': 'build'}
+[0.078772] (excavation) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/team/SoftwareDevelopment/shovel/build/excavation', '--', '-j6', '-l6'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/excavation', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('COLCON_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/test:/home/team/SoftwareDevelopment/shovel/install/talon:/home/team/SoftwareDevelopment/shovel/install/power_distribution_panel:/home/team/SoftwareDevelopment/shovel/install/logic:/home/team/SoftwareDevelopment/shovel/install/falcon:/home/team/SoftwareDevelopment/shovel/install/excavation:/home/team/SoftwareDevelopment/shovel/install/communication2:/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/excavation'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/home/team/SoftwareDevelopment/shovel/install/test:/home/team/SoftwareDevelopment/shovel/install/talon:/home/team/SoftwareDevelopment/shovel/install/power_distribution_panel:/home/team/SoftwareDevelopment/shovel/install/logic:/home/team/SoftwareDevelopment/shovel/install/falcon:/home/team/SoftwareDevelopment/shovel/install/excavation:/home/team/SoftwareDevelopment/shovel/install/communication2:/opt/ros/galactic')]), 'shell': False}
+[0.099163] (-) TimerEvent: {}
+[0.195645] (excavation) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target excavation_node\x1b[0m\n'}
+[0.199223] (-) TimerEvent: {}
+[0.299797] (-) TimerEvent: {}
+[0.369819] (excavation) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o\x1b[0m\n'}
+[0.400081] (-) TimerEvent: {}
+[0.501101] (-) TimerEvent: {}
+[0.602115] (-) TimerEvent: {}
+[0.703146] (-) TimerEvent: {}
+[0.804199] (-) TimerEvent: {}
+[0.905293] (-) TimerEvent: {}
+[1.006318] (-) TimerEvent: {}
+[1.107317] (-) TimerEvent: {}
+[1.208315] (-) TimerEvent: {}
+[1.309428] (-) TimerEvent: {}
+[1.410510] (-) TimerEvent: {}
+[1.511663] (-) TimerEvent: {}
+[1.612790] (-) TimerEvent: {}
+[1.713934] (-) TimerEvent: {}
+[1.815300] (-) TimerEvent: {}
+[1.916460] (-) TimerEvent: {}
+[2.017602] (-) TimerEvent: {}
+[2.118676] (-) TimerEvent: {}
+[2.219710] (-) TimerEvent: {}
+[2.320766] (-) TimerEvent: {}
+[2.421842] (-) TimerEvent: {}
+[2.522886] (-) TimerEvent: {}
+[2.624177] (-) TimerEvent: {}
+[2.725235] (-) TimerEvent: {}
+[2.826256] (-) TimerEvent: {}
+[2.927281] (-) TimerEvent: {}
+[3.028307] (-) TimerEvent: {}
+[3.129301] (-) TimerEvent: {}
+[3.230351] (-) TimerEvent: {}
+[3.331454] (-) TimerEvent: {}
+[3.432551] (-) TimerEvent: {}
+[3.533683] (-) TimerEvent: {}
+[3.634782] (-) TimerEvent: {}
+[3.735885] (-) TimerEvent: {}
+[3.837015] (-) TimerEvent: {}
+[3.938132] (-) TimerEvent: {}
+[4.039177] (-) TimerEvent: {}
+[4.140250] (-) TimerEvent: {}
+[4.241330] (-) TimerEvent: {}
+[4.342441] (-) TimerEvent: {}
+[4.443535] (-) TimerEvent: {}
+[4.544640] (-) TimerEvent: {}
+[4.645788] (-) TimerEvent: {}
+[4.787636] (-) TimerEvent: {}
+[4.888548] (-) TimerEvent: {}
+[4.989463] (-) TimerEvent: {}
+[5.090370] (-) TimerEvent: {}
+[5.191253] (-) TimerEvent: {}
+[5.292146] (-) TimerEvent: {}
+[5.301266] (excavation) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/client.hpp:40\x1b[m\x1b[K,\n'}
+[5.301923] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/callback_group.hpp:23\x1b[m\x1b[K,\n'}
+[5.302338] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/any_executable.hpp:20\x1b[m\x1b[K,\n'}
+[5.302487] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/memory_strategy.hpp:25\x1b[m\x1b[K,\n'}
+[5.302626] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/memory_strategies.hpp:18\x1b[m\x1b[K,\n'}
+[5.302760] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executor_options.hpp:20\x1b[m\x1b[K,\n'}
+[5.302887] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executor.hpp:36\x1b[m\x1b[K,\n'}
+[5.303011] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executors/multi_threaded_executor.hpp:26\x1b[m\x1b[K,\n'}
+[5.303407] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executors.hpp:21\x1b[m\x1b[K,\n'}
+[5.303538] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/rclcpp.hpp:156\x1b[m\x1b[K,\n'}
+[5.303660] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:3\x1b[m\x1b[K:\n'}
+[5.303780] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[Kvoid updateMotorPositions(int)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[5.303908] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:551:43:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kformat \xe2\x80\x98\x1b[01m\x1b[K%d\x1b[m\x1b[K\xe2\x80\x99 expects argument of type \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99, but argument 5 has type \xe2\x80\x98\x1b[01m\x1b[Kdouble\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wformat=\x1b[m\x1b[K]\n'}
+[5.304044] (excavation) StderrLine: {'line': b'  551 |     RCLCPP_INFO(nodeHandle->get_logger(), \x1b[01;35m\x1b[K"Linear 1 Distance: %d"\x1b[m\x1b[K, \x1b[32m\x1b[Klinear1.distance\x1b[m\x1b[K);\n'}
+[5.304957] (excavation) StderrLine: {'line': b'      |                                           \x1b[01;35m\x1b[K^~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K  \x1b[32m\x1b[K~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[5.305104] (excavation) StderrLine: {'line': b'      |                                                                            \x1b[32m\x1b[K|\x1b[m\x1b[K\n'}
+[5.305235] (excavation) StderrLine: {'line': b'      |                                                                            \x1b[32m\x1b[Kdouble\x1b[m\x1b[K\n'}
+[5.305356] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:551:64:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kformat string is defined here\n'}
+[5.305477] (excavation) StderrLine: {'line': b'  551 |     RCLCPP_INFO(nodeHandle->get_logger(), "Linear 1 Distance: \x1b[01;36m\x1b[K%d\x1b[m\x1b[K", linear1.distance);\n'}
+[5.305594] (excavation) StderrLine: {'line': b'      |                                                               \x1b[01;36m\x1b[K~^\x1b[m\x1b[K\n'}
+[5.305708] (excavation) StderrLine: {'line': b'      |                                                                \x1b[01;36m\x1b[K|\x1b[m\x1b[K\n'}
+[5.305823] (excavation) StderrLine: {'line': b'      |                                                                \x1b[01;36m\x1b[Kint\x1b[m\x1b[K\n'}
+[5.305936] (excavation) StderrLine: {'line': b'      |                                                               \x1b[32m\x1b[K%f\x1b[m\x1b[K\n'}
+[5.306049] (excavation) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/client.hpp:40\x1b[m\x1b[K,\n'}
+[5.306182] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/callback_group.hpp:23\x1b[m\x1b[K,\n'}
+[5.306296] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/any_executable.hpp:20\x1b[m\x1b[K,\n'}
+[5.306409] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/memory_strategy.hpp:25\x1b[m\x1b[K,\n'}
+[5.306542] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/memory_strategies.hpp:18\x1b[m\x1b[K,\n'}
+[5.306662] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executor_options.hpp:20\x1b[m\x1b[K,\n'}
+[5.306775] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executor.hpp:36\x1b[m\x1b[K,\n'}
+[5.306887] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executors/multi_threaded_executor.hpp:26\x1b[m\x1b[K,\n'}
+[5.306998] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executors.hpp:21\x1b[m\x1b[K,\n'}
+[5.307109] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/rclcpp.hpp:156\x1b[m\x1b[K,\n'}
+[5.307220] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:3\x1b[m\x1b[K:\n'}
+[5.307332] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:566:43:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kformat \xe2\x80\x98\x1b[01m\x1b[K%d\x1b[m\x1b[K\xe2\x80\x99 expects argument of type \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99, but argument 5 has type \xe2\x80\x98\x1b[01m\x1b[Kdouble\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wformat=\x1b[m\x1b[K]\n'}
+[5.307455] (excavation) StderrLine: {'line': b'  566 |     RCLCPP_INFO(nodeHandle->get_logger(), \x1b[01;35m\x1b[K"Linear 2 Distance: %d"\x1b[m\x1b[K, \x1b[32m\x1b[Klinear2.distance\x1b[m\x1b[K);\n'}
+[5.307590] (excavation) StderrLine: {'line': b'      |                                           \x1b[01;35m\x1b[K^~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K  \x1b[32m\x1b[K~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[5.307723] (excavation) StderrLine: {'line': b'      |                                                                            \x1b[32m\x1b[K|\x1b[m\x1b[K\n'}
+[5.307839] (excavation) StderrLine: {'line': b'      |                                                                            \x1b[32m\x1b[Kdouble\x1b[m\x1b[K\n'}
+[5.307954] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:566:64:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kformat string is defined here\n'}
+[5.308069] (excavation) StderrLine: {'line': b'  566 |     RCLCPP_INFO(nodeHandle->get_logger(), "Linear 2 Distance: \x1b[01;36m\x1b[K%d\x1b[m\x1b[K", linear2.distance);\n'}
+[5.308182] (excavation) StderrLine: {'line': b'      |                                                               \x1b[01;36m\x1b[K~^\x1b[m\x1b[K\n'}
+[5.308294] (excavation) StderrLine: {'line': b'      |                                                                \x1b[01;36m\x1b[K|\x1b[m\x1b[K\n'}
+[5.308408] (excavation) StderrLine: {'line': b'      |                                                                \x1b[01;36m\x1b[Kint\x1b[m\x1b[K\n'}
+[5.308520] (excavation) StderrLine: {'line': b'      |                                                               \x1b[32m\x1b[K%f\x1b[m\x1b[K\n'}
+[5.308631] (excavation) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/client.hpp:40\x1b[m\x1b[K,\n'}
+[5.308743] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/callback_group.hpp:23\x1b[m\x1b[K,\n'}
+[5.308868] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/any_executable.hpp:20\x1b[m\x1b[K,\n'}
+[5.308980] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/memory_strategy.hpp:25\x1b[m\x1b[K,\n'}
+[5.309117] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/memory_strategies.hpp:18\x1b[m\x1b[K,\n'}
+[5.309238] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executor_options.hpp:20\x1b[m\x1b[K,\n'}
+[5.309353] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executor.hpp:36\x1b[m\x1b[K,\n'}
+[5.309464] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executors/multi_threaded_executor.hpp:26\x1b[m\x1b[K,\n'}
+[5.309576] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executors.hpp:21\x1b[m\x1b[K,\n'}
+[5.309686] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/rclcpp.hpp:156\x1b[m\x1b[K,\n'}
+[5.309797] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:3\x1b[m\x1b[K:\n'}
+[5.309908] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:581:43:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kformat \xe2\x80\x98\x1b[01m\x1b[K%d\x1b[m\x1b[K\xe2\x80\x99 expects argument of type \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99, but argument 5 has type \xe2\x80\x98\x1b[01m\x1b[Kdouble\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wformat=\x1b[m\x1b[K]\n'}
+[5.310027] (excavation) StderrLine: {'line': b'  581 |     RCLCPP_INFO(nodeHandle->get_logger(), \x1b[01;35m\x1b[K"Linear 3 Distance: %d"\x1b[m\x1b[K, \x1b[32m\x1b[Klinear3.distance\x1b[m\x1b[K);\n'}
+[5.310140] (excavation) StderrLine: {'line': b'      |                                           \x1b[01;35m\x1b[K^~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K  \x1b[32m\x1b[K~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[5.310260] (excavation) StderrLine: {'line': b'      |                                                                            \x1b[32m\x1b[K|\x1b[m\x1b[K\n'}
+[5.310375] (excavation) StderrLine: {'line': b'      |                                                                            \x1b[32m\x1b[Kdouble\x1b[m\x1b[K\n'}
+[5.310498] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:581:64:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kformat string is defined here\n'}
+[5.310614] (excavation) StderrLine: {'line': b'  581 |     RCLCPP_INFO(nodeHandle->get_logger(), "Linear 3 Distance: \x1b[01;36m\x1b[K%d\x1b[m\x1b[K", linear3.distance);\n'}
+[5.310728] (excavation) StderrLine: {'line': b'      |                                                               \x1b[01;36m\x1b[K~^\x1b[m\x1b[K\n'}
+[5.310839] (excavation) StderrLine: {'line': b'      |                                                                \x1b[01;36m\x1b[K|\x1b[m\x1b[K\n'}
+[5.310950] (excavation) StderrLine: {'line': b'      |                                                                \x1b[01;36m\x1b[Kint\x1b[m\x1b[K\n'}
+[5.311062] (excavation) StderrLine: {'line': b'      |                                                               \x1b[32m\x1b[K%f\x1b[m\x1b[K\n'}
+[5.311175] (excavation) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/client.hpp:40\x1b[m\x1b[K,\n'}
+[5.311285] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/callback_group.hpp:23\x1b[m\x1b[K,\n'}
+[5.311396] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/any_executable.hpp:20\x1b[m\x1b[K,\n'}
+[5.311522] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/memory_strategy.hpp:25\x1b[m\x1b[K,\n'}
+[5.311635] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/memory_strategies.hpp:18\x1b[m\x1b[K,\n'}
+[5.311746] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executor_options.hpp:20\x1b[m\x1b[K,\n'}
+[5.311856] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executor.hpp:36\x1b[m\x1b[K,\n'}
+[5.311967] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executors/multi_threaded_executor.hpp:26\x1b[m\x1b[K,\n'}
+[5.312092] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/executors.hpp:21\x1b[m\x1b[K,\n'}
+[5.312215] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/galactic/include/rclcpp/rclcpp.hpp:156\x1b[m\x1b[K,\n'}
+[5.312345] (excavation) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:3\x1b[m\x1b[K:\n'}
+[5.312458] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:596:43:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kformat \xe2\x80\x98\x1b[01m\x1b[K%d\x1b[m\x1b[K\xe2\x80\x99 expects argument of type \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99, but argument 5 has type \xe2\x80\x98\x1b[01m\x1b[Kdouble\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K-Wformat=\x1b[m\x1b[K]\n'}
+[5.312576] (excavation) StderrLine: {'line': b'  596 |     RCLCPP_INFO(nodeHandle->get_logger(), \x1b[01;35m\x1b[K"Linear 4 Distance: %d"\x1b[m\x1b[K, \x1b[32m\x1b[Klinear4.distance\x1b[m\x1b[K);\n'}
+[5.312689] (excavation) StderrLine: {'line': b'      |                                           \x1b[01;35m\x1b[K^~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K  \x1b[32m\x1b[K~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[5.312801] (excavation) StderrLine: {'line': b'      |                                                                            \x1b[32m\x1b[K|\x1b[m\x1b[K\n'}
+[5.312911] (excavation) StderrLine: {'line': b'      |                                                                            \x1b[32m\x1b[Kdouble\x1b[m\x1b[K\n'}
+[5.313022] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:596:64:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kformat string is defined here\n'}
+[5.313163] (excavation) StderrLine: {'line': b'  596 |     RCLCPP_INFO(nodeHandle->get_logger(), "Linear 4 Distance: \x1b[01;36m\x1b[K%d\x1b[m\x1b[K", linear4.distance);\n'}
+[5.313280] (excavation) StderrLine: {'line': b'      |                                                               \x1b[01;36m\x1b[K~^\x1b[m\x1b[K\n'}
+[5.313393] (excavation) StderrLine: {'line': b'      |                                                                \x1b[01;36m\x1b[K|\x1b[m\x1b[K\n'}
+[5.313505] (excavation) StderrLine: {'line': b'      |                                                                \x1b[01;36m\x1b[Kint\x1b[m\x1b[K\n'}
+[5.313617] (excavation) StderrLine: {'line': b'      |                                                               \x1b[32m\x1b[K%f\x1b[m\x1b[K\n'}
+[5.392406] (-) TimerEvent: {}
+[5.493489] (-) TimerEvent: {}
+[5.594479] (-) TimerEvent: {}
+[5.695500] (-) TimerEvent: {}
+[5.796539] (-) TimerEvent: {}
+[5.897602] (-) TimerEvent: {}
+[5.998628] (-) TimerEvent: {}
+[6.099664] (-) TimerEvent: {}
+[6.200687] (-) TimerEvent: {}
+[6.301758] (-) TimerEvent: {}
+[6.402792] (-) TimerEvent: {}
+[6.503816] (-) TimerEvent: {}
+[6.604867] (-) TimerEvent: {}
+[6.705935] (-) TimerEvent: {}
+[6.806965] (-) TimerEvent: {}
+[6.907993] (-) TimerEvent: {}
+[7.009004] (-) TimerEvent: {}
+[7.110052] (-) TimerEvent: {}
+[7.211088] (-) TimerEvent: {}
+[7.312136] (-) TimerEvent: {}
+[7.413201] (-) TimerEvent: {}
+[7.514299] (-) TimerEvent: {}
+[7.615268] (-) TimerEvent: {}
+[7.716057] (-) TimerEvent: {}
+[7.816798] (-) TimerEvent: {}
+[7.917648] (-) TimerEvent: {}
+[8.018637] (-) TimerEvent: {}
+[8.119555] (-) TimerEvent: {}
+[8.220367] (-) TimerEvent: {}
+[8.321200] (-) TimerEvent: {}
+[8.422232] (-) TimerEvent: {}
+[8.523266] (-) TimerEvent: {}
+[8.624300] (-) TimerEvent: {}
+[8.725304] (-) TimerEvent: {}
+[8.826291] (-) TimerEvent: {}
+[8.927276] (-) TimerEvent: {}
+[9.028251] (-) TimerEvent: {}
+[9.129274] (-) TimerEvent: {}
+[9.230297] (-) TimerEvent: {}
+[9.331345] (-) TimerEvent: {}
+[9.432368] (-) TimerEvent: {}
+[9.533387] (-) TimerEvent: {}
+[9.634429] (-) TimerEvent: {}
+[9.735434] (-) TimerEvent: {}
+[9.836434] (-) TimerEvent: {}
+[9.937395] (-) TimerEvent: {}
+[10.038361] (-) TimerEvent: {}
+[10.139286] (-) TimerEvent: {}
+[10.240039] (-) TimerEvent: {}
+[10.340745] (-) TimerEvent: {}
+[10.441609] (-) TimerEvent: {}
+[10.542478] (-) TimerEvent: {}
+[10.643404] (-) TimerEvent: {}
+[10.744226] (-) TimerEvent: {}
+[10.844949] (-) TimerEvent: {}
+[10.945771] (-) TimerEvent: {}
+[11.046705] (-) TimerEvent: {}
+[11.147663] (-) TimerEvent: {}
+[11.248529] (-) TimerEvent: {}
+[11.349309] (-) TimerEvent: {}
+[11.450176] (-) TimerEvent: {}
+[11.551231] (-) TimerEvent: {}
+[11.652197] (-) TimerEvent: {}
+[11.753096] (-) TimerEvent: {}
+[11.854125] (-) TimerEvent: {}
+[11.955140] (-) TimerEvent: {}
+[12.056201] (-) TimerEvent: {}
+[12.157209] (-) TimerEvent: {}
+[12.258092] (-) TimerEvent: {}
+[12.359074] (-) TimerEvent: {}
+[12.460072] (-) TimerEvent: {}
+[12.561056] (-) TimerEvent: {}
+[12.662050] (-) TimerEvent: {}
+[12.763025] (-) TimerEvent: {}
+[12.863998] (-) TimerEvent: {}
+[12.964962] (-) TimerEvent: {}
+[13.065925] (-) TimerEvent: {}
+[13.166970] (-) TimerEvent: {}
+[13.268046] (-) TimerEvent: {}
+[13.369101] (-) TimerEvent: {}
+[13.470129] (-) TimerEvent: {}
+[13.571137] (-) TimerEvent: {}
+[13.671954] (-) TimerEvent: {}
+[13.772816] (-) TimerEvent: {}
+[13.873872] (-) TimerEvent: {}
+[13.974813] (-) TimerEvent: {}
+[14.075593] (-) TimerEvent: {}
+[14.176386] (-) TimerEvent: {}
+[14.277247] (-) TimerEvent: {}
+[14.378243] (-) TimerEvent: {}
+[14.479266] (-) TimerEvent: {}
+[14.580328] (-) TimerEvent: {}
+[14.681362] (-) TimerEvent: {}
+[14.782357] (-) TimerEvent: {}
+[14.883406] (-) TimerEvent: {}
+[14.984378] (-) TimerEvent: {}
+[15.085333] (-) TimerEvent: {}
+[15.186314] (-) TimerEvent: {}
+[15.287310] (-) TimerEvent: {}
+[15.388279] (-) TimerEvent: {}
+[15.489276] (-) TimerEvent: {}
+[15.590261] (-) TimerEvent: {}
+[15.691242] (-) TimerEvent: {}
+[15.792223] (-) TimerEvent: {}
+[15.893227] (-) TimerEvent: {}
+[15.994270] (-) TimerEvent: {}
+[16.095273] (-) TimerEvent: {}
+[16.196280] (-) TimerEvent: {}
+[16.297310] (-) TimerEvent: {}
+[16.398344] (-) TimerEvent: {}
+[16.499336] (-) TimerEvent: {}
+[16.600244] (-) TimerEvent: {}
+[16.701310] (-) TimerEvent: {}
+[16.802353] (-) TimerEvent: {}
+[16.903397] (-) TimerEvent: {}
+[17.004411] (-) TimerEvent: {}
+[17.105406] (-) TimerEvent: {}
+[17.206389] (-) TimerEvent: {}
+[17.307426] (-) TimerEvent: {}
+[17.408471] (-) TimerEvent: {}
+[17.509534] (-) TimerEvent: {}
+[17.610563] (-) TimerEvent: {}
+[17.711578] (-) TimerEvent: {}
+[17.812606] (-) TimerEvent: {}
+[17.913653] (-) TimerEvent: {}
+[18.014673] (-) TimerEvent: {}
+[18.115635] (-) TimerEvent: {}
+[18.216590] (-) TimerEvent: {}
+[18.317566] (-) TimerEvent: {}
+[18.418508] (-) TimerEvent: {}
+[18.519406] (-) TimerEvent: {}
+[18.620288] (-) TimerEvent: {}
+[18.721224] (-) TimerEvent: {}
+[18.822132] (-) TimerEvent: {}
+[18.923039] (-) TimerEvent: {}
+[19.023943] (-) TimerEvent: {}
+[19.124875] (-) TimerEvent: {}
+[19.225824] (-) TimerEvent: {}
+[19.326752] (-) TimerEvent: {}
+[19.427700] (-) TimerEvent: {}
+[19.528653] (-) TimerEvent: {}
+[19.629628] (-) TimerEvent: {}
+[19.730594] (-) TimerEvent: {}
+[19.831558] (-) TimerEvent: {}
+[19.932567] (-) TimerEvent: {}
+[20.070751] (-) TimerEvent: {}
+[20.171777] (-) TimerEvent: {}
+[20.272699] (-) TimerEvent: {}
+[20.373497] (-) TimerEvent: {}
+[20.474231] (-) TimerEvent: {}
+[20.574978] (-) TimerEvent: {}
+[20.675773] (-) TimerEvent: {}
+[20.776721] (-) TimerEvent: {}
+[20.877691] (-) TimerEvent: {}
+[20.978615] (-) TimerEvent: {}
+[21.079378] (-) TimerEvent: {}
+[21.180154] (-) TimerEvent: {}
+[21.280961] (-) TimerEvent: {}
+[21.381740] (-) TimerEvent: {}
+[21.482519] (-) TimerEvent: {}
+[21.583298] (-) TimerEvent: {}
+[21.684195] (-) TimerEvent: {}
+[21.785016] (-) TimerEvent: {}
+[21.885958] (-) TimerEvent: {}
+[21.986798] (-) TimerEvent: {}
+[22.087791] (-) TimerEvent: {}
+[22.188807] (-) TimerEvent: {}
+[22.289850] (-) TimerEvent: {}
+[22.390875] (-) TimerEvent: {}
+[22.491900] (-) TimerEvent: {}
+[22.592943] (-) TimerEvent: {}
+[22.694023] (-) TimerEvent: {}
+[22.795069] (-) TimerEvent: {}
+[22.896104] (-) TimerEvent: {}
+[22.997154] (-) TimerEvent: {}
+[23.098123] (-) TimerEvent: {}
+[23.199093] (-) TimerEvent: {}
+[23.300078] (-) TimerEvent: {}
+[23.400990] (-) TimerEvent: {}
+[23.501743] (-) TimerEvent: {}
+[23.602458] (-) TimerEvent: {}
+[23.703300] (-) TimerEvent: {}
+[23.804181] (-) TimerEvent: {}
+[23.905158] (-) TimerEvent: {}
+[24.006109] (-) TimerEvent: {}
+[24.107042] (-) TimerEvent: {}
+[24.208007] (-) TimerEvent: {}
+[24.308987] (-) TimerEvent: {}
+[24.409972] (-) TimerEvent: {}
+[24.510918] (-) TimerEvent: {}
+[24.611874] (-) TimerEvent: {}
+[24.712837] (-) TimerEvent: {}
+[24.813796] (-) TimerEvent: {}
+[24.914740] (-) TimerEvent: {}
+[25.015646] (-) TimerEvent: {}
+[25.168165] (-) TimerEvent: {}
+[25.269042] (-) TimerEvent: {}
+[25.369930] (-) TimerEvent: {}
+[25.470761] (-) TimerEvent: {}
+[25.571583] (-) TimerEvent: {}
+[25.672440] (-) TimerEvent: {}
+[25.773221] (-) TimerEvent: {}
+[25.874054] (-) TimerEvent: {}
+[25.974906] (-) TimerEvent: {}
+[26.075748] (-) TimerEvent: {}
+[26.176617] (-) TimerEvent: {}
+[26.277491] (-) TimerEvent: {}
+[26.378343] (-) TimerEvent: {}
+[26.479207] (-) TimerEvent: {}
+[26.580054] (-) TimerEvent: {}
+[26.680903] (-) TimerEvent: {}
+[26.781780] (-) TimerEvent: {}
+[26.882646] (-) TimerEvent: {}
+[26.983496] (-) TimerEvent: {}
+[27.084306] (-) TimerEvent: {}
+[27.185172] (-) TimerEvent: {}
+[27.286027] (-) TimerEvent: {}
+[27.386881] (-) TimerEvent: {}
+[27.487736] (-) TimerEvent: {}
+[27.588583] (-) TimerEvent: {}
+[27.689531] (-) TimerEvent: {}
+[27.790473] (-) TimerEvent: {}
+[27.891378] (-) TimerEvent: {}
+[27.992242] (-) TimerEvent: {}
+[28.093123] (-) TimerEvent: {}
+[28.194019] (-) TimerEvent: {}
+[28.294919] (-) TimerEvent: {}
+[28.395828] (-) TimerEvent: {}
+[28.496735] (-) TimerEvent: {}
+[28.597687] (-) TimerEvent: {}
+[28.698611] (-) TimerEvent: {}
+[28.799516] (-) TimerEvent: {}
+[28.900362] (-) TimerEvent: {}
+[29.001043] (-) TimerEvent: {}
+[29.101722] (-) TimerEvent: {}
+[29.202594] (-) TimerEvent: {}
+[29.303469] (-) TimerEvent: {}
+[29.404347] (-) TimerEvent: {}
+[29.505242] (-) TimerEvent: {}
+[29.606114] (-) TimerEvent: {}
+[29.706995] (-) TimerEvent: {}
+[29.807844] (-) TimerEvent: {}
+[29.908677] (-) TimerEvent: {}
+[30.009501] (-) TimerEvent: {}
+[30.168703] (-) TimerEvent: {}
+[30.269601] (-) TimerEvent: {}
+[30.370465] (-) TimerEvent: {}
+[30.471336] (-) TimerEvent: {}
+[30.572205] (-) TimerEvent: {}
+[30.673122] (-) TimerEvent: {}
+[30.774005] (-) TimerEvent: {}
+[30.874910] (-) TimerEvent: {}
+[30.975795] (-) TimerEvent: {}
+[31.076713] (-) TimerEvent: {}
+[31.177648] (-) TimerEvent: {}
+[31.278580] (-) TimerEvent: {}
+[31.379503] (-) TimerEvent: {}
+[31.480213] (-) TimerEvent: {}
+[31.580866] (-) TimerEvent: {}
+[31.681667] (-) TimerEvent: {}
+[31.782375] (-) TimerEvent: {}
+[31.883179] (-) TimerEvent: {}
+[31.983919] (-) TimerEvent: {}
+[32.084757] (-) TimerEvent: {}
+[32.185649] (-) TimerEvent: {}
+[32.286536] (-) TimerEvent: {}
+[32.387435] (-) TimerEvent: {}
+[32.488341] (-) TimerEvent: {}
+[32.589270] (-) TimerEvent: {}
+[32.690177] (-) TimerEvent: {}
+[32.791063] (-) TimerEvent: {}
+[32.891936] (-) TimerEvent: {}
+[32.992805] (-) TimerEvent: {}
+[33.093707] (-) TimerEvent: {}
+[33.194611] (-) TimerEvent: {}
+[33.295501] (-) TimerEvent: {}
+[33.396396] (-) TimerEvent: {}
+[33.497331] (-) TimerEvent: {}
+[33.598211] (-) TimerEvent: {}
+[33.699097] (-) TimerEvent: {}
+[33.800006] (-) TimerEvent: {}
+[33.900907] (-) TimerEvent: {}
+[34.001798] (-) TimerEvent: {}
+[34.102597] (-) TimerEvent: {}
+[34.203262] (-) TimerEvent: {}
+[34.304000] (-) TimerEvent: {}
+[34.404909] (-) TimerEvent: {}
+[34.505802] (-) TimerEvent: {}
+[34.606668] (-) TimerEvent: {}
+[34.707544] (-) TimerEvent: {}
+[34.808415] (-) TimerEvent: {}
+[34.909330] (-) TimerEvent: {}
+[35.010167] (-) TimerEvent: {}
+[35.170073] (-) TimerEvent: {}
+[35.270974] (-) TimerEvent: {}
+[35.372044] (-) TimerEvent: {}
+[35.473124] (-) TimerEvent: {}
+[35.574130] (-) TimerEvent: {}
+[35.675152] (-) TimerEvent: {}
+[35.776143] (-) TimerEvent: {}
+[35.877183] (-) TimerEvent: {}
+[35.978164] (-) TimerEvent: {}
+[36.079089] (-) TimerEvent: {}
+[36.179840] (-) TimerEvent: {}
+[36.280581] (-) TimerEvent: {}
+[36.381457] (-) TimerEvent: {}
+[36.482232] (-) TimerEvent: {}
+[36.582986] (-) TimerEvent: {}
+[36.683724] (-) TimerEvent: {}
+[36.784438] (-) TimerEvent: {}
+[36.885234] (-) TimerEvent: {}
+[36.985971] (-) TimerEvent: {}
+[37.086688] (-) TimerEvent: {}
+[37.187359] (-) TimerEvent: {}
+[37.288099] (-) TimerEvent: {}
+[37.389110] (-) TimerEvent: {}
+[37.489918] (-) TimerEvent: {}
+[37.590728] (-) TimerEvent: {}
+[37.691747] (-) TimerEvent: {}
+[37.792763] (-) TimerEvent: {}
+[37.893727] (-) TimerEvent: {}
+[37.994531] (-) TimerEvent: {}
+[38.095426] (-) TimerEvent: {}
+[38.196187] (-) TimerEvent: {}
+[38.296925] (-) TimerEvent: {}
+[38.397812] (-) TimerEvent: {}
+[38.463178] (excavation) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable excavation_node\x1b[0m\n'}
+[38.498037] (-) TimerEvent: {}
+[38.599009] (-) TimerEvent: {}
+[38.700184] (-) TimerEvent: {}
+[38.801326] (-) TimerEvent: {}
+[38.902506] (-) TimerEvent: {}
+[39.003731] (-) TimerEvent: {}
+[39.104916] (-) TimerEvent: {}
+[39.206172] (-) TimerEvent: {}
+[39.307242] (-) TimerEvent: {}
+[39.408177] (-) TimerEvent: {}
+[39.509104] (-) TimerEvent: {}
+[39.610200] (-) TimerEvent: {}
+[39.711118] (-) TimerEvent: {}
+[39.812261] (-) TimerEvent: {}
+[39.913373] (-) TimerEvent: {}
+[40.014288] (-) TimerEvent: {}
+[40.171006] (-) TimerEvent: {}
+[40.272003] (-) TimerEvent: {}
+[40.356073] (excavation) StdoutLine: {'line': b'[100%] Built target excavation_node\n'}
+[40.372085] (-) TimerEvent: {}
+[40.472709] (-) TimerEvent: {}
+[40.503547] (excavation) CommandEnded: {'returncode': 0}
+[40.556707] (excavation) JobProgress: {'identifier': 'excavation', 'progress': 'install'}
+[40.573003] (-) TimerEvent: {}
+[40.586949] (excavation) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/team/SoftwareDevelopment/shovel/build/excavation'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/excavation', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('COLCON_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/test:/home/team/SoftwareDevelopment/shovel/install/talon:/home/team/SoftwareDevelopment/shovel/install/power_distribution_panel:/home/team/SoftwareDevelopment/shovel/install/logic:/home/team/SoftwareDevelopment/shovel/install/falcon:/home/team/SoftwareDevelopment/shovel/install/excavation:/home/team/SoftwareDevelopment/shovel/install/communication2:/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/excavation'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/home/team/SoftwareDevelopment/shovel/install/test:/home/team/SoftwareDevelopment/shovel/install/talon:/home/team/SoftwareDevelopment/shovel/install/power_distribution_panel:/home/team/SoftwareDevelopment/shovel/install/logic:/home/team/SoftwareDevelopment/shovel/install/falcon:/home/team/SoftwareDevelopment/shovel/install/excavation:/home/team/SoftwareDevelopment/shovel/install/communication2:/opt/ros/galactic')]), 'shell': False}
+[40.616477] (excavation) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[40.617290] (excavation) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/lib/excavation/excavation_node\n'}
+[40.635132] (excavation) StdoutLine: {'line': b'-- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/excavation/lib/excavation/excavation_node" to ""\n'}
+[40.635447] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/package_run_dependencies/excavation\n'}
+[40.635676] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/parent_prefix_path/excavation\n'}
+[40.635932] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/ament_prefix_path.sh\n'}
+[40.636217] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/ament_prefix_path.dsv\n'}
+[40.636467] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/path.sh\n'}
+[40.636674] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/path.dsv\n'}
+[40.636841] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.bash\n'}
+[40.637002] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.sh\n'}
+[40.637229] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.zsh\n'}
+[40.637444] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.dsv\n'}
+[40.637584] (excavation) StdoutLine: {'line': b'-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.dsv\n'}
+[40.637714] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/packages/excavation\n'}
+[40.637867] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/cmake/excavationConfig.cmake\n'}
+[40.638018] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/cmake/excavationConfig-version.cmake\n'}
+[40.638188] (excavation) StdoutLine: {'line': b'-- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.xml\n'}
+[40.644413] (excavation) CommandEnded: {'returncode': 0}
+[40.673097] (-) TimerEvent: {}
+[40.773839] (-) TimerEvent: {}
+[40.787679] (excavation) JobEnded: {'identifier': 'excavation', 'rc': 0}
+[40.790302] (-) EventReactorShutdown: {}

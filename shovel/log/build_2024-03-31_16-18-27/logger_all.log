@@ -1,0 +1,245 @@
+[0.379s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--packages-select', 'excavation']
+[0.379s] DEBUG:colcon:Parsed command line arguments: Namespace(allow_overriding=[], ament_cmake_args=None, base_paths=['.'], build_base='build', catkin_cmake_args=None, catkin_skip_building_tests=False, cmake_args=None, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, cmake_target=None, cmake_target_skip_unavailable=False, continue_on_error=False, event_handlers=None, executor='parallel', ignore_user_meta=False, install_base='install', log_base=None, log_level=None, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0xffffa62018b0>>, merge_install=False, metas=['./colcon.meta'], packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_end=None, packages_ignore=None, packages_ignore_regex=None, packages_select=['excavation'], packages_select_build_failed=False, packages_select_by_dep=None, packages_select_regex=None, packages_select_test_failures=False, packages_skip=None, packages_skip_build_finished=False, packages_skip_by_dep=None, packages_skip_regex=None, packages_skip_test_passed=False, packages_skip_up_to=None, packages_start=None, packages_up_to=None, packages_up_to_regex=None, parallel_workers=6, paths=None, symlink_install=False, test_result_base=None, verb_extension=<colcon_core.verb.build.BuildVerb object at 0xffffa62018b0>, verb_name='build', verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0xffffa60da370>)
+[0.657s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.657s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.657s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.658s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.658s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.658s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.658s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/team/SoftwareDevelopment/shovel'
+[0.658s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.658s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.658s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.659s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.659s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.659s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.659s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.659s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.659s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.680s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.680s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.680s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.681s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.681s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.681s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.681s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.681s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extensions ['ignore', 'ignore_ament_install']
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extension 'ignore'
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extension 'ignore_ament_install'
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extensions ['colcon_pkg']
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extension 'colcon_pkg'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extensions ['colcon_meta']
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extension 'colcon_meta'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extensions ['ros']
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extension 'ros'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extensions ['cmake', 'python']
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extension 'cmake'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extension 'python'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extensions ['python_setup_py']
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(launch) by extension 'python_setup_py'
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extensions ['ignore', 'ignore_ament_install']
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extension 'ignore'
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extension 'ignore_ament_install'
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extensions ['colcon_pkg']
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extension 'colcon_pkg'
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extensions ['colcon_meta']
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extension 'colcon_meta'
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extensions ['ros']
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extension 'ros'
+[0.685s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extensions ['cmake', 'python']
+[0.685s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extension 'cmake'
+[0.685s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extension 'python'
+[0.685s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extensions ['python_setup_py']
+[0.685s] Level 1:colcon.colcon_core.package_identification:_identify(launch/__pycache__) by extension 'python_setup_py'
+[0.685s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.685s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.685s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.686s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ignore', 'ignore_ament_install']
+[0.686s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore'
+[0.686s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore_ament_install'
+[0.686s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_pkg']
+[0.686s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_pkg'
+[0.686s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_meta']
+[0.686s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_meta'
+[0.686s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ros']
+[0.686s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ros'
+[0.687s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['cmake', 'python']
+[0.687s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'cmake'
+[0.687s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python'
+[0.687s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['python_setup_py']
+[0.687s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python_setup_py'
+[0.687s] Level 1:colcon.colcon_core.package_identification:_identify(src/communication2) by extensions ['ignore', 'ignore_ament_install']
+[0.687s] Level 1:colcon.colcon_core.package_identification:_identify(src/communication2) by extension 'ignore'
+[0.687s] Level 1:colcon.colcon_core.package_identification:_identify(src/communication2) by extension 'ignore_ament_install'
+[0.688s] Level 1:colcon.colcon_core.package_identification:_identify(src/communication2) by extensions ['colcon_pkg']
+[0.688s] Level 1:colcon.colcon_core.package_identification:_identify(src/communication2) by extension 'colcon_pkg'
+[0.688s] Level 1:colcon.colcon_core.package_identification:_identify(src/communication2) by extensions ['colcon_meta']
+[0.688s] Level 1:colcon.colcon_core.package_identification:_identify(src/communication2) by extension 'colcon_meta'
+[0.688s] Level 1:colcon.colcon_core.package_identification:_identify(src/communication2) by extensions ['ros']
+[0.688s] Level 1:colcon.colcon_core.package_identification:_identify(src/communication2) by extension 'ros'
+[0.693s] DEBUG:colcon.colcon_core.package_identification:Package 'src/communication2' with type 'ros.ament_cmake' and name 'communication2'
+[0.693s] Level 1:colcon.colcon_core.package_identification:_identify(src/excavation) by extensions ['ignore', 'ignore_ament_install']
+[0.693s] Level 1:colcon.colcon_core.package_identification:_identify(src/excavation) by extension 'ignore'
+[0.694s] Level 1:colcon.colcon_core.package_identification:_identify(src/excavation) by extension 'ignore_ament_install'
+[0.694s] Level 1:colcon.colcon_core.package_identification:_identify(src/excavation) by extensions ['colcon_pkg']
+[0.694s] Level 1:colcon.colcon_core.package_identification:_identify(src/excavation) by extension 'colcon_pkg'
+[0.694s] Level 1:colcon.colcon_core.package_identification:_identify(src/excavation) by extensions ['colcon_meta']
+[0.694s] Level 1:colcon.colcon_core.package_identification:_identify(src/excavation) by extension 'colcon_meta'
+[0.694s] Level 1:colcon.colcon_core.package_identification:_identify(src/excavation) by extensions ['ros']
+[0.694s] Level 1:colcon.colcon_core.package_identification:_identify(src/excavation) by extension 'ros'
+[0.695s] DEBUG:colcon.colcon_core.package_identification:Package 'src/excavation' with type 'ros.ament_cmake' and name 'excavation'
+[0.696s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extensions ['ignore', 'ignore_ament_install']
+[0.696s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extension 'ignore'
+[0.696s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extension 'ignore_ament_install'
+[0.696s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extensions ['colcon_pkg']
+[0.696s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extension 'colcon_pkg'
+[0.696s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extensions ['colcon_meta']
+[0.696s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extension 'colcon_meta'
+[0.696s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extensions ['ros']
+[0.697s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extension 'ros'
+[0.698s] DEBUG:colcon.colcon_core.package_identification:Package 'src/falcon' with type 'ros.ament_cmake' and name 'falcon'
+[0.698s] Level 1:colcon.colcon_core.package_identification:_identify(src/logic) by extensions ['ignore', 'ignore_ament_install']
+[0.698s] Level 1:colcon.colcon_core.package_identification:_identify(src/logic) by extension 'ignore'
+[0.698s] Level 1:colcon.colcon_core.package_identification:_identify(src/logic) by extension 'ignore_ament_install'
+[0.698s] Level 1:colcon.colcon_core.package_identification:_identify(src/logic) by extensions ['colcon_pkg']
+[0.698s] Level 1:colcon.colcon_core.package_identification:_identify(src/logic) by extension 'colcon_pkg'
+[0.698s] Level 1:colcon.colcon_core.package_identification:_identify(src/logic) by extensions ['colcon_meta']
+[0.698s] Level 1:colcon.colcon_core.package_identification:_identify(src/logic) by extension 'colcon_meta'
+[0.699s] Level 1:colcon.colcon_core.package_identification:_identify(src/logic) by extensions ['ros']
+[0.699s] Level 1:colcon.colcon_core.package_identification:_identify(src/logic) by extension 'ros'
+[0.700s] DEBUG:colcon.colcon_core.package_identification:Package 'src/logic' with type 'ros.ament_cmake' and name 'logic'
+[0.700s] Level 1:colcon.colcon_core.package_identification:_identify(src/messages) by extensions ['ignore', 'ignore_ament_install']
+[0.700s] Level 1:colcon.colcon_core.package_identification:_identify(src/messages) by extension 'ignore'
+[0.701s] Level 1:colcon.colcon_core.package_identification:_identify(src/messages) by extension 'ignore_ament_install'
+[0.701s] Level 1:colcon.colcon_core.package_identification:_identify(src/messages) by extensions ['colcon_pkg']
+[0.701s] Level 1:colcon.colcon_core.package_identification:_identify(src/messages) by extension 'colcon_pkg'
+[0.701s] Level 1:colcon.colcon_core.package_identification:_identify(src/messages) by extensions ['colcon_meta']
+[0.701s] Level 1:colcon.colcon_core.package_identification:_identify(src/messages) by extension 'colcon_meta'
+[0.701s] Level 1:colcon.colcon_core.package_identification:_identify(src/messages) by extensions ['ros']
+[0.701s] Level 1:colcon.colcon_core.package_identification:_identify(src/messages) by extension 'ros'
+[0.702s] DEBUG:colcon.colcon_core.package_identification:Package 'src/messages' with type 'ros.ament_cmake' and name 'messages'
+[0.703s] Level 1:colcon.colcon_core.package_identification:_identify(src/power_distribution_panel) by extensions ['ignore', 'ignore_ament_install']
+[0.703s] Level 1:colcon.colcon_core.package_identification:_identify(src/power_distribution_panel) by extension 'ignore'
+[0.703s] Level 1:colcon.colcon_core.package_identification:_identify(src/power_distribution_panel) by extension 'ignore_ament_install'
+[0.703s] Level 1:colcon.colcon_core.package_identification:_identify(src/power_distribution_panel) by extensions ['colcon_pkg']
+[0.703s] Level 1:colcon.colcon_core.package_identification:_identify(src/power_distribution_panel) by extension 'colcon_pkg'
+[0.703s] Level 1:colcon.colcon_core.package_identification:_identify(src/power_distribution_panel) by extensions ['colcon_meta']
+[0.703s] Level 1:colcon.colcon_core.package_identification:_identify(src/power_distribution_panel) by extension 'colcon_meta'
+[0.703s] Level 1:colcon.colcon_core.package_identification:_identify(src/power_distribution_panel) by extensions ['ros']
+[0.703s] Level 1:colcon.colcon_core.package_identification:_identify(src/power_distribution_panel) by extension 'ros'
+[0.705s] DEBUG:colcon.colcon_core.package_identification:Package 'src/power_distribution_panel' with type 'ros.ament_cmake' and name 'power_distribution_panel'
+[0.705s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extensions ['ignore', 'ignore_ament_install']
+[0.705s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extension 'ignore'
+[0.705s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extension 'ignore_ament_install'
+[0.705s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extensions ['colcon_pkg']
+[0.705s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extension 'colcon_pkg'
+[0.705s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extensions ['colcon_meta']
+[0.705s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extension 'colcon_meta'
+[0.706s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extensions ['ros']
+[0.706s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extension 'ros'
+[0.707s] DEBUG:colcon.colcon_core.package_identification:Package 'src/talon' with type 'ros.ament_cmake' and name 'talon'
+[0.707s] Level 1:colcon.colcon_core.package_identification:_identify(src/test) by extensions ['ignore', 'ignore_ament_install']
+[0.707s] Level 1:colcon.colcon_core.package_identification:_identify(src/test) by extension 'ignore'
+[0.707s] Level 1:colcon.colcon_core.package_identification:_identify(src/test) by extension 'ignore_ament_install'
+[0.707s] Level 1:colcon.colcon_core.package_identification:_identify(src/test) by extensions ['colcon_pkg']
+[0.707s] Level 1:colcon.colcon_core.package_identification:_identify(src/test) by extension 'colcon_pkg'
+[0.707s] Level 1:colcon.colcon_core.package_identification:_identify(src/test) by extensions ['colcon_meta']
+[0.708s] Level 1:colcon.colcon_core.package_identification:_identify(src/test) by extension 'colcon_meta'
+[0.708s] Level 1:colcon.colcon_core.package_identification:_identify(src/test) by extensions ['ros']
+[0.708s] Level 1:colcon.colcon_core.package_identification:_identify(src/test) by extension 'ros'
+[0.709s] DEBUG:colcon.colcon_core.package_identification:Package 'src/test' with type 'ros.ament_cmake' and name 'test'
+[0.709s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.709s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.709s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.709s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.709s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.743s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'messages' in 'src/messages'
+[0.743s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'communication2' in 'src/communication2'
+[0.743s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'falcon' in 'src/falcon'
+[0.743s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'logic' in 'src/logic'
+[0.743s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'power_distribution_panel' in 'src/power_distribution_panel'
+[0.744s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'talon' in 'src/talon'
+[0.744s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'test' in 'src/test'
+[0.744s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[0.744s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[0.749s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 173 installed packages in /opt/ros/galactic
+[0.750s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[0.825s] Level 5:colcon.colcon_core.verb:set package 'excavation' build argument 'cmake_args' from command line to 'None'
+[0.825s] Level 5:colcon.colcon_core.verb:set package 'excavation' build argument 'cmake_target' from command line to 'None'
+[0.825s] Level 5:colcon.colcon_core.verb:set package 'excavation' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.825s] Level 5:colcon.colcon_core.verb:set package 'excavation' build argument 'cmake_clean_cache' from command line to 'False'
+[0.825s] Level 5:colcon.colcon_core.verb:set package 'excavation' build argument 'cmake_clean_first' from command line to 'False'
+[0.825s] Level 5:colcon.colcon_core.verb:set package 'excavation' build argument 'cmake_force_configure' from command line to 'False'
+[0.825s] Level 5:colcon.colcon_core.verb:set package 'excavation' build argument 'ament_cmake_args' from command line to 'None'
+[0.825s] Level 5:colcon.colcon_core.verb:set package 'excavation' build argument 'catkin_cmake_args' from command line to 'None'
+[0.825s] Level 5:colcon.colcon_core.verb:set package 'excavation' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.826s] DEBUG:colcon.colcon_core.verb:Building package 'excavation' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/team/SoftwareDevelopment/shovel/build/excavation', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/team/SoftwareDevelopment/shovel/install/excavation', 'merge_install': False, 'path': '/home/team/SoftwareDevelopment/shovel/src/excavation', 'symlink_install': False, 'test_result_base': None}
+[0.826s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.828s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.829s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/team/SoftwareDevelopment/shovel/src/excavation' with build type 'ament_cmake'
+[0.829s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/team/SoftwareDevelopment/shovel/src/excavation'
+[0.833s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.833s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.833s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.880s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/team/SoftwareDevelopment/shovel/build/excavation': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/excavation -- -j6 -l6
+[39.163s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/team/SoftwareDevelopment/shovel/build/excavation' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/excavation -- -j6 -l6
+[39.255s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/team/SoftwareDevelopment/shovel/build/excavation': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/excavation
+[39.303s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(excavation)
+[39.306s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/team/SoftwareDevelopment/shovel/build/excavation' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/excavation
+[39.315s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation' for CMake module files
+[39.317s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation' for CMake config files
+[39.319s] Level 1:colcon.colcon_core.shell:create_environment_hook('excavation', 'cmake_prefix_path')
+[39.320s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/hook/cmake_prefix_path.ps1'
+[39.323s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/hook/cmake_prefix_path.dsv'
+[39.324s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/hook/cmake_prefix_path.sh'
+[39.326s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation/lib'
+[39.327s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation/bin'
+[39.327s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation/lib/pkgconfig/excavation.pc'
+[39.328s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation/lib/python3.8/site-packages'
+[39.329s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation/bin'
+[39.330s] INFO:colcon.colcon_core.shell:Creating package script '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.ps1'
+[39.332s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.dsv'
+[39.333s] INFO:colcon.colcon_core.shell:Creating package script '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.sh'
+[39.335s] INFO:colcon.colcon_core.shell:Creating package script '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.bash'
+[39.345s] INFO:colcon.colcon_core.shell:Creating package script '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.zsh'
+[39.346s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/team/SoftwareDevelopment/shovel/install/excavation/share/colcon-core/packages/excavation)
+[39.399s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(excavation)
+[39.400s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation' for CMake module files
+[39.401s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation' for CMake config files
+[39.401s] Level 1:colcon.colcon_core.shell:create_environment_hook('excavation', 'cmake_prefix_path')
+[39.402s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/hook/cmake_prefix_path.ps1'
+[39.403s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/hook/cmake_prefix_path.dsv'
+[39.404s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/hook/cmake_prefix_path.sh'
+[39.405s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation/lib'
+[39.405s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation/bin'
+[39.406s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation/lib/pkgconfig/excavation.pc'
+[39.406s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation/lib/python3.8/site-packages'
+[39.407s] Level 1:colcon.colcon_core.environment:checking '/home/team/SoftwareDevelopment/shovel/install/excavation/bin'
+[39.407s] INFO:colcon.colcon_core.shell:Creating package script '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.ps1'
+[39.471s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.dsv'
+[39.473s] INFO:colcon.colcon_core.shell:Creating package script '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.sh'
+[39.474s] INFO:colcon.colcon_core.shell:Creating package script '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.bash'
+[39.475s] INFO:colcon.colcon_core.shell:Creating package script '/home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.zsh'
+[39.475s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/team/SoftwareDevelopment/shovel/install/excavation/share/colcon-core/packages/excavation)
+[39.476s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[39.477s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[39.477s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[39.478s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[39.491s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[39.491s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[39.491s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[39.536s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[39.537s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/team/SoftwareDevelopment/shovel/install/local_setup.ps1'
+[39.540s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/team/SoftwareDevelopment/shovel/install/_local_setup_util_ps1.py'
+[39.542s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/team/SoftwareDevelopment/shovel/install/setup.ps1'
+[39.544s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/team/SoftwareDevelopment/shovel/install/local_setup.sh'
+[39.546s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/team/SoftwareDevelopment/shovel/install/_local_setup_util_sh.py'
+[39.547s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/team/SoftwareDevelopment/shovel/install/setup.sh'
+[39.549s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/team/SoftwareDevelopment/shovel/install/local_setup.bash'
+[39.551s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/team/SoftwareDevelopment/shovel/install/setup.bash'
+[39.552s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/team/SoftwareDevelopment/shovel/install/local_setup.zsh'
+[39.553s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/team/SoftwareDevelopment/shovel/install/setup.zsh'

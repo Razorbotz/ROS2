@@ -1,0 +1,4 @@
+source;share/excavation/local_setup.bash
+source;share/excavation/local_setup.dsv
+source;share/excavation/local_setup.sh
+source;share/excavation/local_setup.zsh

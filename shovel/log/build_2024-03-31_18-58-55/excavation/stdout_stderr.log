@@ -1,0 +1,14 @@
+[35m[1mScanning dependencies of target excavation_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o[0m
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:[m[K In function ‘[01m[Kvoid updateMotorPositions(int)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:639:5:[m[K [01;31m[Kerror: [m[K‘[01m[KsyncSpeedsDistance[m[K’ was not declared in this scope; did you mean ‘[01m[KsetSpeedsDistance[m[K’?
+  639 |     [01;31m[KsyncSpeedsDistance[m[K();
+      |     [01;31m[K^~~~~~~~~~~~~~~~~~[m[K
+      |     [32m[KsetSpeedsDistance[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:670:5:[m[K [01;31m[Kerror: [m[K‘[01m[KsyncSpeedsDistance2[m[K’ was not declared in this scope; did you mean ‘[01m[KsetSpeedsDistance2[m[K’?
+  670 |     [01;31m[KsyncSpeedsDistance2[m[K();
+      |     [01;31m[K^~~~~~~~~~~~~~~~~~~[m[K
+      |     [32m[KsetSpeedsDistance2[m[K
+make[2]: *** [CMakeFiles/excavation_node.dir/build.make:63: CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/excavation_node.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

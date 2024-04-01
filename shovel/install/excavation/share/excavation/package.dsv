@@ -1,0 +1,8 @@
+source;share/excavation/hook/cmake_prefix_path.ps1
+source;share/excavation/hook/cmake_prefix_path.dsv
+source;share/excavation/hook/cmake_prefix_path.sh
+source;share/excavation/local_setup.bash
+source;share/excavation/local_setup.dsv
+source;share/excavation/local_setup.ps1
+source;share/excavation/local_setup.sh
+source;share/excavation/local_setup.zsh

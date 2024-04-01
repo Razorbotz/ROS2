@@ -1,0 +1,56 @@
+[0.087s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/talon': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/talon -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/talon
+[3.998s] -- The C compiler identification is GNU 9.4.0
+[3.998s] -- The CXX compiler identification is GNU 9.4.0
+[3.998s] -- Check for working C compiler: /usr/bin/cc
+[3.999s] -- Check for working C compiler: /usr/bin/cc -- works
+[3.999s] -- Detecting C compiler ABI info
+[3.999s] -- Detecting C compiler ABI info - done
+[3.999s] -- Detecting C compile features
+[3.999s] -- Detecting C compile features - done
+[3.999s] -- Check for working CXX compiler: /usr/bin/c++
+[3.999s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[3.999s] -- Detecting CXX compiler ABI info
+[4.000s] -- Detecting CXX compiler ABI info - done
+[4.000s] -- Detecting CXX compile features
+[4.000s] -- Detecting CXX compile features - done
+[4.000s] -- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)
+[4.000s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+[4.000s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[4.000s] -- Found rclcpp: 9.2.2 (/opt/ros/galactic/share/rclcpp/cmake)
+[4.000s] -- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c
+[4.001s] -- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)
+[4.001s] -- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp
+[4.001s] -- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)
+[4.001s] -- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)
+[4.001s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[4.001s] -- Looking for pthread.h
+[4.002s] -- Looking for pthread.h - found
+[4.002s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[4.002s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+[4.003s] -- Looking for pthread_create in pthreads
+[4.003s] -- Looking for pthread_create in pthreads - not found
+[4.003s] -- Looking for pthread_create in pthread
+[4.003s] -- Looking for pthread_create in pthread - found
+[4.003s] -- Found Threads: TRUE  
+[4.003s] -- Found messages: 0.0.0 (/home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake)
+[4.003s] -- Configuring done
+[4.003s] -- Generating done
+[4.004s] -- Build files have been written to: /home/team/SoftwareDevelopment/shovel/build/talon
+[4.021s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/talon' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/talon -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/talon
+[4.023s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/talon': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/talon -- -j6 -l6
+[4.123s] [35m[1mScanning dependencies of target talon_node[0m
+[4.461s] [ 50%] [32mBuilding CXX object CMakeFiles/talon_node.dir/src/talon_node.cpp.o[0m
+[14.228s] [01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:[m[K In function ‘[01m[Kvoid stopCallback(std_msgs::msg::Empty_<std::allocator<void> >::SharedPtr)[m[K’:
+[14.228s] [01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:87:51:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kempty[m[K’ [[01;35m[K-Wunused-parameter[m[K]
+[14.228s]    87 | void stopCallback([01;35m[Kstd_msgs::msg::Empty::SharedPtr empty[m[K){
+[14.228s]       |                   [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+[14.229s] [01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:[m[K In function ‘[01m[Kvoid goCallback(std_msgs::msg::Empty_<std::allocator<void> >::SharedPtr)[m[K’:
+[14.229s] [01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:101:49:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kempty[m[K’ [[01;35m[K-Wunused-parameter[m[K]
+[14.229s]   101 | void goCallback([01;35m[Kstd_msgs::msg::Empty::SharedPtr empty[m[K){
+[14.230s]       |                 [01;35m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~[m[K
+[14.458s] [01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[14.458s] [01m[K/home/team/SoftwareDevelopment/shovel/src/talon/src/talon_node.cpp:266:9:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[KisInverted[m[K’ [[01;35m[K-Wunused-variable[m[K]
+[14.459s]   266 |    bool [01;35m[KisInverted[m[K=talonSRX->GetInverted();
+[14.459s]       |         [01;35m[K^~~~~~~~~~[m[K
+[41.302s] [100%] [32m[1mLinking CXX executable talon_node[0m
+[42.845s] [100%] Built target talon_node

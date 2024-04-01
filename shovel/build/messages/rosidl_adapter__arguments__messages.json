@@ -1,0 +1,17 @@
+{
+  "package_name": "messages",
+  "non_idl_tuples": [
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/AxisState.msg",
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/Camera.msg",
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/JoystickCommand.msg",
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/Power.msg",
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/VictorOut.msg",
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/ButtonState.msg",
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/HatState.msg",
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/KeyState.msg",
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/TalonOut.msg",
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/ZedPosition.msg",
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/LinearOut.msg",
+    "/home/team/SoftwareDevelopment/shovel/src/messages:msg/AutonomyOut.msg"
+  ]
+}

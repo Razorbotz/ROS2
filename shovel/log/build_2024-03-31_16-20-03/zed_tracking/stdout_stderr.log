@@ -1,0 +1,78 @@
+-- The C compiler identification is GNU 9.4.0
+-- The CXX compiler identification is GNU 9.4.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+CMake Deprecation Warning at CMakeLists.txt:15 (cmake_policy):
+  The OLD behavior for policy CMP0003 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+CMake Deprecation Warning at CMakeLists.txt:16 (cmake_policy):
+  The OLD behavior for policy CMP0015 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+-- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)
+-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Found rclcpp: 9.2.2 (/opt/ros/galactic/share/rclcpp/cmake)
+-- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c
+-- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)
+-- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp
+-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)
+-- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)
+-- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE  
+-- Found messages: 0.0.0 (/home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake)
+-- Looking for sgemm_
+-- Looking for sgemm_ - not found
+-- Looking for sgemm_
+-- Looking for sgemm_ - found
+-- Found BLAS: /usr/lib/aarch64-linux-gnu/libopenblas.so  
+-- Found CUDA: /usr/local/cuda-11.4 (found suitable version "11.4", minimum required is "11.4") 
+-- Found OpenCV: /usr (found version "4.5.4") 
+-- Found CUDA: /usr/local/cuda-11.4 (found suitable exact version "11.4") 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/team/SoftwareDevelopment/shovel/build/zed_tracking
+[35m[1mScanning dependencies of target zed_tracking_node[0m
+[ 33%] [32mBuilding CXX object CMakeFiles/zed_tracking_node.dir/src/aruco.cpp.o[0m
+[ 66%] [32mBuilding CXX object CMakeFiles/zed_tracking_node.dir/src/zed_tracking_node.cpp.o[0m
+[01m[K/home/team/SoftwareDevelopment/shovel/src/zed_tracking/src/zed_tracking_node.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/zed_tracking/src/zed_tracking_node.cpp:100:44:[m[K [01;31m[Kerror: [m[K‘[01m[Kstruct sl::CameraInformation[m[K’ has no member named ‘[01m[Kcamera_resolution[m[K’
+  100 |     sl::Resolution image_size = cameraInfo.[01;31m[Kcamera_resolution[m[K;
+      |                                            [01;31m[K^~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/zed_tracking/src/zed_tracking_node.cpp:106:33:[m[K [01;31m[Kerror: [m[K‘[01m[Kstruct sl::CameraInformation[m[K’ has no member named ‘[01m[Kcalibration_parameters[m[K’
+  106 |     auto calibInfo = cameraInfo.[01;31m[Kcalibration_parameters[m[K.left_cam;
+      |                                 [01;31m[K^~~~~~~~~~~~~~~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/zed_tracking_node.dir/build.make:76: CMakeFiles/zed_tracking_node.dir/src/zed_tracking_node.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:105: CMakeFiles/zed_tracking_node.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

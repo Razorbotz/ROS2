@@ -1,0 +1,16 @@
+[0.090s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/excavation': CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/home/team/SoftwareDevelopment/shovel/install/test:/home/team/SoftwareDevelopment/shovel/install/talon:/home/team/SoftwareDevelopment/shovel/install/power_distribution_panel:/home/team/SoftwareDevelopment/shovel/install/logic:/home/team/SoftwareDevelopment/shovel/install/falcon:/home/team/SoftwareDevelopment/shovel/install/excavation:/home/team/SoftwareDevelopment/shovel/install/communication2:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/excavation -- -j6 -l6
+[0.208s] [35m[1mScanning dependencies of target excavation_node[0m
+[0.382s] [ 50%] [32mBuilding CXX object CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o[0m
+[5.312s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:[m[K In function ‘[01m[Kvoid updateMotorPositions(int)[m[K’:
+[5.313s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:639:5:[m[K [01;31m[Kerror: [m[K‘[01m[KsyncSpeedsDistance[m[K’ was not declared in this scope; did you mean ‘[01m[KsetSpeedsDistance[m[K’?
+[5.313s]   639 |     [01;31m[KsyncSpeedsDistance[m[K();
+[5.313s]       |     [01;31m[K^~~~~~~~~~~~~~~~~~[m[K
+[5.313s]       |     [32m[KsetSpeedsDistance[m[K
+[5.321s] [01m[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:670:5:[m[K [01;31m[Kerror: [m[K‘[01m[KsyncSpeedsDistance2[m[K’ was not declared in this scope; did you mean ‘[01m[KsetSpeedsDistance2[m[K’?
+[5.322s]   670 |     [01;31m[KsyncSpeedsDistance2[m[K();
+[5.322s]       |     [01;31m[K^~~~~~~~~~~~~~~~~~~[m[K
+[5.322s]       |     [32m[KsetSpeedsDistance2[m[K
+[21.024s] make[2]: *** [CMakeFiles/excavation_node.dir/build.make:63: CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o] Error 1
+[21.024s] make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/excavation_node.dir/all] Error 2
+[21.024s] make: *** [Makefile:141: all] Error 2
+[21.030s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/excavation' returned '2': CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/home/team/SoftwareDevelopment/shovel/install/test:/home/team/SoftwareDevelopment/shovel/install/talon:/home/team/SoftwareDevelopment/shovel/install/power_distribution_panel:/home/team/SoftwareDevelopment/shovel/install/logic:/home/team/SoftwareDevelopment/shovel/install/falcon:/home/team/SoftwareDevelopment/shovel/install/excavation:/home/team/SoftwareDevelopment/shovel/install/communication2:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/excavation -- -j6 -l6

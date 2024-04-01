@@ -1,0 +1,26 @@
+[0.050s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/excavation': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/excavation -- -j6 -l6
+[0.135s] [35m[1mScanning dependencies of target excavation_node[0m
+[0.185s] [ 50%] [32mBuilding CXX object CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o[0m
+[36.413s] [100%] [32m[1mLinking CXX executable excavation_node[0m
+[38.185s] [100%] Built target excavation_node
+[38.333s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/excavation' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/excavation -- -j6 -l6
+[38.424s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/excavation': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/excavation
+[38.447s] -- Install configuration: ""
+[38.448s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/lib/excavation/excavation_node
+[38.464s] -- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/excavation/lib/excavation/excavation_node" to ""
+[38.465s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/package_run_dependencies/excavation
+[38.465s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/parent_prefix_path/excavation
+[38.466s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/ament_prefix_path.sh
+[38.466s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/ament_prefix_path.dsv
+[38.466s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/path.sh
+[38.467s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/path.dsv
+[38.467s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.bash
+[38.467s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.sh
+[38.468s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.zsh
+[38.468s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.dsv
+[38.468s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.dsv
+[38.469s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/packages/excavation
+[38.469s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/cmake/excavationConfig.cmake
+[38.469s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/cmake/excavationConfig-version.cmake
+[38.469s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.xml
+[38.476s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/excavation' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/excavation

@@ -1,0 +1,10 @@
+[01m[K/home/team/SoftwareDevelopment/shovel/src/test/src/test_node.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/team/SoftwareDevelopment/shovel/src/test/src/test_node.cpp:25:17:[m[K [01;35m[Kwarning: [m[Knarrowing conversion of ‘[01m[Kcount[m[K’ from ‘[01m[Kint[m[K’ to ‘[01m[Kshort int[m[K’ [[01;35m[K-Wnarrowing[m[K]
+   25 |    pot.data = {{[01;35m[Kcount[m[K}, {val2}, {val3}};
+      |                 [01;35m[K^~~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/test/src/test_node.cpp:25:26:[m[K [01;35m[Kwarning: [m[Knarrowing conversion of ‘[01m[Kval2[m[K’ from ‘[01m[Kint[m[K’ to ‘[01m[Kshort int[m[K’ [[01;35m[K-Wnarrowing[m[K]
+   25 |    pot.data = {{count}, {[01;35m[Kval2[m[K}, {val3}};
+      |                          [01;35m[K^~~~[m[K
+[01m[K/home/team/SoftwareDevelopment/shovel/src/test/src/test_node.cpp:25:34:[m[K [01;35m[Kwarning: [m[Knarrowing conversion of ‘[01m[Kval3[m[K’ from ‘[01m[Kint[m[K’ to ‘[01m[Kshort int[m[K’ [[01;35m[K-Wnarrowing[m[K]
+   25 |    pot.data = {{count}, {val2}, {[01;35m[Kval3[m[K}};
+      |                                  [01;35m[K^~~~[m[K

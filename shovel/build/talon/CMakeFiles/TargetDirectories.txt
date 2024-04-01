@@ -1,0 +1,10 @@
+/home/team/SoftwareDevelopment/shovel/build/talon/CMakeFiles/install/local.dir
+/home/team/SoftwareDevelopment/shovel/build/talon/CMakeFiles/install.dir
+/home/team/SoftwareDevelopment/shovel/build/talon/CMakeFiles/list_install_components.dir
+/home/team/SoftwareDevelopment/shovel/build/talon/CMakeFiles/rebuild_cache.dir
+/home/team/SoftwareDevelopment/shovel/build/talon/CMakeFiles/edit_cache.dir
+/home/team/SoftwareDevelopment/shovel/build/talon/CMakeFiles/test.dir
+/home/team/SoftwareDevelopment/shovel/build/talon/CMakeFiles/install/strip.dir
+/home/team/SoftwareDevelopment/shovel/build/talon/CMakeFiles/talon_node.dir
+/home/team/SoftwareDevelopment/shovel/build/talon/CMakeFiles/talon_uninstall.dir
+/home/team/SoftwareDevelopment/shovel/build/talon/CMakeFiles/uninstall.dir

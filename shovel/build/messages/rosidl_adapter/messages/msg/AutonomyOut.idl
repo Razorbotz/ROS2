@@ -1,0 +1,18 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from messages/msg/AutonomyOut.msg
+// generated code does not contain a copyright notice
+
+
+module messages {
+  module msg {
+    struct AutonomyOut {
+      string robot_state;
+
+      string excavation_state;
+
+      string error_state;
+
+      string dump_state;
+    };
+  };
+};

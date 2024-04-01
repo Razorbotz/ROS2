@@ -1,0 +1,22 @@
+[35m[1mScanning dependencies of target excavation_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o[0m
+[100%] [32m[1mLinking CXX executable excavation_node[0m
+[100%] Built target excavation_node
+-- Install configuration: ""
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/lib/excavation/excavation_node
+-- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/excavation/lib/excavation/excavation_node" to ""
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/package_run_dependencies/excavation
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/parent_prefix_path/excavation
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/ament_prefix_path.sh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/ament_prefix_path.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/path.sh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/environment/path.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.bash
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.sh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.zsh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/local_setup.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/ament_index/resource_index/packages/excavation
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/cmake/excavationConfig.cmake
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/cmake/excavationConfig-version.cmake
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/excavation/share/excavation/package.xml

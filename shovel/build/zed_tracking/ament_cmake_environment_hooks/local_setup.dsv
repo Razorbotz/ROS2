@@ -1,0 +1,2 @@
+source;share/zed_tracking/environment/ament_prefix_path.sh
+source;share/zed_tracking/environment/path.sh

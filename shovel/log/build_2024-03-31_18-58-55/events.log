@@ -1,0 +1,237 @@
+[0.000000] (-) TimerEvent: {}
+[0.000804] (-) JobUnselected: {'identifier': 'communication2'}
+[0.001044] (-) JobUnselected: {'identifier': 'falcon'}
+[0.001492] (-) JobUnselected: {'identifier': 'logic'}
+[0.001786] (-) JobUnselected: {'identifier': 'messages'}
+[0.002001] (-) JobUnselected: {'identifier': 'power_distribution_panel'}
+[0.002094] (-) JobUnselected: {'identifier': 'talon'}
+[0.002249] (-) JobUnselected: {'identifier': 'test'}
+[0.002329] (excavation) JobQueued: {'identifier': 'excavation', 'dependencies': OrderedDict([('messages', '/home/team/SoftwareDevelopment/shovel/install/messages')])}
+[0.002393] (excavation) JobStarted: {'identifier': 'excavation'}
+[0.086501] (excavation) JobProgress: {'identifier': 'excavation', 'progress': 'cmake'}
+[0.088416] (excavation) JobProgress: {'identifier': 'excavation', 'progress': 'build'}
+[0.089823] (excavation) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/team/SoftwareDevelopment/shovel/build/excavation', '--', '-j6', '-l6'], 'cwd': '/home/team/SoftwareDevelopment/shovel/build/excavation', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'team'), ('SSH_AGENT_PID', '2399'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64'), ('HOME', '/home/team'), ('OLDPWD', '/home/team/SoftwareDevelopment'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1680'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('COLCON_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'team'), ('JOURNAL_STREAM', '8:52435'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'team'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/usr/local/cuda-11.4/bin:/home/team/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/ubuntu:@/tmp/.ICE-unix/2434,unix/ubuntu:/tmp/.ICE-unix/2434'), ('INVOCATION_ID', 'c88630c11ebb473d8d4155020f268c5c'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/7fe40f8e_50ab_452c_8550_cafac8104021'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.78'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/test:/home/team/SoftwareDevelopment/shovel/install/talon:/home/team/SoftwareDevelopment/shovel/install/power_distribution_panel:/home/team/SoftwareDevelopment/shovel/install/logic:/home/team/SoftwareDevelopment/shovel/install/falcon:/home/team/SoftwareDevelopment/shovel/install/excavation:/home/team/SoftwareDevelopment/shovel/install/communication2:/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/team/SoftwareDevelopment/shovel/build/excavation'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/team/SoftwareDevelopment/shovel/install/messages:/home/team/SoftwareDevelopment/shovel/install/test:/home/team/SoftwareDevelopment/shovel/install/talon:/home/team/SoftwareDevelopment/shovel/install/power_distribution_panel:/home/team/SoftwareDevelopment/shovel/install/logic:/home/team/SoftwareDevelopment/shovel/install/falcon:/home/team/SoftwareDevelopment/shovel/install/excavation:/home/team/SoftwareDevelopment/shovel/install/communication2:/opt/ros/galactic')]), 'shell': False}
+[0.100116] (-) TimerEvent: {}
+[0.201379] (-) TimerEvent: {}
+[0.210139] (excavation) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target excavation_node\x1b[0m\n'}
+[0.301433] (-) TimerEvent: {}
+[0.384225] (excavation) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o\x1b[0m\n'}
+[0.401530] (-) TimerEvent: {}
+[0.502259] (-) TimerEvent: {}
+[0.603291] (-) TimerEvent: {}
+[0.704331] (-) TimerEvent: {}
+[0.805315] (-) TimerEvent: {}
+[0.906291] (-) TimerEvent: {}
+[1.007316] (-) TimerEvent: {}
+[1.108395] (-) TimerEvent: {}
+[1.209381] (-) TimerEvent: {}
+[1.310366] (-) TimerEvent: {}
+[1.411378] (-) TimerEvent: {}
+[1.512439] (-) TimerEvent: {}
+[1.613532] (-) TimerEvent: {}
+[1.714624] (-) TimerEvent: {}
+[1.815788] (-) TimerEvent: {}
+[1.916877] (-) TimerEvent: {}
+[2.018046] (-) TimerEvent: {}
+[2.119123] (-) TimerEvent: {}
+[2.220139] (-) TimerEvent: {}
+[2.321089] (-) TimerEvent: {}
+[2.422057] (-) TimerEvent: {}
+[2.523235] (-) TimerEvent: {}
+[2.624298] (-) TimerEvent: {}
+[2.725317] (-) TimerEvent: {}
+[2.826338] (-) TimerEvent: {}
+[2.927417] (-) TimerEvent: {}
+[3.028493] (-) TimerEvent: {}
+[3.129558] (-) TimerEvent: {}
+[3.230610] (-) TimerEvent: {}
+[3.331591] (-) TimerEvent: {}
+[3.432577] (-) TimerEvent: {}
+[3.533630] (-) TimerEvent: {}
+[3.634638] (-) TimerEvent: {}
+[3.735743] (-) TimerEvent: {}
+[3.836885] (-) TimerEvent: {}
+[3.938090] (-) TimerEvent: {}
+[4.039233] (-) TimerEvent: {}
+[4.140279] (-) TimerEvent: {}
+[4.241232] (-) TimerEvent: {}
+[4.342217] (-) TimerEvent: {}
+[4.443260] (-) TimerEvent: {}
+[4.544383] (-) TimerEvent: {}
+[4.645468] (-) TimerEvent: {}
+[4.789962] (-) TimerEvent: {}
+[4.891053] (-) TimerEvent: {}
+[4.992053] (-) TimerEvent: {}
+[5.093152] (-) TimerEvent: {}
+[5.194196] (-) TimerEvent: {}
+[5.295543] (-) TimerEvent: {}
+[5.314221] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[Kvoid updateMotorPositions(int)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[5.315110] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:639:5:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[KsyncSpeedsDistance\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope; did you mean \xe2\x80\x98\x1b[01m\x1b[KsetSpeedsDistance\x1b[m\x1b[K\xe2\x80\x99?\n'}
+[5.315339] (excavation) StderrLine: {'line': b'  639 |     \x1b[01;31m\x1b[KsyncSpeedsDistance\x1b[m\x1b[K();\n'}
+[5.315495] (excavation) StderrLine: {'line': b'      |     \x1b[01;31m\x1b[K^~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[5.315629] (excavation) StderrLine: {'line': b'      |     \x1b[32m\x1b[KsetSpeedsDistance\x1b[m\x1b[K\n'}
+[5.323409] (excavation) StderrLine: {'line': b'\x1b[01m\x1b[K/home/team/SoftwareDevelopment/shovel/src/excavation/src/excavation_node.cpp:670:5:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[KsyncSpeedsDistance2\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope; did you mean \xe2\x80\x98\x1b[01m\x1b[KsetSpeedsDistance2\x1b[m\x1b[K\xe2\x80\x99?\n'}
+[5.323955] (excavation) StderrLine: {'line': b'  670 |     \x1b[01;31m\x1b[KsyncSpeedsDistance2\x1b[m\x1b[K();\n'}
+[5.324156] (excavation) StderrLine: {'line': b'      |     \x1b[01;31m\x1b[K^~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[5.324337] (excavation) StderrLine: {'line': b'      |     \x1b[32m\x1b[KsetSpeedsDistance2\x1b[m\x1b[K\n'}
+[5.396078] (-) TimerEvent: {}
+[5.497496] (-) TimerEvent: {}
+[5.598557] (-) TimerEvent: {}
+[5.699455] (-) TimerEvent: {}
+[5.800333] (-) TimerEvent: {}
+[5.901184] (-) TimerEvent: {}
+[6.002041] (-) TimerEvent: {}
+[6.102862] (-) TimerEvent: {}
+[6.203753] (-) TimerEvent: {}
+[6.304783] (-) TimerEvent: {}
+[6.405800] (-) TimerEvent: {}
+[6.506815] (-) TimerEvent: {}
+[6.607640] (-) TimerEvent: {}
+[6.708535] (-) TimerEvent: {}
+[6.809516] (-) TimerEvent: {}
+[6.910348] (-) TimerEvent: {}
+[7.011219] (-) TimerEvent: {}
+[7.112057] (-) TimerEvent: {}
+[7.212924] (-) TimerEvent: {}
+[7.313909] (-) TimerEvent: {}
+[7.414814] (-) TimerEvent: {}
+[7.515818] (-) TimerEvent: {}
+[7.616752] (-) TimerEvent: {}
+[7.717963] (-) TimerEvent: {}
+[7.819026] (-) TimerEvent: {}
+[7.920355] (-) TimerEvent: {}
+[8.021739] (-) TimerEvent: {}
+[8.123139] (-) TimerEvent: {}
+[8.224257] (-) TimerEvent: {}
+[8.325351] (-) TimerEvent: {}
+[8.426354] (-) TimerEvent: {}
+[8.527252] (-) TimerEvent: {}
+[8.628134] (-) TimerEvent: {}
+[8.729126] (-) TimerEvent: {}
+[8.830034] (-) TimerEvent: {}
+[8.931077] (-) TimerEvent: {}
+[9.031973] (-) TimerEvent: {}
+[9.132537] (-) TimerEvent: {}
+[9.232907] (-) TimerEvent: {}
+[9.333261] (-) TimerEvent: {}
+[9.433596] (-) TimerEvent: {}
+[9.533867] (-) TimerEvent: {}
+[9.634189] (-) TimerEvent: {}
+[9.734457] (-) TimerEvent: {}
+[9.834884] (-) TimerEvent: {}
+[9.979859] (-) TimerEvent: {}
+[10.080760] (-) TimerEvent: {}
+[10.181607] (-) TimerEvent: {}
+[10.282505] (-) TimerEvent: {}
+[10.383521] (-) TimerEvent: {}
+[10.484484] (-) TimerEvent: {}
+[10.585350] (-) TimerEvent: {}
+[10.686266] (-) TimerEvent: {}
+[10.787333] (-) TimerEvent: {}
+[10.888438] (-) TimerEvent: {}
+[10.989328] (-) TimerEvent: {}
+[11.090197] (-) TimerEvent: {}
+[11.191032] (-) TimerEvent: {}
+[11.292130] (-) TimerEvent: {}
+[11.393197] (-) TimerEvent: {}
+[11.494092] (-) TimerEvent: {}
+[11.594934] (-) TimerEvent: {}
+[11.695744] (-) TimerEvent: {}
+[11.796586] (-) TimerEvent: {}
+[11.897425] (-) TimerEvent: {}
+[11.998310] (-) TimerEvent: {}
+[12.099316] (-) TimerEvent: {}
+[12.200264] (-) TimerEvent: {}
+[12.301368] (-) TimerEvent: {}
+[12.402478] (-) TimerEvent: {}
+[12.503858] (-) TimerEvent: {}
+[12.605060] (-) TimerEvent: {}
+[12.706201] (-) TimerEvent: {}
+[12.807313] (-) TimerEvent: {}
+[12.908443] (-) TimerEvent: {}
+[13.009857] (-) TimerEvent: {}
+[13.111222] (-) TimerEvent: {}
+[13.212395] (-) TimerEvent: {}
+[13.313524] (-) TimerEvent: {}
+[13.414645] (-) TimerEvent: {}
+[13.515798] (-) TimerEvent: {}
+[13.616953] (-) TimerEvent: {}
+[13.718124] (-) TimerEvent: {}
+[13.819224] (-) TimerEvent: {}
+[13.920242] (-) TimerEvent: {}
+[14.021250] (-) TimerEvent: {}
+[14.122385] (-) TimerEvent: {}
+[14.223546] (-) TimerEvent: {}
+[14.324600] (-) TimerEvent: {}
+[14.425524] (-) TimerEvent: {}
+[14.526517] (-) TimerEvent: {}
+[14.627466] (-) TimerEvent: {}
+[14.728807] (-) TimerEvent: {}
+[14.829885] (-) TimerEvent: {}
+[14.931233] (-) TimerEvent: {}
+[15.032500] (-) TimerEvent: {}
+[15.133610] (-) TimerEvent: {}
+[15.234704] (-) TimerEvent: {}
+[15.335730] (-) TimerEvent: {}
+[15.436661] (-) TimerEvent: {}
+[15.537516] (-) TimerEvent: {}
+[15.638338] (-) TimerEvent: {}
+[15.739171] (-) TimerEvent: {}
+[15.839998] (-) TimerEvent: {}
+[15.940796] (-) TimerEvent: {}
+[16.041642] (-) TimerEvent: {}
+[16.142466] (-) TimerEvent: {}
+[16.243347] (-) TimerEvent: {}
+[16.344681] (-) TimerEvent: {}
+[16.446060] (-) TimerEvent: {}
+[16.547127] (-) TimerEvent: {}
+[16.648048] (-) TimerEvent: {}
+[16.749128] (-) TimerEvent: {}
+[16.850114] (-) TimerEvent: {}
+[16.951080] (-) TimerEvent: {}
+[17.051976] (-) TimerEvent: {}
+[17.152856] (-) TimerEvent: {}
+[17.253772] (-) TimerEvent: {}
+[17.354780] (-) TimerEvent: {}
+[17.455661] (-) TimerEvent: {}
+[17.556511] (-) TimerEvent: {}
+[17.657384] (-) TimerEvent: {}
+[17.758285] (-) TimerEvent: {}
+[17.859298] (-) TimerEvent: {}
+[17.960177] (-) TimerEvent: {}
+[18.061133] (-) TimerEvent: {}
+[18.162511] (-) TimerEvent: {}
+[18.263597] (-) TimerEvent: {}
+[18.364986] (-) TimerEvent: {}
+[18.466138] (-) TimerEvent: {}
+[18.567288] (-) TimerEvent: {}
+[18.668422] (-) TimerEvent: {}
+[18.769498] (-) TimerEvent: {}
+[18.870572] (-) TimerEvent: {}
+[18.971915] (-) TimerEvent: {}
+[19.073079] (-) TimerEvent: {}
+[19.174503] (-) TimerEvent: {}
+[19.275569] (-) TimerEvent: {}
+[19.376710] (-) TimerEvent: {}
+[19.477873] (-) TimerEvent: {}
+[19.579015] (-) TimerEvent: {}
+[19.680178] (-) TimerEvent: {}
+[19.781633] (-) TimerEvent: {}
+[19.882745] (-) TimerEvent: {}
+[19.984092] (-) TimerEvent: {}
+[20.085237] (-) TimerEvent: {}
+[20.224070] (-) TimerEvent: {}
+[20.325067] (-) TimerEvent: {}
+[20.425979] (-) TimerEvent: {}
+[20.526893] (-) TimerEvent: {}
+[20.627772] (-) TimerEvent: {}
+[20.728796] (-) TimerEvent: {}
+[20.829694] (-) TimerEvent: {}
+[20.930701] (-) TimerEvent: {}
+[21.025214] (excavation) StderrLine: {'line': b'make[2]: *** [CMakeFiles/excavation_node.dir/build.make:63: CMakeFiles/excavation_node.dir/src/excavation_node.cpp.o] Error 1\n'}
+[21.026167] (excavation) StderrLine: {'line': b'make[1]: *** [CMakeFiles/Makefile2:78: CMakeFiles/excavation_node.dir/all] Error 2\n'}
+[21.026352] (excavation) StderrLine: {'line': b'make: *** [Makefile:141: all] Error 2\n'}
+[21.030902] (-) TimerEvent: {}
+[21.032109] (excavation) CommandEnded: {'returncode': 2}
+[21.119160] (excavation) JobEnded: {'identifier': 'excavation', 'rc': 2}
+[21.130032] (-) EventReactorShutdown: {}

@@ -1,0 +1,9 @@
+[0.093s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/logic': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/logic -- -j6 -l6
+[0.233s] [35m[1mScanning dependencies of target logic_node[0m
+[0.337s] [ 20%] [32mBuilding CXX object CMakeFiles/logic_node.dir/src/logic_node.cpp.o[0m
+[7.442s] [01m[K/home/team/SoftwareDevelopment/shovel/src/logic/src/logic_node.cpp:[m[K In function ‘[01m[Kvoid zedPositionCallback(messages::msg::ZedPosition_<std::allocator<void> >::SharedPtr)[m[K’:
+[7.443s] [01m[K/home/team/SoftwareDevelopment/shovel/src/logic/src/logic_node.cpp:397:12:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[KyawTolerance[m[K’ [[01;35m[K-Wunused-variable[m[K]
+[7.443s]   397 |     double [01;35m[KyawTolerance[m[K=5;
+[7.443s]       |            [01;35m[K^~~~~~~~~~~~[m[K
+[57.399s] [ 40%] [32m[1mLinking CXX executable logic_node[0m
+[60.116s] [100%] Built target logic_node

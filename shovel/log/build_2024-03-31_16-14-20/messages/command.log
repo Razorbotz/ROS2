@@ -1,0 +1,6 @@
+Invoking command in '/home/team/SoftwareDevelopment/shovel/build/messages': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/messages -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/messages
+Invoked command in '/home/team/SoftwareDevelopment/shovel/build/messages' returned '0': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/messages -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/messages
+Invoking command in '/home/team/SoftwareDevelopment/shovel/build/messages': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/messages -- -j6 -l6
+Invoked command in '/home/team/SoftwareDevelopment/shovel/build/messages' returned '0': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/messages -- -j6 -l6
+Invoking command in '/home/team/SoftwareDevelopment/shovel/build/messages': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/messages
+Invoked command in '/home/team/SoftwareDevelopment/shovel/build/messages' returned '0': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/messages

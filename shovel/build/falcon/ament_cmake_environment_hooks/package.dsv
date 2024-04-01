@@ -1,0 +1,4 @@
+source;share/falcon/local_setup.bash
+source;share/falcon/local_setup.dsv
+source;share/falcon/local_setup.sh
+source;share/falcon/local_setup.zsh

@@ -1,0 +1,44 @@
+[0.082s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/falcon': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/falcon -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/falcon
+[0.296s] -- The C compiler identification is GNU 9.4.0
+[0.498s] -- The CXX compiler identification is GNU 9.4.0
+[0.499s] -- Check for working C compiler: /usr/bin/cc
+[0.767s] -- Check for working C compiler: /usr/bin/cc -- works
+[0.771s] -- Detecting C compiler ABI info
+[1.021s] -- Detecting C compiler ABI info - done
+[1.045s] -- Detecting C compile features
+[1.046s] -- Detecting C compile features - done
+[1.052s] -- Check for working CXX compiler: /usr/bin/c++
+[1.315s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[1.317s] -- Detecting CXX compiler ABI info
+[1.601s] -- Detecting CXX compiler ABI info - done
+[1.626s] -- Detecting CXX compile features
+[1.627s] -- Detecting CXX compile features - done
+[1.632s] -- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)
+[1.689s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+[1.690s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[1.915s] -- Found rclcpp: 9.2.2 (/opt/ros/galactic/share/rclcpp/cmake)
+[1.997s] -- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c
+[2.008s] -- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)
+[2.044s] -- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp
+[2.161s] -- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)
+[2.165s] -- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)
+[2.202s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[2.204s] -- Looking for pthread.h
+[2.444s] -- Looking for pthread.h - found
+[2.445s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[2.831s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+[2.832s] -- Looking for pthread_create in pthreads
+[3.236s] -- Looking for pthread_create in pthreads - not found
+[3.236s] -- Looking for pthread_create in pthread
+[3.486s] -- Looking for pthread_create in pthread - found
+[3.488s] -- Found Threads: TRUE  
+[3.780s] -- Found messages: 0.0.0 (/home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake)
+[3.998s] -- Configuring done
+[4.023s] -- Generating done
+[4.025s] -- Build files have been written to: /home/team/SoftwareDevelopment/shovel/build/falcon
+[4.083s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/falcon' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/falcon -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/falcon
+[4.085s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/falcon': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/falcon -- -j6 -l6
+[4.200s] [35m[1mScanning dependencies of target falcon_node[0m
+[4.505s] [ 50%] [32mBuilding CXX object CMakeFiles/falcon_node.dir/src/falcon_node.cpp.o[0m
+[38.337s] [100%] [32m[1mLinking CXX executable falcon_node[0m
+[40.064s] [100%] Built target falcon_node

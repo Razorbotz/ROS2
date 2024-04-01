@@ -1,0 +1,8 @@
+source;share/talon/hook/cmake_prefix_path.ps1
+source;share/talon/hook/cmake_prefix_path.dsv
+source;share/talon/hook/cmake_prefix_path.sh
+source;share/talon/local_setup.bash
+source;share/talon/local_setup.dsv
+source;share/talon/local_setup.ps1
+source;share/talon/local_setup.sh
+source;share/talon/local_setup.zsh

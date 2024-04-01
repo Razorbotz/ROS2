@@ -1,0 +1,59 @@
+-- The C compiler identification is GNU 9.4.0
+-- The CXX compiler identification is GNU 9.4.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)
+-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Found rclcpp: 9.2.2 (/opt/ros/galactic/share/rclcpp/cmake)
+-- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c
+-- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)
+-- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp
+-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)
+-- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)
+-- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE  
+-- Found messages: 0.0.0 (/home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake)
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/team/SoftwareDevelopment/shovel/build/test
+[35m[1mScanning dependencies of target test_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/test_node.dir/src/test_node.cpp.o[0m
+[100%] [32m[1mLinking CXX executable test_node[0m
+[100%] Built target test_node
+-- Install configuration: ""
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/lib/test/test_node
+-- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/test/lib/test/test_node" to ""
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/ament_index/resource_index/package_run_dependencies/test
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/ament_index/resource_index/parent_prefix_path/test
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/environment/ament_prefix_path.sh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/environment/ament_prefix_path.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/environment/path.sh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/environment/path.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/local_setup.bash
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/local_setup.sh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/local_setup.zsh
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/local_setup.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/package.dsv
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/ament_index/resource_index/packages/test
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/cmake/testConfig.cmake
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/cmake/testConfig-version.cmake
+-- Installing: /home/team/SoftwareDevelopment/shovel/install/test/share/test/package.xml

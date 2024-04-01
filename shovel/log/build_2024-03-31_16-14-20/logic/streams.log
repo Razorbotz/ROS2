@@ -1,0 +1,55 @@
+[0.076s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/logic': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/logic -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/logic
+[0.284s] -- The C compiler identification is GNU 9.4.0
+[0.486s] -- The CXX compiler identification is GNU 9.4.0
+[0.489s] -- Check for working C compiler: /usr/bin/cc
+[0.755s] -- Check for working C compiler: /usr/bin/cc -- works
+[0.755s] -- Detecting C compiler ABI info
+[1.003s] -- Detecting C compiler ABI info - done
+[1.028s] -- Detecting C compile features
+[1.029s] -- Detecting C compile features - done
+[1.035s] -- Check for working CXX compiler: /usr/bin/c++
+[1.320s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[1.324s] -- Detecting CXX compiler ABI info
+[1.587s] -- Detecting CXX compiler ABI info - done
+[1.613s] -- Detecting CXX compile features
+[1.614s] -- Detecting CXX compile features - done
+[1.619s] -- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)
+[1.692s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+[1.692s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[1.921s] -- Found rclcpp: 9.2.2 (/opt/ros/galactic/share/rclcpp/cmake)
+[2.007s] -- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c
+[2.018s] -- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)
+[2.056s] -- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp
+[2.185s] -- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)
+[2.190s] -- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)
+[2.229s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[2.231s] -- Looking for pthread.h
+[2.446s] -- Looking for pthread.h - found
+[2.446s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[2.827s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+[2.828s] -- Looking for pthread_create in pthreads
+[3.224s] -- Looking for pthread_create in pthreads - not found
+[3.224s] -- Looking for pthread_create in pthread
+[3.467s] -- Looking for pthread_create in pthread - found
+[3.470s] -- Found Threads: TRUE  
+[3.776s] -- Found messages: 0.0.0 (/home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake)
+[4.022s] -- Configuring done
+[4.023s] -- Generating done
+[4.031s] -- Build files have been written to: /home/team/SoftwareDevelopment/shovel/build/logic
+[4.086s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/logic' returned '0': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/logic -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/logic
+[4.088s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/logic': AMENT_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/team/SoftwareDevelopment/shovel/install/messages:/opt/ros/galactic LD_LIBRARY_PATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib:/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/lib/aarch64-linux-gnu:/opt/ros/galactic/lib:/usr/local/cuda-11.4/lib64 PYTHONPATH=/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/logic -- -j6 -l6
+[4.545s] [35m[1mScanning dependencies of target logic_node[0m
+[4.552s] [ 40%] [32mBuilding CXX object CMakeFiles/logic_node.dir/src/Automation1.cpp.o[0m
+[4.552s] [ 20%] [32mBuilding CXX object CMakeFiles/logic_node.dir/src/logic_node.cpp.o[0m
+[4.561s] [ 60%] [32mBuilding CXX object CMakeFiles/logic_node.dir/src/Automation.cpp.o[0m
+[4.570s] [ 80%] [32mBuilding CXX object CMakeFiles/logic_node.dir/src/search.cpp.o[0m
+[10.886s] [01m[K/home/team/SoftwareDevelopment/shovel/src/logic/src/search.cpp:[m[K In member function ‘[01m[Kstd::stack<std::pair<int, int> > Search::aStar(int (*)[10], Point, Point, bool)[m[K’:
+[10.886s] [01m[K/home/team/SoftwareDevelopment/shovel/src/logic/src/search.cpp:196:78:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[KincludeHoles[m[K’ [[01;35m[K-Wunused-parameter[m[K]
+[10.887s]   196 | std::stack<Coord> Search::aStar(int grid[][COL], Point src, Point dest, [01;35m[Kbool includeHoles[m[K){
+[10.887s]       |                                                                         [01;35m[K~~~~~^~~~~~~~~~~~[m[K
+[16.903s] [01m[K/home/team/SoftwareDevelopment/shovel/src/logic/src/logic_node.cpp:[m[K In function ‘[01m[Kvoid zedPositionCallback(messages::msg::ZedPosition_<std::allocator<void> >::SharedPtr)[m[K’:
+[16.903s] [01m[K/home/team/SoftwareDevelopment/shovel/src/logic/src/logic_node.cpp:397:12:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[KyawTolerance[m[K’ [[01;35m[K-Wunused-variable[m[K]
+[16.904s]   397 |     double [01;35m[KyawTolerance[m[K=5;
+[16.904s]       |            [01;35m[K^~~~~~~~~~~~[m[K
+[69.956s] [100%] [32m[1mLinking CXX executable logic_node[0m
+[72.749s] [100%] Built target logic_node

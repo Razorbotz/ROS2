@@ -1,0 +1,444 @@
+[0.348s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/messages': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/messages -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/messages
+[1.485s] -- The C compiler identification is GNU 9.4.0
+[2.159s] -- The CXX compiler identification is GNU 9.4.0
+[2.314s] -- Check for working C compiler: /usr/bin/cc
+[2.735s] -- Check for working C compiler: /usr/bin/cc -- works
+[2.879s] -- Detecting C compiler ABI info
+[3.144s] -- Detecting C compiler ABI info - done
+[3.307s] -- Detecting C compile features
+[3.307s] -- Detecting C compile features - done
+[3.314s] -- Check for working CXX compiler: /usr/bin/c++
+[3.610s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[3.613s] -- Detecting CXX compiler ABI info
+[4.021s] -- Detecting CXX compiler ABI info - done
+[4.057s] -- Detecting CXX compile features
+[4.058s] -- Detecting CXX compile features - done
+[4.204s] -- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)
+[4.398s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+[4.398s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[5.006s] -- Found rclcpp: 9.2.2 (/opt/ros/galactic/share/rclcpp/cmake)
+[5.116s] -- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c
+[5.131s] -- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)
+[5.178s] -- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp
+[5.459s] -- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)
+[5.466s] -- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)
+[5.508s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[5.512s] -- Looking for pthread.h
+[5.828s] -- Looking for pthread.h - found
+[5.828s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[6.205s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+[6.206s] -- Looking for pthread_create in pthreads
+[6.716s] -- Looking for pthread_create in pthreads - not found
+[6.717s] -- Looking for pthread_create in pthread
+[6.947s] -- Looking for pthread_create in pthread - found
+[6.950s] -- Found Threads: TRUE  
+[8.392s] -- Found rosidl_default_generators: 1.1.1 (/opt/ros/galactic/share/rosidl_default_generators/cmake)
+[8.416s] -- Found ament_lint_auto: 0.10.7 (/opt/ros/galactic/share/ament_lint_auto/cmake)
+[8.766s] -- Found PythonInterp: /usr/bin/python3 (found version "3.8.10") 
+[9.606s] -- Using single rosidl_typesupport_c: rosidl_typesupport_introspection_c
+[9.637s] -- Using single rosidl_typesupport_cpp: rosidl_typesupport_introspection_cpp
+[9.687s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3.5") 
+[9.828s] -- Found python_cmake_module: 0.8.1 (/opt/ros/galactic/share/python_cmake_module/cmake)
+[10.027s] -- Found PythonLibs: /usr/lib/aarch64-linux-gnu/libpython3.8.so (found suitable version "3.8.10", minimum required is "3.5") 
+[10.027s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[10.027s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.8
+[10.028s] -- Using PYTHON_LIBRARIES: /usr/lib/aarch64-linux-gnu/libpython3.8.so
+[10.072s] -- Found PythonExtra: .so  
+[10.727s] -- Added test 'copyright' to check source files copyright and LICENSE
+[10.732s] -- Added test 'lint_cmake' to check CMake code style
+[10.735s] -- Added test 'xmllint' to check XML markup files
+[10.756s] -- Configuring done
+[11.117s] -- Generating done
+[11.122s] -- Build files have been written to: /home/team/SoftwareDevelopment/shovel/build/messages
+[11.156s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/messages' returned '0': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake /home/team/SoftwareDevelopment/shovel/src/messages -DCMAKE_INSTALL_PREFIX=/home/team/SoftwareDevelopment/shovel/install/messages
+[11.164s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/messages': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/messages -- -j6 -l6
+[11.271s] [  1%] [34m[1mGenerating C code for ROS interfaces[0m
+[11.272s] [35m[1mScanning dependencies of target messages__cpp[0m
+[11.301s] [  2%] [34m[1mGenerating C++ code for ROS interfaces[0m
+[13.758s] [  2%] Built target messages__cpp
+[13.789s] [  3%] [34m[1mGenerating C++ introspection for ROS interfaces[0m
+[14.247s] [35m[1mScanning dependencies of target messages__rosidl_generator_c[0m
+[14.297s] [  7%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/joystick_command__functions.c.o[0m
+[14.297s] [  7%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/camera__functions.c.o[0m
+[14.298s] [  7%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/axis_state__functions.c.o[0m
+[14.298s] [  7%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/power__functions.c.o[0m
+[14.311s] [  8%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/victor_out__functions.c.o[0m
+[14.672s] [ 11%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/button_state__functions.c.o[0m
+[14.672s] [ 11%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/hat_state__functions.c.o[0m
+[14.673s] [ 12%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/key_state__functions.c.o[0m
+[14.679s] [ 14%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/zed_position__functions.c.o[0m
+[14.679s] [ 14%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/talon_out__functions.c.o[0m
+[14.897s] [ 16%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/autonomy_out__functions.c.o[0m
+[14.897s] [ 16%] [32mBuilding C object CMakeFiles/messages__rosidl_generator_c.dir/rosidl_generator_c/messages/msg/detail/linear_out__functions.c.o[0m
+[15.123s] [ 17%] [32m[1mLinking C shared library libmessages__rosidl_generator_c.so[0m
+[15.155s] [35m[1mScanning dependencies of target messages__rosidl_typesupport_introspection_cpp[0m
+[15.342s] [ 22%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/joystick_command__type_support.cpp.o[0m
+[15.342s] [ 22%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/power__type_support.cpp.o[0m
+[15.343s] [ 22%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/camera__type_support.cpp.o[0m
+[15.343s] [ 22%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/axis_state__type_support.cpp.o[0m
+[15.350s] [ 23%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/victor_out__type_support.cpp.o[0m
+[15.371s] [ 23%] Built target messages__rosidl_generator_c
+[15.395s] [ 24%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/button_state__type_support.cpp.o[0m
+[16.398s] [ 26%] [34m[1mGenerating C introspection for ROS interfaces[0m
+[16.398s] [ 26%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/key_state__type_support.cpp.o[0m
+[16.402s] [ 30%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/zed_position__type_support.cpp.o[0m
+[16.403s] [ 30%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/hat_state__type_support.cpp.o[0m
+[16.403s] [ 30%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/linear_out__type_support.cpp.o[0m
+[16.403s] [ 31%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/talon_out__type_support.cpp.o[0m
+[17.218s] [ 32%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/messages/msg/detail/autonomy_out__type_support.cpp.o[0m
+[17.998s] [ 33%] [32m[1mLinking CXX shared library libmessages__rosidl_typesupport_introspection_cpp.so[0m
+[18.087s] [35m[1mScanning dependencies of target messages__rosidl_typesupport_introspection_c[0m
+[18.166s] [ 33%] Built target messages__rosidl_typesupport_introspection_cpp
+[18.191s] [ 34%] [34m[1mGenerating C++ type support dispatch for ROS interfaces[0m
+[18.271s] [ 38%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/joystick_command__type_support.c.o[0m
+[18.271s] [ 38%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/victor_out__type_support.c.o[0m
+[18.272s] [ 38%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/power__type_support.c.o[0m
+[18.273s] [ 39%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/axis_state__type_support.c.o[0m
+[18.274s] [ 40%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/camera__type_support.c.o[0m
+[18.477s] [ 42%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/key_state__type_support.c.o[0m
+[18.477s] [ 42%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/hat_state__type_support.c.o[0m
+[18.477s] [ 44%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/button_state__type_support.c.o[0m
+[18.478s] [ 44%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/zed_position__type_support.c.o[0m
+[18.479s] [ 46%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/talon_out__type_support.c.o[0m
+[18.681s] [ 48%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/linear_out__type_support.c.o[0m
+[18.682s] [ 48%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/messages/msg/detail/autonomy_out__type_support.c.o[0m
+[18.883s] [ 49%] [32m[1mLinking C shared library libmessages__rosidl_typesupport_introspection_c.so[0m
+[18.958s] [ 49%] Built target messages__rosidl_typesupport_introspection_c
+[18.984s] [ 50%] [34m[1mGenerating C type support dispatch for ROS interfaces[0m
+[19.245s] [35m[1mScanning dependencies of target messages__rosidl_typesupport_cpp[0m
+[19.343s] [ 53%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/joystick_command__type_support.cpp.o[0m
+[19.344s] [ 53%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/power__type_support.cpp.o[0m
+[19.344s] [ 53%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/camera__type_support.cpp.o[0m
+[19.344s] [ 55%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/axis_state__type_support.cpp.o[0m
+[19.354s] [ 56%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/victor_out__type_support.cpp.o[0m
+[20.173s] [ 60%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/hat_state__type_support.cpp.o[0m
+[20.174s] [ 60%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/button_state__type_support.cpp.o[0m
+[20.174s] [ 61%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/key_state__type_support.cpp.o[0m
+[20.174s] [ 60%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/zed_position__type_support.cpp.o[0m
+[20.175s] [ 60%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/talon_out__type_support.cpp.o[0m
+[20.689s] [35m[1mScanning dependencies of target messages__rosidl_typesupport_c[0m
+[20.879s] [ 62%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/axis_state__type_support.cpp.o[0m
+[20.890s] [ 64%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/linear_out__type_support.cpp.o[0m
+[21.016s] [ 67%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/camera__type_support.cpp.o[0m
+[21.016s] [ 67%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/messages/msg/autonomy_out__type_support.cpp.o[0m
+[21.019s] [ 67%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/joystick_command__type_support.cpp.o[0m
+[21.021s] [ 68%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/victor_out__type_support.cpp.o[0m
+[21.022s] [ 69%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/power__type_support.cpp.o[0m
+[21.214s] [ 73%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/button_state__type_support.cpp.o[0m
+[21.216s] [ 73%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/key_state__type_support.cpp.o[0m
+[21.217s] [ 73%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/talon_out__type_support.cpp.o[0m
+[21.219s] [ 74%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/hat_state__type_support.cpp.o[0m
+[21.411s] [ 76%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/zed_position__type_support.cpp.o[0m
+[21.412s] [ 76%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/linear_out__type_support.cpp.o[0m
+[21.413s] [ 77%] [32mBuilding CXX object CMakeFiles/messages__rosidl_typesupport_c.dir/rosidl_typesupport_c/messages/msg/autonomy_out__type_support.cpp.o[0m
+[21.609s] [ 78%] [32m[1mLinking CXX shared library libmessages__rosidl_typesupport_c.so[0m
+[21.708s] [ 78%] Built target messages__rosidl_typesupport_c
+[21.839s] [ 79%] [32m[1mLinking CXX shared library libmessages__rosidl_typesupport_cpp.so[0m
+[21.930s] [ 79%] Built target messages__rosidl_typesupport_cpp
+[21.955s] [35m[1mScanning dependencies of target messages[0m
+[21.980s] [ 79%] Built target messages
+[22.006s] [35m[1mScanning dependencies of target messages__py[0m
+[22.033s] [ 80%] [34m[1mGenerating Python code for ROS interfaces[0m
+[25.729s] [ 80%] Built target messages__py
+[25.753s] [35m[1mScanning dependencies of target messages__python[0m
+[25.992s] [ 83%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_axis_state_s.c.o[0m
+[25.993s] [ 83%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_camera_s.c.o[0m
+[25.998s] [ 84%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_joystick_command_s.c.o[0m
+[26.001s] [ 85%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_button_state_s.c.o[0m
+[26.010s] [ 86%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_power_s.c.o[0m
+[26.010s] [ 87%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_victor_out_s.c.o[0m
+[26.709s] [ 89%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_hat_state_s.c.o[0m
+[26.710s] [ 89%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_key_state_s.c.o[0m
+[26.712s] [ 92%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_talon_out_s.c.o[0m
+[26.713s] [ 92%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_zed_position_s.c.o[0m
+[26.714s] [ 93%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_linear_out_s.c.o[0m
+[26.735s] [ 94%] [32mBuilding C object CMakeFiles/messages__python.dir/rosidl_generator_py/messages/msg/_autonomy_out_s.c.o[0m
+[27.052s] [ 95%] [32m[1mLinking C shared library rosidl_generator_py/messages/libmessages__python.so[0m
+[27.437s] [ 95%] Built target messages__python
+[27.466s] [35m[1mScanning dependencies of target messages__rosidl_typesupport_c__pyext[0m
+[27.466s] [35m[1mScanning dependencies of target messages__rosidl_typesupport_introspection_c__pyext[0m
+[27.619s] [ 97%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/messages/_messages_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[27.620s] [ 97%] [32mBuilding C object CMakeFiles/messages__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/messages/_messages_s.ep.rosidl_typesupport_c.c.o[0m
+[27.981s] [100%] [32m[1mLinking C shared library rosidl_generator_py/messages/messages_s__rosidl_typesupport_introspection_c.cpython-38-aarch64-linux-gnu.so[0m
+[27.981s] [100%] [32m[1mLinking C shared library rosidl_generator_py/messages/messages_s__rosidl_typesupport_c.cpython-38-aarch64-linux-gnu.so[0m
+[28.065s] [100%] Built target messages__rosidl_typesupport_introspection_c__pyext
+[28.066s] [100%] Built target messages__rosidl_typesupport_c__pyext
+[28.220s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/messages' returned '0': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --build /home/team/SoftwareDevelopment/shovel/build/messages -- -j6 -l6
+[28.511s] Invoking command in '/home/team/SoftwareDevelopment/shovel/build/messages': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/messages
+[28.535s] -- Install configuration: ""
+[28.535s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/ament_index/resource_index/rosidl_interfaces/messages
+[28.535s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages
+[28.536s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg
+[28.536s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/button_state.h
+[28.536s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/zed_position.h
+[28.537s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/rosidl_generator_c__visibility_control.h
+[28.537s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/key_state.h
+[28.537s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/hat_state.h
+[28.537s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/victor_out.h
+[28.538s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail
+[28.538s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__functions.c
+[28.538s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__struct.h
+[28.538s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__functions.c
+[28.538s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__functions.c
+[28.539s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__functions.h
+[28.539s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__functions.h
+[28.539s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__type_support.h
+[28.539s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__functions.c
+[28.539s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__struct.h
+[28.540s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__functions.h
+[28.540s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__struct.h
+[28.540s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__type_support.h
+[28.540s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__type_support.h
+[28.541s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__functions.h
+[28.541s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__struct.h
+[28.541s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__type_support.h
+[28.541s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__struct.h
+[28.541s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__functions.c
+[28.542s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__struct.h
+[28.542s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__type_support.h
+[28.542s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__functions.h
+[28.542s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__struct.h
+[28.543s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__functions.h
+[28.543s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__functions.h
+[28.543s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__functions.c
+[28.543s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__struct.h
+[28.544s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__type_support.h
+[28.544s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__functions.c
+[28.544s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__type_support.h
+[28.544s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__functions.c
+[28.545s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__functions.c
+[28.545s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__type_support.h
+[28.545s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__functions.h
+[28.545s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__functions.c
+[28.546s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__struct.h
+[28.546s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__struct.h
+[28.546s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__type_support.h
+[28.546s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__functions.c
+[28.547s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__type_support.h
+[28.547s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__struct.h
+[28.547s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__functions.h
+[28.547s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__functions.h
+[28.548s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__struct.h
+[28.548s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__functions.h
+[28.548s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__type_support.h
+[28.548s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__functions.h
+[28.549s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__functions.c
+[28.549s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__type_support.h
+[28.549s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/joystick_command.h
+[28.549s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/linear_out.h
+[28.550s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/power.h
+[28.550s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/autonomy_out.h
+[28.550s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/axis_state.h
+[28.550s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/camera.h
+[28.551s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/talon_out.h
+[28.551s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/library_path.sh
+[28.551s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/library_path.dsv
+[28.551s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_generator_c.so
+[28.552s] -- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_generator_c.so" to ""
+[28.552s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages
+[28.552s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg
+[28.552s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail
+[28.553s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__type_support.c
+[28.553s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__rosidl_typesupport_introspection_c.h
+[28.553s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__rosidl_typesupport_introspection_c.h
+[28.554s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__rosidl_typesupport_introspection_c.h
+[28.554s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__type_support.c
+[28.554s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__type_support.c
+[28.555s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__rosidl_typesupport_introspection_c.h
+[28.555s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__type_support.c
+[28.556s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__type_support.c
+[28.556s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__rosidl_typesupport_introspection_c.h
+[28.556s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__rosidl_typesupport_introspection_c.h
+[28.557s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__type_support.c
+[28.557s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__rosidl_typesupport_introspection_c.h
+[28.557s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__type_support.c
+[28.557s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__rosidl_typesupport_introspection_c.h
+[28.558s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__type_support.c
+[28.558s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__type_support.c
+[28.558s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__type_support.c
+[28.559s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__rosidl_typesupport_introspection_c.h
+[28.559s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__rosidl_typesupport_introspection_c.h
+[28.559s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__rosidl_typesupport_introspection_c.h
+[28.559s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__rosidl_typesupport_introspection_c.h
+[28.560s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__type_support.c
+[28.560s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__type_support.c
+[28.560s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[28.561s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_introspection_c.so
+[28.561s] -- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_introspection_c.so" to ""
+[28.561s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_c.so
+[28.561s] -- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_c.so" to ""
+[28.562s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages
+[28.562s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg
+[28.562s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail
+[28.563s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__builder.hpp
+[28.563s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__builder.hpp
+[28.563s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__builder.hpp
+[28.563s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__traits.hpp
+[28.563s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__traits.hpp
+[28.564s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__struct.hpp
+[28.564s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__traits.hpp
+[28.564s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__traits.hpp
+[28.565s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__traits.hpp
+[28.565s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__builder.hpp
+[28.565s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__struct.hpp
+[28.565s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__struct.hpp
+[28.565s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__builder.hpp
+[28.566s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__traits.hpp
+[28.566s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__struct.hpp
+[28.566s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__builder.hpp
+[28.566s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__struct.hpp
+[28.567s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__builder.hpp
+[28.567s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__traits.hpp
+[28.567s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__builder.hpp
+[28.567s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__struct.hpp
+[28.568s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__builder.hpp
+[28.568s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__traits.hpp
+[28.568s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__struct.hpp
+[28.568s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__traits.hpp
+[28.569s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__struct.hpp
+[28.569s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__builder.hpp
+[28.569s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__builder.hpp
+[28.569s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__struct.hpp
+[28.570s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__traits.hpp
+[28.570s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__traits.hpp
+[28.570s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__builder.hpp
+[28.570s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__struct.hpp
+[28.571s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__struct.hpp
+[28.571s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__struct.hpp
+[28.571s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__traits.hpp
+[28.571s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/key_state.hpp
+[28.571s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/axis_state.hpp
+[28.572s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/autonomy_out.hpp
+[28.572s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/victor_out.hpp
+[28.572s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/power.hpp
+[28.572s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/button_state.hpp
+[28.572s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/camera.hpp
+[28.573s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/talon_out.hpp
+[28.573s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/zed_position.hpp
+[28.573s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/linear_out.hpp
+[28.573s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/joystick_command.hpp
+[28.573s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/hat_state.hpp
+[28.574s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages
+[28.574s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg
+[28.574s] -- Up-to-date: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail
+[28.574s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__rosidl_typesupport_introspection_cpp.hpp
+[28.574s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__type_support.cpp
+[28.575s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__type_support.cpp
+[28.575s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__rosidl_typesupport_introspection_cpp.hpp
+[28.575s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__type_support.cpp
+[28.575s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__rosidl_typesupport_introspection_cpp.hpp
+[28.575s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__rosidl_typesupport_introspection_cpp.hpp
+[28.576s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__type_support.cpp
+[28.576s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/power__rosidl_typesupport_introspection_cpp.hpp
+[28.576s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/talon_out__rosidl_typesupport_introspection_cpp.hpp
+[28.576s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__rosidl_typesupport_introspection_cpp.hpp
+[28.576s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__type_support.cpp
+[28.576s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/axis_state__type_support.cpp
+[28.577s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/joystick_command__rosidl_typesupport_introspection_cpp.hpp
+[28.577s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/autonomy_out__type_support.cpp
+[28.577s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__rosidl_typesupport_introspection_cpp.hpp
+[28.577s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/victor_out__type_support.cpp
+[28.577s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__type_support.cpp
+[28.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/camera__rosidl_typesupport_introspection_cpp.hpp
+[28.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/button_state__type_support.cpp
+[28.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/linear_out__rosidl_typesupport_introspection_cpp.hpp
+[28.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/hat_state__rosidl_typesupport_introspection_cpp.hpp
+[28.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/key_state__type_support.cpp
+[28.578s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/include/messages/msg/detail/zed_position__type_support.cpp
+[28.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_introspection_cpp.so
+[28.579s] -- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_introspection_cpp.so" to ""
+[28.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_cpp.so
+[28.579s] -- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__rosidl_typesupport_cpp.so" to ""
+[28.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/pythonpath.sh
+[28.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/pythonpath.dsv
+[28.579s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/__init__.py
+[28.778s] Compiling '/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/__init__.py'...
+[28.792s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg
+[28.793s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_linear_out.py
+[28.793s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_talon_out_s.c
+[28.794s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_key_state.py
+[28.794s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/__init__.py
+[28.795s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_axis_state_s.c
+[28.795s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_talon_out.py
+[28.795s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_hat_state_s.c
+[28.795s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_axis_state.py
+[28.795s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_joystick_command_s.c
+[28.795s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_linear_out_s.c
+[28.796s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_button_state.py
+[28.796s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_zed_position.py
+[28.796s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_victor_out.py
+[28.796s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_zed_position_s.c
+[28.797s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_hat_state.py
+[28.797s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_autonomy_out.py
+[28.797s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_power_s.c
+[28.797s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_key_state_s.c
+[28.797s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_button_state_s.c
+[28.798s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_camera.py
+[28.798s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_joystick_command.py
+[28.798s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_camera_s.c
+[28.798s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_power.py
+[28.798s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_victor_out_s.c
+[28.798s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/msg/_autonomy_out_s.c
+[28.799s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/messages_s__rosidl_typesupport_introspection_c.cpython-38-aarch64-linux-gnu.so
+[28.800s] -- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/messages_s__rosidl_typesupport_introspection_c.cpython-38-aarch64-linux-gnu.so" to ""
+[28.800s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/messages_s__rosidl_typesupport_c.cpython-38-aarch64-linux-gnu.so
+[28.801s] -- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/messages/lib/python3.8/site-packages/messages/messages_s__rosidl_typesupport_c.cpython-38-aarch64-linux-gnu.so" to ""
+[28.801s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__python.so
+[28.802s] -- Set runtime path of "/home/team/SoftwareDevelopment/shovel/install/messages/lib/libmessages__python.so" to ""
+[28.802s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/AxisState.idl
+[28.803s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/Camera.idl
+[28.803s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/JoystickCommand.idl
+[28.803s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/Power.idl
+[28.804s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/VictorOut.idl
+[28.804s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/ButtonState.idl
+[28.804s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/HatState.idl
+[28.805s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/KeyState.idl
+[28.805s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/TalonOut.idl
+[28.805s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/ZedPosition.idl
+[28.805s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/LinearOut.idl
+[28.806s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/AutonomyOut.idl
+[28.806s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/AxisState.msg
+[28.806s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/Camera.msg
+[28.807s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/JoystickCommand.msg
+[28.807s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/Power.msg
+[28.807s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/VictorOut.msg
+[28.807s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/ButtonState.msg
+[28.808s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/HatState.msg
+[28.808s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/KeyState.msg
+[28.808s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/TalonOut.msg
+[28.809s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/ZedPosition.msg
+[28.809s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/LinearOut.msg
+[28.809s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/msg/AutonomyOut.msg
+[28.810s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/ament_index/resource_index/package_run_dependencies/messages
+[28.810s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/ament_index/resource_index/parent_prefix_path/messages
+[28.810s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/ament_prefix_path.sh
+[28.810s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/ament_prefix_path.dsv
+[28.811s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/path.sh
+[28.811s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/environment/path.dsv
+[28.811s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/local_setup.bash
+[28.812s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/local_setup.sh
+[28.812s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/local_setup.zsh
+[28.812s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/local_setup.dsv
+[28.813s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/package.dsv
+[28.813s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/ament_index/resource_index/packages/messages
+[28.813s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_generator_cExport.cmake
+[28.814s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_generator_cExport-noconfig.cmake
+[28.814s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_introspection_cExport.cmake
+[28.814s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[28.815s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_cExport.cmake
+[28.815s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_cExport-noconfig.cmake
+[28.816s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_generator_cppExport.cmake
+[28.816s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_introspection_cppExport.cmake
+[28.816s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[28.817s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_cppExport.cmake
+[28.817s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messages__rosidl_typesupport_cppExport-noconfig.cmake
+[28.817s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/rosidl_cmake-extras.cmake
+[28.818s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/ament_cmake_export_dependencies-extras.cmake
+[28.818s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/ament_cmake_export_libraries-extras.cmake
+[28.818s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/ament_cmake_export_targets-extras.cmake
+[28.819s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/ament_cmake_export_include_directories-extras.cmake
+[28.819s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[28.819s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messagesConfig.cmake
+[28.819s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/cmake/messagesConfig-version.cmake
+[28.820s] -- Installing: /home/team/SoftwareDevelopment/shovel/install/messages/share/messages/package.xml
+[28.828s] Invoked command in '/home/team/SoftwareDevelopment/shovel/build/messages' returned '0': CMAKE_PREFIX_PATH=/opt/ros/galactic /usr/bin/cmake --install /home/team/SoftwareDevelopment/shovel/build/messages

@@ -1,0 +1,12 @@
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/AxisState.idl
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/Camera.idl
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/JoystickCommand.idl
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/Power.idl
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/VictorOut.idl
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/ButtonState.idl
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/HatState.idl
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/KeyState.idl
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/TalonOut.idl
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/ZedPosition.idl
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/LinearOut.idl
+/home/team/SoftwareDevelopment/shovel/build/messages/rosidl_adapter/messages:msg/AutonomyOut.idl

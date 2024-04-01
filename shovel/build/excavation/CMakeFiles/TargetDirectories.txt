@@ -1,0 +1,10 @@
+/home/team/SoftwareDevelopment/shovel/build/excavation/CMakeFiles/install/strip.dir
+/home/team/SoftwareDevelopment/shovel/build/excavation/CMakeFiles/install/local.dir
+/home/team/SoftwareDevelopment/shovel/build/excavation/CMakeFiles/install.dir
+/home/team/SoftwareDevelopment/shovel/build/excavation/CMakeFiles/list_install_components.dir
+/home/team/SoftwareDevelopment/shovel/build/excavation/CMakeFiles/rebuild_cache.dir
+/home/team/SoftwareDevelopment/shovel/build/excavation/CMakeFiles/edit_cache.dir
+/home/team/SoftwareDevelopment/shovel/build/excavation/CMakeFiles/test.dir
+/home/team/SoftwareDevelopment/shovel/build/excavation/CMakeFiles/excavation_node.dir
+/home/team/SoftwareDevelopment/shovel/build/excavation/CMakeFiles/excavation_uninstall.dir
+/home/team/SoftwareDevelopment/shovel/build/excavation/CMakeFiles/uninstall.dir

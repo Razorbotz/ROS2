@@ -1,0 +1,14 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from messages/msg/KeyState.msg
+// generated code does not contain a copyright notice
+
+
+module messages {
+  module msg {
+    struct KeyState {
+      uint16 key;
+
+      uint8 state;
+    };
+  };
+};
