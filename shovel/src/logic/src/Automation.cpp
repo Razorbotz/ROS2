@@ -28,7 +28,6 @@ void Automation::setNode(rclcpp::Node::SharedPtr node){
     driveRightSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
     armSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("arm_speed",1);
     bucketSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("bucket_speed",1);
-    cameraSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("camera_speed",1);
     goPublisher = this->node->create_publisher<std_msgs::msg::Empty>("GO", 1);
     stopPublisher = this->node->create_publisher<std_msgs::msg::Empty>("STOP",1);
     autonomyOutPublisher = this->node->create_publisher<messages::msg::AutonomyOut>("autonomy_out",1);
@@ -224,7 +223,6 @@ void Automation::setRunSensorlessly(bool value){
 void Automation::setCameraSpeed(float speed){
     std_msgs::msg::Float32 cameraSpeed;
     cameraSpeed.data = speed;
-    cameraSpeedPublisher->publish(cameraSpeed);
 }
 
 void Automation::setStartPosition(int x, int y){

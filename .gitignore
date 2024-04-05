@@ -16,3 +16,7 @@ skinny/src/logic/src/log/
 skinny/launch/__pycache__
 skinny/run.sh
 skinny/src/neo/include
+shovel/install
+shovel/build
+shovel/log
+shovel/launch/__pycache__

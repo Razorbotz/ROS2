@@ -84,10 +84,10 @@ struct LinearActuator{
 };
 
 
-LinearActuator linear1{14, 0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 5.9, 0.0, 0.69, 8.5};
-LinearActuator linear2{15, 0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 5.9, 0.0, 0.69, 8.5};
-LinearActuator linear3{16, 0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 9.8, 0.0, 0.85, 11.5};
-LinearActuator linear4{17, 0.0, 0, 0, 0, 1024, 0, ConnectionError, true, false, false, 9.8, 0.0, 0.89, 11.0};
+LinearActuator linear1{14, 0.0, 0, 0, 0, 1024, ConnectionError, true, false, false, 5.9, 0.0, 0.69, 8.5};
+LinearActuator linear2{15, 0.0, 0, 0, 0, 1024, ConnectionError, true, false, false, 5.9, 0.0, 0.69, 8.5};
+LinearActuator linear3{16, 0.0, 0, 0, 0, 1024, ConnectionError, true, false, false, 9.8, 0.0, 0.85, 11.5};
+LinearActuator linear4{17, 0.0, 0, 0, 0, 1024, ConnectionError, true, false, false, 9.8, 0.0, 0.89, 11.0};
 
 float currentSpeed = 0.0;
 float currentSpeed2 = 0.0;

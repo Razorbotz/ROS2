@@ -69,7 +69,7 @@ std_msgs::msg::Empty empty;
 bool silentRunning=true;
 int new_socket;
 rclcpp::Node::SharedPtr nodeHandle;
-
+int total = 0;
 /** @brief Inserts topic into a payload to be sent.
  * 
  * Takes a float topic and an array and stores a byte represenation of the topic.
@@ -138,11 +138,36 @@ void send(BinaryMessage message){
     for(auto byteIterator = byteList->begin(); byteIterator != byteList->end(); byteIterator++, index++){
         bytes.at(index) = *byteIterator;
     }
-
-    RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %d", message.getLabel().c_str(), byteList->size());
+    total += byteList->size();
+    RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
+    RCLCPP_INFO(nodeHandle->get_logger(), "Total Bytes Sent: %d", total);
     if(send(new_socket, bytes.data(), byteList->size(), 0)== -1){
         RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
     }
+}
+
+
+void send(std::string messageLabel, const messages::msg::FalconOut::SharedPtr talonOut){
+    if(silentRunning)return;
+    //RCLCPP_INFO(nodeHandle->get_logger(), "send talon");
+    BinaryMessage message(messageLabel);
+
+    message.addElementUInt8("Device ID",(uint8_t)talonOut->device_id);
+    float volt = talonOut->bus_voltage *= 10.0;
+    uint8_t voltage = volt;
+    message.addElementUInt8("Bus Voltage",voltage);
+    uint8_t current = talonOut->output_current *= 10;
+    message.addElementUInt8("Output Current",current);
+    message.addElementFloat32("Output Voltage",talonOut->output_voltage);
+    message.addElementFloat32("Output Percent",talonOut->output_percent);
+    message.addElementUInt8("Temperature",(uint8_t)talonOut->temperature);
+    message.addElementUInt16("Sensor Position",(uint8_t)talonOut->sensor_position);
+    message.addElementInt8("Sensor Velocity",(uint8_t)talonOut->sensor_velocity);
+    message.addElementInt8("Closed Loop Error",(uint8_t)talonOut->closed_loop_error);
+    message.addElementInt8("Integral Accumulator",(uint8_t)talonOut->integral_accumulator);
+    message.addElementInt8("Error Derivative",(uint8_t)talonOut->error_derivative);
+
+    send(message);
 }
 
 
@@ -151,18 +176,21 @@ void send(std::string messageLabel, const messages::msg::TalonOut::SharedPtr tal
     //RCLCPP_INFO(nodeHandle->get_logger(), "send talon");
     BinaryMessage message(messageLabel);
 
-    message.addElementInt32("Device ID",talonOut->device_id);
-    message.addElementFloat32("Bus Voltage",talonOut->bus_voltage);
-    message.addElementFloat32("Output Current",talonOut->output_current);
+    message.addElementInt8("Device ID",talonOut->device_id);
+    float volt = talonOut->bus_voltage *= 10.0;
+    uint8_t voltage = volt;
+    message.addElementUInt8("Bus Voltage",voltage);
+    uint8_t current = talonOut->output_current *= 10;
+    message.addElementFloat32("Output Current",current);
     message.addElementFloat32("Output Voltage",talonOut->output_voltage);
     message.addElementFloat32("Output Percent",talonOut->output_percent);
-    message.addElementFloat32("Temperature",talonOut->temperature);
-    message.addElementInt32("Sensor Position",talonOut->sensor_position);
-    message.addElementInt32("Sensor Velocity",talonOut->sensor_velocity);
-    message.addElementInt32("Closed Loop Error",talonOut->closed_loop_error);
-    message.addElementInt32("Integral Accumulator",talonOut->integral_accumulator);
-    message.addElementInt32("Error Derivative",talonOut->error_derivative);
-    message.addEleemntInt32("Potentiometer",talonOut->potentiometer);
+    message.addElementUInt8("Temperature",(uint8_t)talonOut->temperature);
+    message.addElementUInt16("Sensor Position",talonOut->sensor_position);
+    message.addElementInt8("Sensor Velocity",(int8_t)talonOut->sensor_velocity);
+    message.addElementInt8("Closed Loop Error",(int8_t)talonOut->closed_loop_error);
+    message.addElementInt8("Integral Accumulator",(int8_t)talonOut->integral_accumulator);
+    message.addElementInt8("Error Derivative",(int8_t)talonOut->error_derivative);
+    message.addElementUInt16("Potentiometer",(uint16_t)talonOut->potentiometer);
 
     send(message);
 }
@@ -200,12 +228,12 @@ void send(std::string messageLabel, const messages::msg::LinearOut::SharedPtr li
 
     BinaryMessage message(messageLabel);
 
-    message.addElementInt32("Motor Number", linear->motor_number);
+    message.addElementUInt8("Motor Number", (uint8_t)linear->motor_number);
     message.addElementFloat32("Speed", linear->speed);
-    message.addElementInt32("Potentiometer", linear->potentiometer);
-    message.addElementInt32("Time Without Change", linear->time_without_change);
-    message.addElementInt32("Max", linear->max);
-    message.addElementInt32("Min", linear->min);
+    message.addElementUInt16("Potentiometer", (uint16_t)linear->potentiometer);
+    message.addElementUInt8("Time Without Change", (uint8_t)linear->time_without_change);
+    message.addElementUInt16("Max", (uint16_t)linear->max);
+    message.addElementUInt16("Min", (uint16_t)linear->min);
     message.addElementString("Error", linear->error);
     message.addElementBoolean("Run", linear->run);
     message.addElementBoolean("At Min", linear->at_min);
@@ -269,7 +297,7 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
  * */
 void powerCallback(const messages::msg::Power::SharedPtr power){
     RCLCPP_INFO(nodeHandle->get_logger(), "power callback");
-    send("Power",power);
+    //send("Power",power);
 }
 
 /** @brief Callback function for the Talon topic
