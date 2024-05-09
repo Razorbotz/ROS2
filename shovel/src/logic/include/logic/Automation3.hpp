@@ -3,13 +3,13 @@
 #include "Automation.hpp"
 
 
-class Automation1 : public Automation{
+class Automation3 : public Automation{
 
     enum RobotState{INITIAL,DIAGNOSTICS,LOCATE,ALIGN,GO_TO_DIG_SITE,EXCAVATE,OBSTACLE,GO_TO_HOME,DOCK,DUMP,RETURN_TO_START,ROBOT_IDLE};
-    enum ExcavationState{EXCAVATION_IDLE,RAISE_ARM,RAISE_BUCKET,COLLECT,LOWER_ARM,LOWER_BUCKET,EXCAVATION_ERROR_RECOVERY};
+    enum ExcavationState{EXCAVATION_IDLE,SQUARE_UP,RAISE_ARM,RAISE_BUCKET,COLLECT,LOWER_ARM,LOWER_BUCKET,EXCAVATION_ERROR_RECOVERY};
     enum ErrorState {TALON_14_ERROR, TALON_15_ERROR, TALON_16_ERROR, TALON_17_ERROR, FALCON_10_ERROR, FALCON_11_ERROR, FALCON_12_ERROR, FALCON_13_ERROR,NONE};
     enum DiagnosticsState{DIAGNOSTICS_IDLE,TALON_EXTEND,TALON_RETRACT,FALCON_FORWARD,DIAGNOSTICS_ERROR_RECOVERY};
-    RobotState robotState = ROBOT_IDLE;
+    RobotState robotState = INITIAL;
     RobotState previousState = ROBOT_IDLE;
     ExcavationState excavationState = EXCAVATION_IDLE;
     ErrorState errorState = NONE;
@@ -17,7 +17,7 @@ class Automation1 : public Automation{
     Location destination;
     float normalDistance = 1.2;
 
-    int destX = 2, destY = 2;
+    float destX = 1, destY = 3;
     int stillCounter = 0;
 
     std::map<RobotState, const char*> robotStateMap = {

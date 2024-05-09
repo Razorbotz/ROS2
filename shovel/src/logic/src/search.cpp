@@ -2,9 +2,14 @@
 #include <cmath>
 #include <stdexcept>
 
+void Search::setRowCol(int row, int col){
+	Row = row;
+	Col = col;
+}
+
 void Search::initializeMap(){
-	for(int i = 0; i < ROW; i++){
-		for(int j = 0; j < COL; j++){
+	for(int i = 0; i < Row; i++){
+		for(int j = 0; j < Col; j++){
 			this->map[i][j] = 0;
 		}
 	}
@@ -12,9 +17,9 @@ void Search::initializeMap(){
 
 void Search::initializeMap(float width){
 	int buffer = std::ceil(width / 2);
-	for(int i = 0; i < ROW; i++){
-		for(int j = 0; j < COL; j++){
-			if(i >= buffer && i <= ROW - buffer && j >= buffer && j <= COL - buffer){
+	for(int i = 0; i < Row; i++){
+		for(int j = 0; j < Col; j++){
+			if(i >= buffer && i < Row - buffer && j >= buffer && j < Col - buffer){
 				this->map[i][j] = 0;
 			}
 			else{
@@ -25,8 +30,8 @@ void Search::initializeMap(float width){
 }
 
 void Search::setMap(int map[][COL]){
-	for(int i = 0; i < ROW; i++){
-		for(int j = 0; j < COL; j++){
+	for(int i = 0; i < Row; i++){
+		for(int j = 0; j < Col; j++){
 			this->map[i][j] = map[i][j];
 		}
 	}
@@ -41,7 +46,7 @@ void Search::setOpen(int x, int y){
 }
 
 bool Search::isValid(int x, int y){
-    return (x >= 0) && (x < ROW) && (y >= 0) && (y < COL);
+    return (x >= 0) && (x < Row) && (y >= 0) && (y < Col);
 }
 
 bool Search::isOpen(int x, int y, bool includeHoles){
@@ -99,8 +104,8 @@ std::stack<Coord> Search::getPath(){
 }
 
 void Search::initializeCells(){
-	for (int i = 0; i < ROW; i++) {
-		for (int j = 0; j < COL; j++) {
+	for (int i = 0; i < Row; i++) {
+		for (int j = 0; j < Col; j++) {
 			this->cells[i][j].totalCost = FLT_MAX;
 			this->cells[i][j].cost = FLT_MAX;
 			this->cells[i][j].heuristic = FLT_MAX;
@@ -193,18 +198,50 @@ std::stack<Coord> Search::aStar(bool includeHoles){
 	return Path;
 }
 
-std::stack<Coord> Search::aStar(int grid[][COL], Point src, Point dest, bool includeHoles){
+std::stack<Coord> Search::aStar(int grid[][COL], Point src, Point dest, bool includeHoles, bool simplify){
 	setMap(grid);
+	if(simplify)
+		return getSimplifiedPath(aStar(src, dest));
 	return aStar(src, dest);
 }
 
-std::stack<Coord> Search::aStar(Point src, Point dest, bool includeHoles){
+std::stack<Coord> Search::aStar(Point src, Point dest, bool includeHoles, bool simplify){
 	setStart(src);
 	setDest(dest);
+	if(simplify)
+		return getSimplifiedPath(aStar(includeHoles));
 	return aStar(includeHoles);
 }
 
-std::stack<Coord> getSimplifiedPath(std::stack<Coord> rpath){
+std::stack<Coord> Search::aStar(std::stack<Coord> points, bool includeHoles, bool simplify){
+	std::stack<Coord> Path;
+	Coord top = points.top();
+	Point start = Point(top.first, top.second);
+	std::cout << top.first << " " << top.second << std::endl;
+	points.pop();
+	bool first = true;
+	while(!points.empty()){
+		top = points.top();
+		Point dest = Point(top.first, top.second);
+		points.pop();
+		std::cout << top.first << " " << top.second << std::endl;
+		std::stack<Coord> newPath = aStar(start, dest, includeHoles);
+		if(first)
+			first = false;
+		else
+			newPath.pop();
+		while(!newPath.empty()){
+			Path.push(newPath.top());
+			newPath.pop();
+		}
+		start = dest;
+	}
+	if(simplify)
+		return getSimplifiedPath(Path);
+	return Path;
+}
+
+std::stack<Coord> Search::getSimplifiedPath(std::stack<Coord> rpath){
 	std::stack<Coord> path;
 	while (!rpath.empty()){
 		std::pair<int, int> value = rpath.top();
@@ -217,6 +254,10 @@ std::stack<Coord> getSimplifiedPath(std::stack<Coord> rpath){
 	simplifiedPath.push(initial);
 	bool xSecond = false;
 	bool ySecond = false;
+	bool topRight = false;
+	bool topLeft = false;
+	bool bottomLeft = false;
+	bool bottomRight = false;
 	while (!path.empty()) {
 		std::pair<int, int> previous = simplifiedPath.top();
 		std::pair<int, int> p = path.top();
@@ -227,6 +268,10 @@ std::stack<Coord> getSimplifiedPath(std::stack<Coord> rpath){
 			}
 			xSecond = true;
 			ySecond = false;
+			topRight = false;
+			topLeft = false;
+			bottomLeft = false;
+			bottomRight = false;
 		}
 		else if(previous.second == p.second){
 			if(ySecond){
@@ -234,12 +279,73 @@ std::stack<Coord> getSimplifiedPath(std::stack<Coord> rpath){
 			}
 			xSecond = false;
 			ySecond = true;
+			topRight = false;
+			topLeft = false;
+			bottomLeft = false;
+			bottomRight = false;
+		}
+		else if(previous.first == p.first + 1 &&  previous.second == p.second + 1){
+			if(bottomRight){
+				simplifiedPath.pop();
+			}
+			xSecond = false;
+			ySecond = false;
+			topLeft = false;
+			topRight = false;
+			bottomLeft = false;
+			bottomRight = true;
+		}
+		else if(previous.first == p.first - 1 &&  previous.second == p.second + 1){
+			if(bottomLeft){
+				simplifiedPath.pop();
+			}
+			xSecond = false;
+			ySecond = false;
+			topLeft = false;
+			topRight = false;
+			bottomLeft = true;
+			bottomRight = false;
+		}
+		else if(previous.first == p.first + 1 &&  previous.second == p.second - 1){
+			if(topRight){
+				simplifiedPath.pop();
+			}
+			xSecond = false;
+			ySecond = false;
+			topLeft = false;
+			topRight = true;
+			bottomLeft = false;
+			bottomRight = false;
+		}
+		else if(previous.first == p.first - 1 &&  previous.second == p.second - 1){
+			if(topLeft){
+				simplifiedPath.pop();
+			}
+			xSecond = false;
+			ySecond = false;
+			topLeft = true;
+			topRight = false;
+			bottomLeft = false;
+			bottomRight = false;
 		}
 		else{
 			xSecond = false;
 			ySecond = false;
+			topRight = false;
+			topLeft = false;
+			bottomLeft = false;
+			bottomRight = false;
 		}
 		simplifiedPath.push(p);
 	}
 	return simplifiedPath;
+}
+
+void Search::printMap(){
+	for(int i = 0; i < Row; i++){
+		for(int j = 0; j < Col; j++){
+			std::cout << map[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
 }

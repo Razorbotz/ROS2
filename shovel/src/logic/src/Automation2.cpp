@@ -2,18 +2,18 @@
 #include <ctime>
 
 #include "logic/Automation.hpp"
-#include "logic/Automation1.hpp"
+#include "logic/Automation2.hpp"
 
 /** @file
  *
- * @brief Defines functions used in Automation1.hpp
+ * @brief Defines functions used in Automation2.hpp
  * 
  * This function sets the wheel speed and spins to the right until the camera
  * sees the Aruco marker, then drives forward until the robot is less than a
  * meter away from the marker.
  * */
 
-void Automation1::automate(){
+void Automation2::automate(){
     if(robotState==ROBOT_IDLE){
         //if(deltaX < falcon1.outputPercentage * 0.05 || deltaZ < falcon1.outputPercentage * 0.05){
         //    RCLCPP_INFO(this->node->get_logger(), "ERROR: Robot not moving");
@@ -392,7 +392,7 @@ void Automation1::automate(){
 }
     
 
-void Automation1::publishAutomationOut(){
+void Automation2::publishAutomationOut(){
     std::string robotStateString = robotStateMap.at(robotState);
     std::string excavationStateString = excavationStateMap.at(excavationState);
     std::string errorStateString = errorStateMap.at(errorState);
@@ -400,14 +400,14 @@ void Automation1::publishAutomationOut(){
     publishAutonomyOut(robotStateString, excavationStateString, errorStateString, diagnosticsStateString);
 }
 
-void Automation1::setDiagnostics(){
+void Automation2::setDiagnostics(){
     robotState = DIAGNOSTICS;
     diagnosticsState = TALON_EXTEND;
     auto start = std::chrono::high_resolution_clock::now();
     setStartTime(start);
 }
 
-void Automation1::startAutonomy(){
+void Automation2::startAutonomy(){
     robotState = INITIAL;
     auto start = std::chrono::high_resolution_clock::now();
     setStartTime(start);

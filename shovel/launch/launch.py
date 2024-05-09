@@ -11,6 +11,11 @@ def generate_launch_description():
             package='logic',
             name='logic',
             executable='logic_node',
+            parameters=[
+                {"map": "lab"},
+                {"xOffset": 1.4},
+                {"turnLeft": True}
+            ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
         ,
@@ -40,7 +45,6 @@ def generate_launch_description():
                 {"diagnostics_port": 56715},
                 {"invert_motor": True},
                 {"speed_topic": "talon_14_speed"},
-                {"potentiometer_topic": "potentiometer_1_data"},
                 {"info_topic": "talon_14_info"},
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
@@ -62,7 +66,6 @@ def generate_launch_description():
                 {"diagnostics_port": 56714},
                 {"invert_motor": True},
                 {"speed_topic": "talon_15_speed"},
-                {"potentiometer_topic": "potentiometer_2_data"},
                 {"info_topic": "talon_15_info"},
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
@@ -84,7 +87,6 @@ def generate_launch_description():
                 {"diagnostics_port": 56713},
                 {"invert_motor": True},
                 {"speed_topic": "talon_16_speed"},
-                {"potentiometer_topic": "potentiometer_3_data"},
                 {"info_topic": "talon_16_info"},
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
@@ -106,7 +108,6 @@ def generate_launch_description():
                 {"diagnostics_port": 56712},
                 {"invert_motor": True},
                 {"speed_topic": "talon_17_speed"},
-                {"potentiometer_topic": "potentiometer_4_data"},
                 {"info_topic": "talon_17_info"},
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
@@ -132,8 +133,8 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 10},
                 {"diagnostics_port": 72340},
-                {"invert_motor": True},
-                {"speed_topic": "drive_left_speed"},
+                {"invert_motor": False},
+                {"speed_topic": "drive_right_speed"},
                 {"info_topic": "talon_10_info"},
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
@@ -152,8 +153,8 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 11},
                 {"diagnostics_port": 72341},
-                {"invert_motor": False},
-                {"speed_topic": "drive_right_speed"},
+                {"invert_motor": True},
+                {"speed_topic": "drive_left_speed"},
                 {"info_topic": "talon_11_info"},
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
@@ -172,8 +173,8 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 12},
                 {"diagnostics_port": 72342},
-                {"invert_motor": True},
-                {"speed_topic": "drive_left_speed"},
+                {"invert_motor": False},
+                {"speed_topic": "drive_right_speed"},
                 {"info_topic": "talon_12_info"},
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
@@ -192,8 +193,8 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 13},
                 {"diagnostics_port": 72343},
-                {"invert_motor": False},
-                {"speed_topic": "drive_right_speed"},
+                {"invert_motor": True},
+                {"speed_topic": "drive_left_speed"},
                 {"info_topic": "talon_13_info"},
                 {"use_velocity": False},
                 {"velocity_multiplier": 3000},
@@ -204,11 +205,20 @@ def generate_launch_description():
                 {"kF": 0.0}
             ]
         )
-#	    ,
-#        Node(
-#            package='zed_tracking',
-#            name='zed_tracking',
-#            executable='zed_tracking_node'
-#        )
+	    ,
+        Node(
+            package='zed_tracking',
+            name='zed_tracking',
+            executable='zed_tracking_node',
+            parameters=[
+                {"resolution": "VGA"}
+            ]
+        )
+        ,
+        Node(
+            package='video_streaming',
+            name='video_streaming',
+            executable='video_streaming_node'
+        )
     ]
 )

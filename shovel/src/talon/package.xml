@@ -3,8 +3,8 @@
   <name>talon</name>
   <version>1.0.0</version>
   <description>The talon package</description>
-  <maintainer email="wgjohns@uark.edu">William Johnston</maintainer>
-  <author>William Johnston</author>
+  <maintainer email="andrewburroughs17@gmail.com">Andrew Burroughs</maintainer>
+  <author>Andrew Burroughs</author>
   <license>none</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

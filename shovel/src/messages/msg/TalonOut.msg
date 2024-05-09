@@ -9,4 +9,4 @@ int32 sensor_velocity
 int32 closed_loop_error 
 int32 integral_accumulator
 int32 error_derivative
-int32 potentiometer
+float32 max_current

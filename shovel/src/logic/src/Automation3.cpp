@@ -2,18 +2,18 @@
 #include <ctime>
 
 #include "logic/Automation.hpp"
-#include "logic/Automation1.hpp"
+#include "logic/Automation3.hpp"
 
 /** @file
  *
- * @brief Defines functions used in Automation1.hpp
+ * @brief Defines functions used in Automation3.hpp
  * 
  * This function sets the wheel speed and spins to the right until the camera
  * sees the Aruco marker, then drives forward until the robot is less than a
  * meter away from the marker.
  * */
 
-void Automation1::automate(){
+void Automation3::automate(){
     if(robotState==ROBOT_IDLE){
         //if(deltaX < falcon1.outputPercentage * 0.05 || deltaZ < falcon1.outputPercentage * 0.05){
         //    RCLCPP_INFO(this->node->get_logger(), "ERROR: Robot not moving");
@@ -26,14 +26,14 @@ void Automation1::automate(){
         setDestPosition(destX, destY);
         auto start = std::chrono::high_resolution_clock::now();
         setStartTime(start);
-        setArmTarget(330);
-        setBucketTarget(410);
-        setArmSpeed(1.0);
-        setBucketSpeed(1.0);
-        RCLCPP_INFO(this->node->get_logger(), "linear1.potentiometer: %d", linear1.potentiometer);
-        RCLCPP_INFO(this->node->get_logger(), "linear3.potentiometer: %d", linear3.potentiometer);
-        robotState = EXCAVATE;
-        excavationState = RAISE_ARM;
+        //setArmTarget(500);
+        //setBucketTarget(500);
+        //setArmSpeed(1.0);
+        //setBucketSpeed(1.0);
+        //RCLCPP_INFO(this->node->get_logger(), "linear1.potentiometer: %d", linear1.potentiometer);
+        //RCLCPP_INFO(this->node->get_logger(), "linear3.potentiometer: %d", linear3.potentiometer);
+        robotState = LOCATE;
+        //excavationState = RAISE_ARM;
     }
 
     if(robotState==DIAGNOSTICS){
@@ -151,11 +151,16 @@ void Automation1::automate(){
 
     // TODO: Change this to align
     if(robotState==LOCATE){
-        changeSpeed(0.15,-0.15);
-        if(position.arucoVisible==true){
+        if(turnLeft)
+            changeSpeed(-0.15,0.15);
+        else
+            changeSpeed(0.15, -0.15);
+        if(position.arucoInitialized==true){
             RCLCPP_INFO(this->node->get_logger(), "Roll: %f Pitch: %f Yaw: %f", position.roll, position.pitch, position.yaw);
-            setDestAngle(position.yaw + 90.0);
             changeSpeed(0,0);
+            setStartPositionM(position.z, position.x);
+            RCLCPP_INFO(this->node->get_logger(), "startX: %d, startY: %d", this->search.startX, this->search.startY);
+            setDestAngle(90);
             robotState=ALIGN;
         }
     }
@@ -163,19 +168,32 @@ void Automation1::automate(){
     // After finding the Aruco marker, turn the bot to 
     // align with the arena
     if(robotState==ALIGN){
-        if (!(position.yaw < this->destAngle+2 && position.yaw > this->destAngle-2)) {
+        int ang = checkAngle();
+        if (ang == 0) {
+            changeSpeed(-0.15, 0.15);
+        }
+        else if(ang == 2){
             changeSpeed(0.15, -0.15);
-        } 
+        }
         else {
             changeSpeed(0, 0);
-            setStartPosition(this->search.Row - std::ceil(position.z * 10), std::ceil(position.x * 10));
-            aStar();
+            setStartPositionM(position.z, position.x);
+            std::stack<Coord> points;
+            points.push(Coord(this->search.Row - int(std::ceil(position.z * 10)),int(std::ceil((position.x + this->xOffset) * 10))));
+            points.push(Coord(30,30));
+            points.push(Coord(10,30));
+            points.push(Coord(10,35));
+            points.push(Coord(27,37));
+            points.push(Coord(33,37));
+            aStar(points, false, true);
             RCLCPP_INFO(this->node->get_logger(), "Current Position: %d, %d", this->search.startX, this->search.startY);
             setGo();
+            this->currentPath.pop();
             std::pair<int, int> initial = this->currentPath.top();
             this->currentPath.pop();
             setDestZ(initial.first);
             setDestX(initial.second);
+            RCLCPP_INFO(this->node->get_logger(), "Dest Position: %d, %d", this->search.destX, this->search.destY);
             setDestAngle(getAngle());
             robotState = GO_TO_DIG_SITE;
         }
@@ -187,32 +205,32 @@ void Automation1::automate(){
         RCLCPP_INFO(this->node->get_logger(), "GO_TO_DIG_SITE");
         RCLCPP_INFO(this->node->get_logger(), "ZedPosition.z: %f", this->position.z);
         //TODO: Take rotation of robot into account
-        if (!(position.yaw < this->destAngle+2 && position.yaw > this->destAngle-2)) {
-            if(position.yaw - this->destAngle > 180 || position.yaw - this->destAngle < 0){
-                changeSpeed(0.15, -0.15);
-            }
-            else{
-                changeSpeed(-0.15, 0.15);
-            }
-        } 
-        else{ 
-            if(abs(this->position.x) > abs(this->destX)){
+        int ang = checkAngle();
+        if (ang == 0) {
+            changeSpeed(0.15, -0.15);
+        }
+        else if(ang == 2){
+            changeSpeed(-0.15, 0.15);
+        }
+        else{
+            int dist = checkDistance();
+            if(dist == 0){
                 changeSpeed(0.0, 0.0);
                 if(this->currentPath.empty()){
+                    setDestAngle(0);
                     robotState = EXCAVATE;
+                    excavationState = SQUARE_UP;
                 }
                 else{
                     std::pair<int, int> current = this->currentPath.top();
                     this->currentPath.pop();
-                    setDestZ(current.first);
-                    setDestX(current.second);
                     setDestAngle(getAngle());
                 }
             }
-            else if(abs(this->position.x) > abs(this->destX) - 0.1){
+            else if(dist == 1){
                 changeSpeed(0.1, 0.1);
             }
-            else if(abs(this->position.x) > abs(this->destX) - 0.25){
+            else if(dist == 2){
                 changeSpeed(0.15, 0.15);
             }
             else{
@@ -226,6 +244,19 @@ void Automation1::automate(){
     // Check that the potentiometers are in the correct range
     if(robotState==EXCAVATE){
         RCLCPP_INFO(this->node->get_logger(), "EXCAVATE");
+        if(excavationState == SQUARE_UP){
+            int ang = checkAngle();
+            if (ang == 0) {
+                changeSpeed(0.15, -0.15);
+            }
+            else if(ang == 2){
+                changeSpeed(-0.15, 0.15);
+            }
+            else{
+                changeSpeed(0, 0);
+                excavationState = RAISE_ARM;
+            }
+        }
         if(excavationState == RAISE_ARM){
             RCLCPP_INFO(this->node->get_logger(), "RAISE_ARM");
             RCLCPP_INFO(this->node->get_logger(), "linear1.potentiometer: %d", linear1.potentiometer);
@@ -313,8 +344,8 @@ void Automation1::automate(){
 
     // After mining, return to start position
     if(robotState==GO_TO_HOME){
-        if (!(position.yaw < this->destAngle+5 && position.yaw > this->destAngle-5)) {
-            if(position.yaw - this->destAngle > 180 || position.yaw - this->destAngle < 0){
+        if (!(position.pitch < this->destAngle+5 && position.pitch > this->destAngle-5)) {
+            if(position.pitch - this->destAngle > 180 || position.pitch - this->destAngle < 0){
                 changeSpeed(0.15, -0.15);
             }
             else{
@@ -375,7 +406,7 @@ void Automation1::automate(){
     }
 
     if(robotState == OBSTACLE){
-        setStartPosition(this->search.Row - std::ceil(position.z * 10), std::ceil(position.x * 10));
+        setStartPositionM(position.z, position.x);
         int x = this->search.Row - std::ceil(position.z * 10);
         int y = std::ceil(position.x * 10);
         this->search.setObstacle(x, y, 2);
@@ -392,7 +423,7 @@ void Automation1::automate(){
 }
     
 
-void Automation1::publishAutomationOut(){
+void Automation3::publishAutomationOut(){
     std::string robotStateString = robotStateMap.at(robotState);
     std::string excavationStateString = excavationStateMap.at(excavationState);
     std::string errorStateString = errorStateMap.at(errorState);
@@ -400,14 +431,14 @@ void Automation1::publishAutomationOut(){
     publishAutonomyOut(robotStateString, excavationStateString, errorStateString, diagnosticsStateString);
 }
 
-void Automation1::setDiagnostics(){
+void Automation3::setDiagnostics(){
     robotState = DIAGNOSTICS;
     diagnosticsState = TALON_EXTEND;
     auto start = std::chrono::high_resolution_clock::now();
     setStartTime(start);
 }
 
-void Automation1::startAutonomy(){
+void Automation3::startAutonomy(){
     robotState = INITIAL;
     auto start = std::chrono::high_resolution_clock::now();
     setStartTime(start);

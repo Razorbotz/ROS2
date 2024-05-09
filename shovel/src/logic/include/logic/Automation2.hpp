@@ -3,7 +3,7 @@
 #include "Automation.hpp"
 
 
-class Automation1 : public Automation{
+class Automation2 : public Automation{
 
     enum RobotState{INITIAL,DIAGNOSTICS,LOCATE,ALIGN,GO_TO_DIG_SITE,EXCAVATE,OBSTACLE,GO_TO_HOME,DOCK,DUMP,RETURN_TO_START,ROBOT_IDLE};
     enum ExcavationState{EXCAVATION_IDLE,RAISE_ARM,RAISE_BUCKET,COLLECT,LOWER_ARM,LOWER_BUCKET,EXCAVATION_ERROR_RECOVERY};

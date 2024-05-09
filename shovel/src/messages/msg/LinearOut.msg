@@ -5,7 +5,10 @@ int32 time_without_change
 int32 max
 int32 min
 string error
-bool run
 bool at_min
 bool at_max
 float32 distance
+bool sensorless
+float32 stroke
+float32 extension_speed
+float32 time_to_extend

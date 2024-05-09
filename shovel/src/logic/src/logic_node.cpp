@@ -6,6 +6,7 @@
 #include <std_msgs/msg/int8.hpp>
 #include <std_msgs/msg/u_int8.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
+#include <std_msgs/msg/empty.hpp>
 
 #include <messages/msg/button_state.hpp>
 #include <messages/msg/hat_state.hpp>
@@ -13,8 +14,13 @@
 #include <messages/msg/key_state.hpp>
 #include <messages/msg/zed_position.hpp>
 #include <messages/msg/autonomy_out.hpp>
+#include <messages/msg/talon_out.hpp>
+#include <messages/msg/falcon_out.hpp>
+#include <messages/msg/linear_out.hpp>
 
 #include "logic/Automation1.hpp"
+#include "logic/Automation2.hpp"
+#include "logic/Automation3.hpp"
 #include "logic/AutomationTypes.hpp"
 
 
@@ -57,9 +63,8 @@ float maxSpeed=0.4;
 
 bool automationGo=false;
 bool excavationGo = false;
-bool runSensorlessly = false;
 
-Automation* automation=new Automation1();
+Automation* automation;
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
@@ -67,7 +72,6 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > bucketSpeedPublisher;
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > automationGoPublisher;
-std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Empty_<std::allocator<void> > , std::allocator<void> > > sensorlessPublisher;
 
 /** @brief Function to initialize the motors to zero
  * 
@@ -342,11 +346,11 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         }
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
     }
-    if(keyState->key==120 && keyState->state==1){
-        runSensorlessly = !runSensorlessly;
-        automation->setRunSensorlessly(runSensorlessly);
-        std_msgs::msg::Empty empty;
-        sensorlessPublisher->publish(empty);
+    if(keyState->key==100 && keyState->state==1){
+        automation->setDiagnostics();
+    }
+    if(keyState->key==97 && keyState->state==1){
+        automation->startAutonomy();
     }
     if(keyState->key==43 && keyState->state==1){
         updateMaxSpeed(0.1);
@@ -382,25 +386,15 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     position.aruco_pitch=zedPosition->aruco_pitch;
     position.aruco_yaw=zedPosition->aruco_yaw;
     position.arucoVisible=zedPosition->aruco_visible;
-    position.distance=zedPosition->distance;
+    position.x_acc = zedPosition->x_acc;
+    position.y_acc = zedPosition->y_acc;
+    position.z_acc = zedPosition->z_acc;
+    position.x_vel = zedPosition->x_vel;
+    position.y_vel = zedPosition->y_vel;
+    position.z_vel = zedPosition->z_vel;
+    position.arucoInitialized = zedPosition->aruco_initialized;
+
     automation->setPosition(position);
-    double yawRadians=automation->orientation.roll;
-
-    double facingUnitX=-sin(yawRadians);
-    double facingUnitZ=cos(yawRadians);
-    double directionX=-5-position.x;
-    double directionZ=2-position.z;
-
-    double theta = acos((facingUnitX*directionX + facingUnitZ*directionZ)/(sqrt(directionX*directionX + directionZ*directionZ)))*180/M_PI;
-    double yaw = yawRadians * 180/M_PI;
-    double deltaYaw = theta-yaw;
-    double yawTolerance=5;
-    std::cout << "roll:" << automation->orientation.roll*180/M_PI << ", pitch:" << automation->orientation.pitch*180/M_PI << ", yaw" << automation->orientation.yaw*180/ M_PI << "   "
-              << "   \tx:" << position.x << " y: " << position.y << " z:" << position.z
-              << "   \tox:" << position.ox << "  oy:" << position.oy << " oz:" << position.oz << "  ow:" << position.ow
-              << "   \tfUX:" << facingUnitX << " fUZ:" << facingUnitZ << "   yaw:" << yaw << " dYaw:" << deltaYaw << " theta:" << theta
-              << "   \tvisible:" << position.arucoVisible << std::endl;
-    RCLCPP_INFO(nodeHandle->get_logger(), "roll: %f, pitch: %f, yaw: %f", automation->orientation.roll*180/M_PI, automation->orientation.pitch*180/M_PI, automation->orientation.yaw*180/ M_PI);
 }
 
 
@@ -440,9 +434,117 @@ void linearOut4Callback(const messages::msg::LinearOut::SharedPtr linearOut){
 }
 
 
+void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+    automation->setTalon1(talonOut);
+}
+
+void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+    automation->setTalon2(talonOut);
+}
+
+void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+    automation->setTalon3(talonOut);
+}
+
+void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+    automation->setTalon4(talonOut);
+}
+
+
+void falcon1Callback(const messages::msg::FalconOut::SharedPtr falconOut){
+    automation->setFalcon1(falconOut);
+}
+
+void falcon2Callback(const messages::msg::FalconOut::SharedPtr falconOut){
+    automation->setFalcon2(falconOut);
+}
+
+void falcon3Callback(const messages::msg::FalconOut::SharedPtr falconOut){
+    automation->setFalcon3(falconOut);
+}
+
+void falcon4Callback(const messages::msg::FalconOut::SharedPtr falconOut){
+    automation->setFalcon4(falconOut);
+}
+
+
+/** @brief Function to get the value of the specified parameter
+ * 
+ * Function that takes a string as a parameter containing the
+ * name of the parameter that is being parsed from the launch
+ * file and the initial value of the parameter as inputs, then
+ * gets the parameter, casts it as the desired type, displays 
+ * the value of the parameter on the command line and the log 
+ * file, then returns the parsed value of the parameter.
+ * @param parametername String of the name of the parameter
+ * @param initialValue Initial value of the parameter
+ * @return value Value of the parameter
+ * */
+template <typename T>
+T getParameter(std::string parameterName, int initialValue){
+	nodeHandle->declare_parameter<T>(parameterName, initialValue);
+	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
+	T value;
+	if(typeid(value).name() == typeid(int).name())
+		value = param.as_int();
+	if(typeid(value).name() == typeid(double).name())
+		value = param.as_double();
+	if(typeid(value).name() == typeid(bool).name())
+		value = param.as_bool();
+	std::cout << parameterName << ": " << value << std::endl;
+	std::string output = parameterName + ": " + std::to_string(value);
+	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
+	return value;
+}
+
+
+/** @brief String parameter function
+ * 
+ * Function that takes a string as a parameter containing the
+ * name of the parameter that is being parsed from the launch
+ * file and the initial value of the parameter as inputs, then
+ * gets the parameter, casts it as a string, displays the value
+ * of the parameter on the command line and the log file, then
+ * returns the parsed value of the parameter.
+ * @param parametername String of the name of the parameter
+ * @param initialValue Initial value of the parameter
+ * @return value Value of the parameter
+ * */
+template <typename T>
+T getParameter(std::string parameterName, std::string initialValue){
+	nodeHandle->declare_parameter<T>(parameterName, initialValue);
+	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
+	T value = param.as_string();
+	std::cout << parameterName << ": " << value << std::endl;
+	std::string output = parameterName + ": " + value;
+	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
+	return value;
+}
+
+
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("logic");
+
+    std::string mapUsed = getParameter<std::string>("map", "unset");
+    double xOffset = getParameter<double>("xOffset", 0);
+    bool turnLeft = getParameter<bool>("turnLeft", 0);
+
+    if(mapUsed == "NASA"){
+        automation = new Automation1();
+    }
+    else if(mapUsed == "UCF_1" || mapUsed == "UCF_2"){
+        automation = new Automation2();
+    }
+    else if(mapUsed == "lab"){
+        automation = new Automation3();
+    }
+    else{
+        automation = new Automation1();
+    }
+    automation->setMap(mapUsed);
+    automation->setxOffset(xOffset);
+    automation->setTurnLeft(turnLeft);
     automation->setNode(nodeHandle);
 
     auto joystickAxisSubscriber= nodeHandle->create_subscription<messages::msg::AxisState>("joystick_axis",1,joystickAxisCallback);
@@ -454,13 +556,21 @@ int main(int argc, char **argv){
     auto linearOut2Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut2",1,linearOut2Callback);
     auto linearOut3Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut3",1,linearOut3Callback);
     auto linearOut4Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut4",1,linearOut4Callback);
+    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,talon1Callback);
+    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,talon2Callback);
+    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_16_info",1,talon3Callback);
+    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_17_info",1,talon4Callback);
+    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_10_info",1,falcon1Callback);
+    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_11_info",1,falcon2Callback);
+    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_12_info",1,falcon3Callback);
+    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_13_info",1,falcon4Callback);
+
 
     driveLeftSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
     driveRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
     armSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("arm_speed",1);
     bucketSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("bucket_speed",1);
     automationGoPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
-    sensorlessPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("sensorless",1);
 
     initSetSpeed();
 

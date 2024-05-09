@@ -1,11 +1,18 @@
-#define ROW 9
-#define COL 10
-
 #include <bits/stdc++.h>
+#define COL 82
+#define ROW 50
 
 struct Point{
     int x;
     int y;
+    Point(){
+        x = 0;
+        y = 0;
+    }
+    Point(int X, int Y){
+        x = X;
+        y = Y;
+    }
 };
 
 struct cell{
@@ -19,9 +26,6 @@ typedef std::pair<double, std::pair<int, int> > Node;
  
 class Search{
     public:
-
-    int row = ROW, col = COL;
-
     cell cells[ROW][COL];
 
     bool closedList[ROW][COL];
@@ -29,8 +33,13 @@ class Search{
 	std::set<Node> openList;
 
     int map[ROW][COL];
+
+    int Row, Col;
+
     int startX, startY, destX, destY;
     double newCost, newH, newTotal;
+
+    void setRowCol(int row, int col);
 
     void initializeMap();
 
@@ -64,9 +73,15 @@ class Search{
 
     std::stack<Coord> aStar(bool includeHoles = false);
 
-    std::stack<Coord> aStar(Point src, Point dest, bool includeHoles = false);
+    std::stack<Coord> aStar(Point src, Point dest, bool includeHoles = false, bool simplify = false);
     
-    std::stack<Coord> aStar(int grid[][COL], Point src, Point dest, bool includeHoles = false);
+    std::stack<Coord> aStar(int grid[][COL], Point src, Point dest, bool includeHoles = false, bool simplify = false);
+
+    std::stack<Coord> aStar(std::stack<Coord> points, bool includeHoles = false, bool simplify = false);
 
     std::stack<Coord> getSimplifiedPath(std::stack<Coord> rpath);
+
+    float getAngle(int destX, int destY, int startX, int startY);
+
+    void printMap();
 };
