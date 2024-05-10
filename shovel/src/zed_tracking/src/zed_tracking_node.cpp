@@ -195,6 +195,11 @@ int main(int argc, char **argv) {
 
     double x_acc, y_acc, z_acc, x_vel, y_vel, z_vel;
 
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    sl::Mat depth_image;
+    sl::Mat depth_map;
+
     int currentRow=0;
     float pastValues[ROW_COUNT][7];
     float average[7];
@@ -219,6 +224,17 @@ int main(int argc, char **argv) {
         if (zed.grab() == sl::ERROR_CODE::SUCCESS) {
             // Retrieve the left image
             zed.retrieveImage(image_zed, sl::VIEW::LEFT, sl::MEM::CPU, image_size);
+            zed.retrieveImage(depth_image, sl::VIEW::DEPTH);
+            zed.retrieveMeasure(depth_map, sl::MEASURE::DEPTH);
+
+            cv::Mat fullImage = cv::Mat((int) depth_image.getHeight(), (int) depth_image.getWidth(), CV_8UC4, depth_image.getPtr<sl::uchar1>(sl::MEM::CPU));
+            cv::Rect roi(300, 30, depth_image.getWidth() - 600, depth_image.getHeight() - 80);
+
+            cv::Mat cvImage = fullImage(roi);
+            cv::Mat canny;
+            cv::Canny(cvImage, canny, 5, 30, 3);
+            cv::findContours(canny, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
             // convert to RGB
             cv::cvtColor(image_ocv, image_ocv_rgb, cv::COLOR_RGBA2RGB);
             
@@ -273,6 +289,20 @@ int main(int argc, char **argv) {
             x_vel = vel[0];
             y_vel = vel[1];
             z_vel = vel[2];
+
+            for(size_t i = 0; i < contours.size(); i++){
+                if(cv::contourArea(contours[i]) > 20){
+                    cv::Rect box = boundingRect(contours[i]);
+                    float depth_value = 0;
+                    depth_map.getValue(int(box.x + box.width / 2)+300, int(box.y + box.height / 2) + 50, &depth_value);
+                    float calcWidth = box.width * depth_value * 0.00018474;
+                    if(calcWidth > 20){
+                        float x = depth_value * sin(zedPose.getEulerAngles(false).y) / sin(90.0) + calcWidth;
+                        float y = depth_value * sin(90- zedPose.getEulerAngles(false).y) / sin(90.0) + calcWidth;
+                        // publish values here
+                    }
+                }
+            }
 
 /*
             zed.retrieveImage(image_zed, sl::VIEW::LEFT);

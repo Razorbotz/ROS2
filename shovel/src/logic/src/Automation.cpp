@@ -283,8 +283,8 @@ void Automation::setDestAngle(float degrees){
 }
 
 float Automation::getAngle(){
-    float x = this->search.destX - this->search.startX;
-    float y = this->search.destY - this->search.startY;
+    float y = this->search.destX - this->search.startX;
+    float x = this->search.destY - this->search.startY;
     float angle = std::atan2(y, x) * 180 / M_PI;
     angle += 90;
     if(angle > 180){
@@ -304,23 +304,17 @@ int Automation::checkAngle(){
             return 1;
         }
     }
-    if(position.pitch - this->destAngle < 0){
-        return 2;
-    }
-    else{
-        return 0;
-    }
 }
 
 int Automation::checkDistance(){
-    int currentZ = this->search.Row - int(std::ceil(position.z * 10));
-    int currentX = int(std::ceil((position.x + this->xOffset) * 10));
-    float dist = sqrt(pow(currentZ - this->search.destX, 2) + pow(currentX - this->search.destY, 2));
+    float currentZ = (this->search.Row / 10.0) - position.z;
+    float currentX = position.x + this->xOffset;
+    float dist = sqrt(pow(currentZ - (this->search.destX / 10.0), 2) + pow(currentX - (this->search.destY / 10.0), 2));
     if(dist == 0)
         return 0;
-    if(dist < 1.5)
+    if(dist < 0.5)
         return 1;
-    if(dist < 2.5)
+    if(dist < 1)
         return 2;
     return 3;
     

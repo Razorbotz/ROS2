@@ -70,6 +70,11 @@ int new_socket;
 rclcpp::Node::SharedPtr nodeHandle;
 std_msgs::msg::Empty heartbeat;
 int total = 0;
+int autonomyCounter = 0, zedCounter = 0;
+int talonCounter1 = 0, falconCounter1 = 0, linearCounter1 = 0;
+int talonCounter2 = 0, falconCounter2 = 0, linearCounter2 = 0;
+int talonCounter3 = 0, falconCounter3 = 0, linearCounter3 = 0;
+int talonCounter4 = 0, falconCounter4 = 0, linearCounter4 = 0;
 /** @brief Inserts topic into a payload to be sent.
  * 
  * Takes a float topic and an array and stores a byte represenation of the topic.
@@ -292,6 +297,8 @@ void send(std::string messageLabel, const messages::msg::AutonomyOut::SharedPtr 
  */
 void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
     if(silentRunning)return;
+    zedCounter += 1;
+    if(zedCounter % 5 != 0)return;
     BinaryMessage message("Zed");
     message.addElementFloat32("X", zedPosition->x);
     message.addElementFloat32("Y", zedPosition->y);
@@ -338,6 +345,8 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
  * */
 void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon1 callback");
+    talonCounter1 += 1;
+    if(talonCounter1 % 5 != 0) return;
     send("Talon 1",talonOut);
 }
 
@@ -351,6 +360,8 @@ void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon2 callback");
+    talonCounter2 += 1;
+    if(talonCounter2 % 5 != 0) return;
     send("Talon 2",talonOut);
 }
 
@@ -364,6 +375,8 @@ void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon3 callback");
+    talonCounter3 += 1;
+    if(talonCounter3 % 5 != 0) return;
     send("Talon 3",talonOut);
 }
 
@@ -377,6 +390,8 @@ void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
+    talonCounter4 += 1;
+    if(talonCounter4 % 5 != 0) return;
     send("Talon 4",talonOut);
 }
 
@@ -391,6 +406,8 @@ void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void falcon1Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
+    falconCounter1 += 1;
+    if(falconCounter1 % 5 != 0) return;
     send("Falcon 1",talonOut);
 }
 
@@ -404,6 +421,8 @@ void falcon1Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon2Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon2 callback");
+    falconCounter2 += 1;
+    if(falconCounter2 % 5 != 0) return;
     send("Falcon 2",talonOut);
 }
 
@@ -417,6 +436,8 @@ void falcon2Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon3Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon3 callback");
+    falconCounter3 += 1;
+    if(falconCounter3 % 5 != 0) return;
     send("Falcon 3",talonOut);
 }
 
@@ -430,6 +451,8 @@ void falcon3Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon4Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon4 callback");
+    falconCounter4 += 1;
+    if(falconCounter4 % 5 != 0) return;
     send("Falcon 4",talonOut);
 }
 
@@ -442,6 +465,8 @@ void falcon4Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  */
 void linearOut1Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear1 callback");
+    linearCounter1 += 1;
+    if(linearCounter1 % 5 != 0) return;
     send("Linear 1", linearOut);
 }
 
@@ -454,6 +479,8 @@ void linearOut1Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut2Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear2 callback");
+    linearCounter2 += 1;
+    if(linearCounter2 % 5 != 0) return;
     send("Linear 2", linearOut);
 }
 
@@ -466,6 +493,8 @@ void linearOut2Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear3 callback");
+    linearCounter3 += 1;
+    if(linearCounter3 % 5 != 0) return;
     send("Linear 3", linearOut);
 }
 
@@ -478,12 +507,16 @@ void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut4Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear4 callback");
+    linearCounter4 += 1;
+    if(linearCounter4 % 5 != 0) return;
     send("Linear 4", linearOut);
 }
 
 
 void autonomyOutCallback(const messages::msg::AutonomyOut::SharedPtr autonomyOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "autonomy callback");
+    autonomyCounter += 1;
+    if(autonomyCounter % 5 != 0) return;
     send("Autonomy", autonomyOut);
 }
 
