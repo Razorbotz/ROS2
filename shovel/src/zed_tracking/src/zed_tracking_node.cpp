@@ -228,6 +228,7 @@ int main(int argc, char **argv) {
             zed.retrieveMeasure(depth_map, sl::MEASURE::DEPTH);
 
             cv::Mat fullImage = cv::Mat((int) depth_image.getHeight(), (int) depth_image.getWidth(), CV_8UC4, depth_image.getPtr<sl::uchar1>(sl::MEM::CPU));
+            // Remove part of image that holds the robot arms
             cv::Rect roi(300, 30, depth_image.getWidth() - 600, depth_image.getHeight() - 80);
 
             cv::Mat cvImage = fullImage(roi);

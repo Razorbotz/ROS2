@@ -125,7 +125,7 @@ def generate_launch_description():
             name='zed_tracking',
             executable='zed_tracking_node',
             parameters=[
-                {"resolution": "HD1080"}
+                {"resolution": "VGA"}
             ]
         )
         ,

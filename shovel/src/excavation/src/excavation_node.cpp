@@ -75,7 +75,6 @@ struct LinearActuator{
     int max = 0;                    // Max potentiometer value
     int min = 1024;                 // Min potentiometer value
     Error error = None;  // Error state of the actuator
-    bool run = true;                 
     bool atMin = false;             // Bool value of if actuator is at min extension
     bool atMax = false;             // Bool value of if actuator is at max extension
     float stroke = 11.8;            // Length of stroke of the actuator
@@ -89,10 +88,10 @@ struct LinearActuator{
 };
 
 
-LinearActuator linear1{14, 0.0, 0, 0, 0, 1024, None, true, false, false, 9.8, 0.0, 0.85, 11.5, false, 0.0, false, 0.0};
-LinearActuator linear2{15, 0.0, 0, 0, 0, 1024, None, true, false, false, 9.8, 0.0, 0.89, 11.0, false, 0.0, false, 0.0};
-LinearActuator linear3{16, 0.0, 0, 0, 0, 1024, None, true, false, false, 5.9, 0.0, 0.69, 8.5, false, 0.0, false, 0.0};
-LinearActuator linear4{17, 0.0, 0, 0, 0, 1024, None, true, false, false, 5.9, 0.0, 0.69, 8.5, false, 0.0, false, 0.0};
+LinearActuator linear1{14, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.85, 11.5, false, 0.0, false, 0.0};
+LinearActuator linear2{15, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.89, 11.0, false, 0.0, false, 0.0};
+LinearActuator linear3{16, 0.0, 0, 0, 0, 1024, None, false, false, 5.9, 0.0, 0.69, 8.5, false, 0.0, false, 0.0};
+LinearActuator linear4{17, 0.0, 0, 0, 0, 1024, None, false, false, 5.9, 0.0, 0.69, 8.5, false, 0.0, false, 0.0};
 
 float currentSpeed = 0.0;
 float currentSpeed2 = 0.0;
@@ -142,13 +141,28 @@ void sync(LinearActuator *linear1, LinearActuator *linear2, float currentSpeed){
     bool val = (currentSpeed > 0) ? (linear1->potentiometer >= linear2->potentiometer) : (linear1->potentiometer < linear2->potentiometer);
     
     if (diff > ((950 / linear1->stroke)/6)){
-        (val) ? linear1->speed = 0 : linear2->speed = 0;
+        if(val){
+            linear1->speed = 0;
+        }
+        else{
+            linear2->speed = 0;
+        }
     }
     else if (diff > ((950 / linear1->stroke)/9)){
-        (val) ? linear1->speed *= 0.5 : linear2->speed *= 0.5;
+        if(val){
+            linear1->speed *= 0.5;
+        }
+        else{
+            linear2->speed *= 0.5;
+        }
     }
     else if (diff > ((950 / linear1->stroke)/12)){
-        (val) ? linear1->speed *= 0.9 : linear2->speed *= 0.9;
+        if(val){
+            linear1->speed *= 0.9;
+        }
+        else{
+            linear2->speed *= 0.9;
+        }
     }
     else{
         linear1->speed = currentSpeed;
@@ -173,14 +187,24 @@ void syncDistance(LinearActuator *linear1, LinearActuator *linear2, float curren
     float diff = abs(linear1->distance - linear2->distance);
     bool val = (currentSpeed > 0) ? (linear1->distance >= linear2->distance) : (linear1->distance < linear2->distance);
     if (diff > distThresh3) {
+        if(val){
+            linear1->speed = 0;
+        }
+        else{
+            linear2->speed = 0;
+        }
         if(!linear1->sensorless)
             linear1->error = ActuatorsSyncError;
         if(!linear2->sensorless)
             linear2->error = ActuatorsSyncError;
-        (val) ? linear1->speed = 0.0 : linear2->speed = 0.0;
     }
     else if (diff > distThresh2){
-        (val) ? linear1->speed *= 0.5 : linear2->speed *= 0.5;
+        if(val){
+            linear1->speed *= 0.5;
+        }
+        else{
+            linear2->speed *= 0.5;
+        }
         if(!linear1->sensorless)
             if(linear1->error == ActuatorsSyncError)
                 linear1->error = None;
@@ -189,7 +213,12 @@ void syncDistance(LinearActuator *linear1, LinearActuator *linear2, float curren
                 linear2->error = None;
     }
     else if (diff > distThresh1) {
-        (val) ? linear1->speed *= 0.9 : linear2->speed *= 0.9;
+        if(val){
+            linear1->speed *= 0.9;
+        }
+        else{
+            linear2->speed *= 0.9;
+        }
         if(!linear1->sensorless)
             if(linear1->error == ActuatorsSyncError)
                 linear1->error = None;
@@ -472,7 +501,7 @@ void setSyncErrors(LinearActuator *linear1, LinearActuator *linear2, float curre
                 publishSpeeds();
             }
             else{
-                    publishSpeeds2();
+                publishSpeeds2();
             }
         }
     }

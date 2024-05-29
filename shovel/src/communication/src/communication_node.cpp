@@ -45,10 +45,16 @@
  * Currently this node is missing the callback functions for the motors. 
  * The topics that the node subscribes to are as follows:
  * \li \b power
+ * \li \b talon_10_info
+ * \li \b talon_11_info
+ * \li \b talon_12_info
+ * \li \b talon_13_info
  * \li \b talon_14_info
  * \li \b talon_15_info
+ * \li \b talon_16_info
+ * \li \b talon_17_info
  * \li \b zed_position
- * \li \b zed_image
+ * \li \b autonomy_out
  * 
  * The topics that are being published are as follows:
  * \li \b joystick_axis
@@ -70,36 +76,7 @@ int new_socket;
 rclcpp::Node::SharedPtr nodeHandle;
 std_msgs::msg::Empty heartbeat;
 int total = 0;
-int autonomyCounter = 0, zedCounter = 0;
-int talonCounter1 = 0, falconCounter1 = 0, linearCounter1 = 0;
-int talonCounter2 = 0, falconCounter2 = 0, linearCounter2 = 0;
-int talonCounter3 = 0, falconCounter3 = 0, linearCounter3 = 0;
-int talonCounter4 = 0, falconCounter4 = 0, linearCounter4 = 0;
-/** @brief Inserts topic into a payload to be sent.
- * 
- * Takes a float topic and an array and stores a byte represenation of the topic.
- * @param array
- * @return void
- * */
-void insert(float value,uint8_t* array){
-    array[0]=uint8_t((uint32_t(*(static_cast<uint32_t*>(static_cast<void*>(&value))))>>24) & 0xff);
-    array[1]=uint8_t((uint32_t(*(static_cast<uint32_t*>(static_cast<void*>(&value))))>>16) & 0xff);
-    array[2]=uint8_t((uint32_t(*(static_cast<uint32_t*>(static_cast<void*>(&value))))>>8) & 0xff);
-    array[3]=uint8_t((uint32_t(*(static_cast<uint32_t*>(static_cast<void*>(&value))))>>0) & 0xff);
-}
 
-/** @brief Inserts topic into a payload to be sent.
- * 
- * Takes an int topic and an array and stores a byte represenation of the topic.
- * @param array
- * @return void
- * */
-void insert(int value, uint8_t* array){
-    array[0]=uint8_t((uint32_t(*(static_cast<uint32_t*>(static_cast<void*>(&value))))>>24) & 0xff);
-    array[1]=uint8_t((uint32_t(*(static_cast<uint32_t*>(static_cast<void*>(&value))))>>16) & 0xff);
-    array[2]=uint8_t((uint32_t(*(static_cast<uint32_t*>(static_cast<void*>(&value))))>>8) & 0xff);
-    array[3]=uint8_t((uint32_t(*(static_cast<uint32_t*>(static_cast<void*>(&value))))>>0) & 0xff);
-}
 
 /** @brief Parse a byte represenation into a float.
  * 
@@ -113,22 +90,6 @@ float parseFloat(uint8_t* array){
     axisYInteger|=uint32_t(array[2])<<8;    
     axisYInteger|=uint32_t(array[3])<<0;    
     float value=(float)*(static_cast<float*>(static_cast<void*>(&axisYInteger)));
-
-    return value;
-}
-
-/** @brief Parse a byte represenation into an int.
- * 
- * @param array
- * @return value
- * */
-int parseInt(uint8_t* array){
-    uint32_t axisYInteger=0;
-    axisYInteger|=uint32_t(array[0])<<24;    
-    axisYInteger|=uint32_t(array[1])<<16;    
-    axisYInteger|=uint32_t(array[2])<<8;    
-    axisYInteger|=uint32_t(array[3])<<0;    
-    int value=(int)*(static_cast<int*>(static_cast<void*>(&axisYInteger)));
 
     return value;
 }
@@ -156,6 +117,7 @@ void send(BinaryMessage message){
         }
     }
 }
+
 
 void pad(BinaryMessage message){
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
@@ -194,10 +156,7 @@ void send(std::string messageLabel, const messages::msg::FalconOut::SharedPtr ta
     message.addElementUInt8("Temperature",(uint8_t)talonOut->temperature);
     message.addElementUInt16("Sensor Position",(uint8_t)talonOut->sensor_position);
     message.addElementInt8("Sensor Velocity",(uint8_t)talonOut->sensor_velocity);
-    message.addElementInt8("Closed Loop Error",(uint8_t)talonOut->closed_loop_error);
-    message.addElementInt8("Integral Accumulator",(uint8_t)talonOut->integral_accumulator);
-    message.addElementInt8("Error Derivative",(uint8_t)talonOut->error_derivative);
-
+    
     pad(message);
 }
 
@@ -218,10 +177,6 @@ void send(std::string messageLabel, const messages::msg::TalonOut::SharedPtr tal
     message.addElementUInt8("Temperature",(uint8_t)talonOut->temperature);
     message.addElementUInt16("Sensor Position",talonOut->sensor_position);
     message.addElementInt8("Sensor Velocity",(int8_t)talonOut->sensor_velocity);
-    message.addElementInt8("Closed Loop Error",(int8_t)talonOut->closed_loop_error);
-    message.addElementInt8("Integral Accumulator",(int8_t)talonOut->integral_accumulator);
-    message.addElementInt8("Error Derivative",(int8_t)talonOut->error_derivative);
-    message.addElementFloat32("Max Current",talonOut->max_current);
 
     pad(message);
 }
@@ -310,12 +265,6 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     message.addElementFloat32("aruco pitch", zedPosition->aruco_pitch);
     message.addElementFloat32("aruco yaw", zedPosition->aruco_yaw);
     message.addElementBoolean("aruco", zedPosition->aruco_visible);
-    message.addElementFloat32("x_acc", zedPosition->x_acc);
-    message.addElementFloat32("y_acc", zedPosition->y_acc);
-    message.addElementFloat32("z_acc", zedPosition->z_acc);
-    message.addElementFloat32("x_vel", zedPosition->x_vel);
-    message.addElementFloat32("y_vel", zedPosition->y_vel);
-    message.addElementFloat32("z_vel", zedPosition->z_vel);
     pad(message);
 }
 
@@ -345,8 +294,6 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
  * */
 void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon1 callback");
-    talonCounter1 += 1;
-    if(talonCounter1 % 5 != 0) return;
     send("Talon 1",talonOut);
 }
 
@@ -360,8 +307,6 @@ void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon2 callback");
-    talonCounter2 += 1;
-    if(talonCounter2 % 5 != 0) return;
     send("Talon 2",talonOut);
 }
 
@@ -375,8 +320,6 @@ void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon3 callback");
-    talonCounter3 += 1;
-    if(talonCounter3 % 5 != 0) return;
     send("Talon 3",talonOut);
 }
 
@@ -390,8 +333,6 @@ void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
-    talonCounter4 += 1;
-    if(talonCounter4 % 5 != 0) return;
     send("Talon 4",talonOut);
 }
 
@@ -406,8 +347,6 @@ void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void falcon1Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
-    falconCounter1 += 1;
-    if(falconCounter1 % 5 != 0) return;
     send("Falcon 1",talonOut);
 }
 
@@ -421,8 +360,6 @@ void falcon1Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon2Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon2 callback");
-    falconCounter2 += 1;
-    if(falconCounter2 % 5 != 0) return;
     send("Falcon 2",talonOut);
 }
 
@@ -436,8 +373,6 @@ void falcon2Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon3Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon3 callback");
-    falconCounter3 += 1;
-    if(falconCounter3 % 5 != 0) return;
     send("Falcon 3",talonOut);
 }
 
@@ -451,8 +386,6 @@ void falcon3Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon4Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon4 callback");
-    falconCounter4 += 1;
-    if(falconCounter4 % 5 != 0) return;
     send("Falcon 4",talonOut);
 }
 
@@ -465,8 +398,6 @@ void falcon4Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  */
 void linearOut1Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear1 callback");
-    linearCounter1 += 1;
-    if(linearCounter1 % 5 != 0) return;
     send("Linear 1", linearOut);
 }
 
@@ -479,8 +410,6 @@ void linearOut1Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut2Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear2 callback");
-    linearCounter2 += 1;
-    if(linearCounter2 % 5 != 0) return;
     send("Linear 2", linearOut);
 }
 
@@ -493,8 +422,6 @@ void linearOut2Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear3 callback");
-    linearCounter3 += 1;
-    if(linearCounter3 % 5 != 0) return;
     send("Linear 3", linearOut);
 }
 
@@ -507,16 +434,12 @@ void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut4Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear4 callback");
-    linearCounter4 += 1;
-    if(linearCounter4 % 5 != 0) return;
     send("Linear 4", linearOut);
 }
 
 
 void autonomyOutCallback(const messages::msg::AutonomyOut::SharedPtr autonomyOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "autonomy callback");
-    autonomyCounter += 1;
-    if(autonomyCounter % 5 != 0) return;
     send("Autonomy", autonomyOut);
 }
 
