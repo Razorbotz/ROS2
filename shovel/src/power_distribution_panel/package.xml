@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>power_distribution_panel</name>
+  <version>1.0.0</version>
+  <description>The power_distribution_panel package</description>
+
+  <maintainer email="todo@todo.todo">nvidia</maintainer>
+  <author>William Johnston</author>	  
+  <license>none</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>	  
+  <depend>messages</depend>
+
+  <export>
+     <build_type>ament_cmake</build_type>
+  </export>
+</package>

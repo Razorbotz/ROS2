@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>logic</name>
+  <version>0.0.0</version>
+  <description>The logic package</description>
+  <license>none</license>
+  <maintainer email="andrewburroughs17@gmail.com">Andrew Burroughs</maintainer>
+  <author>Andrew Burroughs</author>  
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>messages</depend>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

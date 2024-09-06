@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>zed_tracking</name>
+  <version>1.0.0</version>
+  <description>The ZED tracking package</description>
+  <maintainer email="andrewburroughs17@gmail.com">Andrew Burroughs</maintainer>
+  <author>Andrew Burroughs</author>
+  <license>none</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>messages</depend>
+  <depend>image_transport</depend>
+  <depend>cv_bridge</depend>
+  <build_depend>rclcpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+
+  <export>
+	<build_type>ament_cmake</build_type>
+  </export>
+</package>
