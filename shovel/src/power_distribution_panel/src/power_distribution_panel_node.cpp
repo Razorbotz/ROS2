@@ -39,34 +39,34 @@ int main(int argc, char **argv){
 	auto publisher = nodeHandle->create_publisher<messages::msg::Power>("power", 1);
 	messages::msg::Power power;
 
-        int s;
-        int nbytes;
-        struct sockaddr_can addr;
-        struct can_frame frame;
-        struct ifreq ifr;
+	int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
 
-        const char *ifname = "can0";
+	const char *ifname = "can0";
 
-        if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
-                perror("Error while opening socket");
-                return -1;
-        }
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
+			perror("Error while opening socket");
+			return -1;
+	}
 
-        strcpy(ifr.ifr_name, ifname);
-        ioctl(s, SIOCGIFINDEX, &ifr);
+	strcpy(ifr.ifr_name, ifname);
+	ioctl(s, SIOCGIFINDEX, &ifr);
 
-        addr.can_family  = AF_CAN;
-        addr.can_ifindex = ifr.ifr_ifindex;
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
 
-        printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
 
-        if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-                perror("Error in socket bind");
-                return -2;
-        }
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+			perror("Error in socket bind");
+			return -2;
+	}
 
 
-        PowerDistributionPanel pdp;
+	PowerDistributionPanel pdp = PowerDistributionPanel(1);
 
 	auto start = std::chrono::high_resolution_clock::now();
 	while(rclcpp::ok()){

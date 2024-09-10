@@ -252,8 +252,6 @@ void send(std::string messageLabel, const messages::msg::AutonomyOut::SharedPtr 
  */
 void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
     if(silentRunning)return;
-    zedCounter += 1;
-    if(zedCounter % 5 != 0)return;
     BinaryMessage message("Zed");
     message.addElementFloat32("X", zedPosition->x);
     message.addElementFloat32("Y", zedPosition->y);
