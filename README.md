@@ -7,7 +7,7 @@ This page is intended to provide a starting point and overview of the project.  
 
 
 ## Getting Started
-To get started with the project, install the [virtual machine](https://github.com/Razorbotz/ROS2/tree/master#installing-ros2). Then after installing the virtual machine, go through these [Linux tutorials](https://www.hostinger.com/tutorials/linux-commands). The key objective of these tutorials is to teach how to navigate through the file structure via the terminal, as well manipulating files using commands. Because the robot is designed to be operated remotely on the lunar surface, understanding these commands is an essential skill for this project. 
+To get started with the project, install the [virtual machine](https://github.com/Razorbotz/ROS2-Installation). Then after installing the virtual machine, go through these [Linux tutorials](https://www.hostinger.com/tutorials/linux-commands). The key objective of these tutorials is to teach how to navigate through the file structure via the terminal, as well manipulating files using commands. Because the robot is designed to be operated remotely on the lunar surface, understanding these commands is an essential skill for this project. 
 
 
 ## Understanding the Codebase
