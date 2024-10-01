@@ -4,10 +4,13 @@
 #include <iostream>
 
 /** @file
- * @brief Brief description of file
- * Detailed description of file 
+ * @brief Functions that parse the PDP CAN messages
+ * 
+ * This file contains functions that parse the CAN messages
+ * published by the PDP.   
  * 
  * */
+
 
 /** @brief Brief description of function
  * Detailed description of function
@@ -63,8 +66,9 @@ void PowerDistributionPanel::parseFrame(struct can_frame frame){
 }
 
 
-/** @brief Brief description of function
- * Detailed description of function
+/** @brief Function that parses the voltage\n
+ * here
+ * 
  * @param frame
  * @return void
  * */

@@ -212,6 +212,7 @@ int main(int argc,char** argv){
 	double kI = getParameter<double>("kI", 0);
 	double kD = getParameter<double>("kD", 0);
 	double kF = getParameter<double>("kF", 0);
+	int publishingDelay = getParameter<int>("publishing_delay", 0);
 
 	ctre::phoenix::platform::can::SetCANInterface("can0");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
@@ -265,7 +266,7 @@ int main(int argc,char** argv){
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
 
-		if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() > 250000000){
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
 			int deviceID=talonFX->GetDeviceID();
 			double busVoltage=talonFX->GetBusVoltage();
 			double outputCurrent=talonFX->GetOutputCurrent();
