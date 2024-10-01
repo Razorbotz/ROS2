@@ -76,6 +76,14 @@ bool GO=false;
 std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
 TalonFX* talonFX;
 bool useVelocity=false;
+bool TEMP_DISABLE = false;
+bool VOLT_DISABLE = false;
+
+// Operating modes:
+// 0 - Normal
+// 1 - Critical
+// 2 - Emergency 
+int op_mode = 0;
 
 /** @brief STOP Callback
  * 
@@ -192,6 +200,52 @@ T getParameter(std::string parameterName, int initialValue){
 	return value;
 }
 
+
+void checkTemperature(double temperature){
+	switch(op_mode){
+		case 0:
+			temperature > 70 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
+			break;
+		case 1:
+			temperature > 80 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
+			break;
+		case 2:
+			temperature > 90 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
+			break;
+	}
+}
+
+
+void checkVoltage(double voltage, double speed){
+	if(speed > 0){
+		switch(op_mode){
+			case 0:
+				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+			case 1:
+				voltage < 14.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+			case 2:
+				voltage < 13 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+		}
+	}
+	else{
+		switch(op_mode){
+			case 0:
+				voltage < 15.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+			case 1:
+				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+			case 2:
+				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+		}
+	}
+}
+
+
 int main(int argc,char** argv){
 	rclcpp::init(argc,argv);
 	nodeHandle = rclcpp::Node::make_shared("talon");
@@ -262,6 +316,7 @@ int main(int argc,char** argv){
 
 	rclcpp::Rate rate(20);
 	auto start = std::chrono::high_resolution_clock::now();
+	float maxCurrent = 0.0;
 	while(rclcpp::ok()){
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
@@ -291,10 +346,16 @@ int main(int argc,char** argv){
 			falconOut.closed_loop_error=closedLoopError0;
 			falconOut.integral_accumulator=integralAccumulator0;
 			falconOut.error_derivative=errorDerivative0;
-
+			falconOut.temp_disable = TEMP_DISABLE;
+			falconOut.volt_disable = VOLT_DISABLE;
+			if(outputCurrent > maxCurrent){
+				maxCurrent = outputCurrent;
+			}
+			falconOut.max_current = maxCurrent;
 			falconOutPublisher->publish(falconOut);
 			start = std::chrono::high_resolution_clock::now();
-
+			checkTemperature(temperature);
+			checkVoltage(busVoltage, motorOutputPercent);
 		}
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){

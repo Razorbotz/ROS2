@@ -151,12 +151,15 @@ void send(std::string messageLabel, const messages::msg::FalconOut::SharedPtr ta
     message.addElementUInt16("Bus Voltage",voltage);
     uint16_t current = talonOut->output_current *= 100.0;
     message.addElementUInt16("Output Current",current);
-    message.addElementFloat32("Output Voltage",talonOut->output_voltage);
+    //message.addElementFloat32("Output Voltage",talonOut->output_voltage);
     message.addElementFloat32("Output Percent",talonOut->output_percent);
     message.addElementUInt8("Temperature",(uint8_t)talonOut->temperature);
     message.addElementUInt16("Sensor Position",(uint8_t)talonOut->sensor_position);
     message.addElementInt8("Sensor Velocity",(uint8_t)talonOut->sensor_velocity);
-    
+    message.addElementFloat32("Max Current", talonOut->max_current);
+    //message.addElementBoolean("Temp Disable", talonOut->temp_disable);
+    //message.addElementBoolean("Volt Disable", talonOut->volt_disable);
+
     pad(message);
 }
 
@@ -172,12 +175,14 @@ void send(std::string messageLabel, const messages::msg::TalonOut::SharedPtr tal
     message.addElementUInt16("Bus Voltage",voltage);
     uint16_t current = talonOut->output_current *= 100.0;
     message.addElementUInt16("Output Current",current);
-    message.addElementFloat32("Output Voltage",talonOut->output_voltage);
+    //message.addElementFloat32("Output Voltage",talonOut->output_voltage);
     message.addElementFloat32("Output Percent",talonOut->output_percent);
     message.addElementUInt8("Temperature",(uint8_t)talonOut->temperature);
     message.addElementUInt16("Sensor Position",talonOut->sensor_position);
     message.addElementInt8("Sensor Velocity",(int8_t)talonOut->sensor_velocity);
-
+    message.addElementFloat32("Max Current", talonOut->max_current);
+    //message.addElementBoolean("Temp Disable", talonOut->temp_disable);
+    //message.addElementBoolean("Volt Disable", talonOut->volt_disable);
     pad(message);
 }
 
@@ -205,7 +210,7 @@ void send(std::string messageLabel, const messages::msg::Power::SharedPtr power)
     message.addElementFloat32("Current 14",power->current14);
     message.addElementFloat32("Current 15",power->current15);
 
-    pad(message);
+    //pad(message);
 }
 
 
@@ -279,7 +284,7 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
  * */
 void powerCallback(const messages::msg::Power::SharedPtr power){
     //RCLCPP_INFO(nodeHandle->get_logger(), "power callback");
-    //send("Power",power);
+    send("Power",power);
 }
 
 /** @brief Callback function for the Talon topic

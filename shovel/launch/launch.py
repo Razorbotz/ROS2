@@ -52,7 +52,8 @@ def generate_launch_description():
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
-                {"kF": 0.0}
+                {"kF": 0.0},
+                {"publishing_delay": 100}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -73,7 +74,8 @@ def generate_launch_description():
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
-                {"kF": 0.0}
+                {"kF": 0.0},
+                {"publishing_delay": 100}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -94,7 +96,8 @@ def generate_launch_description():
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
-                {"kF": 0.0}
+                {"kF": 0.0},
+                {"publishing_delay": 100}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -115,7 +118,8 @@ def generate_launch_description():
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
-                {"kF": 0.0}
+                {"kF": 0.0},
+                {"publishing_delay": 100}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -142,7 +146,8 @@ def generate_launch_description():
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
-                {"kF": 0.0}
+                {"kF": 0.0},
+                {"publishing_delay": 100}
             ]
         )
 	    ,
@@ -162,7 +167,8 @@ def generate_launch_description():
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
-                {"kF": 0.0}
+                {"kF": 0.0},
+                {"publishing_delay": 100}
             ]
         )
         ,
@@ -182,7 +188,8 @@ def generate_launch_description():
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
-                {"kF": 0.0}
+                {"kF": 0.0},
+                {"publishing_delay": 100}
             ]
         )
 	    ,
@@ -202,7 +209,8 @@ def generate_launch_description():
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
-                {"kF": 0.0}
+                {"kF": 0.0},
+                {"publishing_delay": 100}
             ]
         )
 	    ,

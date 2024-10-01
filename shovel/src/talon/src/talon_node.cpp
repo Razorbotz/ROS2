@@ -112,6 +112,14 @@ bool useVelocity=false;
 int velocityMultiplier=0;
 int testSpeed=0;
 TalonSRX* talonSRX;
+bool TEMP_DISABLE = false;
+bool VOLT_DISABLE = false;
+
+// Operating modes:
+// 0 - Normal
+// 1 - Critical
+// 2 - Emergency 
+int op_mode = 0;
 
 /** @brief Speed Callback Function
  * 
@@ -187,6 +195,52 @@ T getParameter(std::string parameterName, int initialValue){
 	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
 	return value;
 }
+
+
+void checkTemperature(double temperature){
+	switch(op_mode){
+		case 0:
+			temperature > 70 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
+			break;
+		case 1:
+			temperature > 80 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
+			break;
+		case 2:
+			temperature > 90 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
+			break;
+	}
+}
+
+
+void checkVoltage(double voltage, double speed){
+	if(speed > 0){
+		switch(op_mode){
+			case 0:
+				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+			case 1:
+				voltage < 14.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+			case 2:
+				voltage < 13 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+		}
+	}
+	else{
+		switch(op_mode){
+			case 0:
+				voltage < 15.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+			case 1:
+				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+			case 2:
+				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				break;
+		}
+	}
+}
+
 
 int main(int argc,char** argv){
 	rclcpp::init(argc,argv);
@@ -292,12 +346,15 @@ int main(int argc,char** argv){
 			talonOut.closed_loop_error=closedLoopError0;
 			talonOut.integral_accumulator=integralAccumulator0;
 			talonOut.error_derivative=errorDerivative0;
-
-			talonOutPublisher->publish(talonOut);
+			talonOut.temp_disable = TEMP_DISABLE;
+			talonOut.volt_disable = VOLT_DISABLE;
 			if(outputCurrent > maxCurrent){
 				maxCurrent = outputCurrent;
 			}
 			talonOut.max_current = maxCurrent;
+			talonOutPublisher->publish(talonOut);
+			checkTemperature(temperature);
+			checkVoltage(busVoltage, motorOutputPercent);
 			//RCLCPP_INFO(nodeHandle->get_logger(), "Talon %d Max Current: %f", deviceID, maxCurrent);
         	start = std::chrono::high_resolution_clock::now();
 		}
