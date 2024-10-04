@@ -36,6 +36,7 @@
 #include <ctre/phoenix/cci/Diagnostics_CCI.h>
 
 #include "messages/msg/falcon_out.hpp"
+#include <fstream>
 
 using namespace ctre::phoenix;
 using namespace ctre::phoenix::platform;
@@ -78,6 +79,11 @@ TalonFX* talonFX;
 bool useVelocity=false;
 bool TEMP_DISABLE = false;
 bool VOLT_DISABLE = false;
+bool UPDATE_SPEED = false;
+double speedIncrease = 0.05;
+int speedTiming = 100;
+float currentSpeed = 0.0;
+float expectedSpeed = 0.0;
 
 // Operating modes:
 // 0 - Normal
@@ -139,12 +145,38 @@ int testSpeed=0;
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
+	UPDATE_SPEED = true;
+	expectedSpeed = speed->data;
+	RCLCPP_INFO(nodeHandle->get_logger(),"ExpectedSpeed---------->>> %f ", expectedSpeed);
+}
 
-	if(useVelocity){
-		talonFX->Set(ControlMode::Velocity, int(speed->data*velocityMultiplier));
+
+void updateSpeed(){
+	RCLCPP_INFO(nodeHandle->get_logger(),"CurrentSpeed---------->>> %f ", currentSpeed);
+	RCLCPP_INFO(nodeHandle->get_logger(),"expectedSpeed---------->>> %f ", expectedSpeed);
+	float diff = expectedSpeed - currentSpeed;
+	RCLCPP_INFO(nodeHandle->get_logger(),"diff---------->>> %f ", diff);
+	RCLCPP_INFO(nodeHandle->get_logger(),"diff---------->>> %f ", std::abs(diff));
+	
+	if(std::abs(diff) > speedIncrease){
+		RCLCPP_INFO(nodeHandle->get_logger(),"here");
+		if(expectedSpeed < currentSpeed){
+			currentSpeed -= speedIncrease;
+		}
+		else{
+			currentSpeed += speedIncrease;
+		}
 	}
 	else{
-		talonFX->Set(ControlMode::PercentOutput, speed->data);
+		RCLCPP_INFO(nodeHandle->get_logger(),"Here");
+		currentSpeed = expectedSpeed;
+		UPDATE_SPEED = false;
+	}
+	if(useVelocity){
+		talonFX->Set(ControlMode::Velocity, int(currentSpeed*velocityMultiplier));
+	}
+	else{
+		talonFX->Set(ControlMode::PercentOutput, currentSpeed);
 	}
 }
 
@@ -267,6 +299,13 @@ int main(int argc,char** argv){
 	double kD = getParameter<double>("kD", 0);
 	double kF = getParameter<double>("kF", 0);
 	int publishingDelay = getParameter<int>("publishing_delay", 0);
+	speedIncrease = getParameter<double>("speed_increase", 0.05);
+	RCLCPP_INFO(nodeHandle->get_logger(),"speedIncrease: %f", speedIncrease);
+	speedTiming = getParameter<int>("speed_timing", 100);
+	std::string fileToWrite = getParameter<std::string>("file_name", "unset");
+
+	std::ofstream outfile(fileToWrite + "_" + std::to_string(speedIncrease) + "_" + std::to_string(speedTiming) + ".txt");
+	int counter = 0;
 
 	ctre::phoenix::platform::can::SetCANInterface("can0");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
@@ -316,7 +355,9 @@ int main(int argc,char** argv){
 
 	rclcpp::Rate rate(20);
 	auto start = std::chrono::high_resolution_clock::now();
+	auto start2 = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
+	bool WRITE = true;
 	while(rclcpp::ok()){
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
@@ -356,6 +397,21 @@ int main(int argc,char** argv){
 			start = std::chrono::high_resolution_clock::now();
 			checkTemperature(temperature);
 			checkVoltage(busVoltage, motorOutputPercent);
+			if(counter < 7500){
+				outfile << motorOutputPercent << ", " << outputCurrent << '\n';
+				counter += 1;
+			}
+			else{
+				if(WRITE){
+					outfile.close();
+					WRITE = false;
+				}
+				RCLCPP_INFO(nodeHandle->get_logger(),"DONE");
+			}
+		}
+		if(UPDATE_SPEED && std::chrono::duration_cast<std::chrono::milliseconds>(finish-start2).count() > speedTiming){
+			updateSpeed();
+			start2 = std::chrono::high_resolution_clock::now();
 		}
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){

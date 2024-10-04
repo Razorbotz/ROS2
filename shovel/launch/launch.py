@@ -53,7 +53,10 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 100},
+                {"speed_increase": 1.0},
+                {"speed_timing": 50},
+                {"file_name": "talon14"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -75,7 +78,10 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 100},
+                {"speed_increase": 1.0},
+                {"speed_timing": 50},
+                {"file_name": "talon15"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -97,7 +103,10 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 100},
+                {"speed_increase": 1.0},
+                {"speed_timing": 50},
+                {"file_name": "talon16"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -119,7 +128,10 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 100},
+                {"speed_increase": 1.0},
+                {"speed_timing": 50},
+                {"file_name": "talon17"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -147,7 +159,10 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 20},
+                {"speed_increase": 1.0},
+                {"speed_timing": 50},
+                {"file_name": "falcon10"}
             ]
         )
 	    ,
@@ -168,7 +183,10 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 20},
+                {"speed_increase": 1.0},
+                {"speed_timing": 50},
+                {"file_name": "falcon11"}
             ]
         )
         ,
@@ -189,7 +207,10 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 20},
+                {"speed_increase": 1.0},
+                {"speed_timing": 50},
+                {"file_name": "falcon12"}
             ]
         )
 	    ,
@@ -210,23 +231,26 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 20},
+                {"speed_increase": 1.0},
+                {"speed_timing": 50},
+                {"file_name": "falcon13"}
             ]
         )
-	    ,
-        Node(
-            package='zed_tracking',
-            name='zed_tracking',
-            executable='zed_tracking_node',
-            parameters=[
-                {"resolution": "VGA"}
-            ]
-        )
-        ,
-        Node(
-            package='video_streaming',
-            name='video_streaming',
-            executable='video_streaming_node'
-        )
+#	    ,
+#        Node(
+#            package='zed_tracking',
+#            name='zed_tracking',
+#            executable='zed_tracking_node',
+#            parameters=[
+#                {"resolution": "VGA"}
+#            ]
+#        )
+#        ,
+#        Node(
+#            package='video_streaming',
+#            name='video_streaming',
+#            executable='video_streaming_node'
+#        )
     ]
 )
