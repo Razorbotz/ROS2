@@ -20,3 +20,6 @@ shovel/install
 shovel/build
 shovel/log
 shovel/launch/__pycache__
+skinny/
+scoop/
+spinner/

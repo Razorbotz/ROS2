@@ -21,7 +21,6 @@
 #include <linux/reboot.h>
 #include <sys/reboot.h>
 
-
 #include <rclcpp/rclcpp.hpp>
 //#include <rclcpp/console.h>
 #include <std_msgs/msg/float32.hpp>
@@ -35,6 +34,7 @@
 #include <ctre/phoenix/cci/Unmanaged_CCI.h>
 #include <ctre/phoenix/cci/Diagnostics_CCI.h>
 
+#include "../../common/include/common/CommonFuncs.h"
 #include "messages/msg/falcon_out.hpp"
 #include <fstream>
 
@@ -80,6 +80,7 @@ bool useVelocity=false;
 bool TEMP_DISABLE = false;
 bool VOLT_DISABLE = false;
 bool UPDATE_SPEED = false;
+bool DISABLE_GO = false;
 double speedIncrease = 0.05;
 int speedTiming = 100;
 float currentSpeed = 0.0;
@@ -102,13 +103,8 @@ int op_mode = 0;
  * */
 void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
 	RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
-	GO=false;
-	if(useVelocity){
-		talonFX->Set(ControlMode::Velocity, 0);
-	}
-	else{
-		talonFX->Set(ControlMode::PercentOutput, 0.0);
-	}
+	DISABLE_GO=true;
+	expectedSpeed = 0.0;
 } 
 
 /** @brief GO Callback
@@ -147,19 +143,12 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	//std::cout << "---------->>>  " << speed->data << std::endl;
 	UPDATE_SPEED = true;
 	expectedSpeed = speed->data;
-	RCLCPP_INFO(nodeHandle->get_logger(),"ExpectedSpeed---------->>> %f ", expectedSpeed);
 }
 
 
 void updateSpeed(){
-	RCLCPP_INFO(nodeHandle->get_logger(),"CurrentSpeed---------->>> %f ", currentSpeed);
-	RCLCPP_INFO(nodeHandle->get_logger(),"expectedSpeed---------->>> %f ", expectedSpeed);
 	float diff = expectedSpeed - currentSpeed;
-	RCLCPP_INFO(nodeHandle->get_logger(),"diff---------->>> %f ", diff);
-	RCLCPP_INFO(nodeHandle->get_logger(),"diff---------->>> %f ", std::abs(diff));
-	
 	if(std::abs(diff) > speedIncrease){
-		RCLCPP_INFO(nodeHandle->get_logger(),"here");
 		if(expectedSpeed < currentSpeed){
 			currentSpeed -= speedIncrease;
 		}
@@ -168,9 +157,12 @@ void updateSpeed(){
 		}
 	}
 	else{
-		RCLCPP_INFO(nodeHandle->get_logger(),"Here");
 		currentSpeed = expectedSpeed;
 		UPDATE_SPEED = false;
+	}
+	if(DISABLE_GO && currentSpeed == 0.0){
+		DISABLE_GO = false;
+		GO = false;
 	}
 	if(useVelocity){
 		talonFX->Set(ControlMode::Velocity, int(currentSpeed*velocityMultiplier));
@@ -179,6 +171,7 @@ void updateSpeed(){
 		talonFX->Set(ControlMode::PercentOutput, currentSpeed);
 	}
 }
+
 
 /** @brief String parameter function
  * 
@@ -230,51 +223,6 @@ T getParameter(std::string parameterName, int initialValue){
 	std::string output = parameterName + ": " + std::to_string(value);
 	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
 	return value;
-}
-
-
-void checkTemperature(double temperature){
-	switch(op_mode){
-		case 0:
-			temperature > 70 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
-			break;
-		case 1:
-			temperature > 80 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
-			break;
-		case 2:
-			temperature > 90 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
-			break;
-	}
-}
-
-
-void checkVoltage(double voltage, double speed){
-	if(speed > 0){
-		switch(op_mode){
-			case 0:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 14.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 13 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
-	}
-	else{
-		switch(op_mode){
-			case 0:
-				voltage < 15.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
-	}
 }
 
 
@@ -338,6 +286,16 @@ int main(int argc,char** argv){
 
 	talonFX->Set(ControlMode::PercentOutput, 0);
 	talonFX->Set(ControlMode::Velocity, 0);
+	talonFX->SetStatusFramePeriod(Status_1_General_, 255, 0);
+	talonFX->SetStatusFramePeriod(Status_2_Feedback0_, 255, 0);
+	talonFX->SetStatusFramePeriod(Status_4_AinTempVbat_, 255, 0);
+	talonFX->SetStatusFramePeriod(Status_6_Misc_, 255, 0);
+	talonFX->SetStatusFramePeriod(Status_7_CommStatus_, 255, 0);
+	talonFX->SetStatusFramePeriod(Status_9_MotProfBuffer_, 255, 0);
+	talonFX->SetStatusFramePeriod(Status_10_Targets_, 255, 0);
+	talonFX->SetStatusFramePeriod(Status_12_Feedback1_, 255, 0);
+	talonFX->SetStatusFramePeriod(Status_13_Base_PIDF0_, 255, 0);
+	talonFX->SetStatusFramePeriod(Status_14_Turn_PIDF1_, 255, 0);
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"configured talon");
 
@@ -395,8 +353,8 @@ int main(int argc,char** argv){
 			falconOut.max_current = maxCurrent;
 			falconOutPublisher->publish(falconOut);
 			start = std::chrono::high_resolution_clock::now();
-			checkTemperature(temperature);
-			checkVoltage(busVoltage, motorOutputPercent);
+			checkTemperature(temperature, op_mode, &TEMP_DISABLE);
+			checkVoltage(busVoltage, motorOutputPercent, op_mode, &VOLT_DISABLE);
 			if(counter < 7500){
 				outfile << motorOutputPercent << ", " << outputCurrent << '\n';
 				counter += 1;

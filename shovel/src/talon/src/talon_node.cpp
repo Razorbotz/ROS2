@@ -37,6 +37,7 @@
 #include <ctre/phoenix/cci/Diagnostics_CCI.h>
 
 #include "messages/msg/talon_out.hpp"
+#include "../../common/include/common/CommonFuncs.h"
 #include <fstream>
 
 using namespace ctre::phoenix;
@@ -115,11 +116,6 @@ int testSpeed=0;
 TalonSRX* talonSRX;
 bool TEMP_DISABLE = false;
 bool VOLT_DISABLE = false;
-bool UPDATE_SPEED = false;
-double speedIncrease = 0.05;
-int speedTiming = 100;
-float currentSpeed = 0.0;
-float expectedSpeed = 0.0;
 
 // Operating modes:
 // 0 - Normal
@@ -141,31 +137,12 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
 
-	UPDATE_SPEED = true;
-	expectedSpeed = speed->data;
-}
-
-void updateSpeed(){
-	RCLCPP_INFO(nodeHandle->get_logger(),"CurrentSpeed---------->>> %f ", currentSpeed);
-	float diff = expectedSpeed - currentSpeed;
-	if(abs(diff) > speedIncrease){
-		if(expectedSpeed < currentSpeed){
-			currentSpeed -= speedIncrease;
-		}
-		else{
-			currentSpeed += speedIncrease;
-		}
-	}
-	else{
-		currentSpeed = expectedSpeed;
-		UPDATE_SPEED = false;
-	}
 	if(useVelocity){
-		talonSRX->Set(ControlMode::Velocity, int(currentSpeed*velocityMultiplier));
+		talonSRX->Set(ControlMode::Velocity, int(speed->data*velocityMultiplier));
 		//talonSRX->Set(ControlMode::Velocity, testSpeed);
 	}
 	else{
-		talonSRX->Set(ControlMode::PercentOutput, currentSpeed);
+		talonSRX->Set(ControlMode::PercentOutput, speed->data);
 	}
 }
 
@@ -222,51 +199,6 @@ T getParameter(std::string parameterName, int initialValue){
 }
 
 
-void checkTemperature(double temperature){
-	switch(op_mode){
-		case 0:
-			temperature > 70 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
-			break;
-		case 1:
-			temperature > 80 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
-			break;
-		case 2:
-			temperature > 90 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
-			break;
-	}
-}
-
-
-void checkVoltage(double voltage, double speed){
-	if(speed > 0){
-		switch(op_mode){
-			case 0:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 14.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 13 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
-	}
-	else{
-		switch(op_mode){
-			case 0:
-				voltage < 15.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
-	}
-}
-
-
 int main(int argc,char** argv){
 	rclcpp::init(argc,argv);
 	nodeHandle = rclcpp::Node::make_shared("talon");
@@ -292,12 +224,6 @@ int main(int argc,char** argv){
 	double kD = getParameter<double>("kD", 0);
 	double kF = getParameter<double>("kF", 0);
 	int publishingDelay = getParameter<int>("publishing_delay", 0);
-	speedIncrease = getParameter<double>("speed_increase", 0.05);
-	speedTiming = getParameter<int>("speed_timing", 100);
-	std::string fileToWrite = getParameter<std::string>("file_name", "unset");
-
-	//std::ofstream outfile(fileToWrite + "_" + std::to_string(speedIncrease) + "_" + std::to_string(speedTiming) + ".txt");
-	int counter = 0;
 
 	ctre::phoenix::platform::can::SetCANInterface("can0");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
@@ -385,28 +311,10 @@ int main(int argc,char** argv){
 			}
 			talonOut.max_current = maxCurrent;
 			talonOutPublisher->publish(talonOut);
-			checkTemperature(temperature);
-			checkVoltage(busVoltage, motorOutputPercent);
+			checkTemperature(temperature, op_mode, &TEMP_DISABLE);
+			checkVoltage(busVoltage, motorOutputPercent, op_mode, &VOLT_DISABLE);
 			//RCLCPP_INFO(nodeHandle->get_logger(), "Talon %d Max Current: %f", deviceID, maxCurrent);
         	start = std::chrono::high_resolution_clock::now();
-			/*
-			if(counter < 7500){
-				outfile << motorOutputPercent << ", " << outputCurrent << '\n';
-				counter += 1;
-			}
-			else{
-				if(WRITE){
-					outfile.close();
-					WRITE = false;
-				}
-				RCLCPP_INFO(nodeHandle->get_logger(),"DONE");
-			}
-			*/
-		}
-
-		if(UPDATE_SPEED && std::chrono::duration_cast<std::chrono::milliseconds>(finish-start2).count() > speedTiming){
-			updateSpeed();
-			start2 = std::chrono::high_resolution_clock::now();
 		}
 		
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
