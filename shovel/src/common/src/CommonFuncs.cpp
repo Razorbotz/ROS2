@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string>
 #include <rclcpp/rclcpp.hpp>
 #include "common/CommonFuncs.h"
@@ -15,18 +16,17 @@
  * @param initialValue Initial value of the parameter
  * @return value Value of the parameter
  * */
-/*
 template <typename T>
-T getParameter(std::string parameterName, std::string initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
+T getParameter(std::string parameterName, std::string initialValue, rclcpp::Node::SharedPtr *nodeHandle){
+	*nodeHandle->declare_parameter<T>(parameterName, initialValue);
+	rclcpp::Parameter param = *nodeHandle->get_parameter(parameterName);
 	T value = param.as_string();
 	std::cout << parameterName << ": " << value << std::endl;
 	std::string output = parameterName + ": " + value;
 	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
 	return value;
 }
-*/
+
 
 /** @brief Function to get the value of the specified parameter
  * 
@@ -40,11 +40,10 @@ T getParameter(std::string parameterName, std::string initialValue){
  * @param initialValue Initial value of the parameter
  * @return value Value of the parameter
  * */
-/*
 template <typename T>
-T getParameter(std::string parameterName, int initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
+T getParameter(std::string parameterName, int initialValue, rclcpp::Node::SharedPtr *nodeHandle){
+	*nodeHandle->declare_parameter<T>(parameterName, initialValue);
+	rclcpp::Parameter param = *nodeHandle->get_parameter(parameterName);
 	T value;
 	if(typeid(value).name() == typeid(int).name())
 		value = param.as_int();
@@ -54,11 +53,11 @@ T getParameter(std::string parameterName, int initialValue){
 		value = param.as_bool();
 	std::cout << parameterName << ": " << value << std::endl;
 	std::string output = parameterName + ": " + std::to_string(value);
-	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
+	RCLCPP_INFO(*nodeHandle->get_logger(), output.c_str());
 	return value;
 }
 
-*/
+
 void checkTemperature(double temperature, int op_mode, bool *TEMP_DISABLE){
 	switch(op_mode){
 		case 0:
