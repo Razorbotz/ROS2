@@ -718,6 +718,9 @@ int main(int argc, char **argv){
                 keyState.key=((uint16_t)message[1])<<8 | ((uint16_t)message[2]);
                 keyState.state=message[3];
                 keyPublisher->publish(keyState);
+                if(keyState.key == 49 && keyState.state == 1){
+                    return 0;
+                }
 		        //RCLCPP_INFO(nodeHandle->get_logger(),"key %d %d ", keyState.key , keyState.state);
             }
             if(command==5){

@@ -5,6 +5,7 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/empty.hpp>
+#include <messages/msg/key_state.hpp>
 
 #include "messages/msg/linear_out.hpp"
 #include "messages/msg/talon_out.hpp"
@@ -641,6 +642,12 @@ void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 
 }
 
+void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
+    std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
+    if(keyState->key == 60 && keyState->state==1){
+        return 0;
+    }
+}
 
 /** @brief Function to get the LinearOut values
  * 
@@ -729,6 +736,7 @@ int main(int argc, char **argv){
 
     auto armSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("arm_speed",1,armSpeedCallback);
     auto bucketSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("bucket_speed",1,bucketSpeedCallback);
+    auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
 
     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,potentiometer1Callback);
     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,potentiometer2Callback);

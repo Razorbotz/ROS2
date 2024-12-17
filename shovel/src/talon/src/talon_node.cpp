@@ -120,6 +120,7 @@ bool VOLT_DISABLE = false;
 // 1 - Critical
 // 2 - Emergency 
 int op_mode = 0;
+int killKey = 0;
 
 /** @brief Speed Callback Function
  * 
@@ -242,6 +243,14 @@ void checkVoltage(double voltage, double speed){
 }
 
 
+void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
+    std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
+    if(keyState->key==killKey && keyState->state==1){
+        return 0;
+    }
+}
+
+
 int main(int argc,char** argv){
 	rclcpp::init(argc,argv);
 	nodeHandle = rclcpp::Node::make_shared("talon");
@@ -267,6 +276,7 @@ int main(int argc,char** argv){
 	double kD = getParameter<double>("kD", 0);
 	double kF = getParameter<double>("kF", 0);
 	int publishingDelay = getParameter<int>("publishing_delay", 0);
+	killKey = getParameter<int>("kill_key", 0);
 
 	ctre::phoenix::platform::can::SetCANInterface("can0");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
@@ -310,6 +320,7 @@ int main(int argc,char** argv){
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
 	auto commHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("comm_heartbeat",1,commHeartbeatCallback);
+	auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
 	
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
