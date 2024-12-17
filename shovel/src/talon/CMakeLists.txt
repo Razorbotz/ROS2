@@ -13,16 +13,16 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(messages REQUIRED)
-find_package(common REQUIRED)
+find_package(common_funcs REQUIRED)
 
 
 include_directories(
 	include
-	common
 )
 
 add_executable(${PROJECT_NAME}_node 
 	src/talon_node.cpp
+	../common_funcs/src/CommonFuncs.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_node
@@ -44,7 +44,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
         rclcpp
         std_msgs
         messages
-		common
+		common_funcs
 )
 
 

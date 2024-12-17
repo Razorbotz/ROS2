@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(common)
+project(common_funcs)
 
 if(NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 14)
@@ -19,7 +19,7 @@ include_directories(
 )
 
 add_executable(${PROJECT_NAME}_node
-    src/TalonCommon.cpp
+    src/CommonFuncs.cpp
 )
 
 install(TARGETS ${PROJECT_NAME}_node

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>common</name>
+  <name>common_funcs</name>
   <version>1.0.0</version>
   <description>common node</description>
 

@@ -2,6 +2,7 @@
 #define COMMONFUNCS_H
     #include <string>
     #include <rclcpp/rclcpp.hpp>
+    #include <stdio.h>
 
     template <typename T>
     T getParameter(std::string parameterName, int initialValue, rclcpp::Node::SharedPtr *nodeHandle);

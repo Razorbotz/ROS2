@@ -10,7 +10,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>messages</depend>
-  <depend>common</depend>
+  <depend>common_funcs</depend>
   <build_depend>rclcpp</build_depend>
   <build_depend>std_msgs</build_depend>
 

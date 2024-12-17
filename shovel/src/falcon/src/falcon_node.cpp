@@ -34,7 +34,7 @@
 #include <ctre/phoenix/cci/Unmanaged_CCI.h>
 #include <ctre/phoenix/cci/Diagnostics_CCI.h>
 
-#include "../../common/include/common/CommonFuncs.h"
+#include "common/CommonFuncs.h"
 #include "messages/msg/falcon_out.hpp"
 #include <fstream>
 
@@ -89,7 +89,7 @@ float expectedSpeed = 0.0;
 // Operating modes:
 // 0 - Normal
 // 1 - Critical
-// 2 - Emergency 
+// 2 - Emergency
 int op_mode = 0;
 
 /** @brief STOP Callback
@@ -146,6 +146,15 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 }
 
 
+/** @brief Function that updates the current speed closer to the expected
+ * 
+ * When the motors receive a large change in speed, the amperage needed
+ * is very high and can trip the overcurrent protection on the Falcons.
+ * The overcurrent protection can only be reset by physically unplugging
+ * the motor, so it disables the motor until after the end of the run. By
+ * limiting the change in the speed, the current is kept below the threshold
+ * and allows for higher speeds to be used.
+ */
 void updateSpeed(){
 	float diff = expectedSpeed - currentSpeed;
 	if(std::abs(diff) > speedIncrease){
@@ -195,7 +204,6 @@ int main(int argc,char** argv){
 	double kF = getParameter<double>("kF", 0, &nodeHandle);
 	int publishingDelay = getParameter<int>("publishing_delay", 0, &nodeHandle);
 	speedIncrease = getParameter<double>("speed_increase", 0.05, &nodeHandle);
-	RCLCPP_INFO(nodeHandle->get_logger(),"speedIncrease: %f", speedIncrease);
 	speedTiming = getParameter<int>("speed_timing", 100, &nodeHandle);
 	std::string fileToWrite = getParameter<std::string>("file_name", "unset", &nodeHandle);
 

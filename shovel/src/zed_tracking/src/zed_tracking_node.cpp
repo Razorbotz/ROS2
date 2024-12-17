@@ -141,6 +141,13 @@ int main(int argc, char **argv) {
 //    init_params.coordinate_system = sl::COORDINATE_SYSTEM::LEFT_HANDED_Z_UP;
 //    init_params.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Z_UP_X_FWD;
     init_params.sensors_required = true;
+    // Set the streaming parameters
+    sl::StreamingParameters stream_params;
+    stream_params.codec = sl::STREAMING_CODEC::H264; // Can be H264 or H265
+    stream_params.bitrate = 8000;
+    stream_params.port = 30000; // Port used for sending the stream
+    // Enable streaming with the streaming parameters
+    sl::ERROR_CODE err = zed.enableStreaming(stream_params);
 
     // Open the camera
     sl::ERROR_CODE err = zed.open(init_params);
@@ -291,6 +298,8 @@ int main(int argc, char **argv) {
             y_vel = vel[1];
             z_vel = vel[2];
 
+            // Get obstacles detected in image based on contours
+            /* 
             for(size_t i = 0; i < contours.size(); i++){
                 if(cv::contourArea(contours[i]) > 20){
                     cv::Rect box = boundingRect(contours[i]);
@@ -304,6 +313,7 @@ int main(int argc, char **argv) {
                     }
                 }
             }
+            */
 
 /*
             zed.retrieveImage(image_zed, sl::VIEW::LEFT);
@@ -354,6 +364,7 @@ int main(int argc, char **argv) {
         }
 	    rate.sleep();
     }
+    zed.disableStreaming();
     zed.close();
     return 0;
 
