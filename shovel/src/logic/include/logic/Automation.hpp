@@ -112,6 +112,8 @@ class Automation{
 
     float getAngle();
 
+    float getAngleDiff(float degrees);
+
     int checkAngle();
 
     int checkDistance();

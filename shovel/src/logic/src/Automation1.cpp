@@ -152,10 +152,12 @@ void Automation1::automate(){
     // TODO: Change this to align
     if(robotState==LOCATE){
         changeSpeed(0.15,-0.15);
-        if(position.arucoVisible==true){
+        if(position.arucoInitialized==true){
             RCLCPP_INFO(this->node->get_logger(), "Roll: %f Pitch: %f Yaw: %f", position.roll, position.pitch, position.yaw);
-            setDestAngle(position.yaw + 90.0);
             changeSpeed(0,0);
+            setStartPositionM(position.z, position.x);
+            RCLCPP_INFO(this->node->get_logger(), "startX: %d, startY: %d", this->search.startX, this->search.startY);
+            setDestAngle(90);
             robotState=ALIGN;
         }
     }
@@ -354,17 +356,42 @@ void Automation1::automate(){
 
     // Dump the collected rocks in the dump bin
     if(robotState==DUMP){
-        if(checkArmPosition(30)){
-            setArmSpeed(0.0);
-        }
-        if(checkBucketPosition(30)){
+        if(dumpState == DUMP_IDLE){
+            setArmTarget(900);
+            setBucketTarget(900);
+            setArmSpeed(1.0);
             setBucketSpeed(0.0);
+            dumpState = DUMP_EXTEND;
         }
-        if(checkArmPosition(30) && checkBucketPosition(30)){
-            robotState = ROBOT_IDLE;
-            setBucketSpeed(-1.0);
-            setArmSpeed(-1.0);
+        if(dumpState == DUMP_EXTEND){
+            if(checkArmPosition(300)){
+                setBucketSpeed(1.0);
+            }
+            if(checkArmPosition(900)){
+                setArmSpeed(0.0);
+            }
+            if(checkBucketPosition(900)){
+                setBucketSpeed(0.0);
+            }
+            if(checkArmPosition(900) && checkBucketPosition(900)){
+                setBucketSpeed(-1.0);
+                setArmSpeed(-1.0);
+                dumpState = DUMP_RETRACT;
+            }
         }
+        if(dumpState == DUMP_RETRACT){
+            if(checkArmPosition(30) == 1){
+                setArmSpeed(0.0);
+            }
+            if(checkBucketPosition(30) == 1){
+                setBucketSpeed(0.0);
+            }
+            if(checkArmPosition(30) == 1 && checkBucketPosition(30) == 1){
+                robotState = ROBOT_IDLE;
+                dumpState = DUMP_IDLE;
+            }
+        }
+        
     }
 
     // After dumping the rocks, return to start position and

@@ -131,16 +131,30 @@ EulerAngles Automation::toEulerAngles(Quaternion q) {
     return angles;
 }
 
+
+/*
+Function to publish a ROS2 message of type empty with the topic name
+of GO, which will enable the motors to turn on.
+*/
 void Automation::setGo(){
    std_msgs::msg::Empty empty;
    goPublisher->publish(empty);
 }
 
+
+/*
+Function to publish a ROS2 message of type empty with the topic name
+STOP, which will disable the motors.
+*/
 void Automation::setStop(){
     std_msgs::msg::Empty empty;
     stopPublisher->publish(empty);
 }
 
+
+/*
+Function to set Linear1 to the received Linear motor values.
+*/
 void Automation::setLinear1(const messages::msg::LinearOut::SharedPtr linearOut){
     this->linear1.speed = linearOut->speed;
     this->linear1.atMax = linearOut->at_max;
@@ -154,6 +168,10 @@ void Automation::setLinear1(const messages::msg::LinearOut::SharedPtr linearOut)
     this->linear1.sensorless = linearOut->sensorless;
 }
 
+
+/*
+Function to set Linear2 to the received Linear motor values.
+*/
 void Automation::setLinear2(const messages::msg::LinearOut::SharedPtr linearOut){
     this->linear2.speed = linearOut->speed;
     this->linear2.atMax = linearOut->at_max;
@@ -167,6 +185,10 @@ void Automation::setLinear2(const messages::msg::LinearOut::SharedPtr linearOut)
     this->linear2.sensorless = linearOut->sensorless;
 }
 
+
+/*
+Function to set Linear3 to the received Linear motor values.
+*/
 void Automation::setLinear3(const messages::msg::LinearOut::SharedPtr linearOut){
     this->linear3.speed = linearOut->speed;
     this->linear3.atMax = linearOut->at_max;
@@ -180,6 +202,10 @@ void Automation::setLinear3(const messages::msg::LinearOut::SharedPtr linearOut)
     this->linear3.sensorless = linearOut->sensorless;
 }
 
+
+/*
+Function to set Linear4 to the received Linear motor values.
+*/
 void Automation::setLinear4(const messages::msg::LinearOut::SharedPtr linearOut){
     this->linear4.speed = linearOut->speed;
     this->linear4.atMax = linearOut->at_max;
@@ -193,6 +219,10 @@ void Automation::setLinear4(const messages::msg::LinearOut::SharedPtr linearOut)
     this->linear4.sensorless = linearOut->sensorless;
 }
 
+
+/*
+Function to set Talon1 to the received Talon motor values.
+*/
 void Automation::setTalon1(const messages::msg::TalonOut::SharedPtr talonOut){
     this->talon1.busVoltage = talonOut->bus_voltage;
     this->talon1.outputCurrent = talonOut->output_current;
@@ -203,6 +233,10 @@ void Automation::setTalon1(const messages::msg::TalonOut::SharedPtr talonOut){
     }
 }
 
+
+/*
+Function to set Talon2 to the received Talon motor values.
+*/
 void Automation::setTalon2(const messages::msg::TalonOut::SharedPtr talonOut){
     this->talon2.busVoltage = talonOut->bus_voltage;
     this->talon2.outputCurrent = talonOut->output_current;
@@ -213,6 +247,10 @@ void Automation::setTalon2(const messages::msg::TalonOut::SharedPtr talonOut){
     }
 }
 
+
+/*
+Function to set Talon3 to the received Talon motor values.
+*/
 void Automation::setTalon3(const messages::msg::TalonOut::SharedPtr talonOut){
     this->talon3.busVoltage = talonOut->bus_voltage;
     this->talon3.outputCurrent = talonOut->output_current;
@@ -223,6 +261,10 @@ void Automation::setTalon3(const messages::msg::TalonOut::SharedPtr talonOut){
     }
 }
 
+
+/*
+Function to set Talon4 to the received Talon motor values.
+*/
 void Automation::setTalon4(const messages::msg::TalonOut::SharedPtr talonOut){
     this->talon4.busVoltage = talonOut->bus_voltage;
     this->talon4.outputCurrent = talonOut->output_current;
@@ -233,6 +275,10 @@ void Automation::setTalon4(const messages::msg::TalonOut::SharedPtr talonOut){
     }
 }
 
+
+/*
+Function to set Falcon1 to the received Falcon motor values.
+*/
 void Automation::setFalcon1(const messages::msg::FalconOut::SharedPtr falconOut){
     this->falcon1.busVoltage = falconOut->bus_voltage;
     this->falcon1.outputCurrent = falconOut->output_current;
@@ -240,6 +286,10 @@ void Automation::setFalcon1(const messages::msg::FalconOut::SharedPtr falconOut)
     this->falcon1.outputPercentage = falconOut->output_percent;
 }
 
+
+/*
+Function to set Falcon2 to the received Falcon motor values.
+*/
 void Automation::setFalcon2(const messages::msg::FalconOut::SharedPtr falconOut){
     this->falcon2.busVoltage = falconOut->bus_voltage;
     this->falcon2.outputCurrent = falconOut->output_current;
@@ -247,6 +297,10 @@ void Automation::setFalcon2(const messages::msg::FalconOut::SharedPtr falconOut)
     this->falcon2.outputPercentage = falconOut->output_percent;
 }
 
+
+/*
+Function to set Falcon3 to the received Falcon motor values.
+*/
 void Automation::setFalcon3(const messages::msg::FalconOut::SharedPtr falconOut){
     this->falcon3.busVoltage = falconOut->bus_voltage;
     this->falcon3.outputCurrent = falconOut->output_current;
@@ -254,6 +308,10 @@ void Automation::setFalcon3(const messages::msg::FalconOut::SharedPtr falconOut)
     this->falcon3.outputPercentage = falconOut->output_percent;
 }
 
+
+/*
+Function to set Falcon4 to the received Falcon motor values.
+*/
 void Automation::setFalcon4(const messages::msg::FalconOut::SharedPtr falconOut){
     this->falcon4.busVoltage = falconOut->bus_voltage;
     this->falcon4.outputCurrent = falconOut->output_current;
@@ -261,6 +319,11 @@ void Automation::setFalcon4(const messages::msg::FalconOut::SharedPtr falconOut)
     this->falcon4.outputPercentage = falconOut->output_percent;
 }
 
+
+/*
+Function that checks if the linear actuator has a PotentiometerError
+or an ActuatorNotMovingError.
+*/
 bool Automation::checkErrors(Linear linear){
     if(linear.error == "PotentiometerError" || linear.error == "ActuatorNotMovingError"){
         return true;
@@ -270,6 +333,12 @@ bool Automation::checkErrors(Linear linear){
     }
 }
 
+
+/*
+Function that will set the angle that the robot should be facing
+to travel to the destination. This should be between the values of
+[-180, 180].
+*/
 void Automation::setDestAngle(float degrees){
     if(degrees < -180){
         this->destAngle = degrees + 360;
@@ -282,6 +351,14 @@ void Automation::setDestAngle(float degrees){
     }
 }
 
+
+/*
+Function to get the angle that the robot should be facing to
+travel to the destination. This should be between the values of
+[-180, 180]. 
+NOTE: This has not been confirmed to work and needs to be tested
+significantly more to ensure that the results are corret.
+*/
 float Automation::getAngle(){
     float y = this->search.destX - this->search.startX;
     float x = this->search.destY - this->search.startY;
@@ -293,6 +370,38 @@ float Automation::getAngle(){
     return angle;
 }
 
+
+/*
+
+*/
+float Automation::getAngleDiff(){
+    return Automation::getAgnleDiff(position.pitch);
+}
+
+
+/*
+If result < 0, turn left. Else, turn right.
+*/
+float Automation::getAngleDiff(float degrees){
+    float result = this->destAngle - degrees;
+    if(result < -180){
+        result += 360;
+    }
+    if(result > 180){
+        result -= 360;
+    }
+    return result;
+}
+
+
+/*
+Function to check whether the current angle of the robot is within an
+acceptable range. The logic when the values are at the edge of the range
+gets a little bit fuzzy. 
+
+The expected use of this function is that the function will detect if the
+robot has gone outside of the expected angle.
+*/
 int Automation::checkAngle(){
     if(abs(this->destAngle) > 177){
         if(std::abs(position.pitch) < std::abs(this->destAngle) + 2 && std::abs(position.pitch) > std::abs(this->destAngle) - 2){
@@ -304,8 +413,19 @@ int Automation::checkAngle(){
             return 1;
         }
     }
+    float angle = getAngleDiff(position.pitch);
+    if(angle < 0){
+        return 1;
+    }
+    return 0;
 }
 
+
+/*
+Function that checks the distance between the robot's current position
+and the destination. The greater the distance returned, the further out
+the robot is from the target location. 
+*/
 int Automation::checkDistance(){
     float currentZ = (this->search.Row / 10.0) - position.z;
     float currentX = position.x + this->xOffset;
@@ -320,13 +440,21 @@ int Automation::checkDistance(){
     
 }
 
+
+/*
+Function to set the X coordinate of the destination. 
+
+TODO: Explain why this sets the destY coordinate
+*/
 void Automation::setDestX(float meters){
     this->search.destY = meters;
 }
 
+
 void Automation::setDestZ(float meters){
     this->search.destX = meters;
 }
+
 
 void Automation::publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString){
     messages::msg::AutonomyOut aOut;
@@ -337,62 +465,117 @@ void Automation::publishAutonomyOut(std::string robotStateString, std::string ex
     autonomyOutPublisher->publish(aOut);
 }
 
+
+/*
+Function to set the start time at some point. This value can be 
+used to calculate how much time something has been running, which
+can be used to replace a while loop with an if statement instead.
+*/
 void Automation::setStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime){
     this->startTime = StartTime;
 }
+
 
 void Automation::setBackupStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime){
     this->startBackupTime = StartTime;
 }
 
+
 std::chrono::time_point<std::chrono::high_resolution_clock> Automation::getStartTime(){
     return this->startTime;
 }
+
 
 std::chrono::time_point<std::chrono::high_resolution_clock> Automation::getBackupStartTime(){
     return this->startBackupTime;
 }
 
+
+/*
+Sets the value of the runSensorlessly variable. If this is true, the
+robot will continue to run if any potentiometers on the excavation
+system fails.
+*/
 void Automation::setRunSensorlessly(bool value){
     this->runSensorlessly = value;
 }
 
+
+/*
+Function to set the start position of the robot given the current
+position in meters. These values are transformed into decimeters,
+then transformed to map it into the 2D array.
+*/
 void Automation::setStartPositionM(float x, float y){
     this->search.startX = this->search.Row - int(std::ceil(x * 10));
     this->search.startY = int(std::ceil((y + this->xOffset) * 10));
 }
+
 
 void Automation::setStartPosition(int x, int y){
     this->search.startX = x;
     this->search.startY = y;
 }
 
+
+/*
+Function to set the destination position of the robot given the current
+position in meters. These values are transformed into decimeters,
+then transformed to map it into the 2D array.
+*/
 void Automation::setDestPositionM(float x, float y){
     this->search.destX = this->search.Row - int(std::ceil(x * 10));
     this->search.destY = int(std::ceil((y + this->xOffset) * 10));
 }
+
 
 void Automation::setDestPosition(int x, int y){
     this->search.destX = x;
     this->search.destY = y;
 }
 
+
+/*
+Function to run the A-Star algorithm. The includeHoles parameter
+tells the search algorithm whether or not holes should be included
+in the path or if they must be avoided.
+*/
 void Automation::aStar(bool includeHoles){
     this->currentPath = this->search.aStar(includeHoles);
 }
+
 
 void Automation::aStar(std::stack<Coord> points, bool includeHoles, bool simplify){
     this->currentPath = this->search.aStar(points, includeHoles, simplify);
 }
 
+
+/*
+Function to set the target position of the arms.
+*/
 void Automation::setArmTarget(int potent){
     target1 = potent;
 }
+
 
 void Automation::setBucketTarget(int potent){
     target3 = potent;
 }
 
+/*
+Function to check the current position of the arm relative
+to the target position of the arm based on the value of the
+potentiometer. The return values are described below.
+
+Potentiometer <= target - thresh, motor should run:
+return 0
+
+target - thresh < Potentiometer < target + thresh, motor should stop:
+return 1
+
+target + thresh < Potentiometer, ie motor should reverse:
+return 2
+*/
 int Automation::checkArmPosition(int thresh){
     if(linear1.potentiometer <= target1 - thresh){
         return 0;
@@ -406,6 +589,21 @@ int Automation::checkArmPosition(int thresh){
     return -1;
 }
 
+
+/*
+Function to check the current position of the bucket relative
+to the target position of the arm based on the value of the
+potentiometer. The return values are described below.
+
+Potentiometer <= target - thresh, motor should run:
+return 0
+
+target - thresh < Potentiometer < target + thresh, motor should stop:
+return 1
+
+target + thresh < Potentiometer, ie motor should reverse:
+return 2
+*/
 int Automation::checkBucketPosition(int thresh){
     if(linear3.potentiometer <= target3 - thresh){
         return 0;
@@ -419,6 +617,13 @@ int Automation::checkBucketPosition(int thresh){
     return -1;
 }
 
+
+/*
+This function is designed to move the arms to a specific point. It
+currently uses a while loop to run for a specified amount of time,
+which is bad practice because it will block other thread executions.
+This should probably be rewritten to use an if statement instead.
+*/
 void Automation::setArmPosition(int potent){
     setArmTarget(potent);
     int current = linear1.potentiometer;
@@ -437,6 +642,13 @@ void Automation::setArmPosition(int potent){
     setArmSpeed(0.0);
 }
 
+
+/*
+This function is designed to move the bucket to a specific point. It
+currently uses a while loop to run for a specified amount of time,
+which is bad practice because it will block other thread executions.
+This should probably be rewritten to use an if statement instead.
+*/
 void Automation::setBucketPosition(int potent){
     setBucketTarget(potent);
     int current = linear3.potentiometer;
@@ -455,6 +667,7 @@ void Automation::setBucketPosition(int potent){
     setBucketSpeed(0.0);
 }
 
+
 void Automation::setMap(std::string mapUsed){
     if(mapUsed == "NASA"){
         this->search.setRowCol(NASA.height, NASA.width);
@@ -471,9 +684,11 @@ void Automation::setMap(std::string mapUsed){
     this->search.initializeMap(this->robotWidth);
 }
 
+
 void Automation::setxOffset(float XOffset){
     this->xOffset = XOffset;
 }
+
 
 void Automation::setTurnLeft(bool TurnLeft){
     this->turnLeft = TurnLeft;

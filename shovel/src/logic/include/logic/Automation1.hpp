@@ -9,11 +9,13 @@ class Automation1 : public Automation{
     enum ExcavationState{EXCAVATION_IDLE,RAISE_ARM,RAISE_BUCKET,COLLECT,LOWER_ARM,LOWER_BUCKET,EXCAVATION_ERROR_RECOVERY};
     enum ErrorState {TALON_14_ERROR, TALON_15_ERROR, TALON_16_ERROR, TALON_17_ERROR, FALCON_10_ERROR, FALCON_11_ERROR, FALCON_12_ERROR, FALCON_13_ERROR,NONE};
     enum DiagnosticsState{DIAGNOSTICS_IDLE,TALON_EXTEND,TALON_RETRACT,FALCON_FORWARD,DIAGNOSTICS_ERROR_RECOVERY};
+    enum DumpState{DUMP_IDLE, DUMP_EXTEND, DUMP_RETRACT};
     RobotState robotState = ROBOT_IDLE;
     RobotState previousState = ROBOT_IDLE;
     ExcavationState excavationState = EXCAVATION_IDLE;
     ErrorState errorState = NONE;
     DiagnosticsState diagnosticsState = TALON_EXTEND;
+    DumpState dumpState = DUMP_IDLE;
     Location destination;
     float normalDistance = 1.2;
 
