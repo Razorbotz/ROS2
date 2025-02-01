@@ -84,13 +84,14 @@ struct LinearActuator{
     float maxCurrent = 0.0;         
     bool initialized = false;
     float previous = 0.0;
+    float current = 0.0;
 };
 
 
-LinearActuator linear1{14, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.85, 11.5, false, 0.0, false, 0.0};
-LinearActuator linear2{15, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.89, 11.0, false, 0.0, false, 0.0};
-LinearActuator linear3{16, 0.0, 0, 0, 0, 1024, None, false, false, 5.9, 0.0, 0.69, 8.5, false, 0.0, false, 0.0};
-LinearActuator linear4{17, 0.0, 0, 0, 0, 1024, None, false, false, 5.9, 0.0, 0.69, 8.5, false, 0.0, false, 0.0};
+LinearActuator linear1{14, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.85, 11.5, false, 0.0, false, 0.0, 0.0};
+LinearActuator linear2{15, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.89, 11.0, false, 0.0, false, 0.0, 0.0};
+LinearActuator linear3{16, 0.0, 0, 0, 0, 1024, None, false, false, 11.8, 0.0, 0.69, 8.5, false, 0.0, false, 0.0, 0.0};
+LinearActuator linear4{17, 0.0, 0, 0, 0, 1024, None, false, false, 11.8, 0.0, 0.69, 8.5, false, 0.0, false, 0.0, 0.0};
 
 float currentArmSpeed = 0.0;
 float currentBucketSpeed = 0.0;
@@ -643,7 +644,7 @@ void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
     if(keyState->key == 60 && keyState->state==1){
-        return 0;
+        return;
     }
 }
 

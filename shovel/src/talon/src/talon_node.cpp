@@ -28,6 +28,7 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <std_msgs/msg/empty.hpp>
+#include <messages/msg/key_state.hpp>
 
 #define Phoenix_No_WPI // remove WPI dependencies
 #include <ctre/Phoenix.h>
@@ -246,7 +247,7 @@ void checkVoltage(double voltage, double speed){
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
     if(keyState->key==killKey && keyState->state==1){
-        return 0;
+        return;
     }
 }
 

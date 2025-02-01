@@ -321,8 +321,10 @@ void Automation::setFalcon4(const messages::msg::FalconOut::SharedPtr falconOut)
 
 
 /*
-Function that checks if the linear actuator has a PotentiometerError
-or an ActuatorNotMovingError.
+* Function that checks if the linear actuator has a PotentiometerError
+* or an ActuatorNotMovingError.
+* @param linear - Linear actuator object
+* @return True if PotentiometerError or ActuatorNotMovingError
 */
 bool Automation::checkErrors(Linear linear){
     if(linear.error == "PotentiometerError" || linear.error == "ActuatorNotMovingError"){
@@ -375,7 +377,7 @@ float Automation::getAngle(){
 
 */
 float Automation::getAngleDiff(){
-    return Automation::getAgnleDiff(position.pitch);
+    return Automation::getAngleDiff(position.pitch);
 }
 
 
@@ -551,13 +553,18 @@ void Automation::aStar(std::stack<Coord> points, bool includeHoles, bool simplif
 
 
 /*
-Function to set the target position of the arms.
+* Function to set the target position of the arms.
+* @param potent - Desired int value of potentiometer
 */
 void Automation::setArmTarget(int potent){
     target1 = potent;
 }
 
 
+/*
+* Function to set the target position of the bucket.
+* @param potent - Desired int value of potentiometer
+*/
 void Automation::setBucketTarget(int potent){
     target3 = potent;
 }
@@ -567,14 +574,13 @@ Function to check the current position of the arm relative
 to the target position of the arm based on the value of the
 potentiometer. The return values are described below.
 
-Potentiometer <= target - thresh, motor should run:
-return 0
+Potentiometer <= target - thresh, return 0
 
-target - thresh < Potentiometer < target + thresh, motor should stop:
-return 1
+target - thresh < Potentiometer < target + thresh, return 1
 
-target + thresh < Potentiometer, ie motor should reverse:
-return 2
+target + thresh < Potentiometer, return 2
+@param thresh - Value of threshold to check if potentiometer is within
++/- the thresh value of target
 */
 int Automation::checkArmPosition(int thresh){
     if(linear1.potentiometer <= target1 - thresh){
@@ -595,14 +601,13 @@ Function to check the current position of the bucket relative
 to the target position of the arm based on the value of the
 potentiometer. The return values are described below.
 
-Potentiometer <= target - thresh, motor should run:
-return 0
+Potentiometer <= target - thresh, return 0
 
-target - thresh < Potentiometer < target + thresh, motor should stop:
-return 1
+target - thresh < Potentiometer < target + thresh, return 1
 
-target + thresh < Potentiometer, ie motor should reverse:
-return 2
+target + thresh < Potentiometer, return 2
+@param thresh - Value of threshold to check if potentiometer is within
++/- the thresh value of target
 */
 int Automation::checkBucketPosition(int thresh){
     if(linear3.potentiometer <= target3 - thresh){

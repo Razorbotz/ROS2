@@ -385,7 +385,7 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         updateMaxSpeed(-0.1);
     }
     if(keyState->key == 48 && keyState->state==1){
-        return 0;
+        return;
     }
 }
 

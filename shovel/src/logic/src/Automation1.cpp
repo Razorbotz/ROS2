@@ -314,7 +314,7 @@ void Automation1::automate(){
     }
 
     // After mining, return to start position
-    if(robotState==GO_TO_HOME){
+    if(robotState==GO_TO_DUMP){
         if (!(position.yaw < this->destAngle+5 && position.yaw > this->destAngle-5)) {
             if(position.yaw - this->destAngle > 180 || position.yaw - this->destAngle < 0){
                 changeSpeed(0.15, -0.15);
@@ -327,7 +327,7 @@ void Automation1::automate(){
             if(abs(this->position.x) > abs(this->destX)){
                 changeSpeed(0.0, 0.0);
                 if(this->currentPath.empty()){
-                    robotState = DOCK;
+                    robotState = DUMP;
                 }
                 else{
                     std::pair<int, int> current = this->currentPath.top();
@@ -349,33 +349,30 @@ void Automation1::automate(){
         }
     }
 
-    // After reaching start position, dock at dump bin
-    if(robotState==DOCK){
-
-    }
-
     // Dump the collected rocks in the dump bin
     if(robotState==DUMP){
         if(dumpState == DUMP_IDLE){
             setArmTarget(900);
-            setBucketTarget(900);
+            setBucketTarget(700);
             setArmSpeed(1.0);
             setBucketSpeed(0.0);
             dumpState = DUMP_EXTEND;
         }
         if(dumpState == DUMP_EXTEND){
-            if(checkArmPosition(300)){
+            if(checkArmPosition(30)){
                 setBucketSpeed(1.0);
             }
-            if(checkArmPosition(900)){
+            if(checkArmPosition(30)){
                 setArmSpeed(0.0);
             }
-            if(checkBucketPosition(900)){
+            if(checkBucketPosition(30)){
                 setBucketSpeed(0.0);
             }
-            if(checkArmPosition(900) && checkBucketPosition(900)){
+            if(checkArmPosition(30) && checkBucketPosition(30)){
                 setBucketSpeed(-1.0);
                 setArmSpeed(-1.0);
+                setBucketTarget(10);
+                setArmTarget(10);
                 dumpState = DUMP_RETRACT;
             }
         }
@@ -392,13 +389,6 @@ void Automation1::automate(){
             }
         }
         
-    }
-
-    // After dumping the rocks, return to start position and
-    // start again
-    if(robotState==RETURN_TO_START){
-
-        robotState = ALIGN;
     }
 
     if(robotState == OBSTACLE){

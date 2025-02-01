@@ -250,7 +250,7 @@ void checkVoltage(double voltage, double speed){
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
     if(keyState->key==killKey && keyState->state==1){
-        return 0;
+        return;
     }
 }
 
