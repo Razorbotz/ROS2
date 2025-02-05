@@ -104,9 +104,11 @@ void send(BinaryMessage message){
     for(auto byteIterator = byteList->begin(); byteIterator != byteList->end(); byteIterator++, index++){
         bytes.at(index) = *byteIterator;
     }
+    if(bytesList->size() != 241)
+        return;
     total += byteList->size();
     int bytesSent = 0, byteTotal = 0;
-    //RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
+    RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
     while(byteTotal < byteList->size()){
         if((bytesSent = send(new_socket, bytes.data(), byteList->size(), 0))== -1){
             RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
@@ -119,13 +121,30 @@ void send(BinaryMessage message){
 }
 
 
+/*
+This function was required to pad the messages to 241 bytes, which was the
+size expected by the client to ensure that no bytes were dropped during the
+process of being sent. To allow each packet to be 241 bytes, a string with
+the name of Pad is added with a string of spaces to fill out the rest. This
+has an issue when the total size is below 120 and causes the addition of the
+Pad string element to increase the size by 8, instead of the expected 7. This
+is most likely caused by some undocumented behavior in the BinaryMessage file.
+This might also have an issue if the size is greater than 234, which would
+cause the size to be padded beyond the expected 241.
+*/
 void pad(BinaryMessage message){
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     int size = byteList->size();
 
     if(size != 241){
-        if(size < 120){
-            size += 8;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Received %d bytes", size);
+        if(size < 150){
+            std::string padded = "";
+            for(int i = size; i < size + 50; i++){
+                padded.append(" ");
+            }
+            message.addElementString("Pad", padded);
+            size += 57;
         }
         else{
             size += 7;

@@ -5,6 +5,9 @@
 #include "BinaryMessage.hpp"
 
 
+/*
+
+*/
 Element::Element(std::string label, std::list<Data> data, uint8_t type){
     this->label = std::move(label);
     this->type = type;
@@ -14,6 +17,14 @@ Element::Element(std::string label, std::list<Data> data, uint8_t type){
 }
 
 
+/*
+
+This is using the ... parameter, which is a C concept that allows
+for a variable number of arguments of unspecified type. These
+arguments are accessed using the va_start and va_arg macros.
+The va_end macro is used to clean up the object initialized by
+the va_start macro call.
+*/
 Element::Element(std::string label, std::list<Data> data, uint8_t type, size_t dimensionCount, ...){
     this->label = std::move(label);
     this->data = std::move(data);
@@ -30,6 +41,9 @@ Element::Element(std::string label, std::list<Data> data, uint8_t type, size_t d
 }
 
 
+/*
+This function is used to create an element of an array object.
+*/
 Element::Element(std::string label, std::list<Data> data, uint8_t type, size_t dimensionCount, std::vector<size_t> sizeList){
     this->label = std::move(label);
     this->data = std::move(data);
@@ -38,6 +52,10 @@ Element::Element(std::string label, std::list<Data> data, uint8_t type, size_t d
     this->sizeList = std::move(sizeList);
 }
 
+
+/*
+Function to print the data of the element.
+*/
 void Element::print(){
 //    std::cout << "Element" << std::endl;
     std::cout << this->label << ": ";
@@ -329,6 +347,9 @@ void Element::print(){
 }
 
 
+/*
+Function to print the objects and elements associated with the object.
+*/
 void Object::print(){
     std::cout << "Object" << std::endl;
     std::cout << "label: " << this->label << std::endl;
@@ -343,6 +364,10 @@ void Object::print(){
 }
 
 
+/*
+Constructor for BinaryMessage using a list of bytes. This sets
+the current byte to the first byte of the bytes list.
+*/
 BinaryMessage::BinaryMessage(std::list<uint8_t>& bytes){
     std::list<uint8_t>::iterator currentByte = bytes.begin();
 
@@ -846,7 +871,10 @@ std::list<uint8_t> BinaryMessage::encodeSizeBytes( uint64_t number){
     return *bytes.get();
 }
 
-
+/*
+This function is used to encode the size of the element that is
+being added to the object. 
+*/
 void BinaryMessage::encodeSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, uint64_t number) {
 
     if (number <= 0x7F) {
@@ -1205,6 +1233,10 @@ void BinaryMessage::addElementInt64(Object& object, std::string label, int64_t i
 }
 
 
+
+/*
+
+*/
 void BinaryMessage::addElementUInt8(Object& object, std::string label, uint8_t uint8){
     Data data;
     data.uint8 = uint8;
@@ -1450,6 +1482,20 @@ std::shared_ptr<std::list<uint8_t>> BinaryMessage::getBytes(){
 }
 
 
+/*
+If the size value is less than or equal to 127 (0111 1111), the size
+is converted to a uint8_t value, then added to the bytes list and the
+size can be represented in a single byte. If the value cannot be
+represented in a single byte, then it will be represented using a series
+of bytes to hold the value. To calculate the minimun number of bytes that
+are needed to hold the value, the function uses a mask to identify when
+the size first has non-zero values, starting from the left-most byte. 
+The number of bytes that contain values are calculated by the equation
+8 - zeroCount, with zeroCount the number of bytes containing only zeroes.
+The size is then ORed with 0x80 to set the first bit flag indicating that
+the following bytes contain the actual size. 
+
+*/
 void BinaryMessage::addSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, uint64_t size){
 
     if(size <= 0x7F){
