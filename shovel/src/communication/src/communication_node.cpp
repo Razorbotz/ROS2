@@ -104,20 +104,26 @@ void send(BinaryMessage message){
     for(auto byteIterator = byteList->begin(); byteIterator != byteList->end(); byteIterator++, index++){
         bytes.at(index) = *byteIterator;
     }
-    if(bytesList->size() != 241)
+    if(byteList->size() != 241)
         return;
-    total += byteList->size();
-    int bytesSent = 0, byteTotal = 0;
-    RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
-    while(byteTotal < byteList->size()){
-        if((bytesSent = send(new_socket, bytes.data(), byteList->size(), 0))== -1){
-            RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
-            break;
-        }
-        else{
-            byteTotal += bytesSent;
+    try{
+        total += byteList->size();
+        int bytesSent = 0, byteTotal = 0;
+        RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
+        while(byteTotal < byteList->size()){
+            if((bytesSent = send(new_socket, bytes.data(), byteList->size(), 0))== -1){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
+                break;
+            }
+            else{
+                byteTotal += bytesSent;
+            }
         }
     }
+    catch(){
+        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to send data to client");
+    }
+
 }
 
 
@@ -125,12 +131,10 @@ void send(BinaryMessage message){
 This function was required to pad the messages to 241 bytes, which was the
 size expected by the client to ensure that no bytes were dropped during the
 process of being sent. To allow each packet to be 241 bytes, a string with
-the name of Pad is added with a string of spaces to fill out the rest. This
-has an issue when the total size is below 120 and causes the addition of the
-Pad string element to increase the size by 8, instead of the expected 7. This
-is most likely caused by some undocumented behavior in the BinaryMessage file.
-This might also have an issue if the size is greater than 234, which would
-cause the size to be padded beyond the expected 241.
+the name of Pad is added with a string of spaces to fill out the rest. 
+Because the packet will have an additional size byte when the total length
+of the padded string is over 127, the padded string is split into two when
+the size is less than 150.
 */
 void pad(BinaryMessage message){
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
@@ -146,9 +150,7 @@ void pad(BinaryMessage message){
             message.addElementString("Pad", padded);
             size += 57;
         }
-        else{
-            size += 7;
-        }
+        size += 7;
         std::string padded = "";
         for(int i = size; i < 241; i++){
             padded.append(" ");
@@ -290,6 +292,16 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     pad(message);
 }
 
+
+void testSend(){
+    BinaryMessage message("Test");
+    message.addElementUint8("UInt8", 0);
+    message.addElementBool("Bool", false);
+    message.addElementString("String", "Testing Binary Message");
+    pad(message);
+}
+
+
 /** @brief Callback function for the power topic.
  * 
  * This function is called when the node receives a
@@ -317,6 +329,7 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
 void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon1 callback");
     send("Talon 1",talonOut);
+    testSend();
 }
 
 /** @brief Callback function for the Talon topic
@@ -680,30 +693,35 @@ int main(int argc, char **argv){
     uint8_t message[256];
     rclcpp::Rate rate(30);
     while(rclcpp::ok()){
-        bytesRead = recv(new_socket, buffer, 1024, 0);
-        for(int index=0;index<bytesRead;index++){
-            messageBytesList.push_back(buffer[index]);
-        }
-
-        if(bytesRead==0){
-            stopPublisher->publish(empty);
-	        RCLCPP_INFO(nodeHandle->get_logger(),"Lost Connection");
-            broadcast=true;
-            //wait for reconnect
-            if (listen(server_fd, 3) < 0) { 
-                perror("listen"); 
-                exit(EXIT_FAILURE); 
-            } 
-            if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
-                perror("accept"); 
-                exit(EXIT_FAILURE); 
+        try{
+            bytesRead = recv(new_socket, buffer, 1024, 0);
+            for(int index=0;index<bytesRead;index++){
+                messageBytesList.push_back(buffer[index]);
             }
-            broadcast=false;
-            bytesRead = read(new_socket, buffer, 1024); 
-            send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
-            fcntl(new_socket, F_SETFL, O_NONBLOCK);
-    
-            silentRunning=true;
+
+            if(bytesRead==0){
+                stopPublisher->publish(empty);
+                RCLCPP_INFO(nodeHandle->get_logger(),"Lost Connection");
+                broadcast=true;
+                //wait for reconnect
+                if (listen(server_fd, 3) < 0) { 
+                    perror("listen"); 
+                    exit(EXIT_FAILURE); 
+                } 
+                if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
+                    perror("accept"); 
+                    exit(EXIT_FAILURE); 
+                }
+                broadcast=false;
+                bytesRead = read(new_socket, buffer, 1024); 
+                send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
+                fcntl(new_socket, F_SETFL, O_NONBLOCK);
+        
+                silentRunning=true;
+            }
+        }
+        catch(){
+            RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to read data from client");
         }
 
         while(messageBytesList.size()>0 && messageBytesList.front()<=messageBytesList.size()){
