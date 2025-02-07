@@ -355,6 +355,7 @@ int main(int argc, char **argv) {
 	    rate.sleep();
     }
     zed.close();
+    rclcpp::shutdown();
     return 0;
 
 }

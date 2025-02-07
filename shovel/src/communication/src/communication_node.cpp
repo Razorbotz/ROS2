@@ -120,7 +120,7 @@ void send(BinaryMessage message){
             }
         }
     }
-    catch(){
+    catch(int x){
         RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to send data to client");
     }
 
@@ -295,8 +295,8 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
 
 void testSend(){
     BinaryMessage message("Test");
-    message.addElementUint8("UInt8", 0);
-    message.addElementBool("Bool", false);
+    message.addElementUInt8("UInt8", 0);
+    message.addElementBoolean("Bool", false);
     message.addElementString("String", "Testing Binary Message");
     pad(message);
 }
@@ -720,7 +720,7 @@ int main(int argc, char **argv){
                 silentRunning=true;
             }
         }
-        catch(){
+        catch(int x){
             RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to read data from client");
         }
 

@@ -616,4 +616,5 @@ int main(int argc, char **argv){
         rclcpp::spin_some(nodeHandle);
         rate.sleep();
     }
+    rclcpp::shutdown();
 }
