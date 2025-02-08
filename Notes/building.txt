@@ -1,0 +1,24 @@
+
+Each Node directory needs two files for colcon to build 
+a CMakeLists.txt and a package.xml
+
+CMakeLists.txt: Provides compilation instructions for the compiler
+package.xml: Tells information about the node such as
+ - Other nodes it depends on
+ - Build dependencies
+ - Executable Dependencies
+ - What build tool to use (ament_cmake in most cases)
+
+
+
+
+colcon build: Builds entire project: 
+**Checks for edited files and builds ones that need it** 
+
+
+
+colcon build --packages-select "Node": Builds individual nodes
+Ex. colcon build --packages-select communication
+
+
+  
