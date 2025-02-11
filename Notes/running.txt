@@ -2,7 +2,9 @@
 Launch with no Motors or Cameras
 ros2 launch launch/launch_nano_no_motors.py
 
-
 Launch everything
 ros2 launch launch/launch.py
+
+Directory where launch python files are located
+ROS2/shovel/launch 
 
