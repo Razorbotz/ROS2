@@ -867,6 +867,7 @@ void BinaryMessage::encodeSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, u
 
         int byteCount = 8 - zeroCount;
 
+        // Sets the most significant bit (MSB) to 1 (using 0x80) to indicate that this is a multi-byte encoded number
         bytes->push_back(byteCount | 0x80);
 
         for (int index = byteCount - 1; index >= 0; index--) {

@@ -1,0 +1,50 @@
+Decoding of binary message
+
+
+
+Binary message Functions Overview
+
+
+encodeSizeBytes(std::shared_ptr<std::list<uint8_t>>
+bytes, uint64_t number)
+
+Main purpose:
+    - Encodes 64-bit unsigned integers into one or more bytes
+      and appends the result to the given byte list
+Operation:
+    The two main cases of this function are if the 64 bit number is greater or less than 127
+
+    Case 1: number <= 127
+        - If the number is <= 127 or 0x7F, it can be properly represented by one byte
+        - Since the number is <= 127 it is cast to a uin8_t or const char which is 8 bits
+        - Esentially any byte with a value less than 0x80 (most significant bit not set) is interpreted as "one-byte size"
+    Case 2: number > 127
+        - Function must encode more than one byte
+        - The function creates a 64-bit mask 0xFF00000000000000L which sets the most-significant byte of the 64-bit value. 
+        - It then counts (after most significant byte) how many of the top bytes are zero
+            - For every byte that is zero it incraments the "zeroCount" variable.
+            - When a non-zero byte is found, the loop ends
+        - It then determines the number of bytes the "number" requires
+            - byteCount = 8 - zeroCount
+
+
+Example:
+    Number = 0x123456789ABC or 20015998343868
+    Binary(only 48 bits):
+    0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100
+    
+    8 Byte Representation for 64bit 
+    [ 00 ]  [ 00 ]  [ 12 ]  [ 34 ]  [ 56 ]  [ 78 ]  [ 9A] [BC]
+
+
+    Number !< 127 therfore use Case 2
+
+    Itteration 1 of loop 
+
+    Mask Value (Hex)  |mask & number     | Zero? | zeroCount
+    0xFF00000000000000|0x0000000000000000|   Y   | 1
+    0x00FF000000000000|0x0000000000000000|   Y   | 2
+    0x0000FF0000000000|0x0000120000000000|   N   | Break
+    
+    zeroCount = 2
+    byteCount = 8 - zeroCount = 8-2 = 6
