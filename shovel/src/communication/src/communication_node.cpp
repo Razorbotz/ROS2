@@ -148,7 +148,7 @@ void pad(BinaryMessage message){
                 padded.append(" ");
             }
             message.addElementString("Pad", padded);
-            size += 57;
+            size += 58;
         }
         size += 7;
         std::string padded = "";
@@ -476,6 +476,81 @@ void linearOut4Callback(const messages::msg::LinearOut::SharedPtr linearOut){
 void autonomyOutCallback(const messages::msg::AutonomyOut::SharedPtr autonomyOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "autonomy callback");
     send("Autonomy", autonomyOut);
+}
+
+
+void initTalon(std::string messageLabel){
+    BinaryMessage message(messageLabel);
+    message.addElementUInt8("Device ID",(uint8_t)10);
+    float volt = 0.0f *= 100.0;
+    uint16_t voltage = volt;
+    message.addElementUInt16("Bus Voltage",voltage);
+    uint16_t current = 0.0f *= 100.0;
+    message.addElementUInt16("Output Current",current);
+    message.addElementFloat32("Output Percent",0.0f);
+    message.addElementUInt8("Temperature",(uint8_t)28);
+    message.addElementUInt16("Sensor Position",(uint8_t)0);
+    message.addElementInt8("Sensor Velocity",(uint8_t)0);
+    message.addElementFloat32("Max Current", 0.0f);
+    pad(message);
+}
+
+void initLinear(std::string messageLabel){
+    BinaryMessage message(messageLabel);
+
+    message.addElementUInt8("Motor Number", (uint8_t)1);
+    message.addElementFloat32("Speed", 0.0f);
+    message.addElementUInt16("Potentiometer", (uint16_t)0);
+    message.addElementUInt8("Time Without Change", (uint8_t)0);
+    message.addElementUInt16("Max", (uint16_t)0);
+    message.addElementUInt16("Min", (uint16_t)0);
+    message.addElementString("Error", "None");
+    message.addElementBoolean("At Min", false);
+    message.addElementBoolean("At Max", false);
+    message.addElementFloat32("Distance", 0.0f);
+    message.addElementBoolean("Sensorless", false);
+
+    pad(message);
+}
+
+
+/*
+Function to initialize the GUI panels in the same order every time. 
+*/
+void initMessages(){
+    initTalon("Talon 1");
+    initTalon("Talon 2");
+    initTalon("Talon 3");
+    initTalon("Talon 4");
+    initTalon("Falcon 1");
+    initTalon("Falcon 2");
+    initTalon("Falcon 3");
+    initTalon("Falcon 4");
+    initLinear("Linear 1");
+    initLinear("Linear 2");
+    initLinear("Linear 3");
+    initLinear("Linear 4");
+
+    BinaryMessage message("Autonomy State");
+    message.addElementString("Robot State", "autonomy->robot_state");
+    message.addElementString("Excavation State", "autonomy->excavation_state");
+    message.addElementString("Error State", "autonomy->error_state");
+    message.addElementString("Diagnostics State", "autonomy->diagnostics_state");
+    
+    pad(message);
+
+    BinaryMessage message("Zed");
+    message.addElementFloat32("X", 0.0f);
+    message.addElementFloat32("Y", 0.0f);
+    message.addElementFloat32("Z", 0.0f);
+    message.addElementFloat32("roll", 0.0f);
+    message.addElementFloat32("pitch", 0.0f);
+    message.addElementFloat32("yaw", 0.0f);
+    message.addElementFloat32("aruco roll", 0.0f);
+    message.addElementFloat32("aruco pitch", 0.0f);
+    message.addElementFloat32("aruco yaw", 0.0f);
+    message.addElementBoolean("aruco", 0.0f);
+    pad(message);
 }
 
 /** @brief Returns the address string of the rover.

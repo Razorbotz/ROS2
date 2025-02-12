@@ -149,7 +149,6 @@ void Automation3::automate(){
         
     }
 
-    // TODO: Change this to align
     if(robotState==LOCATE){
         if(turnLeft)
             changeSpeed(-0.15,0.15);

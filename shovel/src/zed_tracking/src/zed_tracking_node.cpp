@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
     init_params.sensors_required = true;
 
     // Open the camera
-    sl::ERROR_CODE err = zed.open(init_params);
+    auto err = zed.open(init_params);
     if (err != sl::ERROR_CODE::SUCCESS) {
 	    std::cout << "Error, unable to open ZED camera: " << err << "\n";
         zed.close();
