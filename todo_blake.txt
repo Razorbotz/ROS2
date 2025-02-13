@@ -1,0 +1,5 @@
+Blake
+---------------------------
+- Make Bash Script for Startup Procedure
+	- Make it have prechecks for the robot
+- Make a Logging script to log information and monitor for errors and warnings 
