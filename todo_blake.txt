@@ -2,6 +2,7 @@ Blake
 ---------------------------
 - Make Bash Script for Startup Procedure
 	- Make it have prechecks for the robot
-- Make a Logging script to log information and monitor for errors and warnings 
+- Make a Logging script to log information and monitor for errors and warnings
+	- ROS2 Bags for Generating Crash Reports 
 - Continue writing documentation for binary_message.cpp
 - Help Joseph with upgrading to UDP 

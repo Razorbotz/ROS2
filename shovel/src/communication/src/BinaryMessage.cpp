@@ -344,6 +344,7 @@ void Object::print(){
 
 
 BinaryMessage::BinaryMessage(std::list<uint8_t>& bytes){
+    // Where the bytes is defined
     std::list<uint8_t>::iterator currentByte = bytes.begin();
 
     uint64_t size = decodeSizeBytes(currentByte);
@@ -867,11 +868,14 @@ void BinaryMessage::encodeSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, u
 
         int byteCount = 8 - zeroCount;
 
-        // Sets the most significant bit (MSB) to 1 (using 0x80) to indicate that this is a multi-byte encoded number
+        // Sets MSB to 1 and writes the number of bytes that are required to output
         bytes->push_back(byteCount | 0x80);
 
+        // Writes the bytes in big-endian order
         for (int index = byteCount - 1; index >= 0; index--) {
+            // Shifts the number to the right by 8 bits times the index and then masks it with 0xFF to get the least significant byte
             uint8_t byte = (uint8_t) (number >> (index * 8) & 0xFF);
+            // Writes the byte to the output
             bytes->push_back(byte);
         }
     }

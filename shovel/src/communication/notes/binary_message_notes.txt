@@ -1,16 +1,21 @@
-Decoding of binary message
-
-
-
 Binary message Functions Overview
 
 
-encodeSizeBytes(std::shared_ptr<std::list<uint8_t>>
-bytes, uint64_t number)
+---------------------------------------------------------
+
+addSizeBytes(std::shared_ptr<std::list<uint8_t>>
+bytes, uint64_t size)
+
+---------------------------------------------------------
 
 Main purpose:
-    - Encodes 64-bit unsigned integers into one or more bytes
-      and appends the result to the given byte list
+    - Counts Bytes neccessary for Message
+    - Called by the following functions 
+	- encodeLableBytes()
+	- encodeBytes()
+
+---------------------------------------------------------
+
 Operation:
     The two main cases of this function are if the 64 bit number is greater or less than 127
 
@@ -26,25 +31,80 @@ Operation:
             - When a non-zero byte is found, the loop ends
         - It then determines the number of bytes the "number" requires
             - byteCount = 8 - zeroCount
+	- Then we write the byteCount | 0x80 to set the MSB to 1 and put the number of Bytes being transmitted
+        - We now need to extract each byte and send each byte to output.  
+        - To do this we take the byteCount  and subtract 1 (byteCount - 1 or 6 - 1 = 5) this orders the bytes from 0 (LSB) to x (MSB) where x is the max number of bytes,
+          in our case 5. 
+        - The loop then shifts the MSB to the LSB position by doing number >> (index * 8) where index is the byteCount - 1
+        - Then the loop masks the LSB off and stores it in variable byte. 
+        - Finally we push the byte to output. 
 
+---------------------------------------------------------
 
 Example:
-    Number = 0x123456789ABC or 20015998343868
-    Binary(only 48 bits):
-    0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100
-    
-    8 Byte Representation for 64bit 
-    [ 00 ]  [ 00 ]  [ 12 ]  [ 34 ]  [ 56 ]  [ 78 ]  [ 9A] [BC]
 
+0x123456789ABC
 
+Byte[5] (MSB): 0x12  
+Byte[4]:       0x34  
+Byte[3]:       0x56  
+Byte[2]:       0x78  
+Byte[1]:       0x9A  
+Byte[0] (LSB): 0xBC  
+
+Determine Case:
     Number !< 127 therfore use Case 2
 
-    Itteration 1 of loop 
+Determine Bytes to represent number:
 
+    Determining the number of 0 bytes:
     Mask Value (Hex)  |mask & number     | Zero? | zeroCount
     0xFF00000000000000|0x0000000000000000|   Y   | 1
     0x00FF000000000000|0x0000000000000000|   Y   | 2
     0x0000FF0000000000|0x0000120000000000|   N   | Break
     
     zeroCount = 2
+Deterniming number of bytes to represent number:
     byteCount = 8 - zeroCount = 8-2 = 6
+    6 Bytes are required to represent the number
+    
+Sending Byte Count: 
+      - bytes->push_back(byteCount | 0x80);
+    
+    Since byteCount is 6 then this becomes 0x86 or 10000110
+    The MSB is set to indicate this is a multi-byte transmission and the last 7 bits indicate the number of bytes in the message
+
+Writing bytes to output:
+	- set index to byteCount - 1 to go from 0 to x instead of 1 to x bytes. 
+    	- Start at MSB
+  
+Loop 1:
+    	- index = 5
+	- number = 0x123456789ABC
+	- number >> (index * 8) & 0xFF
+	- number >> (40) & 0xFF
+	- shifting number right 40 bits results in number = 0x12
+	- byte = 0x12
+Loop 2:
+	- index = 4
+	- number 0x123456789ABC
+	- number >> (32) & 0xFF
+	- number = 0x1234
+	- byte = 0x34 since 0x1234 is & with 0xFF masking LSB off
+Loop repeats until all bytes have been read and sent to output.
+
+---------------------------------------------------------
+
+void BinaryMessage::encodeLabelBytes(std::shared_ptr<std::list<uint8_t>> bytes, std::string label)
+
+---------------------------------------------------------
+
+Main purpose:
+    - Serializes a binary string message and writes it to output 
+
+---------------------------------------------------------
+
+Operation:
+    - Pushes the type of message onto the stream (STRING or 13) defined in BinaryMessage.hpp
+    - Calls addSizeBytes(bytes, label.size() ); to break 
+    - 
