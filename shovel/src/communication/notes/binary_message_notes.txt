@@ -1,110 +1,152 @@
 Binary message Functions Overview
 
 
----------------------------------------------------------
-
+------------------------------------------------------------------------------------------------------------------
 addSizeBytes(std::shared_ptr<std::list<uint8_t>>
 bytes, uint64_t size)
-
----------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
 
 Main purpose:
-    - Counts Bytes neccessary for Message
-    - Called by the following functions 
-	- encodeLableBytes()
-	- encodeBytes()
+    Writes the passed in information to the bytes list.
+    Typically used by other functions to write the size of a message to the bytes list.
+        - Note: Decoder needs the size of a message to know when the message ends
+     
 
----------------------------------------------------------
+Used By:
+	encodeLableBytes()
+	encodeBytes()
+
+Inputs:
+    - bytes
+        Type: Shared pointer to a list 
+        Use: Contains the binary message information as it is built
+        Format: [info,info,info] // Typically in hex format for the info
+    - size
+        Type: uint64_t
+        Use: contains size information of data
+Ouputs:
+    - bytes->push_back((uint8_t)size);
+        Use: Writes the information in the size variable to the bytes list 
+        Condition: This occurs only when the size <= 127 bits or 0x7F in hex
+
+    - bytes->push_back(byteCount | 0x80);
+        Use: Writes the number of bytes needed to store the size of the information in the size variable.
+             Also changes MSB (Most significant Byte) to 1s, indicating to the decoder this size variable needed multiple bytes to represent it. 
+
+    - bytes->push_back(byte)
+        Use: Writes the information in the size variable to the byte list.
 
 Operation:
     The two main cases of this function are if the 64 bit number is greater or less than 127
 
     Case 1: number <= 127
         - If the number is <= 127 or 0x7F, it can be properly represented by one byte
-        - Since the number is <= 127 it is cast to a uin8_t or const char which is 8 bits
-        - Esentially any byte with a value less than 0x80 (most significant bit not set) is interpreted as "one-byte size"
+        - Since the number is <= 127 it is cast to a uin8_t or const char which is 8 bits and the information in the size variable is written to the bytes list
     Case 2: number > 127
-        - Function must encode more than one byte
-        - The function creates a 64-bit mask 0xFF00000000000000L which sets the most-significant byte of the 64-bit value. 
+        - There are < 1 bytes in the message
+        - The function creates a 64-bit mask 0xFF00000000000000L this is used to locate the first non-zero byte (see Example below). 
         - It then counts (after most significant byte) how many of the top bytes are zero
             - For every byte that is zero it incraments the "zeroCount" variable.
             - When a non-zero byte is found, the loop ends
-        - It then determines the number of bytes the "number" requires
-            - byteCount = 8 - zeroCount
-	- Then we write the byteCount | 0x80 to set the MSB to 1 and put the number of Bytes being transmitted
+        - It then determines the number of bytes the message requires
+            - byteCount = 8 - zeroCount (Total number of bytes in 64 bit minus the zero bytes gives the number of bytes with data)
+	    - Function then creates a indicator flag for future decoding
+            - byteCount | 0x80 which masks the MSB (most significant byte) to 1s, indicating this is a multi-byte message, and appends the bytes required to the end. 
+                - ex byteCount = 2, (byteCount | 0x80) = 0x82  
         - We now need to extract each byte and send each byte to output.  
         - To do this we take the byteCount  and subtract 1 (byteCount - 1 or 6 - 1 = 5) this orders the bytes from 0 (LSB) to x (MSB) where x is the max number of bytes,
           in our case 5. 
         - The loop then shifts the MSB to the LSB position by doing number >> (index * 8) where index is the byteCount - 1
-        - Then the loop masks the LSB off and stores it in variable byte. 
-        - Finally we push the byte to output. 
+        - Then the loop reads the LSB in the size variable after shifting, then stores it in the temporary byte variable
+        - The byte variable is then read and its information is pushed onto the bytes list
+        - Loop repeats until index reaches 0
 
----------------------------------------------------------
 
 Example:
 
-0x123456789ABC
+    0x123456789ABC or 20015998343868
 
-Byte[5] (MSB): 0x12  
-Byte[4]:       0x34  
-Byte[3]:       0x56  
-Byte[2]:       0x78  
-Byte[1]:       0x9A  
-Byte[0] (LSB): 0xBC  
+    64bit representation:
 
-Determine Case:
-    Number !< 127 therfore use Case 2
+        Byte[7] (MSB): 0x00
+        Byte[6]:       0x00
+        Byte[5]:       0x12  
+        Byte[4]:       0x34  
+        Byte[3]:       0x56  
+        Byte[2]:       0x78  
+        Byte[1]:       0x9A  
+        Byte[0] (LSB): 0xBC  
 
-Determine Bytes to represent number:
+    Determine Case:
+        (size !< 127) therfore use Case 2
 
-    Determining the number of 0 bytes:
-    Mask Value (Hex)  |mask & number     | Zero? | zeroCount
-    0xFF00000000000000|0x0000000000000000|   Y   | 1
-    0x00FF000000000000|0x0000000000000000|   Y   | 2
-    0x0000FF0000000000|0x0000120000000000|   N   | Break
+    Determine Bytes to represent number:
+
+        Determining the number of 0 bytes:
+        Mask Value (Hex)  |mask & number     | Zero? | zeroCount
+        0xFF00000000000000|0x0000123456789ABC|   Y   | 1
+        0x00FF000000000000|0x0000123456789ABC|   Y   | 2
+        0x0000FF0000000000|0x0000123456789ABC|   N   | Break
+        
+        zeroCount = 2
+    Deterniming number of bytes to represent size:
+        byteCount = 8 - zeroCount = 8-2 = 6
+        6 Bytes are required to represent the size
+        
+    Sending size Byte Count: 
+        bytes->push_back(byteCount | 0x80);
+        
+        Since byteCount is 6 then this becomes 0x86 or 10000110
+        The MSB is set to indicate this is a multi-byte transmission and the last 7 bits indicate the number of bytes in the message
+
+    Writing bytes to output:
+        Set index to byteCount - 1 to go from 0 to x instead of 1 to x bytes. 
+        Start at MSB
     
-    zeroCount = 2
-Deterniming number of bytes to represent number:
-    byteCount = 8 - zeroCount = 8-2 = 6
-    6 Bytes are required to represent the number
-    
-Sending Byte Count: 
-      - bytes->push_back(byteCount | 0x80);
-    
-    Since byteCount is 6 then this becomes 0x86 or 10000110
-    The MSB is set to indicate this is a multi-byte transmission and the last 7 bits indicate the number of bytes in the message
+        Loop 1:
+            index = 5
+            number = 0x123456789ABC
+            number >> (index * 8) & 0xFF
+            number >> (40) & 0xFF
+            shifting number right 40 bits results in number = 0x12
+            byte = 0x12
+        Loop 2:
+            index = 4
+            number 0x123456789ABC
+            number >> (32) & 0xFF
+            number = 0x1234
+            byte = 0x34 since 0x1234 is & with 0xFF masking LSB off
 
-Writing bytes to output:
-	- set index to byteCount - 1 to go from 0 to x instead of 1 to x bytes. 
-    	- Start at MSB
-  
-Loop 1:
-    	- index = 5
-	- number = 0x123456789ABC
-	- number >> (index * 8) & 0xFF
-	- number >> (40) & 0xFF
-	- shifting number right 40 bits results in number = 0x12
-	- byte = 0x12
-Loop 2:
-	- index = 4
-	- number 0x123456789ABC
-	- number >> (32) & 0xFF
-	- number = 0x1234
-	- byte = 0x34 since 0x1234 is & with 0xFF masking LSB off
-Loop repeats until all bytes have been read and sent to output.
+        Loop repeats until all bytes have been read and sent to output.
 
----------------------------------------------------------
-
+------------------------------------------------------------------------------------------------------------------
 void BinaryMessage::encodeLabelBytes(std::shared_ptr<std::list<uint8_t>> bytes, std::string label)
-
----------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
 
 Main purpose:
-    - Serializes a binary string message and writes it to output 
-
----------------------------------------------------------
+    Serializes a binary string message and writes it to output 
 
 Operation:
-    - Pushes the type of message onto the stream (STRING or 13) defined in BinaryMessage.hpp
-    - Calls addSizeBytes(bytes, label.size() ); to break 
-    - 
+    1. Pushes the type of message onto the stream (STRING or 13) defined in BinaryMessage.hpp
+    2. Calls addSizeBytes(bytes, label.size() ); to write the size of the string to the bytes list
+    3. Pushes the information in the label onto the bytes list
+
+Example:
+    label = 200 repeating A's
+
+    bytes->push_back(TYPE::STRING)
+        Pushes 13 onto the Bytes list 
+    [13]
+
+    addSizeBytes(bytes,label.size() );
+        Pushes the multibyte flag with the byte size representation and then the size of the label
+    [0x0D, 0x81, 0xC8]
+    13     flag  200
+
+    for(int index=0; index < label.size(); index++){
+        bytes->push_back(label[index]);
+    }
+        Pushes the 200 repeating A's onto the Byte list
+    [0x0D, 0x81, 0xC8, 0x41, 0x41, 0x41, ....., 0x41]
+
+    
