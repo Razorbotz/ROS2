@@ -1454,7 +1454,11 @@ std::shared_ptr<std::list<uint8_t>> BinaryMessage::getBytes(){
     return bytes;
 }
 
-
+/*
+    addSizeBytes takes in a size (64 bit integer) and returns a list of bytes that represent the size
+    Ex. 0xFFFF for the size would push the following onto the bytes list 
+    [0x82, 0xFF, 0xFF]
+*/
 void BinaryMessage::addSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, uint64_t size){
 
     if(size <= 0x7F){
@@ -1484,26 +1488,46 @@ void BinaryMessage::addSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, uint
     }
 }
 
-
+/*
+    encodeLabelBytes encodes the label of an object or element (strings)
+*/
 void BinaryMessage::encodeLabelBytes(std::shared_ptr<std::list<uint8_t>> bytes, std::string label){
+    // Notifies the decoder that the following bytes are a string
     bytes->push_back(TYPE::STRING);
+
+    //Gets the size of the label
     addSizeBytes(bytes, label.size() );
 
+    //Encodes the label
     for(int index=0; index < label.size(); index++){
         bytes->push_back(label[index]);
     }
 }
 
 
+/* The Object Struct contains the following
+            string label;
+            uint8_t type;
+            vector<Element> elementList;
+            vector<Object> children; 
+        This function encodes each of the elements of the Object Struct exept for the type
+        Starting with the label, then the elementList, and finally the children
+
+*/
 void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Object object) {
+
+    //Encodes the label
     encodeLabelBytes(bytes, object.label);
+
+    //Notifies the decoder that the following bytes are an object
     bytes->push_back(TYPE::OBJECT);
 
+    //Encodes the elements of the object
     addSizeBytes(bytes, object.elementList.size());
     for (auto iterator = object.elementList.begin();iterator != object.elementList.end(); iterator++) {
         encodeBytes(bytes, *iterator);
     }
-
+    //Encodes the children of the object
     addSizeBytes(bytes, object.children.size());
     for (auto iterator = object.children.begin();iterator != object.children.end(); iterator++) {
         encodeBytes(bytes, *iterator);
