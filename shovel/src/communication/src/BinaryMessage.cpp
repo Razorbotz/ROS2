@@ -847,7 +847,7 @@ std::list<uint8_t> BinaryMessage::encodeSizeBytes( uint64_t number){
     return *bytes.get();
 }
 
-
+// Seems redundent due to addSizeBytes
 void BinaryMessage::encodeSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, uint64_t number) {
 
     if (number <= 0x7F) {
@@ -1492,7 +1492,7 @@ void BinaryMessage::addSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, uint
     encodeLabelBytes encodes the label of an object or element (strings)
 */
 void BinaryMessage::encodeLabelBytes(std::shared_ptr<std::list<uint8_t>> bytes, std::string label){
-    // Notifies the decoder that the following bytes are a string
+    // Notifies the decoder that the data will be a string
     bytes->push_back(TYPE::STRING);
 
     //Gets the size of the label
@@ -1524,7 +1524,7 @@ void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Objec
 
     //Pushes the size of the elementList onto the bytes list
     addSizeBytes(bytes, object.elementList.size());
-    //Encodes the elements of the object
+    //Encodes the elements of the object(Element Struct)
     for (auto iterator = object.elementList.begin();iterator != object.elementList.end(); iterator++) {
         encodeBytes(bytes, *iterator);
     }

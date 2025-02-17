@@ -11,56 +11,68 @@ Main purpose:
     Typically used by other functions to write the size of a message to the bytes list.
         - Note: Decoder needs the size of a message to know when the message ends
      
-
 Used By:
 	encodeLableBytes()
-	encodeBytes()
+	encodeBytes() // Both Element and Object functions 
+
+Relies On:
+    N/A
 
 Inputs:
-    - bytes
-        Type: Shared pointer to a list 
-        Use: Contains the binary message information as it is built
-        Format: [info,info,info] // Typically in hex format for the info
-    - size
+    bytes:
+        Type: 
+            Shared pointer to a list 
+        Use: 
+            Contains the binary message information as it is built
+        Format: 
+            [info,info,info] // Typically in hex format for the info
+    size:
         Type: uint64_t
         Use: contains size information of data
 Outputs:
-    - bytes->push_back((uint8_t)size);
+    bytes->push_back((uint8_t)size);
         Use: Writes the information in the size variable to the bytes list 
         Condition: This occurs only when the size <= 127 bits or 0x7F in hex
 
-    - bytes->push_back(byteCount | 0x80);
+    bytes->push_back(byteCount | 0x80);
         Use: Writes the number of bytes needed to store the size of the information in the size variable.
              Also changes MSB (Most significant Byte) to 1s, indicating to the decoder this size variable needed multiple bytes to represent it. 
 
-    - bytes->push_back(byte)
+    bytes->push_back(byte)
         Use: Writes the information in the size variable to the byte list.
 
 Operation:
     The two main cases of this function are if the 64 bit number is greater or less than 127
 
     Case 1: number <= 127
-        - If the number is <= 127 or 0x7F, it can be properly represented by one byte
-        - Since the number is <= 127 it is cast to a uin8_t or const char which is 8 bits and the information in the size variable is written to the bytes list
+        If the number is <= 127 or 0x7F, it can be properly represented by one byte
+        Since the number is <= 127 it is cast to a uin8_t or const char which is 8 bits and the information in the size variable is written to the bytes list
     Case 2: number > 127
-        - There are < 1 bytes in the message
-        - The function creates a 64-bit mask 0xFF00000000000000L this is used to locate the first non-zero byte (see Example below). 
-        - It then counts (after most significant byte) how many of the top bytes are zero
-            - For every byte that is zero it incraments the "zeroCount" variable.
-            - When a non-zero byte is found, the loop ends
-        - It then determines the number of bytes the message requires
-            - byteCount = 8 - zeroCount (Total number of bytes in 64 bit minus the zero bytes gives the number of bytes with data)
-	    - Function then creates a indicator flag for future decoding
-            - byteCount | 0x80 which masks the MSB (most significant byte) to 1s, indicating this is a multi-byte message, and appends the bytes required to the end. 
-                - ex byteCount = 2, (byteCount | 0x80) = 0x82  
-        - We now need to extract each byte and send each byte to output.  
-        - To do this we take the byteCount  and subtract 1 (byteCount - 1 or 6 - 1 = 5) this orders the bytes from 0 (LSB) to x (MSB) where x is the max number of bytes,
-          in our case 5. 
-        - The loop then shifts the MSB to the LSB position by doing number >> (index * 8) where index is the byteCount - 1
-        - Then the loop reads the LSB in the size variable after shifting, then stores it in the temporary byte variable
-        - The byte variable is then read and its information is pushed onto the bytes list
-        - Loop repeats until index reaches 0
+        There are < 1 bytes in the message
+        The function creates a 64-bit mask 0xFF00000000000000L this is used to locate the first non-zero byte (see Example below). 
 
+        Counts (after most significant byte) how many of the top bytes are zero
+            For every byte that is zero it incraments the "zeroCount" variable.
+            When a non-zero byte is found, the loop ends
+
+        Determines the number of bytes the message requires
+            byteCount = 8 - zeroCount (Total number of bytes in 64 bit minus the zero bytes gives the number of bytes with data)
+
+	    Creates a indicator flag for future decoding
+            byteCount | 0x80 which masks the MSB (most significant byte) to 1s, indicating this is a multi-byte message, and appends the bytes required to the end. 
+                ex byteCount = 2, (byteCount | 0x80) = 0x82 
+
+        Extract each byte and send each byte to output.  
+            ByteCount and subtract 1 (byteCount - 1 or 6 - 1 = 5) this orders the bytes from 0 (LSB) to x (MSB) where x is the max number of bytes,
+            in our case 5.
+
+        Shift the MSB to the LSB position by doing number >> (index * 8) where index is the byteCount - 1
+
+        Read the LSB in the size variable after shifting and stores it in the temporary byte variable
+
+        The byte variable is then read and its information is pushed onto the bytes list
+
+        Loop repeats until index reaches 0
 
 Example:
 
@@ -126,6 +138,15 @@ void BinaryMessage::encodeLabelBytes(std::shared_ptr<std::list<uint8_t>> bytes, 
 Main purpose:
     Serializes a binary string message and writes it to output 
 
+Used By:
+    encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Object object)
+        Note: Object function
+    encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element)
+        Note: Element function
+
+Relies On:
+    addSizeBytes()
+
 Operation:
     1. Pushes the type of message onto the stream (STRING or 13) defined in BinaryMessage.hpp
     2. Calls addSizeBytes(bytes, label.size() ); to write the size of the string to the bytes list
@@ -179,16 +200,48 @@ Main purpose:
 Used By: 
     getBytes()
 
+Relies on:
+    encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element)
+        Note: This is the function that encodes Element variables 
+    addSizeBytes()
+    
 Operation:
-    1. Two parameters passed in are a bytes list and a object variable
-    2. The function then encodes any data in the Label of the Object struct utalizing the encodeLabelBytes(bytes, object.label) function
-        - This function pushes its own indicator (TYPE::STRING) onto the bytes list
-    3. After pushing the label onto the bytes list, the function then pushes another indicator for a TYPE::OBJECT, indicating the data that follows is not another string.
-       Specifically indicating that the elements and child objects are next, and are to be handeled differently than a string. 
-    4. Places the size of the element list onto the byte list, with the addSizeBytes() function
-    5. For loop runs through each object in the elementList and encodes each element using the void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element) function
-        - NOTE: the encodeBytes() function used is for Element encoding not Object encoding. Elements consist of Boolean, Char, ect types.
-    6. The second for loop encodes all the children elements
+    Two parameters passed in are a bytes list and a object variable
+
+    The function then encodes any data in the Label of the Object struct utalizing the encodeLabelBytes(bytes, object.label) function
+        This function pushes its own indicator (TYPE::STRING) onto the bytes list
+
+    After pushing the label onto the bytes list, the function then pushes another indicator for a TYPE::OBJECT, indicating the data that follows is not another string.
+        Specifically indicating that the elements and child objects are next, and are to be handeled differently than a string. 
+
+    Places the size of the element list onto the byte list, with the addSizeBytes() function
+
+    For loop runs through each object in the elementList and encodes each element using the void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element) function
+        NOTE: the encodeBytes() function used is for Element encoding not Object encoding. Elements consist of Boolean, Char, ect types.
+        
+    The second for loop encodes all the children elements
+
+Inputs:
+    object: 
+        Type: Object Instantiation
+        Use: Source of all the structured data that will be converted into a binary format
+        Format:
+            string label
+            uint8_t type //8 bit integer
+            vector<Element> elementList
+                vector containing ordered collection of Element objects
+            vector<Object> children
+                vector containing sub-Objects or children. Creates Tree like representation
+                    Ex. Top-level object contains an overall configuration, it has children objects containing "Sensors", "Motors", ect
+                        Each of those Children can also have children objects. 
+    bytes
+        Type: 
+            Shared pointer to a list 
+        Use: 
+            Contains the binary message information as it is built
+        Format: 
+            [info,info,info] // Typically in hex format for the info
+
 
 Example: 
 
@@ -271,7 +324,58 @@ Example:
     Final Bytes List:
                          bytes = [0x0D, 0x04, 0x54, 0x65, 0x73, 0x74, 0x00, 0x01, 0x0D, 0x05, 0x76, 0x61, 0x6C, 0x75, 0x65, 0x03, 0x2A, 0x00]
                                   type  size  data ------------------  type size  type  size  data ------------------------ type  data  children      
-                            
-                
 
 
+------------------------------------------------------------------------------------------------------------------
+void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element)              
+------------------------------------------------------------------------------------------------------------------
+
+Main Purpose: 
+
+
+Used By:
+
+
+Relies On:
+
+
+Operation:
+
+
+Inputs:
+
+
+Outputs(In-Order):
+
+
+Example:
+
+
+
+
+
+
+Function Template
+------------------------------------------------------------------------------------------------------------------
+*Function Name*
+------------------------------------------------------------------------------------------------------------------
+
+Main purpose:
+
+
+Used By:
+
+
+Relies On:
+
+
+Operation:
+
+
+Inputs:
+
+
+Outputs(In-Order):
+
+
+Example:
