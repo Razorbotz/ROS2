@@ -1522,13 +1522,15 @@ void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Objec
     //Notifies the decoder that the following bytes are an object
     bytes->push_back(TYPE::OBJECT);
 
-    //Encodes the elements of the object
+    //Pushes the size of the elementList onto the bytes list
     addSizeBytes(bytes, object.elementList.size());
+    //Encodes the elements of the object
     for (auto iterator = object.elementList.begin();iterator != object.elementList.end(); iterator++) {
         encodeBytes(bytes, *iterator);
     }
-    //Encodes the children of the object
+    //Pushes the size of the children onto the bytes list
     addSizeBytes(bytes, object.children.size());
+    //Encodes the children of the object
     for (auto iterator = object.children.begin();iterator != object.children.end(); iterator++) {
         encodeBytes(bytes, *iterator);
     }

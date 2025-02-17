@@ -24,7 +24,7 @@ Inputs:
     - size
         Type: uint64_t
         Use: contains size information of data
-Ouputs:
+Outputs:
     - bytes->push_back((uint8_t)size);
         Use: Writes the information in the size variable to the bytes list 
         Condition: This occurs only when the size <= 127 bits or 0x7F in hex
@@ -131,6 +131,25 @@ Operation:
     2. Calls addSizeBytes(bytes, label.size() ); to write the size of the string to the bytes list
     3. Pushes the information in the label onto the bytes list
 
+Inputs:
+    - label:
+        Type: string
+        Use: Contains the String message to be Encoded
+    - bytes
+        Type: Shared pointer to a list 
+        Use: Contains the binary message information as it is built
+        Format: [info,info,info] // Typically in hex format for the info
+
+Outputs(In-Order):
+    - bytes->push_back(TYPE::STRING); 
+        - Writes STRING or 13 to the bytes list for future decoding
+    
+    - addSizeBytes(bytes, label.size() );
+        - Writes the size of the label to the bytes list for future decoding
+   
+    - bytes->push_back(label[index]);
+        - Writes the data inside the label to the bytes list
+
 Example:
     label = 200 repeating A's
 
@@ -153,5 +172,106 @@ Example:
 ------------------------------------------------------------------------------------------------------------------
 void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Object object)
 ------------------------------------------------------------------------------------------------------------------
+
+Main purpose:
+    Takes in a Object struct and converts its entire strucutre (label, elements, and child objects) into binary format
+
+Used By: 
+    getBytes()
+
+Operation:
+    1. Two parameters passed in are a bytes list and a object variable
+    2. The function then encodes any data in the Label of the Object struct utalizing the encodeLabelBytes(bytes, object.label) function
+        - This function pushes its own indicator (TYPE::STRING) onto the bytes list
+    3. After pushing the label onto the bytes list, the function then pushes another indicator for a TYPE::OBJECT, indicating the data that follows is not another string.
+       Specifically indicating that the elements and child objects are next, and are to be handeled differently than a string. 
+    4. Places the size of the element list onto the byte list, with the addSizeBytes() function
+    5. For loop runs through each object in the elementList and encodes each element using the void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element) function
+        - NOTE: the encodeBytes() function used is for Element encoding not Object encoding. Elements consist of Boolean, Char, ect types.
+    6. The second for loop encodes all the children elements
+
+Example: 
+
+    For Reference 
+        TYPE::STRING = 13 or 0x0D
+        TYPE::OBJECT = 0 or 0x00
+        TYPE::INT8 = 3 or 0x03
+        These are defined in BinaryMessage.hpp TYPE enum
+
+    Object Sample Data (See Object struct in BinaryMessage.hpp for structure details)
+        Object Label = "Test"
+            Elements (See Elements struct in BinaryMessage.hpp for details)
+                For single value elements they contain a Label, Data Type, and the actual Data
+            Element Label: "Value"
+            Type: INT8 (from BinaryMessage.hpp enum defined as 3)
+            Data: 42
+
+    Encoding Object Label:
+        object.label is encoded with encodeLabelBytes(bytes, object.label);
+
+            TYPE::STRING (0x0D) is pushed onto the bytes list
+                bytes = [0x0D]
+
+            addSizeBytes(bytes, label.size()) pushes the object.label size onto the bytes list
+                string "Test" is length 4, which is < 127 so 0x04 is written to the bytes list
+                bytes = [0x0D, 0x04]
+
+            For loop calls bytes->push_back(label[index]); which pushes each character onto the bytes list
+                'T' = 0x54
+                'e' = 0x65
+                's' = 0x73
+                't' = 0x74
+                bytes = [0x0D, 0x04, 0x54, 0x65, 0x73, 0x74]
+                         type  size  data ------------------
+
+    Encoding Object Elements:
+        bytes->push_back(TYPE::OBJECT) pushes OBJECT (0x00) onto the bytes list
+            bytes = [0x0D, 0x04, 0x54, 0x65, 0x73, 0x74, 0x00]
+                     type  size  data ------------------ type
+
+        addSizeBytes(bytes, object.elementList.size()) Pushes the size of the elementList onto the bytes list
+            elementList.size() = 1 or 0x01 which is pushed onto the bytes list
+            bytes = [0x0D, 0x04, 0x54, 0x65, 0x73, 0x74, 0x00, 0x01]
+                    type  size  data ------------------  type  size   
+
+        for (auto iterator = object.elementList.begin(); iterator != object.elementList.end(); iterator++)
+            Itterates through the start of the elementlist to the end
+                Note:auto is used to let the compiler automatically deduce the iterator type
+                    Here it will be somthing like std::vector<Element>::iterator
+
+            encodeBytes(bytes, *iterator) encodes and pushes each element in the list onto the bytes list
+                NOTE: This function shares the same name, but it accepts inputs of type Element not Object. 
+                
+                Pushing element label onto byte list
+                    Note: When it dereferences the itterator the first thing to be encoded is the Element Label
+                    encodeLabelBytes(bytes, element.label)
+                        element.label = "value"
+                        Pushes TYPE::STRING (0x0D) onto the bytes list
+                            bytes = [0x0D, 0x04, 0x54, 0x65, 0x73, 0x74, 0x00, 0x01, 0x0D]
+                                    type  size  data ------------------  type  size  type
+                        Pushes size of input onto the bytes list 
+                            bytes = [0x0D, 0x04, 0x54, 0x65, 0x73, 0x74, 0x00, 0x01, 0x0D, 0x05]
+                                    type  size  data ------------------  type  size  type  size 
+                        Pushes string data onto bytes list "value"
+                            bytes = [0x0D, 0x04, 0x54, 0x65, 0x73, 0x74, 0x00, 0x01, 0x0D, 0x05, 0x76, 0x61, 0x6C, 0x75, 0x65]
+                                     type  size  data ------------------  type size  type  size  data ------------------------
+                Pushing Element Type onto byte list
+                    encodeLabelBytes(bytes, element.type)
+                        element.type = 0x03
+                            bytes = [0x0D, 0x04, 0x54, 0x65, 0x73, 0x74, 0x00, 0x01, 0x0D, 0x05, 0x76, 0x61, 0x6C, 0x75, 0x65, 0x03]
+                                     type  size  data ------------------  type size  type  size  data ------------------------ type
+                Pushing Element Data onto byte list
+                    encodeLabelBytes(bytes, element.data)
+                        element.data = 42 or 0x2A
+                            bytes = [0x0D, 0x04, 0x54, 0x65, 0x73, 0x74, 0x00, 0x01, 0x0D, 0x05, 0x76, 0x61, 0x6C, 0x75, 0x65, 0x03, 0x2A]
+                                     type  size  data ------------------  type size  type  size  data ------------------------ type  data
+    Encoding Childrent Objects:
+        There are not Children Objects, so addSizeBytes(bytes, object.children.size()) returns 0x00
+
+    Final Bytes List:
+                         bytes = [0x0D, 0x04, 0x54, 0x65, 0x73, 0x74, 0x00, 0x01, 0x0D, 0x05, 0x76, 0x61, 0x6C, 0x75, 0x65, 0x03, 0x2A, 0x00]
+                                  type  size  data ------------------  type size  type  size  data ------------------------ type  data  children      
+                            
+                
 
 

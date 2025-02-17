@@ -52,7 +52,19 @@ union Data{
 };
 
 struct Element{
-
+    /*
+        Three constructor declerations for Element class
+        1. Element(std::string label, std::list<Data> data, uint8_t type)
+                Purpose: Create a scalar element that holds a single value
+                Usage: pass in the label, data, and type of the element
+        2. Element(std::string label, std::list<Data> data, uint8_t type, size_t dimensionCount, ...) 
+                Purpose: To create an element that represents an array with one or more dimensions
+                Usage: In addition to the label, data, and type, you specify the number of dimensions (dimensionCount). Then, using variadic arguments (...), you supply each dimension’s size.
+        3. Element(std::string label, std::list<Data> data, uint8_t type, size_t dimensionCount, std::vector<size_t> sizeList)
+                Purpose: To create an element that represents an array with one or more dimensions
+                Usage: In addition to the label, data, and type, you specify the number of dimensions (dimensionCount). Then, you supply a vector of size_t values that represent the size of each dimension.
+            
+    */
     Element(std::string label, std::list<Data> data, uint8_t type);
     Element(std::string label, std::list<Data> data, uint8_t type, size_t dimensionCount, ...);
     Element(std::string label, std::list<Data> data, uint8_t type, size_t dimensionCount, std::vector<size_t> sizeList);
@@ -84,6 +96,10 @@ struct Element{
 //        this->dimensionCount = dimensionCount;
 //        this->sizeList = std::move(sizeList);
 //    }
+
+/*
+    Data Members
+*/
     std::string label;
     uint8_t type;
     size_t dimensionCount;
@@ -96,6 +112,7 @@ struct Element{
 struct Object{
     std::string label;
     uint8_t type;
+    //Connects to the Element struct
     std::vector<Element> elementList;
     std::vector<Object> children;
 
