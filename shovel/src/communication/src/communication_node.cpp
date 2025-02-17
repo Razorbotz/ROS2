@@ -77,6 +77,11 @@ rclcpp::Node::SharedPtr nodeHandle;
 std_msgs::msg::Empty heartbeat;
 int total = 0;
 
+int rssi = 0;
+#define LOWER_THRESH 67
+#define UPPER_THRESH 80
+#define CRIT_THRESH 90
+
 
 /** @brief Parse a byte represenation into a float.
  * 
@@ -278,6 +283,8 @@ void send(std::string messageLabel, const messages::msg::AutonomyOut::SharedPtr 
  */
 void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
     if(silentRunning)return;
+    if(rssi > UPPER_THRESH)
+        return;
     BinaryMessage message("Zed");
     message.addElementFloat32("X", zedPosition->x);
     message.addElementFloat32("Y", zedPosition->y);
@@ -293,11 +300,18 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
 }
 
 
-void testSend(){
-    BinaryMessage message("Test");
-    message.addElementUInt8("UInt8", 0);
-    message.addElementBoolean("Bool", false);
-    message.addElementString("String", "Testing Binary Message");
+void communicationCallback(){
+    if(silentRunning)return;
+    BinaryMessage message("Communication");
+    if(rssi < LOWER_THRESH)
+        message.addElementString("Wi-Fi", "NORMAL OPERATION");
+    else if(rssi >= LOWER_THRESH && rssi < UPPER_THRESH)
+        message.addElementString("Wi-Fi", "DEGRADED OPERATION");
+    else if(rssi >= UPPER_THRESH && rssi < CRIT_THRESH)
+        message.addElementString("Wi-Fi", "SEVERE INTERFERENCE OPERATION");
+    else
+        message.addElementString("Wi-Fi", "NON-FUNCIONAL OPERATION");
+    message.addElementString("CAN Bus", "NON-FUNCTIONAL OPERATION");
     pad(message);
 }
 
@@ -315,7 +329,8 @@ void testSend(){
  * */
 void powerCallback(const messages::msg::Power::SharedPtr power){
     //RCLCPP_INFO(nodeHandle->get_logger(), "power callback");
-    send("Power",power);
+    if(rssi < UPPER_THRESH)
+        send("Power",power);
 }
 
 /** @brief Callback function for the Talon topic
@@ -328,8 +343,8 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
  * */
 void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon1 callback");
-    send("Talon 1",talonOut);
-    testSend();
+    if(rssi < CRIT_THRESH)
+        send("Talon 1",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -342,7 +357,8 @@ void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon2 callback");
-    send("Talon 2",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Talon 2",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -355,7 +371,8 @@ void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon3 callback");
-    send("Talon 3",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Talon 3",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -368,7 +385,8 @@ void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
-    send("Talon 4",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Talon 4",talonOut);
 }
 
 
@@ -382,7 +400,8 @@ void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void falcon1Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
-    send("Falcon 1",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Falcon 1",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -395,7 +414,8 @@ void falcon1Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon2Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon2 callback");
-    send("Falcon 2",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Falcon 2",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -408,7 +428,8 @@ void falcon2Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon3Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon3 callback");
-    send("Falcon 3",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Falcon 3",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -421,7 +442,8 @@ void falcon3Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon4Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon4 callback");
-    send("Falcon 4",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Falcon 4",talonOut);
 }
 
 
@@ -433,7 +455,8 @@ void falcon4Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  */
 void linearOut1Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear1 callback");
-    send("Linear 1", linearOut);
+    if(rssi < UPPER_THRESH)
+        send("Linear 1", linearOut);
 }
 
 
@@ -445,7 +468,8 @@ void linearOut1Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut2Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear2 callback");
-    send("Linear 2", linearOut);
+    if(rssi < UPPER_THRESH)
+        send("Linear 2", linearOut);
 }
 
 
@@ -457,7 +481,8 @@ void linearOut2Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear3 callback");
-    send("Linear 3", linearOut);
+    if(rssi < UPPER_THRESH)
+        send("Linear 3", linearOut);
 }
 
 
@@ -469,89 +494,17 @@ void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut4Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear4 callback");
-    send("Linear 4", linearOut);
+    if(rssi < UPPER_THRESH)
+        send("Linear 4", linearOut);
 }
 
 
 void autonomyOutCallback(const messages::msg::AutonomyOut::SharedPtr autonomyOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "autonomy callback");
-    send("Autonomy", autonomyOut);
+    if(rssi < CRIT_THRESH)
+        send("Autonomy", autonomyOut);
 }
 
-
-void initTalon(std::string messageLabel){
-    BinaryMessage message(messageLabel);
-    message.addElementUInt8("Device ID",(uint8_t)10);
-    float volt = 0.0f *= 100.0;
-    uint16_t voltage = volt;
-    message.addElementUInt16("Bus Voltage",voltage);
-    uint16_t current = 0.0f *= 100.0;
-    message.addElementUInt16("Output Current",current);
-    message.addElementFloat32("Output Percent",0.0f);
-    message.addElementUInt8("Temperature",(uint8_t)28);
-    message.addElementUInt16("Sensor Position",(uint8_t)0);
-    message.addElementInt8("Sensor Velocity",(uint8_t)0);
-    message.addElementFloat32("Max Current", 0.0f);
-    pad(message);
-}
-
-void initLinear(std::string messageLabel){
-    BinaryMessage message(messageLabel);
-
-    message.addElementUInt8("Motor Number", (uint8_t)1);
-    message.addElementFloat32("Speed", 0.0f);
-    message.addElementUInt16("Potentiometer", (uint16_t)0);
-    message.addElementUInt8("Time Without Change", (uint8_t)0);
-    message.addElementUInt16("Max", (uint16_t)0);
-    message.addElementUInt16("Min", (uint16_t)0);
-    message.addElementString("Error", "None");
-    message.addElementBoolean("At Min", false);
-    message.addElementBoolean("At Max", false);
-    message.addElementFloat32("Distance", 0.0f);
-    message.addElementBoolean("Sensorless", false);
-
-    pad(message);
-}
-
-
-/*
-Function to initialize the GUI panels in the same order every time. 
-*/
-void initMessages(){
-    initTalon("Talon 1");
-    initTalon("Talon 2");
-    initTalon("Talon 3");
-    initTalon("Talon 4");
-    initTalon("Falcon 1");
-    initTalon("Falcon 2");
-    initTalon("Falcon 3");
-    initTalon("Falcon 4");
-    initLinear("Linear 1");
-    initLinear("Linear 2");
-    initLinear("Linear 3");
-    initLinear("Linear 4");
-
-    BinaryMessage message("Autonomy State");
-    message.addElementString("Robot State", "autonomy->robot_state");
-    message.addElementString("Excavation State", "autonomy->excavation_state");
-    message.addElementString("Error State", "autonomy->error_state");
-    message.addElementString("Diagnostics State", "autonomy->diagnostics_state");
-    
-    pad(message);
-
-    BinaryMessage message("Zed");
-    message.addElementFloat32("X", 0.0f);
-    message.addElementFloat32("Y", 0.0f);
-    message.addElementFloat32("Z", 0.0f);
-    message.addElementFloat32("roll", 0.0f);
-    message.addElementFloat32("pitch", 0.0f);
-    message.addElementFloat32("yaw", 0.0f);
-    message.addElementFloat32("aruco roll", 0.0f);
-    message.addElementFloat32("aruco pitch", 0.0f);
-    message.addElementFloat32("aruco yaw", 0.0f);
-    message.addElementBoolean("aruco", 0.0f);
-    pad(message);
-}
 
 /** @brief Returns the address string of the rover.
  * 
@@ -637,6 +590,7 @@ void printAddresses() {
     printf("Done\n");
 }
 
+
 /** @brief Reboots the rover. 
  *
  * */
@@ -648,6 +602,7 @@ void reboot(){
 std::string robotName="unnamed";
 bool broadcast=true;
 
+
 /** @brief Creates socketDescriptor for socket connection.
  * 
  * This function is called when the node
@@ -658,7 +613,7 @@ bool broadcast=true;
 void broadcastIP(){
     while(true){
         if(broadcast){
-            std::string addressString=getAddressString(AF_INET,"wlan0");
+            std::string addressString=getAddressString(AF_INET,"wlP1p1s0");
 
             std::string message(robotName+"@"+addressString);
             std::cout << message << std::endl << std::flush;
@@ -726,6 +681,9 @@ int main(int argc, char **argv){
     int addrlen = sizeof(address); 
     uint8_t buffer[1024] = {0}; 
     std::string hello("Hello from server");
+
+    std::string result = "";
+    char buffer2[128];
 
 
     // Creating socket file descriptor
@@ -871,6 +829,16 @@ int main(int argc, char **argv){
 
         rclcpp::spin_some(nodeHandle);
         commHeartbeatPublisher->publish(heartbeat);
+
+        FILE* pipe = popen("iwconfig wlP1p1s0 | grep -E -o '=-.{0,2}'", "r");
+        while(!feof(pipe)){
+            if(fgets(buffer2, 128, pipe) != nullptr){
+                result += buffer2;
+            }
+        }
+        rssi = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
+        pclose(pipe);
+        communicationCallback();
         rate.sleep();
     }
 

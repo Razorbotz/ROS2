@@ -213,6 +213,7 @@ int main(int argc, char **argv) {
     sl::PositionalTrackingParameters tracking_params;
     tracking_params.enable_imu_fusion = true;
     tracking_params.enable_area_memory = true;
+    tracking_params.enable_pose_smoothing = true;
     auto returned_state = zed.enablePositionalTracking(tracking_params);
     if (returned_state != sl::ERROR_CODE::SUCCESS) {
         zed.close();
