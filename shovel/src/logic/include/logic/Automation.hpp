@@ -14,10 +14,40 @@
 
 // Width of the bucket in decimeters
 #define BUCKET_WIDTH 7.5
+#define TIP_THRESH 45
 
 class Automation{
     private:
     public:
+
+    enum TiltState{
+        TILT_LEVEL,
+        TILT_FRONT,
+        TILT_FRONT_RIGHT,
+        TILT_RIGHT,
+        TILT_BACK_RIGHT,
+        TILT_BACK,
+        TILT_BACK_LEFT,
+        TILT_LEFT,
+        TILT_FRONT_LEFT,
+        TIP_RIGHT,
+        TIP_LEFT
+    };
+    TiltState tiltState = TILT_LEVEL;
+
+    std::map<TiltState, const char*> tiltStateMap = {
+        {TILT_LEVEL, "Level"},
+        {TILT_FRONT, "Front"},
+        {TILT_FRONT_RIGHT, "Front Right"},
+        {TILT_RIGHT, "Right"},
+        {TILT_BACK_RIGHT, "Back Right"},
+        {TILT_BACK, "Back"},
+        {TILT_BACK_LEFT, "Back Left"},
+        {TILT_LEFT, "Left"},
+        {TILT_FRONT_LEFT, "Front Left"},
+        {TIP_RIGHT, "Tip Right"},
+        {TIP_LEFT, "Tip Left"}
+    };
 
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
@@ -165,4 +195,6 @@ class Automation{
     void setxOffset(float xOffset);
 
     void setTurnLeft(bool TurnLeft);
+
+    enum TiltState checkOrientation();
 };

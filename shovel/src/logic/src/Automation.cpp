@@ -698,3 +698,53 @@ void Automation::setxOffset(float XOffset){
 void Automation::setTurnLeft(bool TurnLeft){
     this->turnLeft = TurnLeft;
 }
+
+enum Automation::TiltState Automation::checkOrientation(){
+    if(position.yaw > TIP_THRESH){
+        RCLCPP_INFO(this->node->get_logger(), "TIP RIGHT");
+        return TIP_LEFT;
+    }
+    else if(position.yaw < -TIP_THRESH){
+        RCLCPP_INFO(this->node->get_logger(), "TIP LEFT");
+        return TIP_RIGHT;
+    }
+    if(position.roll < -10){
+        if(position.yaw > 10){
+            RCLCPP_INFO(this->node->get_logger(), "FRONT RIGHT");
+            return TILT_FRONT_RIGHT;
+        }
+        else if(position.yaw < -10){
+            RCLCPP_INFO(this->node->get_logger(), "FRONT LEFT");
+            return TILT_FRONT_LEFT;
+        }
+        else{
+            RCLCPP_INFO(this->node->get_logger(), "FRONT");
+            return TILT_FRONT;
+        }
+    }
+    else if(position.roll > 10){
+        if(position.yaw > 10){
+            RCLCPP_INFO(this->node->get_logger(), "BACK RIGHT");
+            return TILT_BACK_RIGHT;
+        }
+        else if(position.yaw < -10){
+            RCLCPP_INFO(this->node->get_logger(), "BACK LEFT");
+            return TILT_BACK_LEFT;
+        }
+        else{
+            RCLCPP_INFO(this->node->get_logger(), "BACK");
+            return TILT_BACK;
+        }
+    }
+    else{
+        if(position.yaw > 10){
+            RCLCPP_INFO(this->node->get_logger(), "RIGHT"); 
+            return TILT_RIGHT;
+        }
+        else if(position.yaw < -10){
+            RCLCPP_INFO(this->node->get_logger(), "LEFT");
+            return TILT_LEFT;
+        }
+    }
+    return TILT_LEVEL;
+}

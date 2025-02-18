@@ -21,6 +21,7 @@ class Automation2 : public Automation{
     int stillCounter = 0;
 
     std::map<RobotState, const char*> robotStateMap = {
+        {INITIAL, "Initial"},
         {DIAGNOSTICS, "Diagnostics"},
         {LOCATE, "Locate"},
         {ALIGN, "Align"},
