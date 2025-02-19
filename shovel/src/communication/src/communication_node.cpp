@@ -153,7 +153,7 @@ void pad(BinaryMessage message){
                 padded.append(" ");
             }
             message.addElementString("Pad", padded);
-            size += 58;
+            size = message.getBytes()->size();
         }
         size += 7;
         std::string padded = "";

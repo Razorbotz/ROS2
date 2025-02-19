@@ -387,6 +387,7 @@ void processPotentiometerData(int potentData, LinearActuator *linear){
     }
     if(potentData > 110 || potentData < 100){
         linear->initialized = true;
+        linear->distance = linear->stroke * (potentData / 950);
     }
     if(abs(linear->potentiometer - potentData) > 50 && (potentData >= 100 && potentData <= 110)){
         linear->sensorless = true;

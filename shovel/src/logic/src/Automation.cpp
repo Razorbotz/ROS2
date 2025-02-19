@@ -458,12 +458,13 @@ void Automation::setDestZ(float meters){
 }
 
 
-void Automation::publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString){
+void Automation::publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString, std::string tiltStateString){
     messages::msg::AutonomyOut aOut;
     aOut.robot_state = robotStateString;
     aOut.excavation_state = excavationStateString;
     aOut.error_state = errorStateString;
     aOut.diagnostics_state = diagnosticsStateString;
+    aOut.tilt_state = tiltStateString;
     autonomyOutPublisher->publish(aOut);
 }
 
@@ -568,6 +569,7 @@ void Automation::setArmTarget(int potent){
 void Automation::setBucketTarget(int potent){
     target3 = potent;
 }
+
 
 /*
 Function to check the current position of the arm relative
@@ -699,6 +701,7 @@ void Automation::setTurnLeft(bool TurnLeft){
     this->turnLeft = TurnLeft;
 }
 
+
 enum Automation::TiltState Automation::checkOrientation(){
     if(position.yaw > TIP_THRESH){
         RCLCPP_INFO(this->node->get_logger(), "TIP RIGHT");
@@ -708,12 +711,12 @@ enum Automation::TiltState Automation::checkOrientation(){
         RCLCPP_INFO(this->node->get_logger(), "TIP LEFT");
         return TIP_RIGHT;
     }
-    if(position.roll < -10){
-        if(position.yaw > 10){
+    if(position.roll < -TILT_THRESH){
+        if(position.yaw > TILT_THRESH){
             RCLCPP_INFO(this->node->get_logger(), "FRONT RIGHT");
             return TILT_FRONT_RIGHT;
         }
-        else if(position.yaw < -10){
+        else if(position.yaw < -TILT_THRESH){
             RCLCPP_INFO(this->node->get_logger(), "FRONT LEFT");
             return TILT_FRONT_LEFT;
         }
@@ -722,12 +725,12 @@ enum Automation::TiltState Automation::checkOrientation(){
             return TILT_FRONT;
         }
     }
-    else if(position.roll > 10){
-        if(position.yaw > 10){
+    else if(position.roll > TILT_THRESH){
+        if(position.yaw > TILT_THRESH){
             RCLCPP_INFO(this->node->get_logger(), "BACK RIGHT");
             return TILT_BACK_RIGHT;
         }
-        else if(position.yaw < -10){
+        else if(position.yaw < -TILT_THRESH){
             RCLCPP_INFO(this->node->get_logger(), "BACK LEFT");
             return TILT_BACK_LEFT;
         }
@@ -737,11 +740,11 @@ enum Automation::TiltState Automation::checkOrientation(){
         }
     }
     else{
-        if(position.yaw > 10){
+        if(position.yaw > TILT_THRESH){
             RCLCPP_INFO(this->node->get_logger(), "RIGHT"); 
             return TILT_RIGHT;
         }
-        else if(position.yaw < -10){
+        else if(position.yaw < -TILT_THRESH){
             RCLCPP_INFO(this->node->get_logger(), "LEFT");
             return TILT_LEFT;
         }
