@@ -20,3 +20,4 @@ shovel/install
 shovel/build
 shovel/log
 shovel/launch/__pycache__
+shovel/src/communication/.vscode
