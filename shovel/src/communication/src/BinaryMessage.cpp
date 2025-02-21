@@ -916,6 +916,8 @@ void BinaryMessage::encodeMessageSizeBytes(std::shared_ptr<std::list<uint8_t>> b
     }
     number+=adjustment;
 
+
+    // Do function call for encodeSizeBytes instead
     if(number <= 0x7F){
         bytes->push_front((uint8_t)number);
     }
@@ -1150,6 +1152,37 @@ void BinaryMessage::addChild(Object childObject){
 }
 
 
+
+/*
+Example Of Helper function 
+void BinaryMessage::addElement**Type**(Object& object, std::string label, type variable){
+    // Create a Data object
+    Data data;
+    //Assign the variable to the Data union Field (See BinaryMessage.hpp Data union)
+    data.unionField = variable;
+
+    // The element constructor requires a list of Data objects, even for a single value. 
+    // Create a new list and add the Data object to the list
+    std::list<Data> list;
+    list.push_back(data);
+
+    // Create a new Element object with the label, list of Data objects, and the type of the data
+    Element element(label, list, TYPE::BOOLEAN );
+    // Add the Element object to the Object's elementList
+    object.elementList.push_back(element);
+}
+
+*/
+
+/**
+ * @brief Add a boolean element to the object
+ * 
+ * This function 
+ * 
+ * @param object 
+ * @param label 
+ * @param boolean 
+ */
 void BinaryMessage::addElementBoolean(Object& object, std::string label, bool boolean){
     Data data;
     data.boolean = boolean;
@@ -1454,11 +1487,17 @@ std::shared_ptr<std::list<uint8_t>> BinaryMessage::getBytes(){
     return bytes;
 }
 
-/*
-    addSizeBytes takes in a size (64 bit integer) and returns a list of bytes that represent the size
-    Ex. 0xFFFF for the size would push the following onto the bytes list 
-    [0x82, 0xFF, 0xFF]
-*/
+
+/**
+ * @brief Returns a list of bytes that represent the size
+ *  
+ *   Takes in a size (64 bit integer) and returns a list of bytes that represent the size
+ *   Ex. 0xFFFF for the size would push the following onto the bytes list 
+ *   [0x82, 0xFF, 0xFF]
+ * 
+ * @param bytes 
+ * @param size 
+ */
 void BinaryMessage::addSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, uint64_t size){
 
     if(size <= 0x7F){
@@ -1488,9 +1527,17 @@ void BinaryMessage::addSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, uint
     }
 }
 
-/*
-    encodeLabelBytes encodes the label of an object or element (strings)
-*/
+
+/**
+ * @brief Encodes the label of an object or element (strings)
+ * 
+ * This function encodes the label of an object or element.
+ * It first pushes the type of the data (string) onto the bytes list
+ * Then it pushes the size of the label onto the bytes list
+ * Finally it pushes the label onto the bytes list
+ * @param bytes 
+ * @param label 
+ */
 void BinaryMessage::encodeLabelBytes(std::shared_ptr<std::list<uint8_t>> bytes, std::string label){
     // Notifies the decoder that the data will be a string
     bytes->push_back(TYPE::STRING);
@@ -1514,6 +1561,22 @@ void BinaryMessage::encodeLabelBytes(std::shared_ptr<std::list<uint8_t>> bytes, 
         Starting with the label, then the elementList, and finally the children
 
 */
+
+
+
+/**
+ * @brief Encodes an object struct into a list of bytes
+ * 
+ *  
+ *  It first encodes the label of the object.
+ *  Pushes the type of the object onto the bytes list. 
+ *  Pushes the size of the elementList onto the bytes list. 
+ *  Encodes each element of the elementList.
+ *  Pushes the size of the children onto the bytes list.
+ *  Finally it encodes each child of the object.
+ * @param bytes 
+ * @param object 
+ */
 void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Object object) {
 
     //Encodes the label
@@ -1536,11 +1599,28 @@ void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Objec
     }
 }
 
-
+/**
+ * @brief Encodes an element struct into a list of bytes
+ * 
+ * This function encodes an element struct into a list of bytes
+ * It first encodes the label of the element. 
+ * Pushes the type of the element onto the bytes list. 
+ * Finally checks the type of the element and encodes the data accordingly
+ * 
+ * 
+ * @param bytes 
+ * @param element 
+ */
 void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element){
     encodeLabelBytes(bytes, element.label);
     bytes->push_back(element.type);
 
+    // Replace with switch statement
+    /*NOTE: element.data is a list of Data unions (see BinaryMessage.hpp Data union)
+            element.data.begin() returns an iterator to the first element in the list
+            element.data.begin()-> *Data Type* accesses the *Data Type* field within the union and returns the value
+    
+    */
     if(element.type == TYPE::BOOLEAN){
         bytes->push_back(element.data.begin()->boolean);
     }
@@ -1555,12 +1635,14 @@ void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Eleme
         bytes->push_back((element.data.begin()->int16>>0) & 0xff);
     }
     if(element.type == TYPE::INT32 || element.type == TYPE::UINT32 || element.type == TYPE::FLOAT32){
+        //Replace with a for or while loop 0-3 for 4 bytes
         bytes->push_back((element.data.begin()->int32>>24) & 0xff);
         bytes->push_back((element.data.begin()->int32>>16) & 0xff);
         bytes->push_back((element.data.begin()->int32>> 8) & 0xff);
         bytes->push_back((element.data.begin()->int32>> 0) & 0xff);
     }
     if(element.type == TYPE::INT64 || element.type == TYPE::UINT64 || element.type == TYPE::FLOAT64){
+        //Replace with a for or while loop 0-7 for 8 bytes
         bytes->push_back((element.data.begin()->int64>>56) & 0xff);
         bytes->push_back((element.data.begin()->int64>>48) & 0xff);
         bytes->push_back((element.data.begin()->int64>>40) & 0xff);

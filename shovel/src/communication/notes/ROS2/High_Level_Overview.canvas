@@ -1,0 +1,34 @@
+{
+	"nodes":[
+		{"id":"fd410e5d132acef6","type":"text","text":"communication_node.cpp","x":-1500,"y":-1190,"width":260,"height":80,"color":"1"},
+		{"id":"12fbc4a9680b15d7","type":"text","text":"Subscriber Callback is triggered ","x":-1498,"y":-880,"width":256,"height":100,"color":"1"},
+		{"id":"5bcef427613dc9f7","type":"text","text":"powerCallback calls \n\nsend(\"Power\", power); ","x":-1493,"y":-560,"width":251,"height":127,"color":"1"},
+		{"id":"7366ed5fc4725ec9","type":"text","text":"send(\"Power\", power) creates a new BinaryMessage and calls its constructor setting the Object Label to the messageLabel\nBinaryMessage message(messageLabel);\n(See Object Hierarchy canvas)","x":-1582,"y":-240,"width":430,"height":231,"color":"1"},
+		{"id":"9ad7eed717938f7b","x":-1585,"y":160,"width":433,"height":200,"color":"1","type":"text","text":"message.addElementUInt8(\"Device ID\",(uint8_t)talonOut->device_id\n\nThis call the function addElementUInt8 and passes in a Label name \"Device ID\" and the data \"device_id\""},
+		{"id":"f43eecf69617c829","x":-1495,"y":667,"width":250,"height":60,"color":"1","type":"text","text":"pad(message); is called"},
+		{"id":"6471fbbe5456d925","x":235,"y":440,"width":300,"height":111,"color":"4","type":"text","text":"Encodes the data of the Object passed in and writes it to the bytes list"},
+		{"id":"711b86a632ee855f","x":258,"y":673,"width":250,"height":60,"color":"4","type":"text","text":"Encodes the total size of the Message"},
+		{"id":"655c187f8e2ea19f","x":260,"y":-300,"width":250,"height":60,"color":"4","type":"text","text":"Encodes passed in data onto a byteList"},
+		{"id":"e717654e78b7aec1","type":"text","text":"BinaryMessage.cpp","x":-340,"y":-480,"width":260,"height":80,"color":"4"},
+		{"id":"1a02bbb34aaa2439","x":-440,"y":-160,"width":460,"height":300,"color":"4","type":"text","text":"\n\nHelper function:\naddElementUInt8(this->topObject,label, uint8);\n\nThis helper function takes in a Object object, label, and the data in the form of a uint8\n\n\n"},
+		{"id":"87fce1e502a96066","x":-480,"y":343,"width":540,"height":360,"color":"4","type":"text","text":"\n\nFunction creates a new variable containing all data in the union Data. \n\nSets data.uint8 = uint8; where the uint8 is the original device_ID. \n\nThen it creates a Data list and pushes the device_ID onto the data list\n\nIt creates a new Element element containing a label, list, and type\n\nFinally pushes this element onto the object.elementList\n\n"},
+		{"id":"98f19940a4c2f177","x":-1495,"y":980,"width":250,"height":60,"color":"1","type":"text","text":"Broadcasts the fully built message "}
+	],
+	"edges":[
+		{"id":"2b0c4cbbdb8bb01f","fromNode":"fd410e5d132acef6","fromSide":"bottom","toNode":"12fbc4a9680b15d7","toSide":"top","color":"1","label":"Receives info from \"power\" node "},
+		{"id":"4ecec114a37b458a","fromNode":"12fbc4a9680b15d7","fromSide":"bottom","toNode":"5bcef427613dc9f7","toSide":"top","color":"1","label":"powerCallback() function is triggered"},
+		{"id":"250399114a21f129","fromNode":"5bcef427613dc9f7","fromSide":"bottom","toNode":"7366ed5fc4725ec9","toSide":"top","color":"1","label":"send(\"Power\", power); function is triggered"},
+		{"id":"6bafdacc8fc02dc1","fromNode":"7366ed5fc4725ec9","fromSide":"bottom","toNode":"9ad7eed717938f7b","toSide":"top","color":"1","label":"Creates new BinaryMessage object"},
+		{"id":"230b1cf68c5e53e9","fromNode":"9ad7eed717938f7b","fromSide":"right","toNode":"e717654e78b7aec1","toSide":"left","color":"1","label":"addElementUInt8 func call"},
+		{"id":"568f109cda506b59","fromNode":"e717654e78b7aec1","fromSide":"bottom","toNode":"1a02bbb34aaa2439","toSide":"top","color":"4","label":"addElementUInt8(\"Device ID, device_ID)  "},
+		{"id":"cac6497bb16a7219","fromNode":"1a02bbb34aaa2439","fromSide":"bottom","toNode":"87fce1e502a96066","toSide":"top","color":"4","label":"addElementUInt8(this->topObject,label, uint8);"},
+		{"id":"e9a91277846c7078","fromNode":"87fce1e502a96066","fromSide":"left","toNode":"9ad7eed717938f7b","toSide":"right","color":"4","label":"Pushes element onto object list (message)"},
+		{"id":"48890caa08ce6bbf","fromNode":"9ad7eed717938f7b","fromSide":"bottom","toNode":"f43eecf69617c829","toSide":"top","color":"1","label":"The rest of the message Object is built"},
+		{"id":"fa9a9a4ec27a52b1","fromNode":"f43eecf69617c829","fromSide":"right","toNode":"e717654e78b7aec1","toSide":"left","color":"4","label":"getBytes() func call"},
+		{"id":"f78eb86ab3061612","fromNode":"e717654e78b7aec1","fromSide":"right","toNode":"655c187f8e2ea19f","toSide":"left","color":"4","label":"getBytes()"},
+		{"id":"295435ac890d216a","fromNode":"655c187f8e2ea19f","fromSide":"bottom","toNode":"6471fbbe5456d925","toSide":"top","color":"4","label":"encodeBytes(bytes, topObject);"},
+		{"id":"b1946243f7c3b34d","fromNode":"6471fbbe5456d925","fromSide":"bottom","toNode":"711b86a632ee855f","toSide":"top","color":"4","label":"encodeMessageSizeBytes(bytes);"},
+		{"id":"82c5919384a963ea","fromNode":"711b86a632ee855f","fromSide":"bottom","toNode":"f43eecf69617c829","toSide":"right","color":"1","label":"Return bytes list"},
+		{"id":"e048fee6b1c85672","fromNode":"f43eecf69617c829","fromSide":"bottom","toNode":"98f19940a4c2f177","toSide":"top","color":"1","label":"send(message)"}
+	]
+}

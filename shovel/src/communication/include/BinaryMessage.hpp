@@ -35,7 +35,7 @@ enum TYPE {
     ARRAYFLOAT32 = 24,
     ARRAYFLOAT64 = 25
 };
-
+//NOTE: Only one of the following data types can be used at a time as they all share the same mem address
 union Data{
     bool boolean;
     char character;

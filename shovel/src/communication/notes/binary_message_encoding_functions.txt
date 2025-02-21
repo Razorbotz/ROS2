@@ -147,11 +147,6 @@ Used By:
 Relies On:
     addSizeBytes()
 
-Operation:
-    1. Pushes the type of message onto the stream (STRING or 13) defined in BinaryMessage.hpp
-    2. Calls addSizeBytes(bytes, label.size() ); to write the size of the string to the bytes list
-    3. Pushes the information in the label onto the bytes list
-
 Inputs:
     - label:
         Type: string
@@ -170,6 +165,12 @@ Outputs(In-Order):
    
     - bytes->push_back(label[index]);
         - Writes the data inside the label to the bytes list
+
+Operation:
+    1. Pushes the type of message onto the stream (STRING or 13) defined in BinaryMessage.hpp
+    2. Calls addSizeBytes(bytes, label.size() ); to write the size of the string to the bytes list
+    3. Pushes the information in the label onto the bytes list
+
 
 Example:
     label = 200 repeating A's
@@ -204,22 +205,6 @@ Relies on:
     encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element)
         Note: This is the function that encodes Element variables 
     addSizeBytes()
-    
-Operation:
-    Two parameters passed in are a bytes list and a object variable
-
-    The function then encodes any data in the Label of the Object struct utalizing the encodeLabelBytes(bytes, object.label) function
-        This function pushes its own indicator (TYPE::STRING) onto the bytes list
-
-    After pushing the label onto the bytes list, the function then pushes another indicator for a TYPE::OBJECT, indicating the data that follows is not another string.
-        Specifically indicating that the elements and child objects are next, and are to be handeled differently than a string. 
-
-    Places the size of the element list onto the byte list, with the addSizeBytes() function
-
-    For loop runs through each object in the elementList and encodes each element using the void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element) function
-        NOTE: the encodeBytes() function used is for Element encoding not Object encoding. Elements consist of Boolean, Char, ect types.
-        
-    The second for loop encodes all the children elements
 
 Inputs:
     object: 
@@ -241,6 +226,22 @@ Inputs:
             Contains the binary message information as it is built
         Format: 
             [info,info,info] // Typically in hex format for the info
+    
+Operation:
+    Two parameters passed in are a bytes list and a object variable
+
+    The function then encodes any data in the Label of the Object struct utalizing the encodeLabelBytes(bytes, object.label) function
+        This function pushes its own indicator (TYPE::STRING) onto the bytes list
+
+    After pushing the label onto the bytes list, the function then pushes another indicator for a TYPE::OBJECT, indicating the data that follows is not another string.
+        Specifically indicating that the elements and child objects are next, and are to be handeled differently than a string. 
+
+    Places the size of the element list onto the byte list, with the addSizeBytes() function
+
+    For loop runs through each object in the elementList and encodes each element using the void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element) function
+        NOTE: the encodeBytes() function used is for Element encoding not Object encoding. Elements consist of Boolean, Char, ect types.
+        
+    The second for loop encodes all the children elements
 
 
 Example: 
@@ -331,6 +332,141 @@ void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Eleme
 ------------------------------------------------------------------------------------------------------------------
 
 Main Purpose: 
+    Takes an element struct and Serializes all of its data fields into the bytes list
+
+
+Used By:
+    void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Object object)
+
+
+Relies On:
+    encodeLabelBytes()
+    addSizeBytes()
+
+Operation:
+    Two parameters are passed in being the bytes list and and Element type variable
+
+    Encode the element label (write its type, size, and length to bytes list)
+
+    Push the Element type onto the bytes list, allowing for future decoding to know how to process the data
+
+    Check element.type and compare with conditionals
+
+    Depending on the element.type will determine how the individual bytes of the element.data are written to the bytes list
+
+    NOTE: 
+        The union Data variables share the same memory address, and only one variable can be accessd at a times
+
+
+        Scalar Types(BOOLEAN,CHARACTER,INT8/UINT8):
+            Extracts the value from the first item in the element.data and pushes it directly onto the bytes list
+            Since each of these datatypes can be represented by one byte they are able to be pushed onto the byte list
+        Multi-Byte Scalar Types(INT16/UINT16, INT32/UINT32/FLOAT32, INT64/UINT64/FLOAT64):
+            Shifts and masks the value (from element.data.begin()) to extract individual bytes in big-endian order, then pushes them onto the bytes list
+        STRING Type:
+            Encode the strings lenght using addSize(bytes,element.sizeList[0])
+                Note: element.sizeList[0] for a STRING is treated as a one-dimension array, storing the size of the string in the first (and only) entry of the sizeList vector.
+            Itterates over the element.data and pushes each character onto the bytes list 
+        For Array Types (ARRAYBOOLEAN, ARRAYCHARACTER, ARRAYINT8/ARRAYUINT8, ARRAYINT16/ARRAYUINT16, 
+                         ARRAYINT32/ARRAYUINT32/ARRAYFLOAT32, ARRAYINT64/ARRAYUINT64/ARRAYFLOAT64):
+            Encodes the number of dimensions of this element using addSizeBytes(bytes, element.dimensionCount);
+            Itterates over element.sizeList to encode the size of each dimension 
+            Itterates over element.data and (depending on the type) pushes each value's bytes onto the bytes list
+
+        
+        
+
+Inputs:
+    bytes: 
+        Type: 
+            Shared pointer to a list 
+        Use: 
+            Contains the binary message information as it is built
+        Format: 
+            [info,info,info] // Typically in hex format for the info
+    element: 
+        Type:
+            Element object containing the following 
+                label: 
+                    Name of the element (string)
+                type: 
+                    The type identifier from the TYPE enum in BinaryMessage.hpp
+                dimensionCount: 
+                    For arrays, the number of dimensions
+                sizeList:
+                    For arrays or strings, a vector that holds the length (or lengths) of the data
+                data:
+                    A list of Data unions that store the actual values (See BinaryMessage.hpp for the Data enum)
+
+
+Outputs(In-Order):
+    Appends to bytes list:
+        Encoded Label:
+            Label contains a string type indicator, Length of the label, and the characters in the label
+        Element Type Byte:
+            Single byte representing the element.type Ex. TYPE::STRING would be 13 or 0x0D
+        Encoded Data:
+            For scalar types:
+                value is written as one or more bytes 
+            For string types:
+                first the length of the string is written then the characters
+            For arrays:
+                first the dimension count is written, then each dimensions size, and finally the serialized data values. 
+
+
+Example:
+
+    Element Values:
+        Label: "BoolArray"
+        TYPE::ARRAYBOOLEAN (0x0E)
+        Dimension Count: 2 (0x02)
+        Size List: [3,4] (2D array with 3 rows and 4 columns i.e. 12 boolean values in total)
+        Data:
+            {true,false,true,true}
+            {false,false,true,false}
+            {true,true,false,false}
+        Data in Hex:
+            {0x01,0x00,0x01,0x01}
+            {0x00,0x00,0x01,0x00}
+            {0x01,0x01,0x00,0x00}
+    
+encodeLabelBytes(bytes, element.label);
+    Encodes the label, writes 0x0D to indicate the type, then 0x09 to indicate size, followed by the actual data
+    [0x0D, 0x09, 0x42, 0x6F, 0x6F, 0x6C, 0x41, 0x72, 0x72, 0x61, 0x79]
+
+bytes->push_back(element.type);
+    Pushes TYPE::ARRAYBOOLEAN or 0x0E onto the bytes list 
+    [0x0D, 0x09, 0x42, 0x6F, 0x6F, 0x6C, 0x41, 0x72, 0x72, 0x61, 0x79, 0x0E]
+
+Enter the ARRAYBOOLEAN Branch to encode the array ( if(element.type == TYPE::ARRAYBOOLEAN) )
+    Function calls addSizeBytes(bytes, element.dimensionCount);
+        element.dimensionCount = 0x02
+    [0x0D, 0x09, 0x42, 0x6F, 0x6F, 0x6C, 0x41, 0x72, 0x72, 0x61, 0x79, 0x0E, 0x02]
+
+    Encode Dimension Size
+        Function iterates over element.sizeList which is [3,4]:
+            First dimension (Rows):
+                Call addSizeBytes(bytes, 3):
+                    Since 3 <= 127, append 0x03
+            Second dimension(Columns):
+                Call addSizeBytes(bytes, 4):
+                    Since 4 <= 127, append 0x04 
+    [0x0D, 0x09, 0x42, 0x6F, 0x6F, 0x6C, 0x41, 0x72, 0x72, 0x61, 0x79, 0x0E, 0x02, 0x03, 0x04]
+
+    Encode Boolean Data
+        Function iterates over the 12 boolean values in the element.data from top left (moving left to right) to bottom right
+        Values are appended in the following order:
+            [0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00]
+    
+    Final sequence 
+    [0x0D, 0x09, 0x42, 0x6F, 0x6F, 0x6C, 0x41, 0x72, 0x72, 0x61, 0x79, 0x0E, 0x02, 0x03, 0x04,
+     0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00]
+
+------------------------------------------------------------------------------------------------------------------
+void BinaryMessage::encodeMessageSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes)
+------------------------------------------------------------------------------------------------------------------
+
+Main purpose:
 
 
 Used By:
@@ -339,13 +475,13 @@ Used By:
 Relies On:
 
 
-Operation:
-
-
 Inputs:
 
 
 Outputs(In-Order):
+
+
+Operation:
 
 
 Example:
@@ -355,6 +491,8 @@ Example:
 
 
 
+
+ 
 Function Template
 ------------------------------------------------------------------------------------------------------------------
 *Function Name*
@@ -369,13 +507,13 @@ Used By:
 Relies On:
 
 
-Operation:
-
-
 Inputs:
 
 
 Outputs(In-Order):
+
+
+Operation:
 
 
 Example:

@@ -104,6 +104,7 @@ void send(BinaryMessage message){
     for(auto byteIterator = byteList->begin(); byteIterator != byteList->end(); byteIterator++, index++){
         bytes.at(index) = *byteIterator;
     }
+    //Could replace this with looking at the byteList last value containing the size of the message
     total += byteList->size();
     int bytesSent = 0, byteTotal = 0;
     //RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
@@ -143,6 +144,7 @@ void pad(BinaryMessage message){
 void send(std::string messageLabel, const messages::msg::FalconOut::SharedPtr talonOut){
     if(silentRunning)return;
     //RCLCPP_INFO(nodeHandle->get_logger(), "send talon");
+    // Creates BinaryMessage object and sets the object label param to messageLabel
     BinaryMessage message(messageLabel);
 
     message.addElementUInt8("Device ID",(uint8_t)talonOut->device_id);
@@ -588,7 +590,8 @@ int main(int argc, char **argv){
     rclcpp::Parameter robotNameParameter = nodeHandle->get_parameter("robot_name");
     robotName = robotNameParameter.as_string();
     RCLCPP_INFO(nodeHandle->get_logger(),"robotName: %s", robotName.c_str());
-
+// Publishers (What we publish)
+    // Creates a publisher that sends messages of type messages::msg::AxisState to the topic "joystick_axis"
     auto joystickAxisPublisher = nodeHandle->create_publisher<messages::msg::AxisState>("joystick_axis", 1);
     auto joystickHatPublisher = nodeHandle->create_publisher<messages::msg::HatState>("joystick_hat",1);
     auto joystickButtonPublisher = nodeHandle->create_publisher<messages::msg::ButtonState>("joystick_button",1);
@@ -596,7 +599,8 @@ int main(int argc, char **argv){
     auto stopPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("STOP",1);
     auto goPublisher=nodeHandle->create_publisher<std_msgs::msg::Empty>("GO",1);
     auto commHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat",1);
-
+// Subscribers (Information the communication node receives)
+// Each has a callback function that is called when the node receives information from the topic
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,talon1Callback);
     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,talon2Callback);
