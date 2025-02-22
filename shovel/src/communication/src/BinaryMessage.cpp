@@ -1599,6 +1599,8 @@ void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Objec
     }
 }
 
+
+
 /**
  * @brief Encodes an element struct into a list of bytes
  * 
@@ -1615,113 +1617,213 @@ void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Eleme
     encodeLabelBytes(bytes, element.label);
     bytes->push_back(element.type);
 
-    // Replace with switch statement
     /*NOTE: element.data is a list of Data unions (see BinaryMessage.hpp Data union)
             element.data.begin() returns an iterator to the first element in the list
             element.data.begin()-> *Data Type* accesses the *Data Type* field within the union and returns the value
     
     */
-    if(element.type == TYPE::BOOLEAN){
-        bytes->push_back(element.data.begin()->boolean);
-    }
-    if(element.type == TYPE::CHARACTER){
-        bytes->push_back(element.data.begin()->character);
-    }
-    if(element.type == TYPE::INT8  || element.type == TYPE::UINT8 ){
-        bytes->push_back(element.data.begin()->int8);
-    }
-    if(element.type == TYPE::INT16 || element.type == TYPE::UINT16){
-        bytes->push_back((element.data.begin()->int16>>8) & 0xff);
-        bytes->push_back((element.data.begin()->int16>>0) & 0xff);
-    }
-    if(element.type == TYPE::INT32 || element.type == TYPE::UINT32 || element.type == TYPE::FLOAT32){
-        //Replace with a for or while loop 0-3 for 4 bytes
-        bytes->push_back((element.data.begin()->int32>>24) & 0xff);
-        bytes->push_back((element.data.begin()->int32>>16) & 0xff);
-        bytes->push_back((element.data.begin()->int32>> 8) & 0xff);
-        bytes->push_back((element.data.begin()->int32>> 0) & 0xff);
-    }
-    if(element.type == TYPE::INT64 || element.type == TYPE::UINT64 || element.type == TYPE::FLOAT64){
-        //Replace with a for or while loop 0-7 for 8 bytes
-        bytes->push_back((element.data.begin()->int64>>56) & 0xff);
-        bytes->push_back((element.data.begin()->int64>>48) & 0xff);
-        bytes->push_back((element.data.begin()->int64>>40) & 0xff);
-        bytes->push_back((element.data.begin()->int64>>32) & 0xff);
-        bytes->push_back((element.data.begin()->int64>>24) & 0xff);
-        bytes->push_back((element.data.begin()->int64>>16) & 0xff);
-        bytes->push_back((element.data.begin()->int64>> 8) & 0xff);
-        bytes->push_back((element.data.begin()->int64>> 0) & 0xff);
-    }
-    if(element.type == TYPE::STRING) {
-        addSizeBytes(bytes, element.sizeList[0]);
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back(iterator->character);
-        }
-    }
-    if(element.type == TYPE::ARRAYBOOLEAN) {
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back(iterator->boolean);
-        }
-    }
-    if(element.type == TYPE::ARRAYCHARACTER){
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back(iterator->character);
-        }
-    }
-    if(element.type == TYPE::ARRAYINT8 || element.type == TYPE::ARRAYUINT8){
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back(iterator->int8);
-        }
-    }
-    if(element.type == TYPE::ARRAYINT16 || element.type == TYPE::ARRAYUINT16){
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back((iterator->int16 >> 8) & 0xff);
-            bytes->push_back((iterator->int16 >> 0) & 0xff);
-        }
-    }
-    if(element.type == TYPE::ARRAYINT32 || element.type == TYPE::ARRAYUINT32 || element.type == TYPE::ARRAYFLOAT32){
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back((iterator->int64>>24) & 0xff);
-            bytes->push_back((iterator->int64>>16) & 0xff);
-            bytes->push_back((iterator->int64>> 8) & 0xff);
-            bytes->push_back((iterator->int64>> 0) & 0xff);
-        }
-    }
-    if(element.type == TYPE::ARRAYINT64 || element.type == TYPE::ARRAYUINT64 || element.type == TYPE::ARRAYFLOAT64){
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back((iterator->int64>>56) & 0xff);
-            bytes->push_back((iterator->int64>>48) & 0xff);
-            bytes->push_back((iterator->int64>>40) & 0xff);
-            bytes->push_back((iterator->int64>>32) & 0xff);
-            bytes->push_back((iterator->int64>>24) & 0xff);
-            bytes->push_back((iterator->int64>>16) & 0xff);
-            bytes->push_back((iterator->int64>> 8) & 0xff);
-            bytes->push_back((iterator->int64>> 0) & 0xff);
-        }
+    uint8_t type = element.type;
+
+    switch (type)
+    {   
+        case TYPE::BOOLEAN:
+
+            bytes->push_back(element.data.begin()->boolean);
+            break;
+
+        case TYPE::CHARACTER:
+
+            bytes->push_back(element.data.begin()->character);
+            break;
+
+        case TYPE::INT8:
+        case TYPE::UINT8:
+
+            bytes->push_back(element.data.begin()->int8);
+            break;
+
+        case TYPE::INT16:
+        case TYPE::UINT16:
+
+            uint16_t value = element.data.begin()->int16;
+                uint8_t array[2] = {
+                    static_cast<uint_fast8_t>(value >> 8),//MSB
+                    static_cast<uint_fast8_t>(value & 0xFF) //LSB 
+                };
+                //             Where        First    Last
+                bytes->insert(bytes->end(), array, array + 2);
+
+
+            break;
+        
+        case TYPE::INT32:
+        case TYPE::UINT32:
+        case TYPE::FLOAT32:
+
+            uint32_t value = element.data.begin()->int32;
+            // Breaks the value stored in int32 into four bytes and inserts the array to the bytes list
+            uint8_t array[4] = {
+                static_cast<uint8_t>(value >> 24),//MSB
+                static_cast<uint8_t>(value >> 16),
+                static_cast<uint8_t>(value >> 8),
+                static_cast<uint8_t>(value & 0xFF)//LSB
+
+            };
+            //             Where        First    Last
+            bytes->insert(bytes->end(), array, array + 4);
+
+            break;
+        
+        case TYPE::INT64:
+        case TYPE::UINT64:
+        case TYPE::FLOAT64:
+
+            uint16_t value = element.data.begin()->int64;
+            // Breaks the value stored in int64 into eight bytes and inserts the array to the bytes list
+            uint8_t array[8]{
+                static_cast<uint8_t>(value >> 56),//MSB
+                static_cast<uint8_t>(value >> 48),
+                static_cast<uint8_t>(value >> 32),
+                static_cast<uint8_t>(value >> 24),  
+                static_cast<uint8_t>(value >> 16),
+                static_cast<uint8_t>(value >> 8),
+                static_cast<uint8_t>(value & 0xFF)//LSB
+            };
+            //             Where        First    Last
+            bytes->insert(bytes->end(), array, array + 8);
+
+            break;
+        
+        case TYPE::STRING:
+
+            addSizeBytes(bytes, element.sizeList[0]);
+            for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+                bytes->push_back(iterator->character);
+            }
+
+            break;
+
+        case TYPE::ARRAYBOOLEAN:
+
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+                bytes->push_back(iterator->boolean);
+            }
+
+
+
+            break;
+
+        case TYPE::ARRAYCHARACTER:
+
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+                bytes->push_back(iterator->character);
+            }
+
+            break;
+
+        case TYPE::ARRAYINT8:
+        case TYPE::ARRAYUINT8:
+
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+                bytes->push_back(iterator->int8);
+            }            
+
+            break; 
+
+        case TYPE::ARRAYINT16:
+        case TYPE::ARRAYUINT16:
+
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+
+                // Breaks the value stored in int16 into two bytes and inserts the array to the bytes list
+                uint_fast16_t value = iterator->int16;
+                uint_fast8_t array[2] = {
+                    static_cast<uint_fast8_t>(value >> 8),//MSB
+                    static_cast<uint_fast8_t>(value & 0xFF) //LSB 
+                };
+                //             Where        First    Last
+                bytes->insert(bytes->end(), array, array + 2);
+
+            }
+
+
+
+            break;
+
+        case TYPE::ARRAYINT32:
+        case TYPE::ARRAYUINT32:
+        case TYPE::ARRAYFLOAT32:
+
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+
+                // Breaks the value stored in int32 into four bytes and inserts the array to the bytes list
+                uint32_t value = iterator->int32;
+                uint8_t array[4] = {
+                    static_cast<uint8_t>(value >> 24),//MSB
+                    static_cast<uint8_t>(value >> 16),
+                    static_cast<uint8_t>(value >> 8),
+                    static_cast<uint8_t>(value & 0xFF)//LSB
+
+                };
+                //             Where        First    Last
+                bytes->insert(bytes->end(), array, array + 4);
+
+            }
+
+            break;
+
+        case TYPE::ARRAYINT64:
+        case TYPE::ARRAYUINT64:
+        case TYPE::ARRAYFLOAT64:
+
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+                // Breaks the value stored in int64 into eight bytes and inserts the array to the bytes list
+                uint64_t value = iterator->int32;
+                uint8_t array[8]{
+                    static_cast<uint8_t>(value >> 56),//MSB
+                    static_cast<uint8_t>(value >> 48),
+                    static_cast<uint8_t>(value >> 32),
+                    static_cast<uint8_t>(value >> 24),  
+                    static_cast<uint8_t>(value >> 16),
+                    static_cast<uint8_t>(value >> 8),
+                    static_cast<uint8_t>(value & 0xFF)//LSB
+                };
+                //             Where        First    Last
+                bytes->insert(bytes->end(), array, array + 8);
+            }
+
+            break; 
+
+        
+        
+        
+    
+    default:
+        break;
     }
 
 }

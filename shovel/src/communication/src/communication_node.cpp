@@ -85,6 +85,7 @@ int total = 0;
  * */
 float parseFloat(uint8_t* array){
     uint32_t axisYInteger=0;
+    //Replace with for loop
     axisYInteger|=uint32_t(array[0])<<24;    
     axisYInteger|=uint32_t(array[1])<<16;    
     axisYInteger|=uint32_t(array[2])<<8;    
@@ -123,7 +124,10 @@ void send(BinaryMessage message){
 void pad(BinaryMessage message){
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     int size = byteList->size();
+    std::vector<uint8_t> bytes(byteList->size());
+    int index = 0;
 
+    //Pads Message
     if(size != 241){
         if(size < 120){
             size += 8;
@@ -137,7 +141,25 @@ void pad(BinaryMessage message){
         }
         message.addElementString("Pad", padded);
     }
-    send(message);
+
+    //Sends Message
+    
+    for(auto byteIterator = byteList->begin(); byteIterator != byteList->end(); byteIterator++, index++){
+        bytes.at(index) = *byteIterator;
+    }
+    //Could replace this with looking at the byteList last value containing the size of the message
+    total += byteList->size();
+    int bytesSent = 0, byteTotal = 0;
+    //RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
+    while(byteTotal < byteList->size()){
+        if((bytesSent = send(new_socket, bytes.data(), byteList->size(), 0))== -1){
+            RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
+            break;
+        }
+        else{
+            byteTotal += bytesSent;
+        }
+    }
 }
 
 

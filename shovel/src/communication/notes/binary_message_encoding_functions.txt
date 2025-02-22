@@ -343,39 +343,6 @@ Relies On:
     encodeLabelBytes()
     addSizeBytes()
 
-Operation:
-    Two parameters are passed in being the bytes list and and Element type variable
-
-    Encode the element label (write its type, size, and length to bytes list)
-
-    Push the Element type onto the bytes list, allowing for future decoding to know how to process the data
-
-    Check element.type and compare with conditionals
-
-    Depending on the element.type will determine how the individual bytes of the element.data are written to the bytes list
-
-    NOTE: 
-        The union Data variables share the same memory address, and only one variable can be accessd at a times
-
-
-        Scalar Types(BOOLEAN,CHARACTER,INT8/UINT8):
-            Extracts the value from the first item in the element.data and pushes it directly onto the bytes list
-            Since each of these datatypes can be represented by one byte they are able to be pushed onto the byte list
-        Multi-Byte Scalar Types(INT16/UINT16, INT32/UINT32/FLOAT32, INT64/UINT64/FLOAT64):
-            Shifts and masks the value (from element.data.begin()) to extract individual bytes in big-endian order, then pushes them onto the bytes list
-        STRING Type:
-            Encode the strings lenght using addSize(bytes,element.sizeList[0])
-                Note: element.sizeList[0] for a STRING is treated as a one-dimension array, storing the size of the string in the first (and only) entry of the sizeList vector.
-            Itterates over the element.data and pushes each character onto the bytes list 
-        For Array Types (ARRAYBOOLEAN, ARRAYCHARACTER, ARRAYINT8/ARRAYUINT8, ARRAYINT16/ARRAYUINT16, 
-                         ARRAYINT32/ARRAYUINT32/ARRAYFLOAT32, ARRAYINT64/ARRAYUINT64/ARRAYFLOAT64):
-            Encodes the number of dimensions of this element using addSizeBytes(bytes, element.dimensionCount);
-            Itterates over element.sizeList to encode the size of each dimension 
-            Itterates over element.data and (depending on the type) pushes each value's bytes onto the bytes list
-
-        
-        
-
 Inputs:
     bytes: 
         Type: 
@@ -413,14 +380,45 @@ Outputs(In-Order):
             For arrays:
                 first the dimension count is written, then each dimensions size, and finally the serialized data values. 
 
+Operation:
+    Two parameters are passed in being the bytes list and and Element type variable
 
+    Encode the element label (write its type, size, and length to bytes list)
+
+    Push the Element type onto the bytes list, allowing for future decoding to know how to process the data
+
+    Check element.type and compare with conditionals
+
+    Depending on the element.type will determine how the individual bytes of the element.data are written to the bytes list
+
+    NOTE: 
+        The union Data variables share the same memory address, and only one variable can be accessd at a times
+
+
+        Scalar Types(BOOLEAN,CHARACTER,INT8/UINT8):
+            Extracts the value from the first item in the element.data and pushes it directly onto the bytes list
+            Since each of these datatypes can be represented by one byte they are able to be pushed onto the byte list
+        Multi-Byte Scalar Types(INT16/UINT16, INT32/UINT32/FLOAT32, INT64/UINT64/FLOAT64):
+            Shifts and masks the value (from element.data.begin()) to extract individual bytes in big-endian order, then pushes them onto the bytes list
+        STRING Type:
+            Encode the strings lenght using addSize(bytes,element.sizeList[0])
+                Note: element.sizeList[0] for a STRING is treated as a one-dimension array, storing the size of the string in the first (and only) entry of the sizeList vector.
+            Itterates over the element.data and pushes each character onto the bytes list 
+        For Array Types (ARRAYBOOLEAN, ARRAYCHARACTER, ARRAYINT8/ARRAYUINT8, ARRAYINT16/ARRAYUINT16, 
+                         ARRAYINT32/ARRAYUINT32/ARRAYFLOAT32, ARRAYINT64/ARRAYUINT64/ARRAYFLOAT64):
+            Encodes the number of dimensions of this element using addSizeBytes(bytes, element.dimensionCount);
+            Itterates over element.sizeList to encode the size of each dimension 
+            Itterates over element.data and (depending on the type) pushes each value's bytes onto the bytes list
+
+        
+        
 Example:
 
     Element Values:
         Label: "BoolArray"
         TYPE::ARRAYBOOLEAN (0x0E)
         Dimension Count: 2 (0x02)
-        Size List: [3,4] (2D array with 3 rows and 4 columns i.e. 12 boolean values in total)
+        Size List: 12 ([3,4] array with 12 entries, 0x0C)
         Data:
             {true,false,true,true}
             {false,false,true,false}
@@ -444,7 +442,7 @@ Enter the ARRAYBOOLEAN Branch to encode the array ( if(element.type == TYPE::ARR
     [0x0D, 0x09, 0x42, 0x6F, 0x6F, 0x6C, 0x41, 0x72, 0x72, 0x61, 0x79, 0x0E, 0x02]
 
     Encode Dimension Size
-        Function iterates over element.sizeList which is [3,4]:
+        Function iterates over element.sizeList which is a [3,4] array:
             First dimension (Rows):
                 Call addSizeBytes(bytes, 3):
                     Since 3 <= 127, append 0x03
