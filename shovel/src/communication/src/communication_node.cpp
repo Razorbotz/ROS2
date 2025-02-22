@@ -127,6 +127,9 @@ void pad(BinaryMessage message){
     std::vector<uint8_t> bytes(byteList->size());
     int index = 0;
 
+    //Add CRC Error Detection here
+    
+
     //Pads Message
     if(size != 241){
         if(size < 120){
