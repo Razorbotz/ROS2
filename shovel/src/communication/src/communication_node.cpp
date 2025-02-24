@@ -78,6 +78,12 @@ std_msgs::msg::Empty heartbeat;
 int total = 0;
 
 int rssi = 0;
+std::string result = "";
+char buffer2[128];
+int previousTX = 0;
+int previousRX = 0;
+std::string canMessage = "";
+
 #define LOWER_THRESH 67
 #define UPPER_THRESH 80
 #define CRIT_THRESH 90
@@ -303,6 +309,7 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
 void communicationCallback(){
     if(silentRunning)return;
     BinaryMessage message("Communication");
+    message.addElementInt32("RSSI", rssi);
     if(rssi < LOWER_THRESH)
         message.addElementString("Wi-Fi", "NORMAL OPERATION");
     else if(rssi >= LOWER_THRESH && rssi < UPPER_THRESH)
@@ -311,7 +318,9 @@ void communicationCallback(){
         message.addElementString("Wi-Fi", "SEVERE INTERFERENCE OPERATION");
     else
         message.addElementString("Wi-Fi", "NON-FUNCIONAL OPERATION");
-    message.addElementString("CAN Bus", "NON-FUNCTIONAL OPERATION");
+    message.addElementString("CAN Bus", canMessage);
+    message.addElementInt32("RX packets", previousRX);
+    message.addElementInt32("TX packets", previousTX);
     pad(message);
 }
 
@@ -640,6 +649,65 @@ void broadcastIP(){
 }
 
 
+void communicationInterval(){
+    FILE* pipe = popen("iwconfig wlP1p1s0 | grep -E -o '=-.{0,2}'", "r");
+    while(!feof(pipe)){
+        if(fgets(buffer2, 128, pipe) != nullptr){
+            result += buffer2;
+        }
+    }
+    result = "";
+    rssi = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
+    pclose(pipe);
+    FILE* pipe2 = popen("ip link show can0 | grep DOWN", "r");
+    while(!feof(pipe)){
+        if(fgets(buffer2, 128, pipe) != nullptr){
+            result += buffer2;
+        }
+    }
+    if(len(result) > 0){
+        canMessage = "NON-FUNCTIONAL OPERATION";
+    }
+    else{
+        canMessage = "NORMAL OPERATION";
+    }
+    result = "";
+    FILE* pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)", "r");
+    while(!feof(pipe)){
+        if(fgets(buffer2, 128, pipe) != nullptr){
+            result += buffer2;
+        }
+    }
+    int rx = 0;
+    for(int i = 0; i < result.size(); i++){
+        if(result[i] == ' ')
+            break;
+        rx = rx * 10 + ((int) result[i] - 48);
+    }
+    if(previousRX == rx){
+        canMessage = "RX ERROR"
+    }
+    result = "";
+    FILE* pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)", "r");
+    while(!feof(pipe)){
+        if(fgets(buffer2, 128, pipe) != nullptr){
+            result += buffer2;
+        }
+    }
+    int tx = 0;
+    for(int i = 0; i < result.size(); i++){
+        if(result[i] == ' ')
+            break;
+        tx = tx * 10 + ((int) result[i] - 48);
+    }
+    if(previousTX == tx){
+        canMessage = "TX ERROR";
+    }
+    result = "";
+    communicationCallback();
+}
+
+
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
 
@@ -682,9 +750,7 @@ int main(int argc, char **argv){
     uint8_t buffer[1024] = {0}; 
     std::string hello("Hello from server");
 
-    std::string result = "";
-    char buffer2[128];
-
+    int counter = 0;
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
@@ -829,16 +895,10 @@ int main(int argc, char **argv){
 
         rclcpp::spin_some(nodeHandle);
         commHeartbeatPublisher->publish(heartbeat);
-
-        FILE* pipe = popen("iwconfig wlP1p1s0 | grep -E -o '=-.{0,2}'", "r");
-        while(!feof(pipe)){
-            if(fgets(buffer2, 128, pipe) != nullptr){
-                result += buffer2;
-            }
+        if(counter % 30 == 0){
+            communicationInterval();
         }
-        rssi = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
-        pclose(pipe);
-        communicationCallback();
+        counter++;
         rate.sleep();
     }
 
