@@ -5,8 +5,45 @@
 #include <iomanip>
 
 int key = 0x2C;
+void crc_encode_crc16(std::shared_ptr<std::list<uint8_t>> byteList) {
+    // Append two zero bytes as placeholders for the CRC
+    byteList->push_back(0x00);
+    byteList->push_back(0x00);
 
-void crc_encode(std::shared_ptr<std::list<uint8_t>> byteList){
+    uint16_t crc = 0xFFFF;  // Initial value for CRC-16-CCITT
+    const uint16_t polynomial = 0x1021;  // CRC-16 polynomial
+
+    // Process each byte in the list
+    for (uint8_t byte : *byteList) {
+        crc ^= (static_cast<uint16_t>(byte) << 8);
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(crc) << " ";
+        for (int i = 0; i < 8; i++) {
+            if (crc & 0x8000) {
+                crc = (crc << 1) ^ polynomial;
+            } else {
+                crc <<= 1;
+            }
+        }
+    }
+
+    std::cout << "CRC-16 computed: 0x" << std::hex << crc << std::endl;
+
+    // Replace the last two bytes with the computed CRC value
+    auto it = byteList->end();
+    std::advance(it, -2);
+    *it = (crc >> 8) & 0xFF;  // High byte
+    ++it;
+    *it = crc & 0xFF;         // Low byte
+
+    std::cout << "Final byteList: ";
+    for (uint8_t byte : *byteList) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    }
+    std::cout << std::endl;
+}
+
+
+void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
     uint32_t sum = 0;  // Use a wider type to avoid overflow
 
     // Append zero byte as placeholders for the checksum
@@ -24,11 +61,11 @@ void crc_encode(std::shared_ptr<std::list<uint8_t>> byteList){
         sum += byte;
     }
 
-    // Compute the checksum as the sum modulo the key
+    // Compute Checksum
     uint8_t checksum = sum % key;
     std::cout << "Simple checksum computed: 0x" << std::hex << static_cast<int>(checksum) << std::endl;
 
-    // Replace the last two placeholder bytes with the checksum value.
+    
     auto it = byteList->end();
     std::advance(it, -1);
     *it = checksum;
@@ -40,7 +77,7 @@ void crc_encode(std::shared_ptr<std::list<uint8_t>> byteList){
     std::cout << std::endl;
 }
 
-void crc_decode(std::shared_ptr<std::list<uint8_t>> byteList){
+void checksum_decode(std::shared_ptr<std::list<uint8_t>> byteList){
     //Checks last two bytes for the checksum
     if (byteList->size() < 1) {
         std::cout << "Not enough data to decode checksum." << std::endl;
@@ -83,18 +120,19 @@ int main(){
     byteList->push_back(0xCD);
     byteList->push_back(0xEF);
 
+
     std::cout << "byteList contents: ";
     for (const auto& byte : *byteList) {
         std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
     }
     std::cout << std::endl;
 
-    crc_encode(byteList);
-
-    auto it = byteList->end();
+    //checksum_encode(byteList);
+    crc_encode_crc16(byteList);
+    //auto it = byteList->end();
     // std::advance(it, -3);
     // *it = 0x0e;  
-    crc_decode(byteList);
+    //checksum_decode(byteList);
 
     
 }
