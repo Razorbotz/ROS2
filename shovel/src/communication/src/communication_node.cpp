@@ -151,6 +151,7 @@ void pad(BinaryMessage message){
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     int size = byteList->size();
 
+    //Possibly change to 240 for the 1 byte checksum
     if(size != 241){
         RCLCPP_INFO(nodeHandle->get_logger(), "Received %d bytes", size);
         if(size < 150){
