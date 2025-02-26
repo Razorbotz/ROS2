@@ -5,41 +5,15 @@
 #include <iomanip>
 
 int key = 0x2C;
-void crc_encode_crc16(std::shared_ptr<std::list<uint8_t>> byteList) {
-    // Append two zero bytes as placeholders for the CRC
-    byteList->push_back(0x00);
-    byteList->push_back(0x00);
+void crc_encode(std::shared_ptr<std::list<uint8_t>> byteList) {
+    //Get length of byteList 
 
-    uint16_t crc = 0xFFFF;  // Initial value for CRC-16-CCITT
-    const uint16_t polynomial = 0x1021;  // CRC-16 polynomial
+    //Append key-1 zeros at end of bytelist
 
-    // Process each byte in the list
-    for (uint8_t byte : *byteList) {
-        crc ^= (static_cast<uint16_t>(byte) << 8);
-        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(crc) << " ";
-        for (int i = 0; i < 8; i++) {
-            if (crc & 0x8000) {
-                crc = (crc << 1) ^ polynomial;
-            } else {
-                crc <<= 1;
-            }
-        }
-    }
+    //Perform mod2division (appended_data,key)
 
-    std::cout << "CRC-16 computed: 0x" << std::hex << crc << std::endl;
+    //
 
-    // Replace the last two bytes with the computed CRC value
-    auto it = byteList->end();
-    std::advance(it, -2);
-    *it = (crc >> 8) & 0xFF;  // High byte
-    ++it;
-    *it = crc & 0xFF;         // Low byte
-
-    std::cout << "Final byteList: ";
-    for (uint8_t byte : *byteList) {
-        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
-    }
-    std::cout << std::endl;
 }
 
 

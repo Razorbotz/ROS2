@@ -77,6 +77,17 @@ rclcpp::Node::SharedPtr nodeHandle;
 std_msgs::msg::Empty heartbeat;
 int total = 0;
 
+int rssi = 0;
+std::string result = "";
+char buffer2[128];
+int previousTX = 0;
+int previousRX = 0;
+std::string canMessage = "";
+
+#define LOWER_THRESH 67
+#define UPPER_THRESH 80
+#define CRIT_THRESH 90
+
 
 /** @brief Parse a byte represenation into a float.
  * 
@@ -85,7 +96,6 @@ int total = 0;
  * */
 float parseFloat(uint8_t* array){
     uint32_t axisYInteger=0;
-    //Replace with for loop
     axisYInteger|=uint32_t(array[0])<<24;    
     axisYInteger|=uint32_t(array[1])<<16;    
     axisYInteger|=uint32_t(array[2])<<8;    
@@ -105,71 +115,66 @@ void send(BinaryMessage message){
     for(auto byteIterator = byteList->begin(); byteIterator != byteList->end(); byteIterator++, index++){
         bytes.at(index) = *byteIterator;
     }
-    //Could replace this with looking at the byteList last value containing the size of the message
-    total += byteList->size();
-    int bytesSent = 0, byteTotal = 0;
-    //RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
-    while(byteTotal < byteList->size()){
-        if((bytesSent = send(new_socket, bytes.data(), byteList->size(), 0))== -1){
-            RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
-            break;
-        }
-        else{
-            byteTotal += bytesSent;
+    if(byteList->size() != 241)
+        return;
+    try{
+        total += byteList->size();
+        int bytesSent = 0, byteTotal = 0;
+        RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
+        while(byteTotal < byteList->size()){
+            if((bytesSent = send(new_socket, bytes.data(), byteList->size(), 0))== -1){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
+                break;
+            }
+            else{
+                byteTotal += bytesSent;
+            }
         }
     }
+    catch(int x){
+        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to send data to client");
+    }
+
 }
 
 
+/*
+This function was required to pad the messages to 241 bytes, which was the
+size expected by the client to ensure that no bytes were dropped during the
+process of being sent. To allow each packet to be 241 bytes, a string with
+the name of Pad is added with a string of spaces to fill out the rest. 
+Because the packet will have an additional size byte when the total length
+of the padded string is over 127, the padded string is split into two when
+the size is less than 150.
+*/
 void pad(BinaryMessage message){
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     int size = byteList->size();
-    std::vector<uint8_t> bytes(byteList->size());
-    int index = 0;
 
-    //Add CRC Error Detection here
-    
-
-    //Pads Message
     if(size != 241){
-        if(size < 120){
-            size += 8;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Received %d bytes", size);
+        if(size < 150){
+            std::string padded = "";
+            for(int i = size; i < size + 50; i++){
+                padded.append(" ");
+            }
+            message.addElementString("Pad", padded);
+            size = message.getBytes()->size();
         }
-        else{
-            size += 7;
-        }
+        size += 7;
         std::string padded = "";
         for(int i = size; i < 241; i++){
             padded.append(" ");
         }
         message.addElementString("Pad", padded);
     }
-
-    //Sends Message
-    
-    for(auto byteIterator = byteList->begin(); byteIterator != byteList->end(); byteIterator++, index++){
-        bytes.at(index) = *byteIterator;
-    }
-    //Could replace this with looking at the byteList last value containing the size of the message
-    total += byteList->size();
-    int bytesSent = 0, byteTotal = 0;
-    //RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
-    while(byteTotal < byteList->size()){
-        if((bytesSent = send(new_socket, bytes.data(), byteList->size(), 0))== -1){
-            RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
-            break;
-        }
-        else{
-            byteTotal += bytesSent;
-        }
-    }
+    send(message);
 }
 
 
 void send(std::string messageLabel, const messages::msg::FalconOut::SharedPtr talonOut){
     if(silentRunning)return;
     //RCLCPP_INFO(nodeHandle->get_logger(), "send talon");
-    // Creates BinaryMessage object and sets the object label param to messageLabel
     BinaryMessage message(messageLabel);
 
     message.addElementUInt8("Device ID",(uint8_t)talonOut->device_id);
@@ -284,6 +289,8 @@ void send(std::string messageLabel, const messages::msg::AutonomyOut::SharedPtr 
  */
 void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
     if(silentRunning)return;
+    if(rssi > UPPER_THRESH)
+        return;
     BinaryMessage message("Zed");
     message.addElementFloat32("X", zedPosition->x);
     message.addElementFloat32("Y", zedPosition->y);
@@ -298,6 +305,26 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     pad(message);
 }
 
+
+void communicationCallback(){
+    if(silentRunning)return;
+    BinaryMessage message("Communication");
+    message.addElementInt32("RSSI", rssi);
+    if(rssi < LOWER_THRESH)
+        message.addElementString("Wi-Fi", "NORMAL OPERATION");
+    else if(rssi >= LOWER_THRESH && rssi < UPPER_THRESH)
+        message.addElementString("Wi-Fi", "DEGRADED OPERATION");
+    else if(rssi >= UPPER_THRESH && rssi < CRIT_THRESH)
+        message.addElementString("Wi-Fi", "SEVERE INTERFERENCE OPERATION");
+    else
+        message.addElementString("Wi-Fi", "NON-FUNCIONAL OPERATION");
+    message.addElementString("CAN Bus", canMessage);
+    message.addElementInt32("RX packets", previousRX);
+    message.addElementInt32("TX packets", previousTX);
+    pad(message);
+}
+
+
 /** @brief Callback function for the power topic.
  * 
  * This function is called when the node receives a
@@ -311,7 +338,8 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
  * */
 void powerCallback(const messages::msg::Power::SharedPtr power){
     //RCLCPP_INFO(nodeHandle->get_logger(), "power callback");
-    send("Power",power);
+    if(rssi < UPPER_THRESH)
+        send("Power",power);
 }
 
 /** @brief Callback function for the Talon topic
@@ -324,7 +352,8 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
  * */
 void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon1 callback");
-    send("Talon 1",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Talon 1",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -337,7 +366,8 @@ void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon2 callback");
-    send("Talon 2",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Talon 2",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -350,7 +380,8 @@ void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon3 callback");
-    send("Talon 3",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Talon 3",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -363,7 +394,8 @@ void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
-    send("Talon 4",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Talon 4",talonOut);
 }
 
 
@@ -377,7 +409,8 @@ void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
  * */
 void falcon1Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
-    send("Falcon 1",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Falcon 1",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -390,7 +423,8 @@ void falcon1Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon2Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon2 callback");
-    send("Falcon 2",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Falcon 2",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -403,7 +437,8 @@ void falcon2Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon3Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon3 callback");
-    send("Falcon 3",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Falcon 3",talonOut);
 }
 
 /** @brief Callback function for the Talon topic
@@ -416,7 +451,8 @@ void falcon3Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  * */
 void falcon4Callback(const messages::msg::FalconOut::SharedPtr talonOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon4 callback");
-    send("Falcon 4",talonOut);
+    if(rssi < CRIT_THRESH)
+        send("Falcon 4",talonOut);
 }
 
 
@@ -428,7 +464,8 @@ void falcon4Callback(const messages::msg::FalconOut::SharedPtr talonOut){
  */
 void linearOut1Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear1 callback");
-    send("Linear 1", linearOut);
+    if(rssi < UPPER_THRESH)
+        send("Linear 1", linearOut);
 }
 
 
@@ -440,7 +477,8 @@ void linearOut1Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut2Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear2 callback");
-    send("Linear 2", linearOut);
+    if(rssi < UPPER_THRESH)
+        send("Linear 2", linearOut);
 }
 
 
@@ -452,7 +490,8 @@ void linearOut2Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear3 callback");
-    send("Linear 3", linearOut);
+    if(rssi < UPPER_THRESH)
+        send("Linear 3", linearOut);
 }
 
 
@@ -464,14 +503,17 @@ void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
  */
 void linearOut4Callback(const messages::msg::LinearOut::SharedPtr linearOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear4 callback");
-    send("Linear 4", linearOut);
+    if(rssi < UPPER_THRESH)
+        send("Linear 4", linearOut);
 }
 
 
 void autonomyOutCallback(const messages::msg::AutonomyOut::SharedPtr autonomyOut){
     //RCLCPP_INFO(nodeHandle->get_logger(), "autonomy callback");
-    send("Autonomy", autonomyOut);
+    if(rssi < CRIT_THRESH)
+        send("Autonomy", autonomyOut);
 }
+
 
 /** @brief Returns the address string of the rover.
  * 
@@ -557,6 +599,7 @@ void printAddresses() {
     printf("Done\n");
 }
 
+
 /** @brief Reboots the rover. 
  *
  * */
@@ -568,6 +611,7 @@ void reboot(){
 std::string robotName="unnamed";
 bool broadcast=true;
 
+
 /** @brief Creates socketDescriptor for socket connection.
  * 
  * This function is called when the node
@@ -578,7 +622,7 @@ bool broadcast=true;
 void broadcastIP(){
     while(true){
         if(broadcast){
-            std::string addressString=getAddressString(AF_INET,"wlan0");
+            std::string addressString=getAddressString(AF_INET,"wlP1p1s0");
 
             std::string message(robotName+"@"+addressString);
             std::cout << message << std::endl << std::flush;
@@ -605,6 +649,65 @@ void broadcastIP(){
 }
 
 
+void communicationInterval(){
+    FILE* pipe = popen("iwconfig wlP1p1s0 | grep -E -o '=-.{0,2}'", "r");
+    while(!feof(pipe)){
+        if(fgets(buffer2, 128, pipe) != nullptr){
+            result += buffer2;
+        }
+    }
+    result = "";
+    rssi = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
+    pclose(pipe);
+    FILE* pipe2 = popen("ip link show can0 | grep DOWN", "r");
+    while(!feof(pipe)){
+        if(fgets(buffer2, 128, pipe) != nullptr){
+            result += buffer2;
+        }
+    }
+    if(len(result) > 0){
+        canMessage = "NON-FUNCTIONAL OPERATION";
+    }
+    else{
+        canMessage = "NORMAL OPERATION";
+    }
+    result = "";
+    FILE* pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)", "r");
+    while(!feof(pipe)){
+        if(fgets(buffer2, 128, pipe) != nullptr){
+            result += buffer2;
+        }
+    }
+    int rx = 0;
+    for(int i = 0; i < result.size(); i++){
+        if(result[i] == ' ')
+            break;
+        rx = rx * 10 + ((int) result[i] - 48);
+    }
+    if(previousRX == rx){
+        canMessage = "RX ERROR"
+    }
+    result = "";
+    FILE* pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)", "r");
+    while(!feof(pipe)){
+        if(fgets(buffer2, 128, pipe) != nullptr){
+            result += buffer2;
+        }
+    }
+    int tx = 0;
+    for(int i = 0; i < result.size(); i++){
+        if(result[i] == ' ')
+            break;
+        tx = tx * 10 + ((int) result[i] - 48);
+    }
+    if(previousTX == tx){
+        canMessage = "TX ERROR";
+    }
+    result = "";
+    communicationCallback();
+}
+
+
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
 
@@ -615,8 +718,7 @@ int main(int argc, char **argv){
     rclcpp::Parameter robotNameParameter = nodeHandle->get_parameter("robot_name");
     robotName = robotNameParameter.as_string();
     RCLCPP_INFO(nodeHandle->get_logger(),"robotName: %s", robotName.c_str());
-// Publishers (What we publish)
-    // Creates a publisher that sends messages of type messages::msg::AxisState to the topic "joystick_axis"
+
     auto joystickAxisPublisher = nodeHandle->create_publisher<messages::msg::AxisState>("joystick_axis", 1);
     auto joystickHatPublisher = nodeHandle->create_publisher<messages::msg::HatState>("joystick_hat",1);
     auto joystickButtonPublisher = nodeHandle->create_publisher<messages::msg::ButtonState>("joystick_button",1);
@@ -624,8 +726,7 @@ int main(int argc, char **argv){
     auto stopPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("STOP",1);
     auto goPublisher=nodeHandle->create_publisher<std_msgs::msg::Empty>("GO",1);
     auto commHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat",1);
-// Subscribers (Information the communication node receives)
-// Each has a callback function that is called when the node receives information from the topic
+
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,talon1Callback);
     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,talon2Callback);
@@ -649,6 +750,7 @@ int main(int argc, char **argv){
     uint8_t buffer[1024] = {0}; 
     std::string hello("Hello from server");
 
+    int counter = 0;
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
@@ -690,30 +792,35 @@ int main(int argc, char **argv){
     uint8_t message[256];
     rclcpp::Rate rate(30);
     while(rclcpp::ok()){
-        bytesRead = recv(new_socket, buffer, 1024, 0);
-        for(int index=0;index<bytesRead;index++){
-            messageBytesList.push_back(buffer[index]);
-        }
-
-        if(bytesRead==0){
-            stopPublisher->publish(empty);
-	        RCLCPP_INFO(nodeHandle->get_logger(),"Lost Connection");
-            broadcast=true;
-            //wait for reconnect
-            if (listen(server_fd, 3) < 0) { 
-                perror("listen"); 
-                exit(EXIT_FAILURE); 
-            } 
-            if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
-                perror("accept"); 
-                exit(EXIT_FAILURE); 
+        try{
+            bytesRead = recv(new_socket, buffer, 1024, 0);
+            for(int index=0;index<bytesRead;index++){
+                messageBytesList.push_back(buffer[index]);
             }
-            broadcast=false;
-            bytesRead = read(new_socket, buffer, 1024); 
-            send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
-            fcntl(new_socket, F_SETFL, O_NONBLOCK);
-    
-            silentRunning=true;
+
+            if(bytesRead==0){
+                stopPublisher->publish(empty);
+                RCLCPP_INFO(nodeHandle->get_logger(),"Lost Connection");
+                broadcast=true;
+                //wait for reconnect
+                if (listen(server_fd, 3) < 0) { 
+                    perror("listen"); 
+                    exit(EXIT_FAILURE); 
+                } 
+                if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
+                    perror("accept"); 
+                    exit(EXIT_FAILURE); 
+                }
+                broadcast=false;
+                bytesRead = read(new_socket, buffer, 1024); 
+                send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
+                fcntl(new_socket, F_SETFL, O_NONBLOCK);
+        
+                silentRunning=true;
+            }
+        }
+        catch(int x){
+            RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to read data from client");
         }
 
         while(messageBytesList.size()>0 && messageBytesList.front()<=messageBytesList.size()){
@@ -747,6 +854,9 @@ int main(int argc, char **argv){
                 keyState.key=((uint16_t)message[1])<<8 | ((uint16_t)message[2]);
                 keyState.state=message[3];
                 keyPublisher->publish(keyState);
+                if(keyState.key == 49 && keyState.state == 1){
+                    return 0;
+                }
 		        //RCLCPP_INFO(nodeHandle->get_logger(),"key %d %d ", keyState.key , keyState.state);
             }
             if(command==5){
@@ -785,6 +895,10 @@ int main(int argc, char **argv){
 
         rclcpp::spin_some(nodeHandle);
         commHeartbeatPublisher->publish(heartbeat);
+        if(counter % 30 == 0){
+            communicationInterval();
+        }
+        counter++;
         rate.sleep();
     }
 
