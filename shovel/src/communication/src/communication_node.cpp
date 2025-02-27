@@ -664,12 +664,12 @@ void communicationInterval(){
     rssi = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
     pclose(pipe);
     FILE* pipe2 = popen("ip link show can0 | grep DOWN", "r");
-    while(!feof(pipe)){
+    while(!feof(pipe2)){
         if(fgets(buffer2, 128, pipe) != nullptr){
             result += buffer2;
         }
     }
-    if(len(result) > 0){
+    if(result.size() > 0){
         canMessage = "NON-FUNCTIONAL OPERATION";
     }
     else{
@@ -677,7 +677,7 @@ void communicationInterval(){
     }
     result = "";
     FILE* pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)", "r");
-    while(!feof(pipe)){
+    while(!feof(pipe3)){
         if(fgets(buffer2, 128, pipe) != nullptr){
             result += buffer2;
         }
@@ -689,11 +689,11 @@ void communicationInterval(){
         rx = rx * 10 + ((int) result[i] - 48);
     }
     if(previousRX == rx){
-        canMessage = "RX ERROR"
+        canMessage = "RX ERROR";
     }
     result = "";
     FILE* pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)", "r");
-    while(!feof(pipe)){
+    while(!feof(pipe4)){
         if(fgets(buffer2, 128, pipe) != nullptr){
             result += buffer2;
         }
