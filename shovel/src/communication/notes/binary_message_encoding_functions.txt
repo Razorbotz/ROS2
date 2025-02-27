@@ -464,22 +464,53 @@ Enter the ARRAYBOOLEAN Branch to encode the array ( if(element.type == TYPE::ARR
 void BinaryMessage::encodeMessageSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes)
 ------------------------------------------------------------------------------------------------------------------
 
-Main purpose:
-
+Main Purpose: 
+    Preapends the encoded message with a header that contains the total size of the message in bytes (including the header itself).
 
 Used By:
+    getBytes()
 
 
 Relies On:
-
+    addSizeBytes()
 
 Inputs:
+    std::list<uint8_t>(bytes)
+
 
 
 Outputs(In-Order):
+    A single byte of data if size is small (<= 127)
+    If size is >= 127 
+        A header byte indicating multi-byte encoding and how many bytes are encoded
+        A list of bytes representing the size of the entire message 
 
 
 Operation:
+
+    Function obtains the current number of bytes in the message
+        uint64_t number = bytes->size();
+
+    By adding a header to the message this increases the total size of the message, so an adjustment is computed based on certain ranges
+        If number <= 0x7E (126), adjustment is 1
+        If number is between 0x7F and 0xFD(253), adjustment is 2
+        Any further ranges set the adjustment value to 9
+
+    The adjustment value is added to the number 
+        number += adjustment;
+
+    The function then pushes the number (size of message) onto the front of the bytes list 
+        If number <= 0x7F then it can be represented by one byte 
+            bytes->push_front((uint8_t)number);
+        If number >= 0x7F then it must be represented by multiple bytes 
+            A mask is used to count the number of leading zero bytes
+            The loop runs over 8 bytes, and zeroCount is incramented until a non-zero portion of number is encountered
+            This indicates how many bytes of data are needed to store the data in number
+            Each byte of data is appended to the front of the byte list 
+            Finally a header byte is appended to the front of the message to signal this is multibyte encoding, and how many bytes of data there are
+
+    
+
 
 
 Example:

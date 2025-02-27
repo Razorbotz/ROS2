@@ -342,9 +342,8 @@ void Object::print(){
     }
 }
 
-
+//Constructor called in control.cpp to decode binary message
 BinaryMessage::BinaryMessage(std::list<uint8_t>& bytes){
-    // Where the bytes is defined
     std::list<uint8_t>::iterator currentByte = bytes.begin();
 
     uint64_t size = decodeSizeBytes(currentByte);

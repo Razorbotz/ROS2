@@ -330,25 +330,7 @@ Example:
 void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element)              
 ------------------------------------------------------------------------------------------------------------------
 
-Main Purpose: 
 
-
-Used By:
-
-
-Relies On:
-
-
-Operation:
-
-
-Inputs:
-
-
-Outputs(In-Order):
-
-
-Example:
 
 
 

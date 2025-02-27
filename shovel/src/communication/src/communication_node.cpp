@@ -169,6 +169,9 @@ void pad(BinaryMessage message){
         }
         message.addElementString("Pad", padded);
     }
+
+    //Add Checksum here
+    
     send(message);
 }
 
