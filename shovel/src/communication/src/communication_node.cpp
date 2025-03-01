@@ -136,6 +136,42 @@ void send(BinaryMessage message){
     }
 
 }
+int key = 0x2C;
+void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
+    uint32_t sum = 0; 
+
+    // Append zero byte as placeholders for the checksum
+    byteList->push_back(0x00);
+
+
+    std::cout << "Byte List: ";
+    for (auto byte : *byteList) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    }
+    std::cout << std::endl;
+
+    // Sum all the bytes(the appended zero byte does not count towards the checksum)
+    for (uint8_t byte : *byteList) {
+        sum += byte;
+    }
+
+    // Compute Checksum
+    uint8_t checksum = sum % key;
+    std::cout << "Checksum computed: 0x" << std::hex << static_cast<int>(checksum) << std::endl;
+
+    //Goes to end of byteList
+    auto it = byteList->end();
+    //Moves back one byte to (0x00) placeholder
+    std::advance(it, -1);
+    //Replaces placeholder with checksum
+    *it = checksum;
+
+    std::cout << "Final byteList: ";
+    for (auto byte : *byteList) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    }
+    std::cout << std::endl;
+}
 
 
 /*
@@ -151,7 +187,8 @@ void pad(BinaryMessage message){
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     int size = byteList->size();
 
-    if(size != 241){
+    //Possibly change to 240 for the 1 byte checksum
+    if(size != 240){
         RCLCPP_INFO(nodeHandle->get_logger(), "Received %d bytes", size);
         if(size < 150){
             std::string padded = "";
@@ -163,11 +200,15 @@ void pad(BinaryMessage message){
         }
         size += 7;
         std::string padded = "";
-        for(int i = size; i < 241; i++){
+        for(int i = size; i < 240; i++){
             padded.append(" ");
         }
         message.addElementString("Pad", padded);
     }
+
+    //Add Checksum here
+    checksum_encode(byteList);
+    
     send(message);
 }
 
@@ -661,7 +702,7 @@ void communicationInterval(){
     pclose(pipe);
     FILE* pipe2 = popen("ip link show can0 | grep DOWN", "r");
     while(!feof(pipe2)){
-        if(fgets(buffer2, 128, pipe2) != nullptr){
+        if(fgets(buffer2, 128, pipe) != nullptr){
             result += buffer2;
         }
     }
@@ -672,10 +713,9 @@ void communicationInterval(){
         canMessage = "NORMAL OPERATION";
     }
     result = "";
-    pclose(pipe2);
     FILE* pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)", "r");
     while(!feof(pipe3)){
-        if(fgets(buffer2, 128, pipe3) != nullptr){
+        if(fgets(buffer2, 128, pipe) != nullptr){
             result += buffer2;
         }
     }
@@ -689,10 +729,9 @@ void communicationInterval(){
         canMessage = "RX ERROR";
     }
     result = "";
-    pclose(pipe3);
     FILE* pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)", "r");
     while(!feof(pipe4)){
-        if(fgets(buffer2, 128, pipe4) != nullptr){
+        if(fgets(buffer2, 128, pipe) != nullptr){
             result += buffer2;
         }
     }
@@ -706,7 +745,6 @@ void communicationInterval(){
         canMessage = "TX ERROR";
     }
     result = "";
-    pclose(pipe4);
     communicationCallback();
 }
 
