@@ -31,6 +31,9 @@ class Automation{
         OBSTACLE,
         GO_TO_DUMP,
         DUMP,
+        GO_TO_HOME,
+        DOCK,
+        RETURN_TO_START,
         ROBOT_IDLE
     };
 
@@ -40,6 +43,7 @@ enum ExcavationState{EXCAVATION_IDLE,
         COLLECT,
         LOWER_ARM,
         LOWER_BUCKET,
+        SQUARE_UP,
         EXCAVATION_ERROR_RECOVERY
     };
 

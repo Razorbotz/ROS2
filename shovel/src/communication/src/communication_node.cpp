@@ -672,6 +672,7 @@ void communicationInterval(){
         canMessage = "NORMAL OPERATION";
     }
     result = "";
+    pclose(pipe2);
     FILE* pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)", "r");
     while(!feof(pipe3)){
         if(fgets(buffer2, 128, pipe3) != nullptr){
@@ -688,6 +689,7 @@ void communicationInterval(){
         canMessage = "RX ERROR";
     }
     result = "";
+    pclose(pipe3);
     FILE* pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)", "r");
     while(!feof(pipe4)){
         if(fgets(buffer2, 128, pipe4) != nullptr){
@@ -704,6 +706,7 @@ void communicationInterval(){
         canMessage = "TX ERROR";
     }
     result = "";
+    pclose(pipe4);
     communicationCallback();
 }
 
