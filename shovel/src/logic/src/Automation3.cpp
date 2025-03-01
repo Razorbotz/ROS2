@@ -149,7 +149,6 @@ void Automation3::automate(){
         
     }
 
-    // TODO: Change this to align
     if(robotState==LOCATE){
         if(turnLeft)
             changeSpeed(-0.15,0.15);
@@ -428,7 +427,8 @@ void Automation3::publishAutomationOut(){
     std::string excavationStateString = excavationStateMap.at(excavationState);
     std::string errorStateString = errorStateMap.at(errorState);
     std::string diagnosticsStateString = diagnosticsStateMap.at(diagnosticsState);
-    publishAutonomyOut(robotStateString, excavationStateString, errorStateString, diagnosticsStateString);
+    std::string tiltStateString = tiltStateMap.at(tiltState);
+    publishAutonomyOut(robotStateString, excavationStateString, errorStateString, diagnosticsStateString, tiltStateString);
 }
 
 void Automation3::setDiagnostics(){

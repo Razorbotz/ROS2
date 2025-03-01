@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
     init_params.sensors_required = true;
 
     // Open the camera
-    sl::ERROR_CODE err = zed.open(init_params);
+    auto err = zed.open(init_params);
     if (err != sl::ERROR_CODE::SUCCESS) {
 	    std::cout << "Error, unable to open ZED camera: " << err << "\n";
         zed.close();
@@ -213,6 +213,7 @@ int main(int argc, char **argv) {
     sl::PositionalTrackingParameters tracking_params;
     tracking_params.enable_imu_fusion = true;
     tracking_params.enable_area_memory = true;
+    tracking_params.enable_pose_smoothing = true;
     auto returned_state = zed.enablePositionalTracking(tracking_params);
     if (returned_state != sl::ERROR_CODE::SUCCESS) {
         zed.close();
@@ -355,6 +356,7 @@ int main(int argc, char **argv) {
 	    rate.sleep();
     }
     zed.close();
+    rclcpp::shutdown();
     return 0;
 
 }

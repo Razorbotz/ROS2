@@ -5,6 +5,7 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/empty.hpp>
+#include <messages/msg/key_state.hpp>
 
 #include "messages/msg/linear_out.hpp"
 #include "messages/msg/talon_out.hpp"
@@ -55,7 +56,6 @@ enum Error {
     ActuatorsSyncError,
     ActuatorNotMovingError,
     PotentiometerError,
-    MotorConnectionError,
     None
 };
 
@@ -63,7 +63,6 @@ enum Error {
 std::map<Error, const char*> errorMap = {{ActuatorsSyncError, "ActuatorsSyncError"},
     {ActuatorNotMovingError, "ActuatorNotMovingError"},
     {PotentiometerError, "PotentiometerError"},
-    {MotorConnectionError, "MotorConnectionError"},
     {None, "None"}};
 
 
@@ -74,27 +73,28 @@ struct LinearActuator{
     int timeWithoutChange = 0;      // Number of potentiometer values received without change when speed > 0
     int max = 0;                    // Max potentiometer value
     int min = 1024;                 // Min potentiometer value
-    Error error = None;  // Error state of the actuator
+    Error error = None;             // Error state of the actuator
     bool atMin = false;             // Bool value of if actuator is at min extension
     bool atMax = false;             // Bool value of if actuator is at max extension
     float stroke = 11.8;            // Length of stroke of the actuator
     float distance = 0.0;           // Distance extended
     float extensionSpeed = 0.0;     // Speed of extension in in/sec
     float timeToExtend = 0.0;       // Time to fully extend actuator
-    bool sensorless = false;
-    float maxCurrent = 0.0;
+    bool sensorless = false;        // Running without sensor
+    float maxCurrent = 0.0;         
     bool initialized = false;
     float previous = 0.0;
+    float current = 0.0;
 };
 
 
-LinearActuator linear1{14, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.85, 11.5, false, 0.0, false, 0.0};
-LinearActuator linear2{15, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.89, 11.0, false, 0.0, false, 0.0};
-LinearActuator linear3{16, 0.0, 0, 0, 0, 1024, None, false, false, 5.9, 0.0, 0.69, 8.5, false, 0.0, false, 0.0};
-LinearActuator linear4{17, 0.0, 0, 0, 0, 1024, None, false, false, 5.9, 0.0, 0.69, 8.5, false, 0.0, false, 0.0};
+LinearActuator linear1{14, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.85, 11.5, false, 0.0, false, 0.0, 0.0};
+LinearActuator linear2{15, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.89, 11.0, false, 0.0, false, 0.0, 0.0};
+LinearActuator linear3{16, 0.0, 0, 0, 0, 1024, None, false, false, 11.8, 0.0, 0.69, 8.5, false, 0.0, false, 0.0, 0.0};
+LinearActuator linear4{17, 0.0, 0, 0, 0, 1024, None, false, false, 11.8, 0.0, 0.69, 8.5, false, 0.0, false, 0.0, 0.0};
 
-float currentSpeed = 0.0;
-float currentSpeed2 = 0.0;
+float currentArmSpeed = 0.0;
+float currentBucketSpeed = 0.0;
 float distThresh1 = 0.05;
 float distThresh2 = 0.10;
 float distThresh3 = 0.15;
@@ -387,6 +387,7 @@ void processPotentiometerData(int potentData, LinearActuator *linear){
     }
     if(potentData > 110 || potentData < 100){
         linear->initialized = true;
+        linear->distance = linear->stroke * (potentData / 950);
     }
     if(abs(linear->potentiometer - potentData) > 50 && (potentData >= 100 && potentData <= 110)){
         linear->sensorless = true;
@@ -525,7 +526,7 @@ void potentiometer1Callback(const messages::msg::TalonOut::SharedPtr msg){
         if(linear1.error != PotentiometerError){
             processPotentiometerData(msg->sensor_position, &linear1);
             if(!linear1.sensorless && !linear2.sensorless){
-                setSyncErrors(&linear1, &linear2, currentSpeed);
+                setSyncErrors(&linear1, &linear2, currentArmSpeed);
             }
         }
     }
@@ -550,7 +551,7 @@ void potentiometer2Callback(const messages::msg::TalonOut::SharedPtr msg){
         if(linear2.error != PotentiometerError){
             processPotentiometerData(msg->sensor_position, &linear2);
             if(!linear1.sensorless && !linear2.sensorless){
-                setSyncErrors(&linear1, &linear2, currentSpeed);
+                setSyncErrors(&linear1, &linear2, currentArmSpeed);
             }
         }
     }
@@ -575,7 +576,7 @@ void potentiometer3Callback(const messages::msg::TalonOut::SharedPtr msg){
         if(linear3.error != PotentiometerError){
             processPotentiometerData(msg->sensor_position, &linear3);
             if(!linear3.sensorless && !linear4.sensorless){
-                setSyncErrors(&linear3, &linear4, currentSpeed2);
+                setSyncErrors(&linear3, &linear4, currentBucketSpeed);
             }
         }
     }
@@ -600,7 +601,7 @@ void potentiometer4Callback(const messages::msg::TalonOut::SharedPtr msg){
         if(linear4.error != PotentiometerError){
             processPotentiometerData(msg->sensor_position, &linear4);
             if(!linear3.sensorless && !linear4.sensorless){
-                setSyncErrors(&linear3, &linear4, currentSpeed2);
+                setSyncErrors(&linear3, &linear4, currentBucketSpeed);
             }
         }
     }
@@ -609,16 +610,16 @@ void potentiometer4Callback(const messages::msg::TalonOut::SharedPtr msg){
 
 /** @brief Callback function for the armSpeed topic. 
  * 
- * This function sets the currentSpeed variable to the value contained in the 
+ * This function sets the currentArmSpeed variable to the value contained in the 
  * speed->data. The speeds are set using the setSpeeds function and published
  * using the publishSpeeds function.
  * @param speed - ROS2 message containing speed value for the arm linear actuators
  * @return void
  * */
 void armSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
-    currentSpeed = speed->data;
-    RCLCPP_INFO(nodeHandle->get_logger(),"currentSpeed: %f", currentSpeed);
-    setSpeeds(&linear1, &linear2, currentSpeed);
+    currentArmSpeed = speed->data;
+    RCLCPP_INFO(nodeHandle->get_logger(),"currentArmSpeed: %f", currentArmSpeed);
+    setSpeeds(&linear1, &linear2, currentArmSpeed);
     publishSpeeds();
     RCLCPP_INFO(nodeHandle->get_logger(),"Arm speeds: %f, %f", linear1.speed, linear2.speed);
 }
@@ -626,21 +627,27 @@ void armSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 
 /** @brief Callback function for the bucketSpeed topic. 
  * 
- * This function sets the currentSpeed2 variable to the value contained in the 
+ * This function sets the currentBucketSpeed variable to the value contained in the 
  * speed->data. The speeds are set using the setSpeeds2 function and published
  * using the publishSpeeds2 function.
  * @param speed - ROS2 message containing speed value for the arm linear actuators
  * @return void
  * */
 void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
-    currentSpeed2 = speed->data;
-    RCLCPP_INFO(nodeHandle->get_logger(),"currentSpeed: %f", currentSpeed2);
-    setSpeeds(&linear3, &linear4, currentSpeed2);
+    currentBucketSpeed = speed->data;
+    RCLCPP_INFO(nodeHandle->get_logger(),"currentSpeed: %f", currentBucketSpeed);
+    setSpeeds(&linear3, &linear4, currentBucketSpeed);
     publishSpeeds2();
     RCLCPP_INFO(nodeHandle->get_logger(),"Bucket speeds: %f, %f", linear3.speed, linear4.speed);
 
 }
 
+void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
+    std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
+    if(keyState->key == 60 && keyState->state==1){
+        return;
+    }
+}
 
 /** @brief Function to get the LinearOut values
  * 
@@ -706,7 +713,7 @@ void updateMotorPositions(int millis){
     //RCLCPP_INFO(nodeHandle->get_logger(), "Linear 2 Distance: %f", linear2.distance);
     
     if(linear1.sensorless || linear2.sensorless)
-        setSpeedsDistance(&linear1, &linear2, currentSpeed);
+        setSpeedsDistance(&linear1, &linear2, currentArmSpeed);
     
     updateMotorPosition(millis, &linear3);
     //RCLCPP_INFO(nodeHandle->get_logger(), "Linear 3 Distance: %f", linear3.distance);
@@ -715,7 +722,7 @@ void updateMotorPositions(int millis){
     //RCLCPP_INFO(nodeHandle->get_logger(), "Linear 4 Distance: %f", linear4.distance);
     
     if(linear3.sensorless || linear4.sensorless)
-        setSpeedsDistance(&linear3, &linear4, currentSpeed2);
+        setSpeedsDistance(&linear3, &linear4, currentBucketSpeed);
 }
 
 
@@ -729,6 +736,7 @@ int main(int argc, char **argv){
 
     auto armSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("arm_speed",1,armSpeedCallback);
     auto bucketSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("bucket_speed",1,bucketSpeedCallback);
+    auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
 
     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,potentiometer1Callback);
     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,potentiometer2Callback);

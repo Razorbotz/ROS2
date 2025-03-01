@@ -152,10 +152,12 @@ void Automation1::automate(){
     // TODO: Change this to align
     if(robotState==LOCATE){
         changeSpeed(0.15,-0.15);
-        if(position.arucoVisible==true){
+        if(position.arucoInitialized==true){
             RCLCPP_INFO(this->node->get_logger(), "Roll: %f Pitch: %f Yaw: %f", position.roll, position.pitch, position.yaw);
-            setDestAngle(position.yaw + 90.0);
             changeSpeed(0,0);
+            setStartPositionM(position.z, position.x);
+            RCLCPP_INFO(this->node->get_logger(), "startX: %d, startY: %d", this->search.startX, this->search.startY);
+            setDestAngle(90);
             robotState=ALIGN;
         }
     }
@@ -312,7 +314,7 @@ void Automation1::automate(){
     }
 
     // After mining, return to start position
-    if(robotState==GO_TO_HOME){
+    if(robotState==GO_TO_DUMP){
         if (!(position.yaw < this->destAngle+5 && position.yaw > this->destAngle-5)) {
             if(position.yaw - this->destAngle > 180 || position.yaw - this->destAngle < 0){
                 changeSpeed(0.15, -0.15);
@@ -325,7 +327,7 @@ void Automation1::automate(){
             if(abs(this->position.x) > abs(this->destX)){
                 changeSpeed(0.0, 0.0);
                 if(this->currentPath.empty()){
-                    robotState = DOCK;
+                    robotState = DUMP;
                 }
                 else{
                     std::pair<int, int> current = this->currentPath.top();
@@ -347,31 +349,46 @@ void Automation1::automate(){
         }
     }
 
-    // After reaching start position, dock at dump bin
-    if(robotState==DOCK){
-
-    }
-
     // Dump the collected rocks in the dump bin
     if(robotState==DUMP){
-        if(checkArmPosition(30)){
-            setArmSpeed(0.0);
-        }
-        if(checkBucketPosition(30)){
+        if(dumpState == DUMP_IDLE){
+            setArmTarget(900);
+            setBucketTarget(700);
+            setArmSpeed(1.0);
             setBucketSpeed(0.0);
+            dumpState = DUMP_EXTEND;
         }
-        if(checkArmPosition(30) && checkBucketPosition(30)){
-            robotState = ROBOT_IDLE;
-            setBucketSpeed(-1.0);
-            setArmSpeed(-1.0);
+        if(dumpState == DUMP_EXTEND){
+            if(checkArmPosition(30)){
+                setBucketSpeed(1.0);
+            }
+            if(checkArmPosition(30)){
+                setArmSpeed(0.0);
+            }
+            if(checkBucketPosition(30)){
+                setBucketSpeed(0.0);
+            }
+            if(checkArmPosition(30) && checkBucketPosition(30)){
+                setBucketSpeed(-1.0);
+                setArmSpeed(-1.0);
+                setBucketTarget(10);
+                setArmTarget(10);
+                dumpState = DUMP_RETRACT;
+            }
         }
-    }
-
-    // After dumping the rocks, return to start position and
-    // start again
-    if(robotState==RETURN_TO_START){
-
-        robotState = ALIGN;
+        if(dumpState == DUMP_RETRACT){
+            if(checkArmPosition(30) == 1){
+                setArmSpeed(0.0);
+            }
+            if(checkBucketPosition(30) == 1){
+                setBucketSpeed(0.0);
+            }
+            if(checkArmPosition(30) == 1 && checkBucketPosition(30) == 1){
+                robotState = ROBOT_IDLE;
+                dumpState = DUMP_IDLE;
+            }
+        }
+        
     }
 
     if(robotState == OBSTACLE){
@@ -397,7 +414,8 @@ void Automation1::publishAutomationOut(){
     std::string excavationStateString = excavationStateMap.at(excavationState);
     std::string errorStateString = errorStateMap.at(errorState);
     std::string diagnosticsStateString = diagnosticsStateMap.at(diagnosticsState);
-    publishAutonomyOut(robotStateString, excavationStateString, errorStateString, diagnosticsStateString);
+    std::string tiltStateString = tiltStateMap.at(tiltState);
+    publishAutonomyOut(robotStateString, excavationStateString, errorStateString, diagnosticsStateString, tiltStateString);
 }
 
 void Automation1::setDiagnostics(){

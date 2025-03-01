@@ -397,7 +397,8 @@ void Automation2::publishAutomationOut(){
     std::string excavationStateString = excavationStateMap.at(excavationState);
     std::string errorStateString = errorStateMap.at(errorState);
     std::string diagnosticsStateString = diagnosticsStateMap.at(diagnosticsState);
-    publishAutonomyOut(robotStateString, excavationStateString, errorStateString, diagnosticsStateString);
+    std::string tiltStateString = tiltStateMap.at(tiltState);
+    publishAutonomyOut(robotStateString, excavationStateString, errorStateString, diagnosticsStateString, tiltStateString);
 }
 
 void Automation2::setDiagnostics(){

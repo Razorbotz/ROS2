@@ -24,6 +24,32 @@
 #include "logic/AutomationTypes.hpp"
 
 
+/*
+Added subscribers to excavation, logic, falcon, and talon nodes
+listening for specific keypresses to kill the node to ensure that
+the system is resilient to failures of individual nodes. The kill
+keys are as follows:
+0 - communication node
+1 - logic node
+2-5 - talon nodes
+6-9 - falcon nodes
+; - excavation node
+Ideal behavior for node failure:
+Communication node - System should stop all motors within 200ms
+Logic node - System should stop all motors within 200 ms
+Talon node - System shouldn't allow the other actuator to extend
+    beyond the safety thresholds
+Falcon node - System should continue as expected
+    NOTE: This is dependent on testing. It might need to shutdown
+    if the testing shows the system is no longer able to move on 
+    only three motors
+Excavation node - System should be able to drive, but excavation 
+    motors should shutdown.
+Video streaming node - Critical systems should not be impacted.
+Zed tracking node - Critical systems should not be impacted.
+
+*/
+
 /** @file
  * @brief Node handling logic for robot
  * 
@@ -358,6 +384,9 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(keyState->key==45 && keyState->state==1){
         updateMaxSpeed(-0.1);
     }
+    if(keyState->key == 48 && keyState->state==1){
+        return;
+    }
 }
 
 /** @brief Callback function for the zedPosition
@@ -587,4 +616,5 @@ int main(int argc, char **argv){
         rclcpp::spin_some(nodeHandle);
         rate.sleep();
     }
+    rclcpp::shutdown();
 }
