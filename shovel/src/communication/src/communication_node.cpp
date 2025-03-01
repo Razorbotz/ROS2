@@ -137,6 +137,42 @@ void send(BinaryMessage message){
 
 }
 
+void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
+    uint32_t sum = 0; 
+
+    // Append zero byte as placeholders for the checksum
+    byteList->push_back(0x00);
+
+
+    std::cout << "Byte List: ";
+    for (auto byte : *byteList) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    }
+    std::cout << std::endl;
+
+    // Sum all the bytes(the appended zero byte does not count towards the checksum)
+    for (uint8_t byte : *byteList) {
+        sum += byte;
+    }
+
+    // Compute Checksum
+    uint8_t checksum = sum % key;
+    std::cout << "Checksum computed: 0x" << std::hex << static_cast<int>(checksum) << std::endl;
+
+    //Goes to end of byteList
+    auto it = byteList->end();
+    //Moves back one byte to (0x00) placeholder
+    std::advance(it, -1);
+    //Replaces placeholder with checksum
+    *it = checksum;
+
+    std::cout << "Final byteList: ";
+    for (auto byte : *byteList) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    }
+    std::cout << std::endl;
+}
+
 
 /*
 This function was required to pad the messages to 241 bytes, which was the
@@ -152,7 +188,7 @@ void pad(BinaryMessage message){
     int size = byteList->size();
 
     //Possibly change to 240 for the 1 byte checksum
-    if(size != 241){
+    if(size != 240){
         RCLCPP_INFO(nodeHandle->get_logger(), "Received %d bytes", size);
         if(size < 150){
             std::string padded = "";
@@ -164,13 +200,14 @@ void pad(BinaryMessage message){
         }
         size += 7;
         std::string padded = "";
-        for(int i = size; i < 241; i++){
+        for(int i = size; i < 240; i++){
             padded.append(" ");
         }
         message.addElementString("Pad", padded);
     }
 
     //Add Checksum here
+    checksum_encode(byteList);
     
     send(message);
 }
