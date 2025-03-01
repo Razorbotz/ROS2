@@ -136,7 +136,7 @@ void send(BinaryMessage message){
     }
 
 }
-
+int key = 0x2C;
 void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
     uint32_t sum = 0; 
 
