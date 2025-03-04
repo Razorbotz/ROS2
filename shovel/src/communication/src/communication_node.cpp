@@ -83,6 +83,7 @@ char buffer2[128];
 int previousTX = 0;
 int previousRX = 0;
 std::string canMessage = "";
+char wifiCommand[128];
 
 #define LOWER_THRESH 67
 #define UPPER_THRESH 80
@@ -275,7 +276,8 @@ void send(std::string messageLabel, const messages::msg::AutonomyOut::SharedPtr 
     message.addElementString("Excavation State", autonomy->excavation_state);
     message.addElementString("Error State", autonomy->error_state);
     message.addElementString("Diagnostics State", autonomy->diagnostics_state);
-    
+    message.addElementString("Tilt State", autonomy->tilt_state);
+
     pad(message);
 }
 
@@ -609,6 +611,7 @@ void reboot(){
 }
 
 std::string robotName="unnamed";
+std::string interfaceName = "wlan0";
 bool broadcast=true;
 
 
@@ -622,7 +625,7 @@ bool broadcast=true;
 void broadcastIP(){
     while(true){
         if(broadcast){
-            std::string addressString=getAddressString(AF_INET,"wlP1p1s0");
+            std::string addressString=getAddressString(AF_INET,interfaceName);
 
             std::string message(robotName+"@"+addressString);
             std::cout << message << std::endl << std::flush;
@@ -650,15 +653,16 @@ void broadcastIP(){
 
 
 void communicationInterval(){
-    FILE* pipe = popen("iwconfig wlP1p1s0 | grep -E -o '=-.{0,2}'", "r");
+    FILE* pipe = popen(wifiCommand, "r");
+    result = "";
     while(!feof(pipe)){
         if(fgets(buffer2, 128, pipe) != nullptr){
             result += buffer2;
         }
     }
-    result = "";
     rssi = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
     pclose(pipe);
+    result = "";
     FILE* pipe2 = popen("ip link show can0 | grep DOWN", "r");
     while(!feof(pipe2)){
         if(fgets(buffer2, 128, pipe2) != nullptr){
@@ -673,7 +677,7 @@ void communicationInterval(){
     }
     result = "";
     pclose(pipe2);
-    FILE* pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)", "r");
+    FILE* pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)'", "r");
     while(!feof(pipe3)){
         if(fgets(buffer2, 128, pipe3) != nullptr){
             result += buffer2;
@@ -690,7 +694,7 @@ void communicationInterval(){
     }
     result = "";
     pclose(pipe3);
-    FILE* pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)", "r");
+    FILE* pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)'", "r");
     while(!feof(pipe4)){
         if(fgets(buffer2, 128, pipe4) != nullptr){
             result += buffer2;
@@ -721,6 +725,18 @@ int main(int argc, char **argv){
     rclcpp::Parameter robotNameParameter = nodeHandle->get_parameter("robot_name");
     robotName = robotNameParameter.as_string();
     RCLCPP_INFO(nodeHandle->get_logger(),"robotName: %s", robotName.c_str());
+
+    FILE* pipe = popen("iw dev | awk '$1==\"Interface\"{print $2}'", "r");
+    while(!feof(pipe)){
+        if(fgets(buffer2, 128, pipe) != nullptr){
+            result += buffer2;
+        }
+    }
+    interfaceName = result.erase(result.find_last_not_of("\n\r") + 1);
+    result = "";
+    pclose(pipe);
+
+    std::snprintf(wifiCommand, sizeof(wifiCommand), "iwconfig %s | grep -E -o '=-.{0,2}", interfaceName.c_str());
 
     auto joystickAxisPublisher = nodeHandle->create_publisher<messages::msg::AxisState>("joystick_axis", 1);
     auto joystickHatPublisher = nodeHandle->create_publisher<messages::msg::HatState>("joystick_hat",1);

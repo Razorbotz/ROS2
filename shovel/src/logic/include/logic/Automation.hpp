@@ -75,6 +75,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         TILT_BACK_LEFT,
         TILT_LEFT,
         TILT_FRONT_LEFT,
+        TIP_FRONT,
+        TIP_BACK,
         TIP_RIGHT,
         TIP_LEFT
     };
@@ -94,8 +96,11 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         {GO_TO_DIG_SITE, "Go To Dig Site"},
         {EXCAVATE, "Excavate"},
         {OBSTACLE, "Obstacle"},
-        {GO_TO_DUMP, "Go To Home"},
+        {GO_TO_DUMP, "Go To Dump"},
         {DUMP, "Dump"},
+        {GO_TO_HOME, "Go To Home"},
+        {DOCK, "Dock"},
+        {RETURN_TO_START, "Return to Start"},
         {ROBOT_IDLE,  "Idle"}
     };
 
@@ -106,6 +111,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         {COLLECT, "Collect"},
         {LOWER_ARM, "Lower Arm"},
         {LOWER_BUCKET, "Lower Bucket"},
+        {SQUARE_UP, "Square Up"},
         {EXCAVATION_ERROR_RECOVERY, "Error Recovery"}
     };
 
@@ -139,6 +145,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         {TILT_BACK_LEFT, "Back Left"},
         {TILT_LEFT, "Left"},
         {TILT_FRONT_LEFT, "Front Left"},
+        {TIP_FRONT, "Tip Front"},
+        {TIP_BACK, "Tip Back"},
         {TIP_RIGHT, "Tip Right"},
         {TIP_LEFT, "Tip Left"}
     };

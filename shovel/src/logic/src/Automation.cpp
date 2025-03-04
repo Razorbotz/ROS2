@@ -703,14 +703,6 @@ void Automation::setTurnLeft(bool TurnLeft){
 
 
 enum Automation::TiltState Automation::checkOrientation(){
-    if(position.yaw > TIP_THRESH){
-        RCLCPP_INFO(this->node->get_logger(), "TIP RIGHT");
-        return TIP_LEFT;
-    }
-    else if(position.yaw < -TIP_THRESH){
-        RCLCPP_INFO(this->node->get_logger(), "TIP LEFT");
-        return TIP_RIGHT;
-    }
     if(position.roll < -TILT_THRESH){
         if(position.yaw > TILT_THRESH){
             RCLCPP_INFO(this->node->get_logger(), "FRONT RIGHT");
@@ -721,6 +713,10 @@ enum Automation::TiltState Automation::checkOrientation(){
             return TILT_FRONT_LEFT;
         }
         else{
+            if(position.roll < -TIP_THRESH){
+                RCLCPP_INFO(this->node->get_logger(), "TIP FRONT");
+                return TIP_FRONT;
+            }
             RCLCPP_INFO(this->node->get_logger(), "FRONT");
             return TILT_FRONT;
         }
@@ -735,6 +731,10 @@ enum Automation::TiltState Automation::checkOrientation(){
             return TILT_BACK_LEFT;
         }
         else{
+            if(position.roll > TIP_THRESH){
+                RCLCPP_INFO(this->node->get_logger(), "TIP BACK");
+                return TIP_BACK;
+            }
             RCLCPP_INFO(this->node->get_logger(), "BACK");
             return TILT_BACK;
         }
