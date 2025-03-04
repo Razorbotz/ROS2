@@ -83,6 +83,7 @@ char buffer2[128];
 int previousTX = 0;
 int previousRX = 0;
 std::string canMessage = "";
+char wifiCommand[128];
 
 #define LOWER_THRESH 67
 #define UPPER_THRESH 80
@@ -136,42 +137,6 @@ void send(BinaryMessage message){
     }
 
 }
-int key = 0x2C;
-void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
-    uint32_t sum = 0; 
-
-    // Append zero byte as placeholders for the checksum
-    byteList->push_back(0x00);
-
-
-    std::cout << "Byte List: ";
-    for (auto byte : *byteList) {
-        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
-    }
-    std::cout << std::endl;
-
-    // Sum all the bytes(the appended zero byte does not count towards the checksum)
-    for (uint8_t byte : *byteList) {
-        sum += byte;
-    }
-
-    // Compute Checksum
-    uint8_t checksum = sum % key;
-    std::cout << "Checksum computed: 0x" << std::hex << static_cast<int>(checksum) << std::endl;
-
-    //Goes to end of byteList
-    auto it = byteList->end();
-    //Moves back one byte to (0x00) placeholder
-    std::advance(it, -1);
-    //Replaces placeholder with checksum
-    *it = checksum;
-
-    std::cout << "Final byteList: ";
-    for (auto byte : *byteList) {
-        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
-    }
-    std::cout << std::endl;
-}
 
 
 /*
@@ -187,8 +152,7 @@ void pad(BinaryMessage message){
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     int size = byteList->size();
 
-    //Possibly change to 240 for the 1 byte checksum
-    if(size != 240){
+    if(size != 241){
         RCLCPP_INFO(nodeHandle->get_logger(), "Received %d bytes", size);
         if(size < 150){
             std::string padded = "";
@@ -200,15 +164,11 @@ void pad(BinaryMessage message){
         }
         size += 7;
         std::string padded = "";
-        for(int i = size; i < 240; i++){
+        for(int i = size; i < 241; i++){
             padded.append(" ");
         }
         message.addElementString("Pad", padded);
     }
-
-    //Add Checksum here
-    checksum_encode(byteList);
-    
     send(message);
 }
 
@@ -316,7 +276,8 @@ void send(std::string messageLabel, const messages::msg::AutonomyOut::SharedPtr 
     message.addElementString("Excavation State", autonomy->excavation_state);
     message.addElementString("Error State", autonomy->error_state);
     message.addElementString("Diagnostics State", autonomy->diagnostics_state);
-    
+    message.addElementString("Tilt State", autonomy->tilt_state);
+
     pad(message);
 }
 
@@ -650,6 +611,7 @@ void reboot(){
 }
 
 std::string robotName="unnamed";
+std::string interfaceName = "wlan0";
 bool broadcast=true;
 
 
@@ -663,7 +625,7 @@ bool broadcast=true;
 void broadcastIP(){
     while(true){
         if(broadcast){
-            std::string addressString=getAddressString(AF_INET,"wlP1p1s0");
+            std::string addressString=getAddressString(AF_INET,interfaceName);
 
             std::string message(robotName+"@"+addressString);
             std::cout << message << std::endl << std::flush;
@@ -691,18 +653,19 @@ void broadcastIP(){
 
 
 void communicationInterval(){
-    FILE* pipe = popen("iwconfig wlP1p1s0 | grep -E -o '=-.{0,2}'", "r");
+    FILE* pipe = popen(wifiCommand, "r");
+    result = "";
     while(!feof(pipe)){
         if(fgets(buffer2, 128, pipe) != nullptr){
             result += buffer2;
         }
     }
-    result = "";
     rssi = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
     pclose(pipe);
+    result = "";
     FILE* pipe2 = popen("ip link show can0 | grep DOWN", "r");
     while(!feof(pipe2)){
-        if(fgets(buffer2, 128, pipe) != nullptr){
+        if(fgets(buffer2, 128, pipe2) != nullptr){
             result += buffer2;
         }
     }
@@ -713,9 +676,10 @@ void communicationInterval(){
         canMessage = "NORMAL OPERATION";
     }
     result = "";
-    FILE* pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)", "r");
+    pclose(pipe2);
+    FILE* pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)'", "r");
     while(!feof(pipe3)){
-        if(fgets(buffer2, 128, pipe) != nullptr){
+        if(fgets(buffer2, 128, pipe3) != nullptr){
             result += buffer2;
         }
     }
@@ -729,9 +693,10 @@ void communicationInterval(){
         canMessage = "RX ERROR";
     }
     result = "";
-    FILE* pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)", "r");
+    pclose(pipe3);
+    FILE* pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)'", "r");
     while(!feof(pipe4)){
-        if(fgets(buffer2, 128, pipe) != nullptr){
+        if(fgets(buffer2, 128, pipe4) != nullptr){
             result += buffer2;
         }
     }
@@ -745,6 +710,7 @@ void communicationInterval(){
         canMessage = "TX ERROR";
     }
     result = "";
+    pclose(pipe4);
     communicationCallback();
 }
 
@@ -759,6 +725,18 @@ int main(int argc, char **argv){
     rclcpp::Parameter robotNameParameter = nodeHandle->get_parameter("robot_name");
     robotName = robotNameParameter.as_string();
     RCLCPP_INFO(nodeHandle->get_logger(),"robotName: %s", robotName.c_str());
+
+    FILE* pipe = popen("iw dev | awk '$1==\"Interface\"{print $2}'", "r");
+    while(!feof(pipe)){
+        if(fgets(buffer2, 128, pipe) != nullptr){
+            result += buffer2;
+        }
+    }
+    interfaceName = result.erase(result.find_last_not_of("\n\r") + 1);
+    result = "";
+    pclose(pipe);
+
+    std::snprintf(wifiCommand, sizeof(wifiCommand), "iwconfig %s | grep -E -o '=-.{0,2}", interfaceName.c_str());
 
     auto joystickAxisPublisher = nodeHandle->create_publisher<messages::msg::AxisState>("joystick_axis", 1);
     auto joystickHatPublisher = nodeHandle->create_publisher<messages::msg::HatState>("joystick_hat",1);
