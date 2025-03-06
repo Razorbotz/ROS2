@@ -106,10 +106,46 @@ float parseFloat(uint8_t* array){
     return value;
 }
 
+int key = 0x2C;
+void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
+    uint32_t sum = 0;  // Use a wider type to avoid overflow
+
+    // Append zero byte as placeholders for the checksum
+    byteList->push_back(0x00);
+
+
+    std::cout << "Bytes with placeholders: ";
+    for (auto byte : *byteList) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    }
+    std::cout << std::endl;
+
+    // Sum all the bytes
+    for (uint8_t byte : *byteList) {
+        sum += byte;
+    }
+
+    // Compute Checksum
+    uint8_t checksum = sum % key;
+    std::cout << "Simple checksum computed: 0x" << std::hex << static_cast<int>(checksum) << std::endl;
+
+    
+    auto it = byteList->end();
+    std::advance(it, -1);
+    *it = checksum;
+
+    std::cout << "Final byteList: ";
+    for (auto byte : *byteList) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    }
+    std::cout << std::endl;
+}
+
  
 void send(BinaryMessage message){
     //RCLCPP_INFO(nodeHandle->get_logger(), "send message");
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
+    checksum_encode(byteList);    
 
     std::vector<uint8_t> bytes(byteList->size());
     int index = 0;
@@ -137,6 +173,7 @@ void send(BinaryMessage message){
     }
 
 }
+
 
 
 /*
