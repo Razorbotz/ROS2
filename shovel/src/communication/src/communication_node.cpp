@@ -114,11 +114,11 @@ void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
     byteList->push_back(0x00);
 
 
-    std::cout << "Bytes with placeholders: ";
-    for (auto byte : *byteList) {
-        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
-    }
-    std::cout << std::endl;
+    //std::cout << "Bytes with placeholders: ";
+    // for (auto byte : *byteList) {
+    //     std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    // }
+    //std::cout << std::endl;
 
     // Sum all the bytes
     for (uint8_t byte : *byteList) {
@@ -127,18 +127,18 @@ void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
 
     // Compute Checksum
     uint8_t checksum = sum % key;
-    std::cout << "Simple checksum computed: 0x" << std::hex << static_cast<int>(checksum) << std::endl;
+    //std::cout << "Simple checksum computed: 0x" << std::hex << static_cast<int>(checksum) << std::endl;
 
     
     auto it = byteList->end();
     std::advance(it, -1);
     *it = checksum;
 
-    std::cout << "Final byteList: ";
-    for (auto byte : *byteList) {
-        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "Final byteList: ";
+    // for (auto byte : *byteList) {
+    //     std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    // }
+    // std::cout << std::endl;
 }
 
  
