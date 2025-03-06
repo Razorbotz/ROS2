@@ -26,14 +26,32 @@ void Automation1::automate(){
         setDestPosition(destX, destY);
         auto start = std::chrono::high_resolution_clock::now();
         setStartTime(start);
-        setArmTarget(330);
-        setBucketTarget(410);
-        setArmSpeed(1.0);
-        setBucketSpeed(1.0);
-        RCLCPP_INFO(this->node->get_logger(), "linear1.potentiometer: %d", linear1.potentiometer);
-        RCLCPP_INFO(this->node->get_logger(), "linear3.potentiometer: %d", linear3.potentiometer);
-        robotState = EXCAVATE;
-        excavationState = RAISE_ARM;
+        // Test function to drive forward a specific number of meters
+        changeSpeed(0.25, 0.25);
+
+        // Test function to turn specific number of degrees
+        //setDestAngle(90);
+        //if(getAngleDiff() < 0)
+            //changeSpeed(-0.15, 0.15);
+        //else
+            //changeSpeed(0.15, 0.15);
+
+        //setArmTarget(330);
+        //setBucketTarget(410);
+        //setArmSpeed(1.0);
+        //setBucketSpeed(1.0);
+        /*
+        setDestAngle(90);
+        if(turnLeft){
+            changeSpeed(-0.15, 0.15);
+        }
+        else{
+            changeSpeed(0.15, -0.15);
+        }
+        
+        */
+        robotState = LOCATE;
+        //excavationState = RAISE_ARM;
     }
 
     if(robotState==DIAGNOSTICS){
@@ -149,9 +167,31 @@ void Automation1::automate(){
         
     }
 
-    // TODO: Change this to align
     if(robotState==LOCATE){
-        changeSpeed(0.15,-0.15);
+        // Test function to drive forward a specific number of meters
+        if(abs(this->position.x) > abs(this->destX)){
+            changeSpeed(0.0, 0.0);
+        }
+        else if(abs(this->position.x) > abs(this->destX) - 0.1){
+            changeSpeed(0.1, 0.1);
+        }
+        else if(abs(this->position.x) > abs(this->destX) - 0.25){
+            changeSpeed(0.15, 0.15);
+        }
+        else{
+            changeSpeed(0.25, 0.25);
+        }
+
+
+        /*
+        if (!(position.yaw < this->destAngle+2 && position.yaw > this->destAngle-2)) {
+            changeSpeed(0.15, -0.15);
+        } 
+        else {
+            changeSpeed(0, 0);
+        }
+
+
         if(position.arucoInitialized==true){
             RCLCPP_INFO(this->node->get_logger(), "Roll: %f Pitch: %f Yaw: %f", position.roll, position.pitch, position.yaw);
             changeSpeed(0,0);
@@ -160,6 +200,7 @@ void Automation1::automate(){
             setDestAngle(90);
             robotState=ALIGN;
         }
+        */
     }
 
     // After finding the Aruco marker, turn the bot to 
