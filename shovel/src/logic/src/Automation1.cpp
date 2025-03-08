@@ -175,7 +175,7 @@ void Automation1::automate(){
         setArmTarget(40);
         setArmSpeed(-1.0);
         setLevelBucket();
-        if(checkArmPosition(10)){
+        if(checkArmPosition(10) == 1){
             robotState = ROBOT_IDLE;
         }
         // Test function to drive forward a specific number of meters
@@ -217,7 +217,7 @@ void Automation1::automate(){
     // After finding the Aruco marker, turn the bot to 
     // align with the arena
     if(robotState==ALIGN){
-        if (!(position.yaw < this->destAngle+2 && position.yaw > this->destAngle-2)) {
+        if (!(position.pitch < this->destAngle+2 && position.pitch > this->destAngle-2)) {
             changeSpeed(0.15, -0.15);
         } 
         else {

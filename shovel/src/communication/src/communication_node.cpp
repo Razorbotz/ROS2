@@ -121,7 +121,7 @@ void send(BinaryMessage message){
     try{
         total += byteList->size();
         int bytesSent = 0, byteTotal = 0;
-        RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
+        //RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
         while(byteTotal < byteList->size()){
             if((bytesSent = send(new_socket, bytes.data(), byteList->size(), 0))== -1){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
@@ -153,7 +153,7 @@ void pad(BinaryMessage message){
     int size = byteList->size();
 
     if(size != 241){
-        RCLCPP_INFO(nodeHandle->get_logger(), "Received %d bytes", size);
+        //RCLCPP_INFO(nodeHandle->get_logger(), "Received %d bytes", size);
         if(size < 150){
             std::string padded = "";
             for(int i = size; i < size + 50; i++){
@@ -660,7 +660,8 @@ void communicationInterval(){
             result += buffer2;
         }
     }
-    rssi = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
+    int intermediateRSSI = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
+    rssi = 40 + int(intermediateRSSI * 60);
     pclose(pipe);
     result = "";
     FILE* pipe2 = popen("ip link show can0 | grep DOWN", "r");
@@ -692,6 +693,7 @@ void communicationInterval(){
     if(previousRX == rx){
         canMessage = "RX ERROR";
     }
+    previousRX = rx;
     result = "";
     pclose(pipe3);
     FILE* pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)'", "r");
@@ -709,6 +711,7 @@ void communicationInterval(){
     if(previousTX == tx){
         canMessage = "TX ERROR";
     }
+    previousTX = tx;
     result = "";
     pclose(pipe4);
     communicationCallback();
@@ -736,7 +739,23 @@ int main(int argc, char **argv){
     result = "";
     pclose(pipe);
 
-    std::snprintf(wifiCommand, sizeof(wifiCommand), "iwconfig %s | grep -E -o '=-.{0,2}'", interfaceName.c_str());
+    FILE* pipe2 = popen("grep 'VERSION_ID' /etc/os-release | cut -d '\"' -f 2", "r");
+    while(!feof(pipe)){
+        if(fgets(buffer2, 128, pipe) != nullptr){
+            result += buffer2;
+        }
+    }
+    if(result.erase(result.find_last_not_of("\n\r") + 1) == "20.04"){
+        RCLCPP_INFO(nodeHandle->get_logger(), "Running Ubuntu 20.04");
+        std::snprintf(wifiCommand, sizeof(wifiCommand), "nmcli -f IN-USE,SSID,SIGNAL dev wifi list | awk '/\\*/ {print $3}'", interfaceName.c_str());
+    }
+    else{
+        RCLCPP_INFO(nodeHandle->get_logger(), "Running Ubuntu 22.04");
+        std::snprintf(wifiCommand, sizeof(wifiCommand), "iwconfig %s | grep -E -o '=-.{0,2}'", interfaceName.c_str());
+    }
+    result = "";
+    pclose(pipe2);
+
 
     auto joystickAxisPublisher = nodeHandle->create_publisher<messages::msg::AxisState>("joystick_axis", 1);
     auto joystickHatPublisher = nodeHandle->create_publisher<messages::msg::HatState>("joystick_hat",1);
