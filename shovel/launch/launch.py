@@ -12,7 +12,7 @@ def generate_launch_description():
             name='logic',
             executable='logic_node',
             parameters=[
-                {"map": "lab"},
+                {"map": "NASA"},
                 {"xOffset": 1.4},
                 {"turnLeft": True}
             ],

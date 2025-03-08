@@ -27,7 +27,7 @@ void Automation1::automate(){
         auto start = std::chrono::high_resolution_clock::now();
         setStartTime(start);
         // Test function to drive forward a specific number of meters
-        changeSpeed(0.25, 0.25);
+        //changeSpeed(0.25, 0.25);
 
         // Test function to turn specific number of degrees
         //setDestAngle(90);
@@ -36,9 +36,9 @@ void Automation1::automate(){
         //else
             //changeSpeed(0.15, 0.15);
 
-        //setArmTarget(330);
+        setArmTarget(950);
         //setBucketTarget(410);
-        //setArmSpeed(1.0);
+        setArmSpeed(1.0);
         //setBucketSpeed(1.0);
         /*
         setDestAngle(90);
@@ -50,7 +50,11 @@ void Automation1::automate(){
         }
         
         */
-        robotState = LOCATE;
+        setLevelBucket();
+        if(checkArmPosition(10)){
+            robotState = LOCATE;
+        }
+        //robotState = LOCATE;
         //excavationState = RAISE_ARM;
     }
 
@@ -168,7 +172,14 @@ void Automation1::automate(){
     }
 
     if(robotState==LOCATE){
+        setArmTarget(40);
+        setArmSpeed(-1.0);
+        setLevelBucket();
+        if(checkArmPosition(10)){
+            robotState = ROBOT_IDLE;
+        }
         // Test function to drive forward a specific number of meters
+        /*
         if(abs(this->position.x) > abs(this->destX)){
             changeSpeed(0.0, 0.0);
         }
@@ -181,7 +192,7 @@ void Automation1::automate(){
         else{
             changeSpeed(0.25, 0.25);
         }
-
+        */
 
         /*
         if (!(position.yaw < this->destAngle+2 && position.yaw > this->destAngle-2)) {

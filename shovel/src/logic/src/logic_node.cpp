@@ -219,10 +219,7 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
 /** @brief Callback function for joystick buttons
  * 
  * This function is called when the node receives a
- * topic with the name joystick_button.  Button 2 
- * toggles the drive and excavation states while
- * button 3 inverts the direction of the drum.  
- * Buttons 6 and 7 control the locking servo.
+ * topic with the name joystick_button.  
  * @param buttonState \see ButtonState.msg
  * @return void
  * */
@@ -612,7 +609,6 @@ int main(int argc, char **argv){
             automation->automate();
             automation->publishAutomationOut();
         }
-        //checkInterface();
         rclcpp::spin_some(nodeHandle);
         rate.sleep();
     }

@@ -751,3 +751,13 @@ enum Automation::TiltState Automation::checkOrientation(){
     }
     return TILT_LEVEL;
 }
+
+void Automation::setLevelBucket(){
+    int currentArm = linear1.potentiometer;
+    int currentBucket = linear3.potentiometer;
+    if(std::abs(currentArm - currentBucket) < 5)
+        return;
+    float target = currentArm * (60.0 / 945.0) * (680.0 / 120.0);
+    int bucketTarget = (int)target;
+    setBucketPosition(bucketTarget);
+}

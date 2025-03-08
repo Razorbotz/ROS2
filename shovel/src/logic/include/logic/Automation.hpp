@@ -299,4 +299,6 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     void setTurnLeft(bool TurnLeft);
 
     enum TiltState checkOrientation();
+
+    void setLevelBucket();
 };
