@@ -660,8 +660,7 @@ void communicationInterval(){
             result += buffer2;
         }
     }
-    int intermediateRSSI = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
-    rssi = 40 + int(intermediateRSSI * 60);
+    rssi = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
     pclose(pipe);
     result = "";
     FILE* pipe2 = popen("ip link show can0 | grep DOWN", "r");
@@ -747,7 +746,7 @@ int main(int argc, char **argv){
     }
     if(result.erase(result.find_last_not_of("\n\r") + 1) == "20.04"){
         RCLCPP_INFO(nodeHandle->get_logger(), "Running Ubuntu 20.04");
-        std::snprintf(wifiCommand, sizeof(wifiCommand), "nmcli -f IN-USE,SSID,SIGNAL dev wifi list | awk '/\\*/ {print $3}'", interfaceName.c_str());
+        std::snprintf(wifiCommand, sizeof(wifiCommand), "iw dev %s link | grep -o -E ' -.{0,2}'", interfaceName.c_str());
     }
     else{
         RCLCPP_INFO(nodeHandle->get_logger(), "Running Ubuntu 22.04");

@@ -18,6 +18,14 @@
 #define TILT_THRESH 10
 #define TIP_THRESH 45
 
+// Number of degrees of travel of arm from fully retracted to fully extended
+#define ARM_DEGREES 60.0
+// Change in potentiometer value from fully retracted to fully extended
+#define ARM_TRAVEL 945.0
+
+#define BUCKET_DEGREES 120.0
+#define BUCKET_TRAVEL 680.0
+
 class Automation{
     private:
     public:
@@ -34,6 +42,7 @@ class Automation{
         GO_TO_HOME,
         DOCK,
         RETURN_TO_START,
+        LEVEL,
         ROBOT_IDLE
     };
 
