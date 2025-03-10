@@ -220,6 +220,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     virtual void setDiagnostics() = 0;
     
     virtual void startAutonomy() = 0; 
+
+    virtual void setLevel() = 0;
     
     void stopActuators();
 
@@ -310,4 +312,6 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     enum TiltState checkOrientation();
 
     void setLevelBucket();
+
+    void setLevelArms();
 };
