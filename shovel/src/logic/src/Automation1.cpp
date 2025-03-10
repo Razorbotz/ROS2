@@ -458,6 +458,10 @@ void Automation1::automate(){
         setDestAngle(getAngle());
         robotState = GO_TO_DIG_SITE;
     }
+
+    if(robotState == LEVEL){
+        setLevelBucket();
+    }
 }
     
 

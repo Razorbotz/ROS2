@@ -195,9 +195,6 @@ float transformJoystickInfo(float info, float deadZone){
 void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     //RCLCPP_INFO(nodeHandle->get_logger(),"Axis %d %d %f", axisState->joystick, axisState->axis, axisState->state);
     //RCLCPP_INFO(nodeHandle->get_logger(),"Axis %d %f %f %f %f", axisState->joystick, axisState->state0, axisState->state1, axisState->state2, axisState->state3);
-    if(automationGo)
-        automationGo = false;
-    
     float deadZone = 0.1;
     if(axisState->axis==0){
         joystick1Roll = transformJoystickInfo(-axisState->state, deadZone);
@@ -380,6 +377,9 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     }
     if(keyState->key==45 && keyState->state==1){
         updateMaxSpeed(-0.1);
+    }
+    if(keyState->key == 107 && keyState->state == 1){
+        automationGo = false;
     }
     if(keyState->key == 48 && keyState->state==1){
         return;
