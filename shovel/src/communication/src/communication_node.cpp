@@ -234,16 +234,19 @@ void send(std::string messageLabel, const messages::msg::Power::SharedPtr power)
     message.addElementFloat32("Current 5",power->current5);
     message.addElementFloat32("Current 6",power->current6);
     message.addElementFloat32("Current 7",power->current7);
-    message.addElementFloat32("Current 8",power->current8);
-    message.addElementFloat32("Current 9",power->current9);
-    message.addElementFloat32("Current 10",power->current10);
-    message.addElementFloat32("Current 11",power->current11);
-    message.addElementFloat32("Current 12",power->current12);
-    message.addElementFloat32("Current 13",power->current13);
-    message.addElementFloat32("Current 14",power->current14);
-    message.addElementFloat32("Current 15",power->current15);
+    
+    BinaryMessage message2("Power2");
+    message2.addElementFloat32("Current 8",power->current8);
+    message2.addElementFloat32("Current 9",power->current9);
+    message2.addElementFloat32("Current 10",power->current10);
+    message2.addElementFloat32("Current 11",power->current11);
+    message2.addElementFloat32("Current 12",power->current12);
+    message2.addElementFloat32("Current 13",power->current13);
+    message2.addElementFloat32("Current 14",power->current14);
+    message2.addElementFloat32("Current 15",power->current15);
 
-    //pad(message);
+    pad(message);
+    pad(message2);
 }
 
 
@@ -313,13 +316,13 @@ void communicationCallback(){
     BinaryMessage message("Communication");
     message.addElementInt32("RSSI", rssi);
     if(rssi < LOWER_THRESH)
-        message.addElementString("Wi-Fi", "NORMAL OPERATION");
+        message.addElementString("Wi-Fi", "NORMAL");
     else if(rssi >= LOWER_THRESH && rssi < UPPER_THRESH)
-        message.addElementString("Wi-Fi", "DEGRADED OPERATION");
+        message.addElementString("Wi-Fi", "DEGRADED");
     else if(rssi >= UPPER_THRESH && rssi < CRIT_THRESH)
-        message.addElementString("Wi-Fi", "SEVERE INTERFERENCE OPERATION");
+        message.addElementString("Wi-Fi", "INTERFERENCE");
     else
-        message.addElementString("Wi-Fi", "NON-FUNCIONAL OPERATION");
+        message.addElementString("Wi-Fi", "NON-FUNCIONAL");
     message.addElementString("CAN Bus", canMessage);
     message.addElementInt32("RX packets", previousRX);
     message.addElementInt32("TX packets", previousTX);
@@ -670,10 +673,10 @@ void communicationInterval(){
         }
     }
     if(result.size() > 0){
-        canMessage = "NON-FUNCTIONAL OPERATION";
+        canMessage = "DOWN";
     }
     else{
-        canMessage = "NORMAL OPERATION";
+        canMessage = "UP";
     }
     result = "";
     pclose(pipe2);
@@ -720,8 +723,8 @@ void communicationInterval(){
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
 
-    nodeHandle = rclcpp::Node::make_shared("communication2");
-    RCLCPP_INFO(nodeHandle->get_logger(),"Starting communication2 node");
+    nodeHandle = rclcpp::Node::make_shared("communication");
+    RCLCPP_INFO(nodeHandle->get_logger(),"Starting communication node");
 
     nodeHandle->declare_parameter<std::string>("robot_name","not named");
     rclcpp::Parameter robotNameParameter = nodeHandle->get_parameter("robot_name");

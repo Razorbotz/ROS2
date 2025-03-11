@@ -18,4 +18,6 @@ class Automation2 : public Automation{
     void setDiagnostics();
 
     void startAutonomy();
+
+    void setLevel();
 };

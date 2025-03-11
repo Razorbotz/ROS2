@@ -53,7 +53,7 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100},
+                {"publishing_delay": 15},
                 {"kill_key": 50}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
@@ -76,7 +76,7 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100},
+                {"publishing_delay": 15},
                 {"kill_key": 51}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
@@ -99,7 +99,7 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100},
+                {"publishing_delay": 15},
                 {"kill_key": 52}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
@@ -122,7 +122,7 @@ def generate_launch_description():
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100},
+                {"publishing_delay": 15},
                 {"kill_key": 53}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}

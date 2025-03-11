@@ -308,6 +308,7 @@ int main(int argc,char** argv){
 	talonSRX->Set(ControlMode::PercentOutput, 0);
 	talonSRX->Set(ControlMode::Velocity, 0);
 	//talonSRX->SetFeedbackDevice(FeedbackDevice.AnalogPotentiometer);
+	talonSRX->SetStatusFramePeriod(StatusFrame::Status_2_Feedback0_, 10, 10);
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"configured talon");
 
@@ -325,22 +326,25 @@ int main(int argc,char** argv){
 	
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
-	rclcpp::Rate rate(20);
+	rclcpp::Rate rate(60);
 	auto start2 = std::chrono::high_resolution_clock::now();
 	auto start = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
+	int counter = 0;
+	int previous = 0;
 	while(rclcpp::ok()){
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
+
 			int deviceID=talonSRX->GetDeviceID();
 			double busVoltage=talonSRX->GetBusVoltage();
 			double outputCurrent=talonSRX->GetOutputCurrent();
 			bool isInverted=talonSRX->GetInverted();
 			double motorOutputVoltage=talonSRX->GetMotorOutputVoltage();
 			double motorOutputPercent=talonSRX->GetMotorOutputPercent();
-			double temperature=talonSRX->GetTemperature();
+			double temperature=talonSRX->GetTemperature();				
 			int sensorPosition0=talonSRX->GetSelectedSensorPosition(0);
 			int sensorVelocity0=talonSRX->GetSelectedSensorVelocity(0);
 			int closedLoopError0=talonSRX->GetClosedLoopError(0);
@@ -364,7 +368,12 @@ int main(int argc,char** argv){
 				maxCurrent = outputCurrent;
 			}
 			talonOut.max_current = maxCurrent;
-			talonOutPublisher->publish(talonOut);
+			if(counter % 2 == 0){
+				talonOut.sensor_position = (sensorPosition0 + previous) / 2;
+				talonOutPublisher->publish(talonOut);
+			}
+			else
+				previous = sensorPosition0;
 			checkTemperature(temperature);
 			checkVoltage(busVoltage, motorOutputPercent);
 			//RCLCPP_INFO(nodeHandle->get_logger(), "Talon %d Max Current: %f", deviceID, maxCurrent);

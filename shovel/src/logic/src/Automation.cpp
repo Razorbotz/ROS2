@@ -770,8 +770,6 @@ void Automation::setLevelArms(){
     if(target < 40.0)
         target = 40.0;
     int armTarget = (int)target;
-    if(std::abs(target - currentBucket) < 5)
-        return;
     if(std::abs(target - currentArm) < 5)
         return;
     setArmPosition(armTarget);
