@@ -1,5 +1,6 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch_ros.actions import ExecuteProcess
 
 ## @file
 # Launch file that contains all the nodes necessary
@@ -235,6 +236,11 @@ def generate_launch_description():
             package='video_streaming',
             name='video_streaming',
             executable='video_streaming_node'
+        )
+        ,
+        ExecuteProcess(
+            cmd=['ros2', 'bag', 'record', '-a'],
+            output='screen'
         )
     ]
 )

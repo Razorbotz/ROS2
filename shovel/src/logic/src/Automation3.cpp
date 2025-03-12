@@ -445,7 +445,7 @@ void Automation3::startAutonomy(){
 }
 
 
-void Automation1::setLevel(){
+void Automation3::setLevel(){
     robotState = LEVEL;
     auto start = std::chrono::high_resolution_clock::now();
     setStartTime(start);

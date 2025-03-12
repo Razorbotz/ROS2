@@ -110,6 +110,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         {GO_TO_HOME, "Go To Home"},
         {DOCK, "Dock"},
         {RETURN_TO_START, "Return to Start"},
+        {LEVEL, "Level"},
         {ROBOT_IDLE,  "Idle"}
     };
 

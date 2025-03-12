@@ -657,6 +657,8 @@ which is bad practice because it will block other thread executions.
 This should probably be rewritten to use an if statement instead.
 */
 void Automation::setBucketPosition(int potent){
+    if(potent > 700)
+        potent = 700;
     setBucketTarget(potent);
     int current = linear3.potentiometer;
     float timeToRun = abs(current - potent) * (linear3.timeToExtend / 900.0) * 1000;
