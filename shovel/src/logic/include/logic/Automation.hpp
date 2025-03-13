@@ -223,6 +223,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     virtual void startAutonomy() = 0; 
 
     virtual void setLevel() = 0;
+
+    virtual void stopLevel() = 0;
     
     void stopActuators();
 

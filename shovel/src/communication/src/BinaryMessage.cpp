@@ -5,9 +5,6 @@
 #include "BinaryMessage.hpp"
 
 
-/*
-
-*/
 Element::Element(std::string label, std::list<Data> data, uint8_t type){
     this->label = std::move(label);
     this->type = type;
@@ -17,14 +14,6 @@ Element::Element(std::string label, std::list<Data> data, uint8_t type){
 }
 
 
-/*
-
-This is using the ... parameter, which is a C concept that allows
-for a variable number of arguments of unspecified type. These
-arguments are accessed using the va_start and va_arg macros.
-The va_end macro is used to clean up the object initialized by
-the va_start macro call.
-*/
 Element::Element(std::string label, std::list<Data> data, uint8_t type, size_t dimensionCount, ...){
     this->label = std::move(label);
     this->data = std::move(data);
@@ -41,9 +30,6 @@ Element::Element(std::string label, std::list<Data> data, uint8_t type, size_t d
 }
 
 
-/*
-This function is used to create an element of an array object.
-*/
 Element::Element(std::string label, std::list<Data> data, uint8_t type, size_t dimensionCount, std::vector<size_t> sizeList){
     this->label = std::move(label);
     this->data = std::move(data);
@@ -52,10 +38,6 @@ Element::Element(std::string label, std::list<Data> data, uint8_t type, size_t d
     this->sizeList = std::move(sizeList);
 }
 
-
-/*
-Function to print the data of the element.
-*/
 void Element::print(){
 //    std::cout << "Element" << std::endl;
     std::cout << this->label << ": ";
@@ -347,9 +329,6 @@ void Element::print(){
 }
 
 
-/*
-Function to print the objects and elements associated with the object.
-*/
 void Object::print(){
     std::cout << "Object" << std::endl;
     std::cout << "label: " << this->label << std::endl;
@@ -363,11 +342,7 @@ void Object::print(){
     }
 }
 
-
-/*
-Constructor for BinaryMessage using a list of bytes. This sets
-the current byte to the first byte of the bytes list.
-*/
+//Constructor called in control.cpp to decode binary message
 BinaryMessage::BinaryMessage(std::list<uint8_t>& bytes){
     std::list<uint8_t>::iterator currentByte = bytes.begin();
 
@@ -871,10 +846,7 @@ std::list<uint8_t> BinaryMessage::encodeSizeBytes( uint64_t number){
     return *bytes.get();
 }
 
-/*
-This function is used to encode the size of the element that is
-being added to the object. 
-*/
+// Seems redundent due to addSizeBytes
 void BinaryMessage::encodeSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, uint64_t number) {
 
     if (number <= 0x7F) {
@@ -895,10 +867,14 @@ void BinaryMessage::encodeSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, u
 
         int byteCount = 8 - zeroCount;
 
+        // Sets MSB to 1 and writes the number of bytes that are required to output
         bytes->push_back(byteCount | 0x80);
 
+        // Writes the bytes in big-endian order
         for (int index = byteCount - 1; index >= 0; index--) {
+            // Shifts the number to the right by 8 bits times the index and then masks it with 0xFF to get the least significant byte
             uint8_t byte = (uint8_t) (number >> (index * 8) & 0xFF);
+            // Writes the byte to the output
             bytes->push_back(byte);
         }
     }
@@ -939,6 +915,8 @@ void BinaryMessage::encodeMessageSizeBytes(std::shared_ptr<std::list<uint8_t>> b
     }
     number+=adjustment;
 
+
+    // Do function call for encodeSizeBytes instead
     if(number <= 0x7F){
         bytes->push_front((uint8_t)number);
     }
@@ -1173,6 +1151,37 @@ void BinaryMessage::addChild(Object childObject){
 }
 
 
+
+/*
+Example Of Helper function 
+void BinaryMessage::addElement**Type**(Object& object, std::string label, type variable){
+    // Create a Data object
+    Data data;
+    //Assign the variable to the Data union Field (See BinaryMessage.hpp Data union)
+    data.unionField = variable;
+
+    // The element constructor requires a list of Data objects, even for a single value. 
+    // Create a new list and add the Data object to the list
+    std::list<Data> list;
+    list.push_back(data);
+
+    // Create a new Element object with the label, list of Data objects, and the type of the data
+    Element element(label, list, TYPE::BOOLEAN );
+    // Add the Element object to the Object's elementList
+    object.elementList.push_back(element);
+}
+
+*/
+
+/**
+ * @brief Add a boolean element to the object
+ * 
+ * This function 
+ * 
+ * @param object 
+ * @param label 
+ * @param boolean 
+ */
 void BinaryMessage::addElementBoolean(Object& object, std::string label, bool boolean){
     Data data;
     data.boolean = boolean;
@@ -1233,10 +1242,6 @@ void BinaryMessage::addElementInt64(Object& object, std::string label, int64_t i
 }
 
 
-
-/*
-
-*/
 void BinaryMessage::addElementUInt8(Object& object, std::string label, uint8_t uint8){
     Data data;
     data.uint8 = uint8;
@@ -1482,20 +1487,16 @@ std::shared_ptr<std::list<uint8_t>> BinaryMessage::getBytes(){
 }
 
 
-/*
-If the size value is less than or equal to 127 (0111 1111), the size
-is converted to a uint8_t value, then added to the bytes list and the
-size can be represented in a single byte. If the value cannot be
-represented in a single byte, then it will be represented using a series
-of bytes to hold the value. To calculate the minimun number of bytes that
-are needed to hold the value, the function uses a mask to identify when
-the size first has non-zero values, starting from the left-most byte. 
-The number of bytes that contain values are calculated by the equation
-8 - zeroCount, with zeroCount the number of bytes containing only zeroes.
-The size is then ORed with 0x80 to set the first bit flag indicating that
-the following bytes contain the actual size. 
-
-*/
+/**
+ * @brief Returns a list of bytes that represent the size
+ *  
+ *   Takes in a size (64 bit integer) and returns a list of bytes that represent the size
+ *   Ex. 0xFFFF for the size would push the following onto the bytes list 
+ *   [0x82, 0xFF, 0xFF]
+ * 
+ * @param bytes 
+ * @param size 
+ */
 void BinaryMessage::addSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, uint64_t size){
 
     if(size <= 0x7F){
@@ -1526,135 +1527,298 @@ void BinaryMessage::addSizeBytes(std::shared_ptr<std::list<uint8_t>> bytes, uint
 }
 
 
+/**
+ * @brief Encodes the label of an object or element (strings)
+ * 
+ * This function encodes the label of an object or element.
+ * It first pushes the type of the data (string) onto the bytes list
+ * Then it pushes the size of the label onto the bytes list
+ * Finally it pushes the label onto the bytes list
+ * @param bytes 
+ * @param label 
+ */
 void BinaryMessage::encodeLabelBytes(std::shared_ptr<std::list<uint8_t>> bytes, std::string label){
+    // Notifies the decoder that the data will be a string
     bytes->push_back(TYPE::STRING);
+
+    //Gets the size of the label
     addSizeBytes(bytes, label.size() );
 
+    //Encodes the label
     for(int index=0; index < label.size(); index++){
         bytes->push_back(label[index]);
     }
 }
 
 
+/* The Object Struct contains the following
+            string label;
+            uint8_t type;
+            vector<Element> elementList;
+            vector<Object> children; 
+        This function encodes each of the elements of the Object Struct exept for the type
+        Starting with the label, then the elementList, and finally the children
+
+*/
+
+
+
+/**
+ * @brief Encodes an object struct into a list of bytes
+ * 
+ *  
+ *  It first encodes the label of the object.
+ *  Pushes the type of the object onto the bytes list. 
+ *  Pushes the size of the elementList onto the bytes list. 
+ *  Encodes each element of the elementList.
+ *  Pushes the size of the children onto the bytes list.
+ *  Finally it encodes each child of the object.
+ * @param bytes 
+ * @param object 
+ */
 void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Object object) {
+
+    //Encodes the label
     encodeLabelBytes(bytes, object.label);
+
+    //Notifies the decoder that the following bytes are an object
     bytes->push_back(TYPE::OBJECT);
 
+    //Pushes the size of the elementList onto the bytes list
     addSizeBytes(bytes, object.elementList.size());
+    //Encodes the elements of the object(Element Struct)
     for (auto iterator = object.elementList.begin();iterator != object.elementList.end(); iterator++) {
         encodeBytes(bytes, *iterator);
     }
-
+    //Pushes the size of the children onto the bytes list
     addSizeBytes(bytes, object.children.size());
+    //Encodes the children of the object
     for (auto iterator = object.children.begin();iterator != object.children.end(); iterator++) {
         encodeBytes(bytes, *iterator);
     }
 }
 
 
+
+/**
+ * @brief Encodes an element struct into a list of bytes
+ * 
+ * This function encodes an element struct into a list of bytes
+ * It first encodes the label of the element. 
+ * Pushes the type of the element onto the bytes list. 
+ * Finally checks the type of the element and encodes the data accordingly
+ * 
+ * 
+ * @param bytes 
+ * @param element 
+ */
 void BinaryMessage::encodeBytes(std::shared_ptr<std::list<uint8_t>> bytes, Element element){
     encodeLabelBytes(bytes, element.label);
     bytes->push_back(element.type);
 
-    if(element.type == TYPE::BOOLEAN){
-        bytes->push_back(element.data.begin()->boolean);
-    }
-    if(element.type == TYPE::CHARACTER){
-        bytes->push_back(element.data.begin()->character);
-    }
-    if(element.type == TYPE::INT8  || element.type == TYPE::UINT8 ){
-        bytes->push_back(element.data.begin()->int8);
-    }
-    if(element.type == TYPE::INT16 || element.type == TYPE::UINT16){
-        bytes->push_back((element.data.begin()->int16>>8) & 0xff);
-        bytes->push_back((element.data.begin()->int16>>0) & 0xff);
-    }
-    if(element.type == TYPE::INT32 || element.type == TYPE::UINT32 || element.type == TYPE::FLOAT32){
-        bytes->push_back((element.data.begin()->int32>>24) & 0xff);
-        bytes->push_back((element.data.begin()->int32>>16) & 0xff);
-        bytes->push_back((element.data.begin()->int32>> 8) & 0xff);
-        bytes->push_back((element.data.begin()->int32>> 0) & 0xff);
-    }
-    if(element.type == TYPE::INT64 || element.type == TYPE::UINT64 || element.type == TYPE::FLOAT64){
-        bytes->push_back((element.data.begin()->int64>>56) & 0xff);
-        bytes->push_back((element.data.begin()->int64>>48) & 0xff);
-        bytes->push_back((element.data.begin()->int64>>40) & 0xff);
-        bytes->push_back((element.data.begin()->int64>>32) & 0xff);
-        bytes->push_back((element.data.begin()->int64>>24) & 0xff);
-        bytes->push_back((element.data.begin()->int64>>16) & 0xff);
-        bytes->push_back((element.data.begin()->int64>> 8) & 0xff);
-        bytes->push_back((element.data.begin()->int64>> 0) & 0xff);
-    }
-    if(element.type == TYPE::STRING) {
-        addSizeBytes(bytes, element.sizeList[0]);
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back(iterator->character);
-        }
-    }
-    if(element.type == TYPE::ARRAYBOOLEAN) {
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back(iterator->boolean);
-        }
-    }
-    if(element.type == TYPE::ARRAYCHARACTER){
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back(iterator->character);
-        }
-    }
-    if(element.type == TYPE::ARRAYINT8 || element.type == TYPE::ARRAYUINT8){
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back(iterator->int8);
-        }
-    }
-    if(element.type == TYPE::ARRAYINT16 || element.type == TYPE::ARRAYUINT16){
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back((iterator->int16 >> 8) & 0xff);
-            bytes->push_back((iterator->int16 >> 0) & 0xff);
-        }
-    }
-    if(element.type == TYPE::ARRAYINT32 || element.type == TYPE::ARRAYUINT32 || element.type == TYPE::ARRAYFLOAT32){
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back((iterator->int64>>24) & 0xff);
-            bytes->push_back((iterator->int64>>16) & 0xff);
-            bytes->push_back((iterator->int64>> 8) & 0xff);
-            bytes->push_back((iterator->int64>> 0) & 0xff);
-        }
-    }
-    if(element.type == TYPE::ARRAYINT64 || element.type == TYPE::ARRAYUINT64 || element.type == TYPE::ARRAYFLOAT64){
-        addSizeBytes(bytes, element.dimensionCount);
-        for(int index=0; index < element.sizeList.size(); index++){
-            addSizeBytes(bytes, element.sizeList[index]);
-        }
-        for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
-            bytes->push_back((iterator->int64>>56) & 0xff);
-            bytes->push_back((iterator->int64>>48) & 0xff);
-            bytes->push_back((iterator->int64>>40) & 0xff);
-            bytes->push_back((iterator->int64>>32) & 0xff);
-            bytes->push_back((iterator->int64>>24) & 0xff);
-            bytes->push_back((iterator->int64>>16) & 0xff);
-            bytes->push_back((iterator->int64>> 8) & 0xff);
-            bytes->push_back((iterator->int64>> 0) & 0xff);
-        }
+    /*NOTE: element.data is a list of Data unions (see BinaryMessage.hpp Data union)
+            element.data.begin() returns an iterator to the first element in the list
+            element.data.begin()-> *Data Type* accesses the *Data Type* field within the union and returns the value
+    
+    */
+     uint8_t type = element.type;
+
+    switch (type)
+    {   
+        case BOOLEAN:
+          {
+            bytes->push_back(element.data.begin()->boolean);
+            break;
+          }
+        case TYPE::CHARACTER:
+	  {
+            bytes->push_back(element.data.begin()->character);
+            break;
+          }
+        case INT8:
+        case UINT8:
+	  {
+            bytes->push_back(element.data.begin()->int8);
+            break;
+	  }
+        case INT16:
+        case UINT16:
+          {
+            uint16_t value = element.data.begin()->int16;
+                uint8_t array[2] = {
+                    static_cast<uint8_t>(value >> 8),//MSB
+                    static_cast<uint8_t>(value & 0xFF) //LSB 
+                };
+                //             Where        First    Last
+                bytes->insert(bytes->end(), array, array + 2);
+
+
+            break;
+          }
+        case INT32:
+        case UINT32:
+        case FLOAT32:
+	  {
+            uint32_t value = element.data.begin()->int32;
+            // Breaks the value stored in int32 into four bytes and inserts the array to the bytes list
+            uint32_t array[4] = {
+                static_cast<uint32_t>(value >> 24),//MSB
+                static_cast<uint32_t>(value >> 16),
+                static_cast<uint32_t>(value >> 8),
+                static_cast<uint32_t>(value & 0xFF)//LSB
+
+            };
+            //             Where        First    Last
+            bytes->insert(bytes->end(), array, array + 4);
+	
+            break;
+          }
+        case TYPE::INT64:
+        case TYPE::UINT64:
+        case TYPE::FLOAT64:
+	 {
+            uint64_t value = element.data.begin()->int64;
+            // Breaks the value stored in int64 into eight bytes and inserts the array to the bytes list
+            uint64_t array[8]{
+                static_cast<uint64_t>(value >> 56),//MSB
+                static_cast<uint64_t>(value >> 48),
+                static_cast<uint64_t>(value >> 32),
+                static_cast<uint64_t>(value >> 24),  
+                static_cast<uint64_t>(value >> 16),
+                static_cast<uint64_t>(value >> 8),
+                static_cast<uint64_t>(value & 0xFF)//LSB
+            };
+            //             Where        First    Last
+            bytes->insert(bytes->end(), array, array + 8);
+
+            break;
+	}
+        case TYPE::STRING:
+	{
+            addSizeBytes(bytes, element.sizeList[0]);
+            for(std::list<Data>::iterator iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+                bytes->push_back(iterator->character);
+            }
+
+            break;
+	}
+        case TYPE::ARRAYBOOLEAN:
+	{
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+                bytes->push_back(iterator->boolean);
+            }
+
+
+
+            break;
+	}
+        case TYPE::ARRAYCHARACTER:
+	{
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+                bytes->push_back(iterator->character);
+            }
+
+            break;
+	}
+        case TYPE::ARRAYINT8:
+        case TYPE::ARRAYUINT8:
+	{
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+                bytes->push_back(iterator->int8);
+            }            
+
+            break; 
+	}
+        case TYPE::ARRAYINT16:
+        case TYPE::ARRAYUINT16:
+	{
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+
+                // Breaks the value stored in int16 into two bytes and inserts the array to the bytes list
+                uint16_t value = iterator->int16;
+                uint16_t array[2] = {
+                    static_cast<uint_fast8_t>(value >> 8),//MSB
+                    static_cast<uint_fast8_t>(value & 0xFF) //LSB 
+                };
+                //             Where        First    Last
+                bytes->insert(bytes->end(), array, array + 2);
+
+            }
+
+
+
+            break;
+	}
+        case TYPE::ARRAYINT32:
+        case TYPE::ARRAYUINT32:
+        case TYPE::ARRAYFLOAT32:
+	{
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+
+                // Breaks the value stored in int32 into four bytes and inserts the array to the bytes list
+                uint32_t value = iterator->int32;
+                uint32_t array[4] = {
+                    static_cast<uint32_t>(value >> 24),//MSB
+                    static_cast<uint32_t>(value >> 16),
+                    static_cast<uint32_t>(value >> 8),
+                    static_cast<uint32_t>(value & 0xFF)//LSB
+
+                };
+                //             Where        First    Last
+                bytes->insert(bytes->end(), array, array + 4);
+
+            }
+
+            break;
+	}
+        case TYPE::ARRAYINT64:
+        case TYPE::ARRAYUINT64:
+        case TYPE::ARRAYFLOAT64:
+	{
+            addSizeBytes(bytes, element.dimensionCount);
+            for(int index=0; index < element.sizeList.size(); index++){
+                addSizeBytes(bytes, element.sizeList[index]);
+            }
+            for(auto iterator=element.data.begin(); iterator != element.data.end(); iterator++){
+                // Breaks the value stored in int64 into eight bytes and inserts the array to the bytes list
+                uint64_t value = iterator->int32;
+                uint64_t array[8]{
+                    static_cast<uint64_t>(value >> 56),//MSB
+                    static_cast<uint64_t>(value >> 48),
+                    static_cast<uint64_t>(value >> 32),
+                    static_cast<uint64_t>(value >> 24),  
+                    static_cast<uint64_t>(value >> 16),
+                    static_cast<uint64_t>(value >> 8),
+                    static_cast<uint64_t>(value & 0xFF)//LSB
+                };
+                //             Where        First    Last
+                bytes->insert(bytes->end(), array, array + 8);
+            }
+
+            break; 
+	}
+    default:
+        break;
     }
 
 }
