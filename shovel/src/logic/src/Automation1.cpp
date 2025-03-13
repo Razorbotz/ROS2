@@ -492,3 +492,9 @@ void Automation1::setLevel(){
     auto start = std::chrono::high_resolution_clock::now();
     setStartTime(start);
 }
+
+void Automation1::stopLevel(){
+    if(robotState == LEVEL){
+        robotState = ROBOT_IDLE;
+    }
+}

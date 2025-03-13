@@ -20,4 +20,6 @@ class Automation2 : public Automation{
     void startAutonomy();
 
     void setLevel();
+
+    void stopLevel();
 };

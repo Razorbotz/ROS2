@@ -254,6 +254,8 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             }
             bucketSpeedPublisher->publish(bucketSpeed);
             RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
+            if(automationGo)
+                automation->stopLevel();
             break;
         case 4:
             if(buttonState->state){
@@ -274,6 +276,8 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             }
             bucketSpeedPublisher->publish(bucketSpeed);
             RCLCPP_INFO(nodeHandle->get_logger(), "Button 6");
+            if(automationGo)
+                automation->stopLevel();
             break;
         case 6:
             break;

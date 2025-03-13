@@ -762,9 +762,9 @@ enum Automation::TiltState Automation::checkOrientation(){
 void Automation::setLevelBucket(){
     int currentArm = this->talon1.sensorValue;
     int currentBucket = this->talon3.sensorValue;
-    float target = currentArm * (ARM_DEGREES / ARM_TRAVEL) * (BUCKET_TRAVEL / BUCKET_DEGREES) + position.roll * (BUCKET_TRAVEL / BUCKET_DEGREES);
+    float target = currentArm * (ARM_DEGREES / ARM_TRAVEL) * (BUCKET_TRAVEL / BUCKET_DEGREES) - position.roll * (BUCKET_TRAVEL / BUCKET_DEGREES);
     int bucketTarget = (int)target;
-    if(std::abs(target - currentBucket) < 5)
+    if(std::abs(target - currentBucket) < 10)
         return;
     setBucketPosition(bucketTarget);
 }
