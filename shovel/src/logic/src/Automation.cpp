@@ -231,6 +231,7 @@ void Automation::setTalon1(const messages::msg::TalonOut::SharedPtr talonOut){
     if(talonOut->output_current > this->talon1.maxCurrent){
         this->talon1.maxCurrent = talonOut->output_current;
     }
+    this->talon1.sensorValue = talonOut->sensor_position;
 }
 
 
@@ -245,6 +246,7 @@ void Automation::setTalon2(const messages::msg::TalonOut::SharedPtr talonOut){
     if(talonOut->output_current > this->talon2.maxCurrent){
         this->talon2.maxCurrent = talonOut->output_current;
     }
+    this->talon2.sensorValue = talonOut->sensor_position;
 }
 
 
@@ -259,6 +261,7 @@ void Automation::setTalon3(const messages::msg::TalonOut::SharedPtr talonOut){
     if(talonOut->output_current > this->talon3.maxCurrent){
         this->talon3.maxCurrent = talonOut->output_current;
     }
+    this->talon3.sensorValue = talonOut->sensor_position;
 }
 
 
@@ -273,6 +276,7 @@ void Automation::setTalon4(const messages::msg::TalonOut::SharedPtr talonOut){
     if(talonOut->output_current > this->talon4.maxCurrent){
         this->talon4.maxCurrent = talonOut->output_current;
     }
+    this->talon4.sensorValue = talonOut->sensor_position;
 }
 
 
@@ -633,7 +637,7 @@ This should probably be rewritten to use an if statement instead.
 */
 void Automation::setArmPosition(int potent){
     setArmTarget(potent);
-    int current = linear1.potentiometer;
+    int current = this->talon1.sensorValue;
     float timeToRun = abs(current - potent) * (linear1.timeToExtend / 900.0) * 1000;
     RCLCPP_INFO(this->node->get_logger(), "Arm potent: %d", potent);
     RCLCPP_INFO(this->node->get_logger(), "Arm timeToExtend: %f", linear1.timeToExtend);
@@ -660,7 +664,7 @@ void Automation::setBucketPosition(int potent){
     if(potent > 700)
         potent = 700;
     setBucketTarget(potent);
-    int current = linear3.potentiometer;
+    int current = this->talon3.sensorValue;
     float timeToRun = abs(current - potent) * (linear3.timeToExtend / 900.0) * 1000;
     RCLCPP_INFO(this->node->get_logger(), "Bucket potent: %d", potent);
     RCLCPP_INFO(this->node->get_logger(), "Bucket timeToExtend: %f", linear3.timeToExtend);
@@ -756,8 +760,8 @@ enum Automation::TiltState Automation::checkOrientation(){
 
 
 void Automation::setLevelBucket(){
-    int currentArm = linear1.potentiometer;
-    int currentBucket = linear3.potentiometer;
+    int currentArm = this->talon1.sensorValue;
+    int currentBucket = this->talon3.sensorValue;
     float target = currentArm * (ARM_DEGREES / ARM_TRAVEL) * (BUCKET_TRAVEL / BUCKET_DEGREES) + position.roll * (BUCKET_TRAVEL / BUCKET_DEGREES);
     int bucketTarget = (int)target;
     if(std::abs(target - currentBucket) < 5)
@@ -767,7 +771,7 @@ void Automation::setLevelBucket(){
 
 
 void Automation::setLevelArms(){
-    int currentArm = linear1.potentiometer;
+    int currentArm = this->talon1.sensorValue;
     float target = 400 + position.roll * (ARM_DEGREES / ARM_TRAVEL);
     if(target < 40.0)
         target = 40.0;
