@@ -330,8 +330,6 @@ int main(int argc,char** argv){
 	auto start2 = std::chrono::high_resolution_clock::now();
 	auto start = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
-	int counter = 0;
-	int previous = 0;
 	while(rclcpp::ok()){
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
@@ -368,12 +366,7 @@ int main(int argc,char** argv){
 				maxCurrent = outputCurrent;
 			}
 			talonOut.max_current = maxCurrent;
-			if(counter % 2 == 0){
-				talonOut.sensor_position = (sensorPosition0 + previous) / 2;
-				talonOutPublisher->publish(talonOut);
-			}
-			else
-				previous = sensorPosition0;
+			talonOutPublisher->publish(talonOut);
 			checkTemperature(temperature);
 			checkVoltage(busVoltage, motorOutputPercent);
 			//RCLCPP_INFO(nodeHandle->get_logger(), "Talon %d Max Current: %f", deviceID, maxCurrent);

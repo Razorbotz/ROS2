@@ -335,7 +335,7 @@ int main(int argc, char **argv) {
             zedPosition.oy=zedPose.getOrientation().oy;
             zedPosition.oz=zedPose.getOrientation().oz;
             zedPosition.ow=zedPose.getOrientation().ow;
-            zedPosition.roll = zedPose.getEulerAngles(false).x + 12.33;
+            zedPosition.roll = zedPose.getEulerAngles(false).x - 12.33;
             zedPosition.pitch = zedPose.getEulerAngles(false).y;
             zedPosition.yaw = zedPose.getEulerAngles(false).z;
             zedPosition.x_acc = x_acc;

@@ -1,6 +1,6 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch_ros.actions import ExecuteProcess
+from launch.actions import ExecuteProcess
 
 ## @file
 # Launch file that contains all the nodes necessary

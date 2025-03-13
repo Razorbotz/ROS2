@@ -36,6 +36,7 @@ struct MotorOut{
     float outputVoltage;
     float outputPercentage;
     float maxCurrent = 0.0;
+    int sensorValue = 0;
 };
 
 struct Arena{
