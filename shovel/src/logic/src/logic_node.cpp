@@ -127,7 +127,6 @@ void initSetSpeed(){
  * @return void
  * */
 void updateSpeed(){
-    
     std_msgs::msg::Float32 speedLeft;
     std_msgs::msg::Float32 speedRight;
     
@@ -381,6 +380,9 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(keyState->key == 107 && keyState->state == 1){
         automationGo = false;
     }
+    if(keyState->key == 108 && keyState->state == 1){
+        automation->setLevel();
+    }
     if(keyState->key == 48 && keyState->state==1){
         return;
     }
@@ -388,7 +390,7 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
 
 /** @brief Callback function for the zedPosition
  * 
- * This function is caled when the node receives a
+ * This function is called when the node receives a
  * topic with the name zed_position.  This function
  * extracts the information and calls the setPosition
  * function from the automation problem.  
@@ -593,7 +595,6 @@ int main(int argc, char **argv){
     auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_11_info",1,falcon2Callback);
     auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_12_info",1,falcon3Callback);
     auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_13_info",1,falcon4Callback);
-
 
     driveLeftSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
     driveRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);

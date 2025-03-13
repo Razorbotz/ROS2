@@ -110,6 +110,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         {GO_TO_HOME, "Go To Home"},
         {DOCK, "Dock"},
         {RETURN_TO_START, "Return to Start"},
+        {LEVEL, "Level"},
         {ROBOT_IDLE,  "Idle"}
     };
 
@@ -220,6 +221,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     virtual void setDiagnostics() = 0;
     
     virtual void startAutonomy() = 0; 
+
+    virtual void setLevel() = 0;
     
     void stopActuators();
 
@@ -310,4 +313,6 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     enum TiltState checkOrientation();
 
     void setLevelBucket();
+
+    void setLevelArms();
 };
