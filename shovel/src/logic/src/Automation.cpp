@@ -639,15 +639,31 @@ void Automation::setArmPosition(int potent){
     setArmTarget(potent);
     int current = this->talon1.sensorValue;
     float timeToRun = abs(current - potent) * (linear1.timeToExtend / 900.0) * 1000;
+    if(timeToRun > 300)
+        timeToRun = 300;
     RCLCPP_INFO(this->node->get_logger(), "Arm potent: %d", potent);
-    RCLCPP_INFO(this->node->get_logger(), "Arm timeToExtend: %f", linear1.timeToExtend);
-    RCLCPP_INFO(this->node->get_logger(), "Arm timeToRuN: %f", timeToRun);
-    if(potent > current){
-        setArmSpeed(1.0);
+    RCLCPP_INFO(this->node->get_logger(), "Arm timeToExtend: %f s", linear1.timeToExtend);
+    RCLCPP_INFO(this->node->get_logger(), "Arm timeToRuN: %f ms", timeToRun);
+    int diff = potent - current;
+    float speed = 0.0;
+    if(std::abs(diff) > 50){
+        speed = 1.0;
+    }
+    else if(std::abs(diff) > 30){
+        speed = 0.9;
+    }
+    else if(std::abs(diff) > 10){
+        speed = 0.75;
     }
     else{
-        setArmSpeed(-1.0);
+        setArmSpeed(0.0);
+        return;
     }
+    if(diff < 0){
+        speed *= -1;
+    }
+    setArmSpeed(speed);
+
     auto start = std::chrono::high_resolution_clock::now();
     while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()-start).count() < timeToRun){}
     setArmSpeed(0.0);
@@ -666,15 +682,31 @@ void Automation::setBucketPosition(int potent){
     setBucketTarget(potent);
     int current = this->talon3.sensorValue;
     float timeToRun = abs(current - potent) * (linear3.timeToExtend / 900.0) * 1000;
+    if(timeToRun > 300)
+        timeToRun = 300;
     RCLCPP_INFO(this->node->get_logger(), "Bucket potent: %d", potent);
     RCLCPP_INFO(this->node->get_logger(), "Bucket timeToExtend: %f", linear3.timeToExtend);
     RCLCPP_INFO(this->node->get_logger(), "Bucket timeToRuN: %f", timeToRun);
-    if(potent > current){
-        setBucketSpeed(1.0);
+    int diff = potent - current;
+    float speed = 0.0;
+    if(std::abs(diff) > 50){
+        speed = 1.0;
+    }
+    else if(std::abs(diff) > 30){
+        speed = 0.9;
+    }
+    else if(std::abs(diff) > 10){
+        speed = 0.75;
     }
     else{
-        setBucketSpeed(-1.0);
+        setBucketSpeed(0.0);
+        return;
     }
+    if(diff < 0){
+        speed *= -1;
+    }
+    setBucketSpeed(speed);
+
     auto start = std::chrono::high_resolution_clock::now();
     while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()-start).count() < timeToRun){}
     setBucketSpeed(0.0);
@@ -760,6 +792,8 @@ enum Automation::TiltState Automation::checkOrientation(){
 
 
 void Automation::setLevelBucket(){
+    if(!levelBucket)
+        return;
     int currentArm = this->talon1.sensorValue;
     int currentBucket = this->talon3.sensorValue;
     float target = currentArm * (ARM_DEGREES / ARM_TRAVEL) * (BUCKET_TRAVEL / BUCKET_DEGREES) - position.roll * (BUCKET_TRAVEL / BUCKET_DEGREES);
@@ -771,12 +805,30 @@ void Automation::setLevelBucket(){
 
 
 void Automation::setLevelArms(){
+    if(!levelArms)
+        return;
     int currentArm = this->talon1.sensorValue;
-    float target = 400 + position.roll * (ARM_DEGREES / ARM_TRAVEL);
+    float target = 400 + position.roll * (ARM_TRAVEL / ARM_DEGREES);
     if(target < 40.0)
         target = 40.0;
     int armTarget = (int)target;
     if(std::abs(target - currentArm) < 5)
         return;
     setArmPosition(armTarget);
+}
+
+void Automation::startBucketLevel(){
+    levelBucket = true;
+}
+
+void Automation::startArmsLevel(){
+    levelArms = true;
+}
+
+void Automation::stopBucketLevel(){
+    levelBucket = false;
+}
+
+void Automation::stopArmsLevel(){
+    levelArms = false;
 }

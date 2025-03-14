@@ -460,6 +460,7 @@ void Automation1::automate(){
     }
 
     if(robotState == LEVEL){
+        setLevelArms();
         setLevelBucket();
     }
 }

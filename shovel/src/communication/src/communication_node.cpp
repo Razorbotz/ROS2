@@ -708,7 +708,8 @@ void communicationInterval(){
             result += buffer2;
         }
     }
-    if(result.size() > 0){
+    RCLCPP_INFO(nodeHandle->get_logger(), "ip link show result: %s", result.c_str());
+    if(result.erase(result.find_last_not_of("\n\r") + 1).size() > 0){
         canMessage = "DOWN";
     }
     else{

@@ -198,6 +198,9 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     bool runSensorlessly = false;
 
+    bool levelBucket = true;
+    bool levelArms = true;
+
     virtual void automate() = 0;
 
     virtual void publishAutomationOut() = 0;
@@ -317,4 +320,12 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     void setLevelBucket();
 
     void setLevelArms();
+
+    void startBucketLevel();
+    
+    void startArmsLevel();
+
+    void stopBucketLevel();
+
+    void stopArmsLevel();
 };
