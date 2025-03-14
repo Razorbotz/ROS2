@@ -146,7 +146,7 @@ void send(BinaryMessage message){
     //RCLCPP_INFO(nodeHandle->get_logger(), "send message");
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
 
-    checksum_encode(byteList);
+    //checksum_encode(byteList);
     std::vector<uint8_t> bytes(byteList->size());
     int index = 0;
     for(auto byteIterator = byteList->begin(); byteIterator != byteList->end(); byteIterator++, index++){
@@ -316,6 +316,8 @@ void send(std::string messageLabel, const messages::msg::AutonomyOut::SharedPtr 
     message.addElementString("Error State", autonomy->error_state);
     message.addElementString("Diagnostics State", autonomy->diagnostics_state);
     message.addElementString("Tilt State", autonomy->tilt_state);
+    message.addElementString("Level Bucket", autonomy->bucket_state);
+    message.addElementString("Level Arms", autonomy->arms_state);
 
     pad(message);
 }
@@ -708,7 +710,6 @@ void communicationInterval(){
             result += buffer2;
         }
     }
-    RCLCPP_INFO(nodeHandle->get_logger(), "ip link show result: %s", result.c_str());
     if(result.erase(result.find_last_not_of("\n\r") + 1).size() > 0){
         canMessage = "DOWN";
     }

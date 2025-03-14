@@ -3,3 +3,5 @@ string excavation_state
 string error_state
 string diagnostics_state
 string tilt_state
+string bucket_state
+string arms_state

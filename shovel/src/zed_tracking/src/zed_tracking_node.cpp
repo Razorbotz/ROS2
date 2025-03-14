@@ -271,7 +271,7 @@ int main(int argc, char **argv) {
                 zedPosition.aruco_yaw = arucoPose.getEulerAngles(false).z;
 		        zedPosition.aruco_visible=true;
                 // Add check here to ensure that the angle to the marker is less than 90
-                if(!initialized){
+                if(!initialized && std::abs(zedPosition.aruco_pitch) > 90.0){
                     zed.resetPositionalTracking(arucoPose);
                     initialized = true;                
                 }

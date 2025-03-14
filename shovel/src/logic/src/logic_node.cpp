@@ -387,6 +387,8 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     }
     if(keyState->key == 107 && keyState->state == 1){
         automationGo = false;
+        automation->setStop();
+        automation->setIdle();
     }
     if(keyState->key == 108 && keyState->state == 1){
         automation->setLevel();
@@ -616,8 +618,8 @@ int main(int argc, char **argv){
     while(rclcpp::ok()){
         if(automationGo){
             automation->automate();
-            automation->publishAutomationOut();
         }
+        automation->publishAutomationOut();
         rclcpp::spin_some(nodeHandle);
         rate.sleep();
     }

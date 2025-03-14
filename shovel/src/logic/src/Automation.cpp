@@ -151,6 +151,9 @@ void Automation::setStop(){
     stopPublisher->publish(empty);
 }
 
+void Automation::setIdle(){
+    robotState = ROBOT_IDLE;
+}
 
 /*
 Function to set Linear1 to the received Linear motor values.
@@ -462,13 +465,15 @@ void Automation::setDestZ(float meters){
 }
 
 
-void Automation::publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString, std::string tiltStateString){
+void Automation::publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString, std::string tiltStateString, std::string bucketState, std::string armsState){
     messages::msg::AutonomyOut aOut;
     aOut.robot_state = robotStateString;
     aOut.excavation_state = excavationStateString;
     aOut.error_state = errorStateString;
     aOut.diagnostics_state = diagnosticsStateString;
     aOut.tilt_state = tiltStateString;
+    aOut.bucket_state = bucketState;
+    aOut.arms_state = armsState;
     autonomyOutPublisher->publish(aOut);
 }
 
@@ -663,10 +668,6 @@ void Automation::setArmPosition(int potent){
         speed *= -1;
     }
     setArmSpeed(speed);
-
-    auto start = std::chrono::high_resolution_clock::now();
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()-start).count() < timeToRun){}
-    setArmSpeed(0.0);
 }
 
 
@@ -706,10 +707,6 @@ void Automation::setBucketPosition(int potent){
         speed *= -1;
     }
     setBucketSpeed(speed);
-
-    auto start = std::chrono::high_resolution_clock::now();
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()-start).count() < timeToRun){}
-    setBucketSpeed(0.0);
 }
 
 

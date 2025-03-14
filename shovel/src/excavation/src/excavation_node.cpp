@@ -83,15 +83,15 @@ struct LinearActuator{
     bool sensorless = false;        // Running without sensor
     float maxCurrent = 0.0;         
     bool initialized = false;
-    float previous = 0.0;
-    float current = 0.0;
+    float previousSpeed = 0.0;
+    int previousPotent = 0;
 };
 
 
-LinearActuator linear1{14, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.85, 11.5, false, 0.0, false, 0.0, 0.0};
-LinearActuator linear2{15, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.89, 11.0, false, 0.0, false, 0.0, 0.0};
-LinearActuator linear3{16, 0.0, 0, 0, 0, 1024, None, false, false, 11.8, 0.0, 0.69, 8.5, false, 0.0, false, 0.0, 0.0};
-LinearActuator linear4{17, 0.0, 0, 0, 0, 1024, None, false, false, 11.8, 0.0, 0.69, 8.5, false, 0.0, false, 0.0, 0.0};
+LinearActuator linear1{14, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.85, 11.5, false, 0.0, false, 0.0, 0};
+LinearActuator linear2{15, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.89, 11.0, false, 0.0, false, 0.0, 0};
+LinearActuator linear3{16, 0.0, 0, 0, 0, 1024, None, false, false, 11.8, 0.0, 0.69, 8.5, false, 0.0, false, 0.0, 0};
+LinearActuator linear4{17, 0.0, 0, 0, 0, 1024, None, false, false, 11.8, 0.0, 0.69, 8.5, false, 0.0, false, 0.0, 0};
 
 float currentArmSpeed = 0.0;
 float currentBucketSpeed = 0.0;
@@ -285,11 +285,11 @@ void publishSpeeds(){
     std_msgs::msg::Float32 speed1;
     speed1.data = linear1.speed;
     talon14Publisher->publish(speed1);
-    linear1.previous = linear1.speed;
+    linear1.previousSpeed = linear1.speed;
     std_msgs::msg::Float32 speed2;
     speed2.data = linear2.speed;
     talon15Publisher->publish(speed2);
-    linear2.previous = linear2.speed;
+    linear2.previousSpeed = linear2.speed;
 }
 
 
@@ -304,11 +304,11 @@ void publishSpeeds2(){
     std_msgs::msg::Float32 speed1;
     speed1.data = linear3.speed;
     talon16Publisher->publish(speed1);
-    linear3.previous = linear3.speed;
+    linear3.previousSpeed = linear3.speed;
     std_msgs::msg::Float32 speed2;
     speed2.data = linear4.speed;
     talon17Publisher->publish(speed2);
-    linear4.previous = linear4.speed;
+    linear4.previousSpeed = linear4.speed;
 }
 
 
@@ -325,7 +325,7 @@ void setSpeedsDistance(LinearActuator *linear1, LinearActuator *linear2, float c
     linear2->speed = currentSpeed;
     syncDistance(linear1, linear2, currentSpeed);
     setSpeedAtEnd(linear1, linear2, currentSpeed);
-    if(linear1->speed != linear1->previous || linear2->speed != linear2->previous){
+    if(linear1->speed != linear1->previousSpeed || linear2->speed != linear2->previousSpeed){
         if(linear1->motorNumber == 14){
             publishSpeeds();
         }
@@ -389,15 +389,15 @@ void processPotentiometerData(int potentData, LinearActuator *linear){
         linear->initialized = true;
         linear->distance = linear->stroke * (potentData / 950);
     }
-    if(abs(linear->potentiometer - potentData) > 50 && (potentData >= 100 && potentData <= 110)){
+    if(abs(linear->potentiometer - potentData) > 50 && (potentData >= 100 && potentData <= 110) && linear->initialized){
         linear->sensorless = true;
 	    linear->error = PotentiometerError;
     }
     if(linear->potentiometer >= potentData - 5 && linear->potentiometer <= potentData + 5){
         if(linear->speed != 0.0 && run){
             linear->timeWithoutChange += 1;
-            if(linear->timeWithoutChange >= 3){
-                if(linear->potentiometer >= 100 && linear->potentiometer <= 110){
+            if(linear->timeWithoutChange >= 15){
+                if(linear->potentiometer >= 100 && linear->potentiometer <= 110 && !linear->initialized){
                     linear->sensorless = true;
                     linear->error = PotentiometerError;
                 }
@@ -497,7 +497,7 @@ void setSyncErrors(LinearActuator *linear1, LinearActuator *linear2, float curre
     }
     if(linear1->error != PotentiometerError && linear2->error != PotentiometerError){
         sync(linear1, linear2, currentSpeed);
-        if(linear1->speed != linear1->previous || linear2->speed != linear2->previous){
+        if(linear1->speed != linear1->previousSpeed || linear2->speed != linear2->previousSpeed){
             if(linear1->motorNumber == 14){
                 publishSpeeds();
             }
@@ -760,7 +760,7 @@ int main(int argc, char **argv){
 
     auto start = std::chrono::high_resolution_clock::now();
     auto finish = std::chrono::high_resolution_clock::now();
-    rclcpp::Rate rate(20);
+    rclcpp::Rate rate(60);
     while(rclcpp::ok()){
         finish = std::chrono::high_resolution_clock::now();
         if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > 33){

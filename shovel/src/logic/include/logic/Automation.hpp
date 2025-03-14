@@ -221,6 +221,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     void setStop();
 
+    void setIdle();
+
     virtual void setDiagnostics() = 0;
     
     virtual void startAutonomy() = 0; 
@@ -273,7 +275,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     void setDestZ(float meters);
 
-    void publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string dumpStateString, std::string tiltStateString);
+    void publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string dumpStateString, std::string tiltStateString, std::string bucketState, std::string armsState);
 
     void setStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime);
 
