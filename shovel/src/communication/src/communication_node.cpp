@@ -712,6 +712,13 @@ void communicationInterval(){
     }
     if(result.erase(result.find_last_not_of("\n\r") + 1).size() > 0){
         canMessage = "DOWN";
+        int result = std::system("./../../restart_can.sh");
+        if (result == 0) {
+            std::cout << "Restarted CAN interface" << std::endl;
+        }
+        else {
+            std::cerr << "Failed to restart CAN interface" << std::endl;
+        }
     }
     else{
         canMessage = "UP";

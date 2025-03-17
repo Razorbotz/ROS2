@@ -580,6 +580,8 @@ void Automation::setBucketTarget(int potent){
 }
 
 
+// TODO: Look into changing this from thresh parameter over to
+// (int value, int thresh) to allow for clearer use of this function
 /*
 Function to check the current position of the arm relative
 to the target position of the arm based on the value of the
@@ -712,16 +714,16 @@ void Automation::setBucketPosition(int potent){
 
 void Automation::setMap(std::string mapUsed){
     if(mapUsed == "NASA"){
-        this->search.setRowCol(NASA.height, NASA.width);
+        this->search.setRowCol(NASA.width, NASA.height);
     }
     if(mapUsed == "UCF_1"){
-        this->search.setRowCol(UCF_1.height, UCF_1.width);
+        this->search.setRowCol(UCF_1.width, UCF_1.height);
     }
     if(mapUsed == "UCF_2"){
-        this->search.setRowCol(UCF_2.height, UCF_2.width);
+        this->search.setRowCol(UCF_2.width, UCF_2.height);
     }
     if(mapUsed == "lab"){
-        this->search.setRowCol(lab.height, lab.width);
+        this->search.setRowCol(lab.width, lab.height);
     }
     this->search.initializeMap(this->robotWidth);
 }
