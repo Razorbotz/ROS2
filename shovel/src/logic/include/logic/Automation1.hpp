@@ -16,6 +16,7 @@ class Automation1 : public Automation{
 
     int destX = 2, destY = 2;
     int stillCounter = 0;
+    int counter = 0;
 
     void automate();
 

@@ -330,6 +330,7 @@ int main(int argc,char** argv){
 	float maxCurrent = 0.0;
 	while(rclcpp::ok()){
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
+		if(GO)RCLCPP_INFO(nodeHandle->get_logger(),"Send Enable");
 		auto finish = std::chrono::high_resolution_clock::now();
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
@@ -370,6 +371,7 @@ int main(int argc,char** argv){
 		}
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
+			RCLCPP_INFO(nodeHandle->get_logger(),"Shut down node because time out");
 			talonFX->Set(ControlMode::PercentOutput, 0.0);
 			GO = false;
 		}

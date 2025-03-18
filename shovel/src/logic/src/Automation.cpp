@@ -436,14 +436,15 @@ and the destination. The greater the distance returned, the further out
 the robot is from the target location. 
 */
 int Automation::checkDistance(){
-    float currentZ = (this->search.Row / 10.0) - position.z;
-    float currentX = position.x + this->xOffset;
-    float dist = sqrt(pow(currentZ - (this->search.destX / 10.0), 2) + pow(currentX - (this->search.destY / 10.0), 2));
-    if(dist == 0)
+    //float currentZ = (this->search.Row / 10.0) - position.z;
+    //float currentX = position.x + this->xOffset;
+    //float dist = sqrt(pow(currentZ - (this->search.destX / 10.0), 2) + pow(currentX - (this->search.destY / 10.0), 2));
+    float dist = sqrt(pow(position.z - this->destZ, 2) + pow(position.x - this->destX, 2));
+    if(dist < 0.05)
         return 0;
-    if(dist < 0.5)
+    if(dist < 0.1)
         return 1;
-    if(dist < 1)
+    if(dist < 0.25)
         return 2;
     return 3;
     

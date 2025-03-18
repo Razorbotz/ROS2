@@ -205,7 +205,9 @@ void Automation1::automate(){
             //setDestX(initial.second);
             //setDestAngle(getAngle());
             setDestX(2.0);
-            setDestY(2.0);
+            setDestZ(0.0);
+            this->destX = 2.0;
+            this->destZ = 0.0;
             robotState = GO_TO_DIG_SITE;
         }
     }
@@ -238,10 +240,12 @@ void Automation1::automate(){
                     setDestAngle(getAngle());
                 }
                 */
-               setDestAngle(-90);
-               setDestX(0.0);
-               setDestY(0.0);
-               robotState = GO_TO_DUMP;
+                setDestAngle(0);
+                setDestX(2.0);
+                setDestZ(2.0);
+                this->destX = 2.0;
+                this->destZ = 2.0;
+                robotState = GO_TO_DUMP;
             }
             else if(abs(this->position.x - this->destX) < 0.1){
                 changeSpeed(0.1, 0.1);
@@ -356,26 +360,34 @@ void Automation1::automate(){
             }
         } 
         else{ 
-            if(abs(this->position.x - this->destX) < 0.05){
+            int distance = checkDistance();
+            if(distance == 0){
                 changeSpeed(0.0, 0.0);
-                /*
-                if(this->currentPath.empty()){
-                    robotState = DUMP;
+                if(counter == 2){
+                    robotState = ROBOT_IDLE;
                 }
                 else{
-                    std::pair<int, int> current = this->currentPath.top();
-                    this->currentPath.pop();
-                    setDestZ(current.first);
-                    setDestX(current.second);
-                    setDestAngle(getAngle());
+                    if(counter == 0){
+                        setDestZ(0.0);
+                        setDestX(2.0);
+                        this->destX = 0.0;
+                        this->destZ = 2.0;
+                        setDestAngle(-90);
+                    }
+                    if(counter == 1){
+                        setDestZ(0.0);
+                        setDestX(0.0);
+                        this->destX = 0.0;
+                        this->destZ = 0.0;
+                        setDestAngle(-180);
+                    }
+                    counter += 1;
                 }
-                */
-               robotState = ROBOT_IDLE;
             }
-            else if(abs(this->position.x - this->destX) < 0.1){
+            else if(distance == 1){
                 changeSpeed(0.1, 0.1);
             }
-            else if(abs(this->position.x - this->destX) < 0.25){
+            else if(distance == 2){
                 changeSpeed(0.15, 0.15);
             }
             else{

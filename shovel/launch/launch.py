@@ -237,10 +237,10 @@ def generate_launch_description():
             name='video_streaming',
             executable='video_streaming_node'
         )
-        ,
-        ExecuteProcess(
-            cmd=['ros2', 'bag', 'record', '-a'],
-            output='screen'
-        )
+        #,
+        #ExecuteProcess(
+        #   cmd=['ros2', 'bag', 'record', '-a'],
+        #    output='screen'
+        #)
     ]
 )
