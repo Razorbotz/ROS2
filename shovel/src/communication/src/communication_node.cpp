@@ -146,13 +146,13 @@ void send(BinaryMessage message){
     //RCLCPP_INFO(nodeHandle->get_logger(), "send message");
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
 
-    //checksum_encode(byteList);
+    checksum_encode(byteList);
     std::vector<uint8_t> bytes(byteList->size());
     int index = 0;
     for(auto byteIterator = byteList->begin(); byteIterator != byteList->end(); byteIterator++, index++){
         bytes.at(index) = *byteIterator;
     }
-    if(byteList->size() != 241)
+    if(byteList->size() != 242)
         return;
     try{
         total += byteList->size();
