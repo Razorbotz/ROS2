@@ -1042,7 +1042,7 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE); 
     } 
 
-    broadcast=false;
+    // broadcast=false;
     bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen); 
     sendto(new_socket, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
     silentRunning=true;
