@@ -90,6 +90,7 @@ char wifiCommand[128];
 #define CRIT_THRESH 90
 
 
+
 /** @brief Parse a byte represenation into a float.
  * 
  * @param array
@@ -679,7 +680,7 @@ void broadcastIP(){
                 struct in_addr localInterface;
                 localInterface.s_addr = inet_addr(addressString.c_str());
                 if(setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_IF, (char*)&localInterface, sizeof(localInterface))>=0){
-                    sendto(socketDescriptor,message.c_str(),message.length(),0,(struct sockaddr*)&socketAddress, sizeof(socketAddress));
+                    sendto(socketDescriptor,message.c_str(),message.length(),0,(struct sockaddr*)&socketAddress, (socklen_t)sizeof(socketAddress));
                 }
             }
             close(socketDescriptor);
@@ -1043,7 +1044,7 @@ int main(int argc, char **argv){
 
     broadcast=false;
     bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, sizeof(address)); 
-    sendto(new_socket, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, sizeof(address)); 
+    sendto(new_socket, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
     silentRunning=true;
 
     fcntl(new_socket, F_SETFL, O_NONBLOCK);
@@ -1054,7 +1055,7 @@ int main(int argc, char **argv){
     rclcpp::Rate rate(30);
     while(rclcpp::ok()){
         try{
-            bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, sizeof(address));
+            bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen);
             for(int index=0;index<bytesRead;index++){
                 messageBytesList.push_back(buffer[index]);
             }
