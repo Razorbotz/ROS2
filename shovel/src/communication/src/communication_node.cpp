@@ -1012,7 +1012,7 @@ int main(int argc, char **argv){
     int server_fd, bytesRead; 
     struct sockaddr_in address; 
     int opt = 1; 
-    int addrlen = sizeof(address); 
+    int addrlen = (socklen_t)sizeof(address); 
     uint8_t buffer[1024] = {0}; 
     std::string hello("Hello from server");
 
@@ -1043,7 +1043,7 @@ int main(int argc, char **argv){
     } 
 
     broadcast=false;
-    bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, sizeof(address)); 
+    bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen); 
     sendto(new_socket, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
     silentRunning=true;
 
