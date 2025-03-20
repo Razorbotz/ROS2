@@ -1074,9 +1074,9 @@ int main(int argc, char **argv){
             //         exit(EXIT_FAILURE); 
             //     }
             //     broadcast=false;
-            //     bytesRead = read(new_socket, buffer, 1024); 
-            //     send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
-            //     fcntl(new_socket, F_SETFL, O_NONBLOCK);
+                bytesRead = recvfrom(new_socket, buffer, 1024, 0 , (struct sockaddr *)&address, &addrlen); 
+                sendto(new_socket, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
+                fcntl(new_socket, F_SETFL, O_NONBLOCK);
         
             //     silentRunning=true;
             // }
