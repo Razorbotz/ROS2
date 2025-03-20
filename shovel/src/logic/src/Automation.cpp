@@ -790,6 +790,14 @@ enum Automation::TiltState Automation::checkOrientation(){
     return TILT_LEVEL;
 }
 
+// PID Control Variables for Bucket Leveling
+float kp = 0.5;   // Proportional gain 
+float ki = 0.1;   // Integral gain 
+float kd = 0.05;  // Derivative gain 
+
+float previousError = 0.0;  // Stores last error value for derivative calculation
+float integral = 0.0;       // Stores accumulated integral error 
+float integralLimit = 100;  // Limit for integral windup prevention
 
 void Automation::setLevelBucket(){
     if(!levelBucket)
@@ -797,10 +805,26 @@ void Automation::setLevelBucket(){
     int currentArm = this->talon1.sensorValue;
     int currentBucket = this->talon3.sensorValue;
     float target = currentArm * (ARM_DEGREES / ARM_TRAVEL) * (BUCKET_TRAVEL / BUCKET_DEGREES) - position.roll * (BUCKET_TRAVEL / BUCKET_DEGREES);
-    int bucketTarget = (int)target;
-    if(std::abs(target - currentBucket) < 10)
-        return;
-    setBucketPosition(bucketTarget);
+     int bucketTarget = (int)target;
+    // if(std::abs(target - currentBucket) < 10)
+    //     return;
+
+    float error = bucketTarget - currentBucket;
+    integral += error;
+    if(integral > integralLimit)
+        integral = integralLimit;
+    if(integral < -integralLimit)
+        integral = -integralLimit;
+    
+    float derivative = error - previousError;
+    previousError = error;
+
+    float output = (kp * error) + (ki * integral) + (kd * derivative);
+
+
+    
+
+    setBucketPosition(output);
 }
 
 
