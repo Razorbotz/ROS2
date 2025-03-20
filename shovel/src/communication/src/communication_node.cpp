@@ -1012,7 +1012,7 @@ int main(int argc, char **argv){
     int server_fd, bytesRead; 
     struct sockaddr_in address; 
     int opt = 1; 
-    int addrlen = (socklen_t)sizeof(address); 
+    socklen_t addrlen = sizeof(address); 
     uint8_t buffer[1024] = {0}; 
     std::string hello("Hello from server");
 
