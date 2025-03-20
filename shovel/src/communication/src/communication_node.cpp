@@ -1063,7 +1063,7 @@ int main(int argc, char **argv){
             // if(bytesRead==0){
             //     stopPublisher->publish(empty);
             //     RCLCPP_INFO(nodeHandle->get_logger(),"Lost Connection");
-            //     broadcast=true;
+                broadcast=true;
             //     //wait for reconnect
             //     if (listen(server_fd, 3) < 0) { 
             //         perror("listen"); 
