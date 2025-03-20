@@ -752,6 +752,215 @@ void communicationInterval(){
 }
 
 
+// int main(int argc, char **argv){
+//     rclcpp::init(argc,argv);
+
+//     nodeHandle = rclcpp::Node::make_shared("communication2");
+//     RCLCPP_INFO(nodeHandle->get_logger(),"Starting communication2 node");
+
+//     nodeHandle->declare_parameter<std::string>("robot_name","not named");
+//     rclcpp::Parameter robotNameParameter = nodeHandle->get_parameter("robot_name");
+//     robotName = robotNameParameter.as_string();
+//     RCLCPP_INFO(nodeHandle->get_logger(),"robotName: %s", robotName.c_str());
+
+//     FILE* pipe = popen("iw dev | awk '$1==\"Interface\"{print $2}'", "r");
+//     while(!feof(pipe)){
+//         if(fgets(buffer2, 128, pipe) != nullptr){
+//             result += buffer2;
+//         }
+//     }
+//     interfaceName = result.erase(result.find_last_not_of("\n\r") + 1);
+//     result = "";
+//     pclose(pipe);
+
+//     std::snprintf(wifiCommand, sizeof(wifiCommand), "iwconfig %s | grep -E -o '=-.{0,2}", interfaceName.c_str());
+
+//     auto joystickAxisPublisher = nodeHandle->create_publisher<messages::msg::AxisState>("joystick_axis", 1);
+//     auto joystickHatPublisher = nodeHandle->create_publisher<messages::msg::HatState>("joystick_hat",1);
+//     auto joystickButtonPublisher = nodeHandle->create_publisher<messages::msg::ButtonState>("joystick_button",1);
+//     auto keyPublisher = nodeHandle->create_publisher<messages::msg::KeyState>("key",1);
+//     auto stopPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("STOP",1);
+//     auto goPublisher=nodeHandle->create_publisher<std_msgs::msg::Empty>("GO",1);
+//     auto commHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat",1);
+
+//     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
+//     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,talon1Callback);
+//     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,talon2Callback);
+//     auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_16_info",1,talon3Callback);
+//     auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_17_info",1,talon4Callback);
+//     auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_10_info",1,falcon1Callback);
+//     auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_11_info",1,falcon2Callback);
+//     auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_12_info",1,falcon3Callback);
+//     auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_13_info",1,falcon4Callback);
+//     auto linearOut1Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut1",1,linearOut1Callback);
+//     auto linearOut2Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut2",1,linearOut2Callback);
+//     auto linearOut3Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut3",1,linearOut3Callback);
+//     auto linearOut4Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut4",1,linearOut4Callback);
+//     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
+//     auto autonomyOutSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyOut>("autonomy_out", 10, autonomyOutCallback);
+
+//     int server_fd, bytesRead; 
+//     struct sockaddr_in address; 
+//     int opt = 1; 
+//     int addrlen = sizeof(address); 
+//     uint8_t buffer[1024] = {0}; 
+//     std::string hello("Hello from server");
+
+//     int counter = 0;
+
+//     // Creating socket file descriptor
+//     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
+//         perror("socket failed"); 
+//         exit(EXIT_FAILURE); 
+//     }
+//     std::thread broadcastThread(broadcastIP);
+
+//     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) { 
+//         perror("setsockopt"); 
+//         exit(EXIT_FAILURE); 
+//     } 
+//     address.sin_family = AF_INET; 
+//     address.sin_addr.s_addr = INADDR_ANY; 
+//     address.sin_port = htons( PORT ); 
+
+//     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address))<0) { 
+//         perror("bind failed"); 
+//         exit(EXIT_FAILURE); 
+//     } 
+//     if (listen(server_fd, 3) < 0) { 
+//         perror("listen"); 
+//         exit(EXIT_FAILURE); 
+//     } 
+//     if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
+//         perror("accept"); 
+//         exit(EXIT_FAILURE); 
+//     }
+
+//     broadcast=false;
+//     bytesRead = read(new_socket, buffer, 1024); 
+//     send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
+//     silentRunning=true;
+
+//     fcntl(new_socket, F_SETFL, O_NONBLOCK);
+    
+
+//     std::list<uint8_t> messageBytesList;
+//     uint8_t message[256];
+//     rclcpp::Rate rate(30);
+//     while(rclcpp::ok()){
+//         try{
+//             bytesRead = recv(new_socket, buffer, 1024, 0);
+//             for(int index=0;index<bytesRead;index++){
+//                 messageBytesList.push_back(buffer[index]);
+//             }
+
+//             if(bytesRead==0){
+//                 stopPublisher->publish(empty);
+//                 RCLCPP_INFO(nodeHandle->get_logger(),"Lost Connection");
+//                 broadcast=true;
+//                 //wait for reconnect
+//                 if (listen(server_fd, 3) < 0) { 
+//                     perror("listen"); 
+//                     exit(EXIT_FAILURE); 
+//                 } 
+//                 if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
+//                     perror("accept"); 
+//                     exit(EXIT_FAILURE); 
+//                 }
+//                 broadcast=false;
+//                 bytesRead = read(new_socket, buffer, 1024); 
+//                 send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
+//                 fcntl(new_socket, F_SETFL, O_NONBLOCK);
+        
+//                 silentRunning=true;
+//             }
+//         }
+//         catch(int x){
+//             RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to read data from client");
+//         }
+
+//         while(messageBytesList.size()>0 && messageBytesList.front()<=messageBytesList.size()){
+// 	    //RCLCPP_INFO(nodeHandle->get_logger(),"bytes read %d", bytesRead);
+//             int messageSize=messageBytesList.front();    
+//             messageBytesList.pop_front();
+//             messageSize--;
+//             for(int index=0;index<messageSize;index++){
+//                 message[index]=messageBytesList.front();
+//                 messageBytesList.pop_front();
+//             }
+//             //parse command
+//             // Command values:
+//             // 1: Joystick axis values
+//             // 2: Keystate values
+//             // 5: Joystick button values
+//             // 6: Joystick hat values
+//             // 7: GUI silent running button
+//             // 8: GUI reboot button
+//             uint8_t command=message[0];
+//             if(command==1){
+//                 messages::msg::AxisState axisState;
+//                 axisState.joystick=message[1];
+//                 axisState.axis=message[2];
+//                 axisState.state=parseFloat(&message[3]);
+// 		        joystickAxisPublisher->publish(axisState);
+// 		        //RCLCPP_INFO(nodeHandle->get_logger(),"axis %d %d %f ", axisState.joystick, axisState.axis , axisState.state);
+//             }
+//             if(command==2){
+//                 messages::msg::KeyState keyState;
+//                 keyState.key=((uint16_t)message[1])<<8 | ((uint16_t)message[2]);
+//                 keyState.state=message[3];
+//                 keyPublisher->publish(keyState);
+//                 if(keyState.key == 49 && keyState.state == 1){
+//                     return 0;
+//                 }
+// 		        //RCLCPP_INFO(nodeHandle->get_logger(),"key %d %d ", keyState.key , keyState.state);
+//             }
+//             if(command==5){
+//                 messages::msg::ButtonState buttonState;
+//                 buttonState.joystick=message[1];
+//                 buttonState.button=message[2];
+//                 buttonState.state=message[3];
+//                 if(buttonState.button==0 && buttonState.state==0){
+//                     std::cout << "publish stop" << std::endl;
+//                     stopPublisher->publish(empty);
+//                 }    
+//                 if(buttonState.button==0 && buttonState.state==1){
+//                     std::cout << "publish go" << std::endl;
+//                     goPublisher->publish(empty);
+//                 }    
+//                 joystickButtonPublisher->publish(buttonState);
+// 		        //RCLCPP_INFO(nodeHandle->get_logger(),"button %d %d %d", buttonState.joystick , buttonState.button , buttonState.state);
+//             }
+//             if(command==6){
+//                 messages::msg::HatState hatState;
+//                 hatState.joystick=message[1];
+//                 hatState.hat=message[2];
+//                 hatState.state=message[3];
+//                 joystickHatPublisher->publish(hatState);
+// 		        //RCLCPP_INFO(nodeHandle->get_logger(),"hat %d %d %d", hatState.joystick , hatState.hat , hatState.state);
+//             }
+//             if(command==7){
+//                 silentRunning=message[1];
+//                 std::cout << "silentRunning " << silentRunning << std::endl;
+//             }
+//             if(command==8){
+//                 reboot();
+//                 std::cout << "reboot " << silentRunning << std::endl;
+//             }
+//         }
+
+//         rclcpp::spin_some(nodeHandle);
+//         commHeartbeatPublisher->publish(heartbeat);
+//         if(counter % 30 == 0){
+//             communicationInterval();
+//         }
+//         counter++;
+//         rate.sleep();
+//     }
+
+//     broadcastThread.join();
+// }
+
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
 
@@ -808,37 +1017,33 @@ int main(int argc, char **argv){
 
     int counter = 0;
 
-    // Creating socket file descriptor
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
+    // Creating socket file descriptor, handling errors
+    if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0) { 
         perror("socket failed"); 
         exit(EXIT_FAILURE); 
     }
     std::thread broadcastThread(broadcastIP);
 
+    // Setting options for socket, handling errors
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) { 
         perror("setsockopt"); 
         exit(EXIT_FAILURE); 
     } 
+
+    // Be open to the client's connection no matter what
     address.sin_family = AF_INET; 
     address.sin_addr.s_addr = INADDR_ANY; 
     address.sin_port = htons( PORT ); 
 
+    // Bind the socket to the address, handling errors
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address))<0) { 
         perror("bind failed"); 
         exit(EXIT_FAILURE); 
     } 
-    if (listen(server_fd, 3) < 0) { 
-        perror("listen"); 
-        exit(EXIT_FAILURE); 
-    } 
-    if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
-        perror("accept"); 
-        exit(EXIT_FAILURE); 
-    }
 
     broadcast=false;
-    bytesRead = read(new_socket, buffer, 1024); 
-    send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
+    bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, sizeof(address)); 
+    sendto(new_socket, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, sizeof(address)); 
     silentRunning=true;
 
     fcntl(new_socket, F_SETFL, O_NONBLOCK);
@@ -849,31 +1054,31 @@ int main(int argc, char **argv){
     rclcpp::Rate rate(30);
     while(rclcpp::ok()){
         try{
-            bytesRead = recv(new_socket, buffer, 1024, 0);
+            bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, sizeof(address));
             for(int index=0;index<bytesRead;index++){
                 messageBytesList.push_back(buffer[index]);
             }
 
-            if(bytesRead==0){
-                stopPublisher->publish(empty);
-                RCLCPP_INFO(nodeHandle->get_logger(),"Lost Connection");
-                broadcast=true;
-                //wait for reconnect
-                if (listen(server_fd, 3) < 0) { 
-                    perror("listen"); 
-                    exit(EXIT_FAILURE); 
-                } 
-                if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
-                    perror("accept"); 
-                    exit(EXIT_FAILURE); 
-                }
-                broadcast=false;
-                bytesRead = read(new_socket, buffer, 1024); 
-                send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
-                fcntl(new_socket, F_SETFL, O_NONBLOCK);
+            // if(bytesRead==0){
+            //     stopPublisher->publish(empty);
+            //     RCLCPP_INFO(nodeHandle->get_logger(),"Lost Connection");
+            //     broadcast=true;
+            //     //wait for reconnect
+            //     if (listen(server_fd, 3) < 0) { 
+            //         perror("listen"); 
+            //         exit(EXIT_FAILURE); 
+            //     } 
+            //     if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
+            //         perror("accept"); 
+            //         exit(EXIT_FAILURE); 
+            //     }
+            //     broadcast=false;
+            //     bytesRead = read(new_socket, buffer, 1024); 
+            //     send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
+            //     fcntl(new_socket, F_SETFL, O_NONBLOCK);
         
-                silentRunning=true;
-            }
+            //     silentRunning=true;
+            // }
         }
         catch(int x){
             RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to read data from client");
