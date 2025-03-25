@@ -365,12 +365,13 @@ void Automation::setDestAngle(float degrees){
 Function to get the angle that the robot should be facing to
 travel to the destination. This should be between the values of
 [-180, 180]. 
-NOTE: This has not been confirmed to work and needs to be tested
-significantly more to ensure that the results are corret.
+The atan2 function assumes that the zero angle location is to the right,
+while the arena has the zero position to the bottom, which is why the 
+angle has 90 added to it.
 */
 float Automation::getAngle(){
-    float y = this->search.destX - this->search.startX;
-    float x = this->search.destY - this->search.startY;
+    float x = this->destX- this->position.x;
+    float y = this->destZ - this->position.z;
     float angle = std::atan2(y, x) * 180 / M_PI;
     angle += 90;
     if(angle > 180){
@@ -413,12 +414,12 @@ robot has gone outside of the expected angle.
 */
 int Automation::checkAngle(){
     if(abs(this->destAngle) > 177){
-        if(std::abs(position.pitch) < std::abs(this->destAngle) + 2 && std::abs(position.pitch) > std::abs(this->destAngle) - 2){
+        if(std::abs(position.pitch) < std::abs(this->destAngle) + angleThresh && std::abs(position.pitch) > std::abs(this->destAngle) - angleThresh){
             return 1;
         }
     }
     else{
-        if(position.pitch < this->destAngle + 2 && position.pitch > this->destAngle - 2){
+        if(position.pitch < this->destAngle + angleThresh && position.pitch > this->destAngle - angleThresh){
             return 1;
         }
     }
@@ -436,10 +437,15 @@ and the destination. The greater the distance returned, the further out
 the robot is from the target location. 
 */
 int Automation::checkDistance(){
-    //float currentZ = (this->search.Row / 10.0) - position.z;
-    //float currentX = position.x + this->xOffset;
-    //float dist = sqrt(pow(currentZ - (this->search.destX / 10.0), 2) + pow(currentX - (this->search.destY / 10.0), 2));
     float dist = sqrt(pow(position.z - this->destZ, 2) + pow(position.x - this->destX, 2));
+    
+    // Check to see if the distance is increasing. If the distance
+    // is decreasing as expected, the diff should be greater than zero.
+    float diff = prevDist - dist;
+    prevDist = dist;
+    if(diff < 0)
+        return -1;
+    
     if(dist < 0.05)
         return 0;
     if(dist < 0.1)
@@ -453,16 +459,16 @@ int Automation::checkDistance(){
 
 /*
 Function to set the X coordinate of the destination. 
-
-TODO: Explain why this sets the destY coordinate
 */
 void Automation::setDestX(float meters){
-    this->search.destY = meters;
+    this->search.destY = int(std::ceil((meters + this->xOffset) * 10));
+    this->destX = meters;
 }
 
 
 void Automation::setDestZ(float meters){
-    this->search.destX = meters;
+    this->search.destX = this->search.Row - int(std::ceil(meters * 10));
+    this->destZ = meters;
 }
 
 
@@ -649,9 +655,6 @@ void Automation::setArmPosition(int potent){
     float timeToRun = abs(current - potent) * (linear1.timeToExtend / 900.0) * 1000;
     if(timeToRun > 300)
         timeToRun = 300;
-    RCLCPP_INFO(this->node->get_logger(), "Arm potent: %d", potent);
-    RCLCPP_INFO(this->node->get_logger(), "Arm timeToExtend: %f s", linear1.timeToExtend);
-    RCLCPP_INFO(this->node->get_logger(), "Arm timeToRuN: %f ms", timeToRun);
     int diff = potent - current;
     float speed = 0.0;
     if(std::abs(diff) > 50){
@@ -661,7 +664,7 @@ void Automation::setArmPosition(int potent){
         speed = 0.9;
     }
     else if(std::abs(diff) > 10){
-        speed = 0.75;
+        speed = 0.5;
     }
     else{
         setArmSpeed(0.0);
@@ -688,9 +691,6 @@ void Automation::setBucketPosition(int potent){
     float timeToRun = abs(current - potent) * (linear3.timeToExtend / 900.0) * 1000;
     if(timeToRun > 300)
         timeToRun = 300;
-    RCLCPP_INFO(this->node->get_logger(), "Bucket potent: %d", potent);
-    RCLCPP_INFO(this->node->get_logger(), "Bucket timeToExtend: %f", linear3.timeToExtend);
-    RCLCPP_INFO(this->node->get_logger(), "Bucket timeToRuN: %f", timeToRun);
     int diff = potent - current;
     float speed = 0.0;
     if(std::abs(diff) > 50){
@@ -700,7 +700,7 @@ void Automation::setBucketPosition(int potent){
         speed = 0.9;
     }
     else if(std::abs(diff) > 10){
-        speed = 0.75;
+        speed = 0.5;
     }
     else{
         setBucketSpeed(0.0);
@@ -715,16 +715,16 @@ void Automation::setBucketPosition(int potent){
 
 void Automation::setMap(std::string mapUsed){
     if(mapUsed == "NASA"){
-        this->search.setRowCol(NASA.width, NASA.height);
+        this->search.setRowCol(NASA.height, NASA.width);
     }
     if(mapUsed == "UCF_1"){
-        this->search.setRowCol(UCF_1.width, UCF_1.height);
+        this->search.setRowCol(UCF_1.height, UCF_1.width);
     }
     if(mapUsed == "UCF_2"){
-        this->search.setRowCol(UCF_2.width, UCF_2.height);
+        this->search.setRowCol(UCF_2.height, UCF_2.width);
     }
     if(mapUsed == "lab"){
-        this->search.setRowCol(lab.width, lab.height);
+        this->search.setRowCol(lab.height, lab.width);
     }
     this->search.initializeMap(this->robotWidth);
 }
@@ -790,14 +790,6 @@ enum Automation::TiltState Automation::checkOrientation(){
     return TILT_LEVEL;
 }
 
-// PID Control Variables for Bucket Leveling
-float kp = 0.5;   // Proportional gain 
-float ki = 0.1;   // Integral gain 
-float kd = 0.05;  // Derivative gain 
-
-float previousError = 0.0;  // Stores last error value for derivative calculation
-float integral = 0.0;       // Stores accumulated integral error 
-float integralLimit = 100;  // Limit for integral windup prevention
 
 void Automation::setLevelBucket(){
     if(!levelBucket)
@@ -805,26 +797,8 @@ void Automation::setLevelBucket(){
     int currentArm = this->talon1.sensorValue;
     int currentBucket = this->talon3.sensorValue;
     float target = currentArm * (ARM_DEGREES / ARM_TRAVEL) * (BUCKET_TRAVEL / BUCKET_DEGREES) - position.roll * (BUCKET_TRAVEL / BUCKET_DEGREES);
-     int bucketTarget = (int)target;
-    // if(std::abs(target - currentBucket) < 10)
-    //     return;
-
-    float error = bucketTarget - currentBucket;
-    integral += error;
-    if(integral > integralLimit)
-        integral = integralLimit;
-    if(integral < -integralLimit)
-        integral = -integralLimit;
-    
-    float derivative = error - previousError;
-    previousError = error;
-
-    float output = (kp * error) + (ki * integral) + (kd * derivative);
-
-
-    
-
-    setBucketPosition(output);
+    int bucketTarget = (int)target;
+    setBucketPosition(bucketTarget);
 }
 
 
@@ -841,17 +815,21 @@ void Automation::setLevelArms(){
     setArmPosition(armTarget);
 }
 
+
 void Automation::startBucketLevel(){
     levelBucket = true;
 }
+
 
 void Automation::startArmsLevel(){
     levelArms = true;
 }
 
+
 void Automation::stopBucketLevel(){
     levelBucket = false;
 }
+
 
 void Automation::stopArmsLevel(){
     levelArms = false;

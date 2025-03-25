@@ -177,16 +177,19 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     float currentRightSpeed=0;
     Linear linear1, linear2, linear3, linear4;
     MotorOut talon1, talon2, talon3, talon4, falcon1, falcon2, falcon3, falcon4;
-    Arena NASA{69, 50, 20, 39, {0, 0, 0, 0}};
-    Arena UCF_1{46, 82, 1, 41, {0, 0, 0, 0}};
-    Arena UCF_2{46, 82, 1, 41, {0, 0, 0, 0}};
+    // Height, width, excavation area, obstacle area, target Area
+    Arena NASA{50, 69, 20, 39, {0, 0, 0, 0}};
+    Arena UCF_1{82, 46, 1, 41, {0, 0, 0, 0}};
+    Arena UCF_2{82, 46, 1, 41, {0, 0, 0, 0}};
     Arena lab{40, 50, 20, 25, {0, 0, 0, 0}};
     float destX = 0, destZ = 0, destAngle=0;
     float prevX = 0.0, prevY = 0.0, prevZ = 0.0;
     float deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
+    float prevDist = 0.0;
     int target1 = 0, target3 = 0;
     float xOffset = 0.0;
     float robotWidth = 7.5;
+    float angleThresh = 0.5;
     int targetTracking[4][int(std::floor(20/BUCKET_WIDTH))] = {0};
     int dumpCounter = 0, xCounter = 0, yCounter = 0;
     std::stack<Coord> currentPath;

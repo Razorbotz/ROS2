@@ -146,6 +146,7 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	}
 }
 
+
 /** @brief String parameter function
  * 
  * Function that takes a string as a parameter containing the
@@ -215,7 +216,7 @@ void checkTemperature(double temperature){
 
 
 void checkVoltage(double voltage, double speed){
-	if(speed > 0){
+	if(speed != 0.0){
 		switch(op_mode){
 			case 0:
 				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
@@ -224,7 +225,7 @@ void checkVoltage(double voltage, double speed){
 				voltage < 14.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
 				break;
 			case 2:
-				voltage < 13 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				voltage < 13.5 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
 				break;
 		}
 	}
@@ -278,6 +279,7 @@ int main(int argc,char** argv){
 	double kF = getParameter<double>("kF", 0);
 	int publishingDelay = getParameter<int>("publishing_delay", 0);
 	killKey = getParameter<int>("kill_key", 0);
+	op_mode = getParameter<int>("op_mode", 0);
 
 	ctre::phoenix::platform::can::SetCANInterface("can0");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
@@ -289,8 +291,6 @@ int main(int argc,char** argv){
 	RCLCPP_INFO(nodeHandle->get_logger(),"created talon instance");
 
 	talonSRX->SetInverted(invertMotor);
-	RCLCPP_INFO(nodeHandle->get_logger(),"here 1");
-
 	talonSRX->SelectProfileSlot(0,0);
 	talonSRX->ConfigSelectedFeedbackSensor(FeedbackDevice::Analog, 0, kTimeoutMs);
 	talonSRX->SetSensorPhase(true);
@@ -326,7 +326,7 @@ int main(int argc,char** argv){
 	
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
-	rclcpp::Rate rate(60);
+	rclcpp::Rate rate(30);
 	auto start2 = std::chrono::high_resolution_clock::now();
 	auto start = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
@@ -369,10 +369,10 @@ int main(int argc,char** argv){
 			talonOutPublisher->publish(talonOut);
 			checkTemperature(temperature);
 			checkVoltage(busVoltage, motorOutputPercent);
-			//RCLCPP_INFO(nodeHandle->get_logger(), "Talon %d Max Current: %f", deviceID, maxCurrent);
         	start = std::chrono::high_resolution_clock::now();
 		}
-		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 ||
+		   VOLT_DISABLE || TEMP_DISABLE){
 			talonSRX->Set(ControlMode::PercentOutput, 0.0);
 			GO = false;
 		}

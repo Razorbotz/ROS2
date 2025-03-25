@@ -148,30 +148,12 @@ void Automation1::automate(){
     }
 
     if(robotState==LOCATE){
-        // Test function to drive forward a specific number of meters
-        /*
-        if(abs(this->position.x) > abs(this->destX)){
-            changeSpeed(0.0, 0.0);
-        }
-        else if(abs(this->position.x) > abs(this->destX) - 0.1){
-            changeSpeed(0.1, 0.1);
-        }
-        else if(abs(this->position.x) > abs(this->destX) - 0.25){
-            changeSpeed(0.15, 0.15);
-        }
-        else{
-            changeSpeed(0.25, 0.25);
-        }
-        */
-
         if(turnLeft){
             changeSpeed(-0.15, 0.15);
         }
         else{
             changeSpeed(0.15, -0.15);
         }
-        
-
 
         if(position.arucoInitialized==true){
             RCLCPP_INFO(this->node->get_logger(), "Roll: %f Pitch: %f Yaw: %f", position.roll, position.pitch, position.yaw);
@@ -186,7 +168,7 @@ void Automation1::automate(){
     // After finding the Aruco marker, turn the bot to 
     // align with the arena
     if(robotState==ALIGN){
-        if (!(position.pitch < this->destAngle+2 && position.pitch > this->destAngle-2)) {
+        if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
             if(getAngleDiff() < 0){
                 changeSpeed(-0.15, 0.15);
             }
@@ -196,28 +178,25 @@ void Automation1::automate(){
         } 
         else {
             changeSpeed(0, 0);
-            //setStartPosition(position.z, position.x);
-            //aStar();
-            //RCLCPP_INFO(this->node->get_logger(), "Current Position: %d, %d", this->search.startX, this->search.startY);
-            //std::pair<int, int> initial = this->currentPath.top();
-            //this->currentPath.pop();
-            //setDestZ(initial.first);
-            //setDestX(initial.second);
-            //setDestAngle(getAngle());
+            setStartPositionM(position.z, position.x);
+            aStar();
+            RCLCPP_INFO(this->node->get_logger(), "Current Position: %d, %d", this->search.startX, this->search.startY);
+            std::pair<int, int> initial = this->currentPath.top();
+            this->currentPath.pop();
+            //setDestX(initial.first / 10.0);
+            //setDestZ(initial.second / 10.0);
             setDestX(2.0);
-            setDestZ(0.0);
-            this->destX = 2.0;
-            this->destZ = 0.0;
+            setDestZ(1.0);
+            setDestAngle(getAngle());
             robotState = GO_TO_DIG_SITE;
         }
     }
 
     // After aligning with the arena, navigate to the 
     // excavation area
+
     if(robotState==GO_TO_DIG_SITE){
-        RCLCPP_INFO(this->node->get_logger(), "GO_TO_DIG_SITE");
-        RCLCPP_INFO(this->node->get_logger(), "ZedPosition.z: %f", this->position.z);
-        if (!(position.pitch < this->destAngle+2 && position.pitch > this->destAngle-2)) {
+        if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
             if(getAngleDiff() < 0){
                 changeSpeed(-0.15, 0.15);
             }
@@ -226,7 +205,11 @@ void Automation1::automate(){
             }
         } 
         else{ 
-            if(abs(this->position.x - this->destX) < 0.05){
+            int check = checkDistance();
+            if(check == -1){
+                setDestAngle(getAngle());
+            }
+            else if(check == 0){
                 changeSpeed(0.0, 0.0);
                 /*
                 if(this->currentPath.empty()){
@@ -240,17 +223,15 @@ void Automation1::automate(){
                     setDestAngle(getAngle());
                 }
                 */
-                setDestAngle(0);
+                setDestAngle(getAngle());
                 setDestX(2.0);
                 setDestZ(2.0);
-                this->destX = 2.0;
-                this->destZ = 2.0;
                 robotState = GO_TO_DUMP;
             }
-            else if(abs(this->position.x - this->destX) < 0.1){
+            else if(check == 1){
                 changeSpeed(0.1, 0.1);
             }
-            else if(abs(this->position.x - this->destX) < 0.25){
+            else if(check == 2){
                 changeSpeed(0.15, 0.15);
             }
             else{
@@ -351,7 +332,7 @@ void Automation1::automate(){
 
     // After mining, return to start position
     if(robotState==GO_TO_DUMP){
-        if (!(position.pitch < this->destAngle+2 && position.pitch > this->destAngle-2)) {
+        if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
             if(getAngleDiff() < 0){
                 changeSpeed(-0.15, 0.15);
             }
@@ -361,28 +342,12 @@ void Automation1::automate(){
         } 
         else{ 
             int distance = checkDistance();
-            if(distance == 0){
+            if(distance == -1){
+                setDestAngle(getAngle());
+            }
+            else if(distance == 0){
                 changeSpeed(0.0, 0.0);
-                if(counter == 2){
-                    robotState = ROBOT_IDLE;
-                }
-                else{
-                    if(counter == 0){
-                        setDestZ(0.0);
-                        setDestX(2.0);
-                        this->destX = 0.0;
-                        this->destZ = 2.0;
-                        setDestAngle(-90);
-                    }
-                    if(counter == 1){
-                        setDestZ(0.0);
-                        setDestX(0.0);
-                        this->destX = 0.0;
-                        this->destZ = 0.0;
-                        setDestAngle(-180);
-                    }
-                    counter += 1;
-                }
+                robotState = ROBOT_IDLE;
             }
             else if(distance == 1){
                 changeSpeed(0.1, 0.1);

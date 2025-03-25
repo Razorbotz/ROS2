@@ -14,7 +14,7 @@ class Automation1 : public Automation{
     Location destination;
     float normalDistance = 1.2;
 
-    int destX = 2, destY = 2;
+    int destX = 20, destY = 20;
     int stillCounter = 0;
     int counter = 0;
 

@@ -277,6 +277,7 @@ int main(int argc,char** argv){
 	double kF = getParameter<double>("kF", 0);
 	int publishingDelay = getParameter<int>("publishing_delay", 0);
 	killKey = getParameter<int>("kill_key", 0);
+	op_mode = getParameter<int>("op_mode", 0);
 
 	ctre::phoenix::platform::can::SetCANInterface("can0");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
@@ -292,8 +293,6 @@ int main(int argc,char** argv){
 	else{
 		talonFX->SetInverted(TalonFXInvertType::Clockwise);
 	}
-	RCLCPP_INFO(nodeHandle->get_logger(),"here 1");
-
 	talonFX->SelectProfileSlot(0,0);
 	talonFX->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, kTimeoutMs);
 	talonFX->ConfigClosedloopRamp(2);
@@ -330,7 +329,6 @@ int main(int argc,char** argv){
 	float maxCurrent = 0.0;
 	while(rclcpp::ok()){
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
-		if(GO)RCLCPP_INFO(nodeHandle->get_logger(),"Send Enable");
 		auto finish = std::chrono::high_resolution_clock::now();
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
@@ -370,8 +368,8 @@ int main(int argc,char** argv){
 			checkVoltage(busVoltage, motorOutputPercent);
 		}
 
-		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
-			RCLCPP_INFO(nodeHandle->get_logger(),"Shut down node because time out");
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 ||
+		   VOLT_DISABLE || TEMP_DISABLE){
 			talonFX->Set(ControlMode::PercentOutput, 0.0);
 			GO = false;
 		}

@@ -271,7 +271,7 @@ int main(int argc, char **argv) {
                 zedPosition.aruco_yaw = arucoPose.getEulerAngles(false).z;
 		        zedPosition.aruco_visible=true;
                 // Add check here to ensure that the angle to the marker is less than 90
-                if(!initialized && std::abs(zedPosition.aruco_pitch) > 90.0){
+                if(!initialized && std::abs(zedPosition.aruco_pitch) > 135.0){
                     zed.resetPositionalTracking(arucoPose);
                     initialized = true;                
                 }
@@ -293,6 +293,10 @@ int main(int argc, char **argv) {
             y_vel = vel[1];
             z_vel = vel[2];
 
+            /*
+            This code was intended to identify the obstacles that are in the way of the 
+            robot and get the bounding box of the obstacle.
+            */
             for(size_t i = 0; i < contours.size(); i++){
                 if(cv::contourArea(contours[i]) > 20){
                     cv::Rect box = boundingRect(contours[i]);

@@ -98,6 +98,7 @@ float currentBucketSpeed = 0.0;
 float distThresh1 = 0.05;
 float distThresh2 = 0.10;
 float distThresh3 = 0.15;
+int noiseThresh = 2;
 
 bool automationGo = false;
 bool run = false;
@@ -373,6 +374,9 @@ void setPotentiometerError(int potentData, LinearActuator *linear){
  * it is.  If the data is outside of the threshold, the 
  * actuator is moving as intended and is not at the min or
  * max positions.
+ * 
+ * NOTE: If the potentiometer is disconnected, the values fall to
+ * between 100 and 110. If the 
  * @param potentData - Int value of potentiometer
  * @param *linear - Pointer to linear object
  * @return void
@@ -393,7 +397,7 @@ void processPotentiometerData(int potentData, LinearActuator *linear){
         linear->sensorless = true;
 	    linear->error = PotentiometerError;
     }
-    if(linear->potentiometer >= potentData - 2 && linear->potentiometer <= potentData + 2){
+    if(linear->potentiometer >= potentData - noiseThresh && linear->potentiometer <= potentData + noiseThresh){
         if(linear->speed != 0.0 && run){
             linear->timeWithoutChange += 1;
             if(linear->timeWithoutChange >= 15){
