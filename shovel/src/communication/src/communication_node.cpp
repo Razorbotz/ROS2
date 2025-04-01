@@ -1063,27 +1063,6 @@ int main(int argc, char **argv){
                 messageBytesList.push_back(buffer[index]);
             }
         
-
-            // if(bytesRead==0){
-            //     stopPublisher->publish(empty);
-            //     RCLCPP_INFO(nodeHandle->get_logger(),"Lost Connection");
-                // broadcast=true;
-            //     //wait for reconnect
-            //     if (listen(server_fd, 3) < 0) { 
-            //         perror("listen"); 
-            //         exit(EXIT_FAILURE); 
-            //     } 
-            //     if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
-            //         perror("accept"); 
-            //         exit(EXIT_FAILURE); 
-            //     }
-            //     broadcast=false;
-                // bytesRead = recvfrom(new_socket, buffer, 1024, 0 , (struct sockaddr *)&address, &addrlen); 
-                // sendto(new_socket, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
-                fcntl(new_socket, F_SETFL, O_NONBLOCK);
-        
-            //     silentRunning=true;
-            // }
         }
         catch(int x){
             RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to read data from client");
