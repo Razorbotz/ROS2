@@ -1042,7 +1042,7 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE); 
     } 
 
-    // broadcast=false;
+    broadcast=false;
     bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen); 
     sendto(new_socket, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
     silentRunning=true;
@@ -1056,14 +1056,18 @@ int main(int argc, char **argv){
     while(rclcpp::ok()){
         try{
             bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen);
+            if(bytesRead > 0){
+                broadcast=false;
+            }
             for(int index=0;index<bytesRead;index++){
                 messageBytesList.push_back(buffer[index]);
             }
+        
 
             // if(bytesRead==0){
             //     stopPublisher->publish(empty);
             //     RCLCPP_INFO(nodeHandle->get_logger(),"Lost Connection");
-                broadcast=true;
+                // broadcast=true;
             //     //wait for reconnect
             //     if (listen(server_fd, 3) < 0) { 
             //         perror("listen"); 
@@ -1074,8 +1078,8 @@ int main(int argc, char **argv){
             //         exit(EXIT_FAILURE); 
             //     }
             //     broadcast=false;
-                bytesRead = recvfrom(new_socket, buffer, 1024, 0 , (struct sockaddr *)&address, &addrlen); 
-                sendto(new_socket, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
+                // bytesRead = recvfrom(new_socket, buffer, 1024, 0 , (struct sockaddr *)&address, &addrlen); 
+                // sendto(new_socket, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
                 fcntl(new_socket, F_SETFL, O_NONBLOCK);
         
             //     silentRunning=true;
