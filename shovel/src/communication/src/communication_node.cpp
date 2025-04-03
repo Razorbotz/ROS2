@@ -650,7 +650,7 @@ void reboot(){
 
 std::string robotName="unnamed";
 std::string interfaceName = "wlan0";
-bool broadcast=true;
+// bool broadcast=true;
 
 
 /** @brief Creates socketDescriptor for socket connection.
@@ -660,34 +660,34 @@ bool broadcast=true;
  * This function creates the socketDescriptor for the socket connection.
  * Uses the getAddressString function.
  * */
-void broadcastIP(){
-    while(true){
-        if(broadcast){
-            std::string addressString=getAddressString(AF_INET,interfaceName);
+// void broadcastIP(){
+//     while(true){
+//         if(broadcast){
+//             std::string addressString=getAddressString(AF_INET,interfaceName);
 
-            std::string message(robotName+"@"+addressString);
-            std::cout << message << std::endl << std::flush;
+//             std::string message(robotName+"@"+addressString);
+//             std::cout << message << std::endl << std::flush;
 
-            int socketDescriptor=socket(AF_INET, SOCK_DGRAM, 0);
+//             int socketDescriptor=socket(AF_INET, SOCK_DGRAM, 0);
 
-            //if(socket>=0){
-            if(socketDescriptor>=0){
-                struct sockaddr_in socketAddress;
-                socketAddress.sin_family=AF_INET;
-                socketAddress.sin_addr.s_addr = inet_addr("226.1.1.1");
-                socketAddress.sin_port = htons(4321);
+//             //if(socket>=0){
+//             if(socketDescriptor>=0){
+//                 struct sockaddr_in socketAddress;
+//                 socketAddress.sin_family=AF_INET;
+//                 socketAddress.sin_addr.s_addr = inet_addr("226.1.1.1");
+//                 socketAddress.sin_port = htons(4321);
 
-                struct in_addr localInterface;
-                localInterface.s_addr = inet_addr(addressString.c_str());
-                if(setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_IF, (char*)&localInterface, sizeof(localInterface))>=0){
-                    sendto(socketDescriptor,message.c_str(),message.length(),0,(struct sockaddr*)&socketAddress, (socklen_t)sizeof(socketAddress));
-                }
-            }
-            close(socketDescriptor);
-        }
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-    }
-}
+//                 struct in_addr localInterface;
+//                 localInterface.s_addr = inet_addr(addressString.c_str());
+//                 if(setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_IF, (char*)&localInterface, sizeof(localInterface))>=0){
+//                     sendto(socketDescriptor,message.c_str(),message.length(),0,(struct sockaddr*)&socketAddress, (socklen_t)sizeof(socketAddress));
+//                 }
+//             }
+//             close(socketDescriptor);
+//         }
+//         std::this_thread::sleep_for(std::chrono::seconds(5));
+//     }
+// }
 
 
 void communicationInterval(){
@@ -1023,7 +1023,8 @@ int main(int argc, char **argv){
         perror("socket failed"); 
         exit(EXIT_FAILURE); 
     }
-    std::thread broadcastThread(broadcastIP);
+    new_socket = server_fd; //This is the socket that will be used by the other functions above
+    // std::thread broadcastThread(broadcastIP); hopefully don't need this anymore
 
     // Setting options for socket, handling errors
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) { 
@@ -1042,12 +1043,12 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE); 
     } 
 
-    broadcast=false;
-    bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen); 
-    sendto(new_socket, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
+    // broadcast=false;
+    bytesRead = recvfrom(server_fd, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen); 
+    sendto(server_fd, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
     silentRunning=true;
 
-    fcntl(new_socket, F_SETFL, O_NONBLOCK);
+    fcntl(server_fd, F_SETFL, O_NONBLOCK);
     
 
     std::list<uint8_t> messageBytesList;
@@ -1055,10 +1056,8 @@ int main(int argc, char **argv){
     rclcpp::Rate rate(30);
     while(rclcpp::ok()){
         try{
-            bytesRead = recvfrom(new_socket, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen);
-            if(bytesRead > 0){
-                broadcast=false;
-            }
+            bytesRead = recvfrom(server_fd, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen);
+        
             for(int index=0;index<bytesRead;index++){
                 messageBytesList.push_back(buffer[index]);
             }
@@ -1147,5 +1146,5 @@ int main(int argc, char **argv){
         rate.sleep();
     }
 
-    broadcastThread.join();
+    // broadcastThread.join(); hopefully don't need this anymore
 }

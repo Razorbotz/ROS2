@@ -1,0 +1,3 @@
+-BroadcastIP() broadcasts the robot's IP when the client disconnects
+-Moving to UDP, we will need a new way to detect a loss of "connection"
+-Need to implement a heartbeat function in CPP's control.CPP
