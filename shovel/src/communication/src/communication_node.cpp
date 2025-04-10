@@ -70,6 +70,8 @@
  * 
  * */
 
+struct sockaddr_in address; 
+socklen_t addrlen = sizeof(address); 
 std_msgs::msg::Empty empty;
 bool silentRunning=true;
 int new_socket;
@@ -1010,9 +1012,7 @@ int main(int argc, char **argv){
     auto autonomyOutSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyOut>("autonomy_out", 10, autonomyOutCallback);
 
     int server_fd, bytesRead; 
-    struct sockaddr_in address; 
     int opt = 1; 
-    socklen_t addrlen = sizeof(address); 
     uint8_t buffer[1024] = {0}; 
     std::string hello("Hello from server");
 
