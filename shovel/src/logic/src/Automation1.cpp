@@ -342,29 +342,49 @@ void Automation1::automate(){
                 changeSpeed(0.15, 0.15);
             }
             else{
-                changeSpeed(0.25, 0.25);
+                changeSpeed(0.25, 0.25);targetTracking
             }
         }
     }
 
-    // After reaching start position, dock at dump bin
+    // After collecting lunar regolith, align the center of the robot with the corresponding dump zone
     if(robotState==DOCK){
-
+    	
+		if (dumpCounter % 4 == 0){ // handles finishing a row of dumps
+			xCounter = 0;
+			zCounter ++; 
+		}
+		
+		centering(xCounter, zCounter); // Two stage centering on the current dumping site
+		
+		robotState = DUMP;
     }
 
-    // Dump the collected rocks in the dump bin
+    // Dump the collected regolith in the dump zone
     if(robotState==DUMP){
-        if(checkArmPosition(30)){
-            setArmSpeed(0.0);
-        }
-        if(checkBucketPosition(30)){
-            setBucketSpeed(0.0);
-        }
-        if(checkArmPosition(30) && checkBucketPosition(30)){
-            robotState = ROBOT_IDLE;
-            setBucketSpeed(-1.0);
-            setArmSpeed(-1.0);
-        }
+    
+        setArmTarget(900);
+        setBucketTarget(700);
+        setArmSpeed(1.0);
+        setBucketSpeed(1.0);
+        
+        
+    	if(checkArmPosition(20) && checkBucketPosition(20))	{				
+    		dumpCounter++;		// Keepping track of how many dumps 
+    		xCounter++;			// Which coloumn to dump into
+    		
+    		setArmTarget(100);	// handle bringing the arm and bucket to appropriate driving heights and return to loop
+			setBucketTarget(100);
+			setArmSpeed(-1.0);
+			setBucketSpeed(-1.0);
+			
+        	robotState = EXCAVATE;
+    	
+    	}
+
+        
+
+    	
     }
 
     // After dumping the rocks, return to start position and

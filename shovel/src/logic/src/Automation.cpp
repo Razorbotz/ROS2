@@ -478,3 +478,25 @@ void Automation::setxOffset(float XOffset){
 void Automation::setTurnLeft(bool TurnLeft){
     this->turnLeft = TurnLeft;
 }
+
+void Automation::centering(int xCounter, int zCounter){ // centering function to align with dump location
+	
+	float originX = 0.0; //top left x of the target dump zone
+    float originZ = 0.0; //top left z of the target dump zone
+    float zChange = 0.3; //meters of change in the Z axis per row change
+    float zAlign = 1.35; //meters south of the origin for aligning bucket to dump site
+    float bucketOffset = .508; //offset for aligning to the front of the bucket
+
+	float zOff= position.z - bucketOffset; // get robot front of bucket position
+	
+	setStartPosition(position.x, zOff);
+	setDestPosition((originX - ((xCounter*BUCKET_WIDTH) + (BUCKET_WIDTH/2))), originZ + zAlign); // calculate angle 1
+	setDestAngle(getAngle());
+	changeSpeed(0,0);
+	
+	
+	setDestPosition(position.x, originZ + (zCounter*zChange + (zChange/2))); // calculate angle 2
+	setDestAngle(getAngle());
+	changeSpeed(0,0);
+		
+}
