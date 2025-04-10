@@ -160,7 +160,7 @@ void send(BinaryMessage message){
         int bytesSent = 0, byteTotal = 0;
         RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
         while(byteTotal < byteList->size()){
-            if((bytesSent = send(new_socket, bytes.data(), byteList->size(), 0))== -1){
+            if((bytesSent = sendto(new_socket, bytes.data(), byteList->size(), 0, (struct sockaddr *)&address, addrlen))== -1){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
                 break;
             }
