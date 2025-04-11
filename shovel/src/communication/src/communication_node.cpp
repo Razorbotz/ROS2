@@ -160,7 +160,7 @@ void send(BinaryMessage message){
     try{
         total += byteList->size();
         int bytesSent = 0, byteTotal = 0;
-        RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
+        //RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
         while(byteTotal < byteList->size()){
             if((bytesSent = sendto(new_socket, bytes.data(), byteList->size(), 0, (struct sockaddr *)&address, addrlen))== -1){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
@@ -175,42 +175,6 @@ void send(BinaryMessage message){
         RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to send data to client");
     }
 
-}
-
-
-
-/*
-This function was required to pad the messages to 241 bytes, which was the
-size expected by the client to ensure that no bytes were dropped during the
-process of being sent. To allow each packet to be 241 bytes, a string with
-the name of Pad is added with a string of spaces to fill out the rest. 
-Because the packet will have an additional size byte when the total length
-of the padded string is over 127, the padded string is split into two when
-the size is less than 150.
-*/
-void pad(BinaryMessage message){
-    std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
-    int size = byteList->size();
-/*
-    if(size != 241){
-        RCLCPP_INFO(nodeHandle->get_logger(), "Received %d bytes", size);
-        if(size < 150){
-            std::string padded = "";
-            for(int i = size; i < size + 50; i++){
-                padded.append(" ");
-            }
-            message.addElementString("Pad", padded);
-            size = message.getBytes()->size();
-        }
-        size += 7;
-        std::string padded = "";
-        for(int i = size; i < 241; i++){
-            padded.append(" ");
-        }
-        message.addElementString("Pad", padded);
-    }
-    */
-    send(message);
 }
 
 
@@ -234,7 +198,7 @@ void send(std::string messageLabel, const messages::msg::FalconOut::SharedPtr ta
     //message.addElementBoolean("Temp Disable", talonOut->temp_disable);
     //message.addElementBoolean("Volt Disable", talonOut->volt_disable);
 
-    pad(message);
+    send(message);
 }
 
 
@@ -257,7 +221,7 @@ void send(std::string messageLabel, const messages::msg::TalonOut::SharedPtr tal
     message.addElementFloat32("Max Current", talonOut->max_current);
     //message.addElementBoolean("Temp Disable", talonOut->temp_disable);
     //message.addElementBoolean("Volt Disable", talonOut->volt_disable);
-    pad(message);
+    send(message);
 }
 
 
@@ -286,8 +250,8 @@ void send(std::string messageLabel, const messages::msg::Power::SharedPtr power)
     message2.addElementFloat32("Current 14",power->current14);
     message2.addElementFloat32("Current 15",power->current15);
 
-    pad(message);
-    pad(message2);
+    send(message);
+    send(message2);
 }
 
 
@@ -308,7 +272,7 @@ void send(std::string messageLabel, const messages::msg::LinearOut::SharedPtr li
     message.addElementFloat32("Distance", linear->distance);
     message.addElementBoolean("Sensorless", linear->sensorless);
 
-    pad(message);
+    send(message);
 }
 
 
@@ -324,7 +288,7 @@ void send(std::string messageLabel, const messages::msg::AutonomyOut::SharedPtr 
     message.addElementString("Level Bucket", autonomy->bucket_state);
     message.addElementString("Level Arms", autonomy->arms_state);
 
-    pad(message);
+    send(message);
 }
 
 
@@ -350,7 +314,7 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     message.addElementFloat32("aruco pitch", zedPosition->aruco_pitch);
     message.addElementFloat32("aruco yaw", zedPosition->aruco_yaw);
     message.addElementBoolean("aruco", zedPosition->aruco_visible);
-    pad(message);
+    send(message);
 }
 
 
@@ -369,7 +333,7 @@ void communicationCallback(){
     message.addElementString("CAN Bus", canMessage);
     message.addElementInt32("RX packets", previousRX);
     message.addElementInt32("TX packets", previousTX);
-    pad(message);
+    send(message);
 }
 
 
