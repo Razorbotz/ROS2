@@ -48,8 +48,8 @@ int main(int argc, char **argv){
 	const char *ifname = "can0";
 
 	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
-			perror("Error while opening socket");
-			return -1;
+		perror("Error while opening socket");
+		return -1;
 	}
 
 	strcpy(ifr.ifr_name, ifname);
@@ -71,10 +71,10 @@ int main(int argc, char **argv){
 	auto start = std::chrono::high_resolution_clock::now();
 	while(rclcpp::ok()){
 		nbytes = read(s, &frame, sizeof(struct can_frame));
-                if(nbytes==-1) continue;
+		if(nbytes==-1) continue;
 
-                pdp.parseFrame(frame);
-//std::cout << pdp.getVoltage() << "   "  << pdp.getCurrentC(0)<< std::endl;
+		pdp.parseFrame(frame);
+		std::cout << pdp.getVoltage() << "   "  << pdp.getCurrent(0)<< std::endl;
 		auto finish = std::chrono::high_resolution_clock::now();
 		if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() > 250000000){
 			power.voltage=pdp.getVoltage();

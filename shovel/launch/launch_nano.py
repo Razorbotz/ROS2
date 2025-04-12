@@ -1,5 +1,6 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import ExecuteProcess
 
 ## @file
 # Launch file that contains all the nodes necessary
@@ -12,7 +13,7 @@ def generate_launch_description():
             name='logic',
             executable='logic_node',
             parameters=[
-                {"map": "lab"},
+                {"map": "NASA"},
                 {"xOffset": 1.4},
                 {"turnLeft": True}
             ],
@@ -46,14 +47,14 @@ def generate_launch_description():
                 {"invert_motor": True},
                 {"speed_topic": "talon_14_speed"},
                 {"info_topic": "talon_14_info"},
-                {"use_velocity": False},
-                {"velocity_multiplier": 3000},
-                {"test_speed": 100},
+                {"position_topic": "talon_14_position"},
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 15},
+                {"kill_key": 50},
+                {"op_mode": 0}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -68,14 +69,14 @@ def generate_launch_description():
                 {"invert_motor": True},
                 {"speed_topic": "talon_15_speed"},
                 {"info_topic": "talon_15_info"},
-                {"use_velocity": False},
-                {"velocity_multiplier": 3000},
-                {"test_speed": 100},
+                {"position_topic": "talon_15_position"},
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 15},
+                {"kill_key": 51},
+                {"op_mode": 0}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -90,14 +91,14 @@ def generate_launch_description():
                 {"invert_motor": True},
                 {"speed_topic": "talon_16_speed"},
                 {"info_topic": "talon_16_info"},
-                {"use_velocity": False},
-                {"velocity_multiplier": 3000},
-                {"test_speed": 100},
+                {"position_topic": "talon_16_position"},
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 15},
+                {"kill_key": 52},
+                {"op_mode": 0}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -112,14 +113,14 @@ def generate_launch_description():
                 {"invert_motor": True},
                 {"speed_topic": "talon_17_speed"},
                 {"info_topic": "talon_17_info"},
-                {"use_velocity": False},
-                {"velocity_multiplier": 3000},
-                {"test_speed": 100},
+                {"position_topic": "talon_17_position"},
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 15},
+                {"kill_key": 53},
+                {"op_mode": 0}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -140,14 +141,13 @@ def generate_launch_description():
                 {"invert_motor": False},
                 {"speed_topic": "drive_right_speed"},
                 {"info_topic": "talon_10_info"},
-                {"use_velocity": False},
-                {"velocity_multiplier": 3000},
-                {"test_speed": 100},
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 100},
+                {"kill_key": 54},
+                {"op_mode": 0}
             ]
         )
 	    ,
@@ -161,14 +161,13 @@ def generate_launch_description():
                 {"invert_motor": True},
                 {"speed_topic": "drive_left_speed"},
                 {"info_topic": "talon_11_info"},
-                {"use_velocity": False},
-                {"velocity_multiplier": 3000},
-                {"test_speed": 100},
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 100},
+                {"kill_key": 55},
+                {"op_mode": 0}
             ]
         )
         ,
@@ -182,14 +181,13 @@ def generate_launch_description():
                 {"invert_motor": False},
                 {"speed_topic": "drive_right_speed"},
                 {"info_topic": "talon_12_info"},
-                {"use_velocity": False},
-                {"velocity_multiplier": 3000},
-                {"test_speed": 100},
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 100},
+                {"kill_key": 56},
+                {"op_mode": 0}
             ]
         )
 	    ,
@@ -203,14 +201,13 @@ def generate_launch_description():
                 {"invert_motor": True},
                 {"speed_topic": "drive_left_speed"},
                 {"info_topic": "talon_13_info"},
-                {"use_velocity": False},
-                {"velocity_multiplier": 3000},
-                {"test_speed": 100},
                 {"kP": 0.20},
                 {"kI": 0.000001},
                 {"kD": 0.000001},
                 {"kF": 0.0},
-                {"publishing_delay": 100}
+                {"publishing_delay": 100},
+                {"kill_key": 57},
+                {"op_mode": 0}
             ]
         )
     ]

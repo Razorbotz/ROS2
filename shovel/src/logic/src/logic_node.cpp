@@ -5,6 +5,7 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/int8.hpp>
 #include <std_msgs/msg/u_int8.hpp>
+#include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <std_msgs/msg/empty.hpp>
 
@@ -98,6 +99,9 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > bucketSpeedPublisher;
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > automationGoPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon14PositionPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon15PositionPublisher;
+
 
 /** @brief Function to initialize the motors to zero
  * 
@@ -223,6 +227,7 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
     std::cout << "Button " << buttonState->joystick << " " << buttonState->button << " " << buttonState->state << std::endl;
     std_msgs::msg::Float32 armSpeed;
     std_msgs::msg::Float32 bucketSpeed;
+    std_msgs::msg::Int32 armPosition;
     std_msgs::msg::Bool state; 
 
     switch (buttonState->button) { 
@@ -288,8 +293,14 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             RCLCPP_INFO(nodeHandle->get_logger(), "Button 8");
             break;
         case 8:
+            armPosition.data = 960;
+            talon14PositionPublisher->publish(armPosition);
+            RCLCPP_INFO(nodeHandle->get_logger(), "Button 9");
             break;
         case 9:
+            armPosition.data = 20;
+            talon14PositionPublisher->publish(armPosition);
+            RCLCPP_INFO(nodeHandle->get_logger(), "Button 9");
             break;
         case 10:
             break;
@@ -612,6 +623,8 @@ int main(int argc, char **argv){
     bucketSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("bucket_speed",1);
     automationGoPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
 
+    talon14PositionPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_14_position",1);
+    talon15PositionPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_15_position",1);
     initSetSpeed();
 
     rclcpp::Rate rate(30);

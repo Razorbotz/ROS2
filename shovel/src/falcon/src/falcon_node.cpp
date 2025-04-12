@@ -76,7 +76,6 @@ rclcpp::Node::SharedPtr nodeHandle;
 bool GO=false;
 std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
 TalonFX* talonFX;
-bool useVelocity=false;
 bool TEMP_DISABLE = false;
 bool VOLT_DISABLE = false;
 
@@ -99,12 +98,7 @@ int killKey = 0;
 void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
 	RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
 	GO=false;
-	if(useVelocity){
-		talonFX->Set(ControlMode::Velocity, 0);
-	}
-	else{
-		talonFX->Set(ControlMode::PercentOutput, 0.0);
-	}
+	talonFX->Set(ControlMode::PercentOutput, 0.0);
 } 
 
 /** @brief GO Callback
@@ -125,9 +119,6 @@ void commHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
 	commPrevious = std::chrono::high_resolution_clock::now();
 }
 
-int velocityMultiplier=0;
-int testSpeed=0;
-
 /** @brief Speed Callback Function
  * 
  * Callback function triggered when the node receives
@@ -141,13 +132,7 @@ int testSpeed=0;
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
-
-	if(useVelocity){
-		talonFX->Set(ControlMode::Velocity, int(speed->data*velocityMultiplier));
-	}
-	else{
-		talonFX->Set(ControlMode::PercentOutput, speed->data);
-	}
+	talonFX->Set(ControlMode::PercentOutput, speed->data);
 }
 
 /** @brief String parameter function
@@ -268,9 +253,6 @@ int main(int argc,char** argv){
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
 	bool invertMotor = getParameter<bool>("invert_motor", 0);
-	useVelocity = getParameter<bool>("use_velocity", 0);
-	velocityMultiplier = getParameter<int>("velocity_multiplier", 0);
-	testSpeed = getParameter<int>("test_speed", 0);
 	double kP = getParameter<double>("kP", 1);
 	double kI = getParameter<double>("kI", 0);
 	double kD = getParameter<double>("kD", 0);
@@ -307,7 +289,6 @@ int main(int argc,char** argv){
 	talonFX->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
 
 	talonFX->Set(ControlMode::PercentOutput, 0);
-	talonFX->Set(ControlMode::Velocity, 0);
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"configured falcon");
 
@@ -327,13 +308,14 @@ int main(int argc,char** argv){
 	rclcpp::Rate rate(20);
 	auto start = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
+	double busVoltage = 0.0;
 	while(rclcpp::ok()){
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
 			int deviceID=talonFX->GetDeviceID();
-			double busVoltage=talonFX->GetBusVoltage();
+			busVoltage=talonFX->GetBusVoltage();
 			double outputCurrent=talonFX->GetOutputCurrent();
 			bool isInverted=talonFX->GetInverted();
 			double motorOutputVoltage=talonFX->GetMotorOutputVoltage();

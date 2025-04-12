@@ -191,7 +191,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     float robotWidth = 7.5;
     float angleThresh = 0.5;
     int targetTracking[4][int(std::floor(20/BUCKET_WIDTH))] = {0};
-    int dumpCounter = 0, xCounter = 0, yCounter = 0;
+    int dumpCounter = 0, xCounter = 0, zCounter = 0;
     std::stack<Coord> currentPath;
     std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
     std::chrono::time_point<std::chrono::high_resolution_clock> startBackupTime;

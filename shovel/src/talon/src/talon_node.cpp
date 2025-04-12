@@ -109,9 +109,6 @@ void commHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
 	commPrevious = std::chrono::high_resolution_clock::now();
 }
 
-bool useVelocity=false;
-int velocityMultiplier=0;
-int testSpeed=0;
 TalonSRX* talonSRX;
 bool TEMP_DISABLE = false;
 bool VOLT_DISABLE = false;
@@ -136,15 +133,15 @@ int killKey = 0;
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
-
-	if(useVelocity){
-		talonSRX->Set(ControlMode::Velocity, int(speed->data*velocityMultiplier));
-		//talonSRX->Set(ControlMode::Velocity, testSpeed);
-	}
-	else{
-		talonSRX->Set(ControlMode::PercentOutput, speed->data);
-	}
+	talonSRX->Set(ControlMode::PercentOutput, speed->data);
 }
+
+void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
+	RCLCPP_INFO(nodeHandle->get_logger(),"Position---------->>> %d ", position->data);
+	//std::cout << "---------->>>  " << speed->data << std::endl;
+	talonSRX->Set(ControlMode::Position, position->data);
+}
+
 
 
 /** @brief String parameter function
@@ -268,11 +265,9 @@ int main(int argc,char** argv){
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 	std::string potentiometerTopic = getParameter<std::string>("potentiometer_topic", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
+	std::string positionTopic = getParameter<std::string>("position_topic", "unset");
 
 	bool invertMotor = getParameter<bool>("invert_motor", 0);
-	useVelocity = getParameter<bool>("use_velocity", 0);
-	velocityMultiplier = getParameter<int>("velocity_multiplier", 0);
-	testSpeed = getParameter<int>("test_speed", 0);
 	double kP = getParameter<double>("kP", 1);
 	double kI = getParameter<double>("kI", 0);
 	double kD = getParameter<double>("kD", 0);
@@ -306,7 +301,7 @@ int main(int argc,char** argv){
 	talonSRX->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
 
 	talonSRX->Set(ControlMode::PercentOutput, 0);
-	talonSRX->Set(ControlMode::Velocity, 0);
+	talonSRX->Set(ControlMode::Position, 500);
 	//talonSRX->SetFeedbackDevice(FeedbackDevice.AnalogPotentiometer);
 	talonSRX->SetStatusFramePeriod(StatusFrame::Status_2_Feedback0_, 10, 10);
 
@@ -318,6 +313,7 @@ int main(int argc,char** argv){
 	auto talonOutPublisher=nodeHandle->create_publisher<messages::msg::TalonOut>(infoTopic.c_str(),1);
 	auto potentiometerPublisher=nodeHandle->create_publisher<std_msgs::msg::Int32>(potentiometerTopic.c_str(),1);
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
+	auto positionSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(positionTopic.c_str(),1,positionCallback);
 
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
@@ -330,6 +326,8 @@ int main(int argc,char** argv){
 	auto start2 = std::chrono::high_resolution_clock::now();
 	auto start = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
+	double busVoltage = 0.0;
+
 	while(rclcpp::ok()){
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
@@ -337,7 +335,7 @@ int main(int argc,char** argv){
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
 
 			int deviceID=talonSRX->GetDeviceID();
-			double busVoltage=talonSRX->GetBusVoltage();
+			busVoltage=talonSRX->GetBusVoltage();
 			double outputCurrent=talonSRX->GetOutputCurrent();
 			bool isInverted=talonSRX->GetInverted();
 			double motorOutputVoltage=talonSRX->GetMotorOutputVoltage();
