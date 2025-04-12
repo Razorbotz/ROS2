@@ -68,16 +68,15 @@ int main(int argc, char **argv){
 
 	PowerDistributionPanel pdp = PowerDistributionPanel(1);
 
-	rclcpp::Rate rate(30);
 	auto start = std::chrono::high_resolution_clock::now();
 	while(rclcpp::ok()){
 		nbytes = read(s, &frame, sizeof(struct can_frame));
 		if(nbytes==-1) continue;
 
 		pdp.parseFrame(frame);
-		//std::cout << pdp.getVoltage() << "   "  << pdp.getCurrent(0)<< std::endl;
 		auto finish = std::chrono::high_resolution_clock::now();
-		if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() > 250000000){
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > 1000){
+			std::cout << pdp.getVoltage() << "   "  << pdp.getCurrent(0)<< std::endl;
 			power.voltage=pdp.getVoltage();
 			power.temperature=pdp.getTemperature();
 			power.current0=pdp.getCurrent(0);
@@ -96,11 +95,10 @@ int main(int argc, char **argv){
 			power.current13=pdp.getCurrent(13);
 			power.current14=pdp.getCurrent(14);
 			power.current15=pdp.getCurrent(15);
-//std::cout << "sending " << power.voltage << std::endl;
+			std::cout << "sending " << power.voltage << std::endl;
 			publisher->publish(power);
 			start = std::chrono::high_resolution_clock::now();
 		}
-		rate.sleep();
 		rclcpp::spin_some(nodeHandle);
 	}
 	rclcpp::shutdown();

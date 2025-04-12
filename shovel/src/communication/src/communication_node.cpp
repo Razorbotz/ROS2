@@ -227,7 +227,7 @@ void send(std::string messageLabel, const messages::msg::TalonOut::SharedPtr tal
 
 void send(std::string messageLabel, const messages::msg::Power::SharedPtr power){
     if(silentRunning)return;
-    //RCLCPP_INFO(nodeHandle->get_logger(), "send power");
+    RCLCPP_INFO(nodeHandle->get_logger(), "send power");
     BinaryMessage message(messageLabel);
 
     message.addElementFloat32("Voltage",power->voltage);

@@ -216,10 +216,10 @@ void checkVoltage(double voltage, double speed){
 	if(speed != 0.0){
 		switch(op_mode){
 			case 0:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				voltage < 14.5 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
 				break;
 			case 1:
-				voltage < 14.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
 				break;
 			case 2:
 				voltage < 13.5 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
@@ -229,10 +229,10 @@ void checkVoltage(double voltage, double speed){
 	else{
 		switch(op_mode){
 			case 0:
-				voltage < 15.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
 				break;
 			case 1:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
+				voltage < 14.5 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
 				break;
 			case 2:
 				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;

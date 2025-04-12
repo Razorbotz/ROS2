@@ -158,10 +158,12 @@ void Automation1::automate(){
         if(position.arucoInitialized==true){
             RCLCPP_INFO(this->node->get_logger(), "Roll: %f Pitch: %f Yaw: %f", position.roll, position.pitch, position.yaw);
             changeSpeed(0,0);
-            setStartPositionM(position.z, position.x);
+            setStartPositionM(position.x, position.z);
             RCLCPP_INFO(this->node->get_logger(), "startX: %d, startY: %d", this->search.startX, this->search.startY);
             setDestPosition(1.0, 2.0);
-            setDestAngle(getAngle());
+            float angle = getAngle();
+            RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
+            setDestAngle(angle);
             robotState=ALIGN;
         }
     }
@@ -179,16 +181,16 @@ void Automation1::automate(){
         } 
         else {
             changeSpeed(0, 0);
-            setStartPositionM(position.z, position.x);
+            setStartPositionM(position.x, position.z);
             aStar();
             RCLCPP_INFO(this->node->get_logger(), "Current Position: %d, %d", this->search.startX, this->search.startY);
             std::pair<int, int> initial = this->currentPath.top();
             this->currentPath.pop();
             //setDestX(initial.first / 10.0);
             //setDestZ(initial.second / 10.0);
-            setDestX(2.0);
-            setDestZ(1.0);
-            setDestAngle(getAngle());
+            float angle = getAngle();
+            RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
+            setDestAngle(angle);
             robotState = GO_TO_DIG_SITE;
         }
     }
@@ -224,9 +226,9 @@ void Automation1::automate(){
                     setDestAngle(getAngle());
                 }
                 */
+                setDestX(1.0);
+                setDestZ(1.0);
                 setDestAngle(getAngle());
-                setDestX(2.0);
-                setDestZ(2.0);
                 robotState = GO_TO_DUMP;
             }
             else if(check == 1){

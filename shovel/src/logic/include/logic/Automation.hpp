@@ -194,7 +194,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     int target1 = 0, target3 = 0;
     float xOffset = 0.0;
     float robotWidth = 7.5;
-    float angleThresh = 0.5;
+    float angleThresh = 1.5;
     int targetTracking[4][int(std::floor(20/BUCKET_WIDTH))] = {0};
     int dumpCounter = 0, xCounter = 0, zCounter = 0;
     std::stack<Coord> currentPath;
