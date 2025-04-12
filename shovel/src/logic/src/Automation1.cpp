@@ -160,7 +160,8 @@ void Automation1::automate(){
             changeSpeed(0,0);
             setStartPositionM(position.z, position.x);
             RCLCPP_INFO(this->node->get_logger(), "startX: %d, startY: %d", this->search.startX, this->search.startY);
-            setDestAngle(90);
+            setDestPosition(1.0, 2.0);
+            setDestAngle(getAngle());
             robotState=ALIGN;
         }
     }
@@ -240,8 +241,7 @@ void Automation1::automate(){
         }
     }
 
-    // After reaching the excavation area, go through mining
-    // sequence
+    // After reaching the excavation area, go through mining sequence
     // Check that the potentiometers are in the correct range
     if(robotState==EXCAVATE){
         RCLCPP_INFO(this->node->get_logger(), "EXCAVATE");
@@ -250,31 +250,17 @@ void Automation1::automate(){
             RCLCPP_INFO(this->node->get_logger(), "linear1.potentiometer: %d", linear1.potentiometer);
             RCLCPP_INFO(this->node->get_logger(), "linear3.potentiometer: %d", linear3.potentiometer);
             int armPosition = checkArmPosition(20);
-            if(armPosition == 0){
-                RCLCPP_INFO(this->node->get_logger(), "RAISE ARM");
-                setArmSpeed(1.0);
-            }
+
             if(armPosition == 1){
                 RCLCPP_INFO(this->node->get_logger(), "STOP ARM");
-                setArmSpeed(0.0);
             }
-            if(armPosition == 2){
-                RCLCPP_INFO(this->node->get_logger(), "LOWER ARM");
-                setArmSpeed(-1.0);
-            }
+            
             int bucketPosition = checkBucketPosition(20);
-            if(bucketPosition == 0){
-                RCLCPP_INFO(this->node->get_logger(), "RAISE BUCKET");
-                setBucketSpeed(1.0);
-            }
+            
             if(bucketPosition == 1){
                 RCLCPP_INFO(this->node->get_logger(), "STOP BUCKET");
-                setBucketSpeed(0.0);
             }
-            if(bucketPosition == 2){
-                RCLCPP_INFO(this->node->get_logger(), "LOWER BUCKET");
-                setBucketSpeed(-1.0);
-            }
+            
             if(armPosition == 1 && bucketPosition == 1){
                 changeSpeed(0.2, 0.2);
                 excavationState = COLLECT;
@@ -298,10 +284,8 @@ void Automation1::automate(){
             }
             if(abs(this->position.z) > abs(this->destX)){
                 changeSpeed(0, 0);
-                setArmTarget(900);
-                setBucketTarget(850);
-                setArmSpeed(1.0);
-                setBucketSpeed(1.0);
+                setArmPosition(900);
+                setBucketPosition(850);
                 excavationState = EXCAVATION_IDLE;
                 robotState = DUMP;
             }
@@ -377,20 +361,16 @@ void Automation1::automate(){
     // Dump the collected regolith in the dump zone
     if(robotState==DUMP){
 
-        setArmTarget(900);
-        setBucketTarget(700);
-        setArmSpeed(1.0);
-        setBucketSpeed(1.0);
+        setArmPosition(900);
+        setBucketPosition(700);
         
         
         if(checkArmPosition(20) && checkBucketPosition(20))	{				
             dumpCounter++;		// Keepping track of how many dumps 
             xCounter++;			// Which coloumn to dump into
             
-            setArmTarget(100);	// handle bringing the arm and bucket to appropriate driving heights and return to loop
-            setBucketTarget(100);
-            setArmSpeed(-1.0);
-            setBucketSpeed(-1.0);
+            setArmPosition(100);	// handle bringing the arm and bucket to appropriate driving heights and return to loop
+            setBucketPosition(100);
             
             robotState = EXCAVATE;
         
@@ -404,10 +384,8 @@ void Automation1::automate(){
     // Dump the collected rocks in the dump bin
     if(robotState==DUMP){
         if(dumpState == DUMP_IDLE){
-            setArmTarget(900);
-            setBucketTarget(700);
-            setArmSpeed(1.0);
-            setBucketSpeed(0.0);
+            setArmPosition(900);
+            setBucketPosition(700);
             dumpState = DUMP_EXTEND;
         }
         if(dumpState == DUMP_EXTEND){
@@ -421,10 +399,8 @@ void Automation1::automate(){
                 setBucketSpeed(0.0);
             }
             if(checkArmPosition(30) && checkBucketPosition(30)){
-                setBucketSpeed(-1.0);
-                setArmSpeed(-1.0);
-                setBucketTarget(10);
-                setArmTarget(10);
+                setBucketPosition(10);
+                setArmPosition(10);
                 dumpState = DUMP_RETRACT;
             }
         }

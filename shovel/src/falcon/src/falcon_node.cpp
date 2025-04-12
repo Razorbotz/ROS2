@@ -204,7 +204,7 @@ void checkTemperature(double temperature){
 
 
 void checkVoltage(double voltage, double speed){
-	if(speed > 0){
+	if(speed != 0.0){
 		switch(op_mode){
 			case 0:
 				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;

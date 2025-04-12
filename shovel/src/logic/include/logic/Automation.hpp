@@ -8,6 +8,7 @@
 #include <messages/msg/talon_out.hpp>
 #include <messages/msg/falcon_out.hpp>
 #include <messages/msg/autonomy_out.hpp>
+#include <std_msgs/msg/int32.hpp>
 
 #include "AutomationTypes.hpp"
 #include "search.hpp"
@@ -168,6 +169,10 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Empty_<std::allocator<void> >, std::allocator<void> > > goPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Empty_<std::allocator<void> >, std::allocator<void> > > stopPublisher;
     std::shared_ptr<rclcpp::Publisher<messages::msg::AutonomyOut_<std::allocator<void> >, std::allocator<void> > > autonomyOutPublisher;
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon14PositionPublisher;
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon15PositionPublisher;
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon16PositionPublisher;
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon17PositionPublisher;
 
     rclcpp::Node::SharedPtr node;
     Position position;

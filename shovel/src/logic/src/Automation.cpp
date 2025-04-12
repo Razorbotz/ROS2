@@ -31,6 +31,10 @@ void Automation::setNode(rclcpp::Node::SharedPtr node){
     goPublisher = this->node->create_publisher<std_msgs::msg::Empty>("GO", 1);
     stopPublisher = this->node->create_publisher<std_msgs::msg::Empty>("STOP",1);
     autonomyOutPublisher = this->node->create_publisher<messages::msg::AutonomyOut>("autonomy_out",1);
+    talon14PositionPublisher = this->node->create_publisher<std_msgs::msg::Int32>("talon_14_position",1);
+    talon15PositionPublisher = this->node->create_publisher<std_msgs::msg::Int32>("talon_15_position",1);
+    talon16PositionPublisher = this->node->create_publisher<std_msgs::msg::Int32>("talon_16_position",1);
+    talon17PositionPublisher = this->node->create_publisher<std_msgs::msg::Int32>("talon_17_position",1);
 }
 
 
@@ -650,30 +654,10 @@ which is bad practice because it will block other thread executions.
 This should probably be rewritten to use an if statement instead.
 */
 void Automation::setArmPosition(int potent){
-    setArmTarget(potent);
-    int current = this->talon1.sensorValue;
-    float timeToRun = abs(current - potent) * (linear1.timeToExtend / 900.0) * 1000;
-    if(timeToRun > 300)
-        timeToRun = 300;
-    int diff = potent - current;
-    float speed = 0.0;
-    if(std::abs(diff) > 50){
-        speed = 1.0;
-    }
-    else if(std::abs(diff) > 30){
-        speed = 0.9;
-    }
-    else if(std::abs(diff) > 10){
-        speed = 0.5;
-    }
-    else{
-        setArmSpeed(0.0);
-        return;
-    }
-    if(diff < 0){
-        speed *= -1;
-    }
-    setArmSpeed(speed);
+    std_msgs::msg::Int32 position;
+    position.data = potent;
+    talon14PositionPublisher->publish(position);
+    talon15PositionPublisher->publish(position);
 }
 
 
@@ -686,30 +670,10 @@ This should probably be rewritten to use an if statement instead.
 void Automation::setBucketPosition(int potent){
     if(potent > 700)
         potent = 700;
-    setBucketTarget(potent);
-    int current = this->talon3.sensorValue;
-    float timeToRun = abs(current - potent) * (linear3.timeToExtend / 900.0) * 1000;
-    if(timeToRun > 300)
-        timeToRun = 300;
-    int diff = potent - current;
-    float speed = 0.0;
-    if(std::abs(diff) > 50){
-        speed = 1.0;
-    }
-    else if(std::abs(diff) > 30){
-        speed = 0.9;
-    }
-    else if(std::abs(diff) > 10){
-        speed = 0.5;
-    }
-    else{
-        setBucketSpeed(0.0);
-        return;
-    }
-    if(diff < 0){
-        speed *= -1;
-    }
-    setBucketSpeed(speed);
+    std_msgs::msg::Int32 position;
+    position.data = potent;
+    talon16PositionPublisher->publish(position);
+    talon17PositionPublisher->publish(position);
 }
 
 
@@ -818,8 +782,10 @@ void Automation::setLevelBucket(){
         return;
     int currentArm = this->talon1.sensorValue;
     int currentBucket = this->talon3.sensorValue;
-    float target = currentArm * (ARM_DEGREES / ARM_TRAVEL) * (BUCKET_TRAVEL / BUCKET_DEGREES) - position.roll * (BUCKET_TRAVEL / BUCKET_DEGREES);
+    float target = currentArm * (ARM_DEGREES / ARM_TRAVEL) * (BUCKET_TRAVEL / BUCKET_DEGREES) - position.roll * (BUCKET_TRAVEL / BUCKET_DEGREES) - 50;
     int bucketTarget = (int)target;
+    RCLCPP_INFO(this->node->get_logger(), "bucketTarget: %d", bucketTarget);
+    RCLCPP_INFO(this->node->get_logger(), "currentBucket: %d", currentBucket);
     setBucketPosition(bucketTarget);
 }
 
@@ -832,8 +798,8 @@ void Automation::setLevelArms(){
     if(target < 40.0)
         target = 40.0;
     int armTarget = (int)target;
-    if(std::abs(target - currentArm) < 5)
-        return;
+    RCLCPP_INFO(this->node->get_logger(), "armTarget: %d", armTarget);
+    RCLCPP_INFO(this->node->get_logger(), "currentArm: %d", currentArm);
     setArmPosition(armTarget);
 }
 
