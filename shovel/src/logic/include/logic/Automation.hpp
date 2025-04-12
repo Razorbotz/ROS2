@@ -320,6 +320,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     void setTurnLeft(bool TurnLeft);
 
+    void centering(int xCounter, int zCounter);
+
     enum TiltState checkOrientation();
 
     void setLevelBucket();

@@ -195,8 +195,8 @@ void send(std::string messageLabel, const messages::msg::FalconOut::SharedPtr ta
     message.addElementUInt16("Sensor Position",(uint8_t)talonOut->sensor_position);
     message.addElementInt8("Sensor Velocity",(uint8_t)talonOut->sensor_velocity);
     message.addElementFloat32("Max Current", talonOut->max_current);
-    //message.addElementBoolean("Temp Disable", talonOut->temp_disable);
-    //message.addElementBoolean("Volt Disable", talonOut->volt_disable);
+    message.addElementBoolean("Temp Disable", talonOut->temp_disable);
+    message.addElementBoolean("Volt Disable", talonOut->volt_disable);
 
     send(message);
 }
@@ -219,8 +219,8 @@ void send(std::string messageLabel, const messages::msg::TalonOut::SharedPtr tal
     message.addElementUInt16("Sensor Position",talonOut->sensor_position);
     message.addElementInt8("Sensor Velocity",(int8_t)talonOut->sensor_velocity);
     message.addElementFloat32("Max Current", talonOut->max_current);
-    //message.addElementBoolean("Temp Disable", talonOut->temp_disable);
-    //message.addElementBoolean("Volt Disable", talonOut->volt_disable);
+    message.addElementBoolean("Temp Disable", talonOut->temp_disable);
+    message.addElementBoolean("Volt Disable", talonOut->volt_disable);
     send(message);
 }
 

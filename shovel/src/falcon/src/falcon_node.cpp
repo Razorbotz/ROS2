@@ -309,7 +309,7 @@ int main(int argc,char** argv){
 	talonFX->Set(ControlMode::PercentOutput, 0);
 	talonFX->Set(ControlMode::Velocity, 0);
 
-	RCLCPP_INFO(nodeHandle->get_logger(),"configured talon");
+	RCLCPP_INFO(nodeHandle->get_logger(),"configured falcon");
 
 	TalonFXConfiguration allConfigs;
 
@@ -368,8 +368,13 @@ int main(int argc,char** argv){
 			checkVoltage(busVoltage, motorOutputPercent);
 		}
 
-		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 ||
-		   VOLT_DISABLE || TEMP_DISABLE){
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 || VOLT_DISABLE || TEMP_DISABLE){
+			if(VOLT_DISABLE){
+				RCLCPP_INFO(nodeHandle->get_logger(),"Volt Disable, Voltage: %f", busVoltage);
+			}
+			if(TEMP_DISABLE){
+				RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
+			}
 			talonFX->Set(ControlMode::PercentOutput, 0.0);
 			GO = false;
 		}

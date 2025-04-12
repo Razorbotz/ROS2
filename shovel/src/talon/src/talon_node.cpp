@@ -371,8 +371,13 @@ int main(int argc,char** argv){
 			checkVoltage(busVoltage, motorOutputPercent);
         	start = std::chrono::high_resolution_clock::now();
 		}
-		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 ||
-		   VOLT_DISABLE || TEMP_DISABLE){
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 || VOLT_DISABLE || TEMP_DISABLE){
+			if(VOLT_DISABLE){
+				RCLCPP_INFO(nodeHandle->get_logger(),"Volt Disable, Voltage: %f", busVoltage);
+			}
+			if(TEMP_DISABLE){
+				RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
+			}
 			talonSRX->Set(ControlMode::PercentOutput, 0.0);
 			GO = false;
 		}

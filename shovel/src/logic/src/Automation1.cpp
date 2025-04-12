@@ -361,6 +361,46 @@ void Automation1::automate(){
         }
     }
 
+    // After collecting lunar regolith, align the center of the robot with the corresponding dump zone
+    if(robotState==DOCK){
+    	
+		if (dumpCounter % 4 == 0){ // handles finishing a row of dumps
+			xCounter = 0;
+			zCounter ++; 
+		}
+		
+		centering(xCounter, zCounter); // Two stage centering on the current dumping site
+		
+		robotState = DUMP;
+    }
+
+    // Dump the collected regolith in the dump zone
+    if(robotState==DUMP){
+
+        setArmTarget(900);
+        setBucketTarget(700);
+        setArmSpeed(1.0);
+        setBucketSpeed(1.0);
+        
+        
+        if(checkArmPosition(20) && checkBucketPosition(20))	{				
+            dumpCounter++;		// Keepping track of how many dumps 
+            xCounter++;			// Which coloumn to dump into
+            
+            setArmTarget(100);	// handle bringing the arm and bucket to appropriate driving heights and return to loop
+            setBucketTarget(100);
+            setArmSpeed(-1.0);
+            setBucketSpeed(-1.0);
+            
+            robotState = EXCAVATE;
+        
+        }
+
+        
+
+        
+    }
+    /*
     // Dump the collected rocks in the dump bin
     if(robotState==DUMP){
         if(dumpState == DUMP_IDLE){
@@ -402,6 +442,7 @@ void Automation1::automate(){
         }
         
     }
+    */
 
     if(robotState == OBSTACLE){
         setStartPosition(this->search.Row - std::ceil(position.z * 10), std::ceil(position.x * 10));
