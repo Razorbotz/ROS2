@@ -231,6 +231,7 @@ void send(std::string messageLabel, const messages::msg::Power::SharedPtr power)
     BinaryMessage message(messageLabel);
 
     message.addElementFloat32("Voltage",power->voltage);
+    message.addElementFloat32("Temp",power->temperature);
     message.addElementFloat32("Current 0",power->current0);
     message.addElementFloat32("Current 1",power->current1);
     message.addElementFloat32("Current 2",power->current2);
@@ -238,9 +239,9 @@ void send(std::string messageLabel, const messages::msg::Power::SharedPtr power)
     message.addElementFloat32("Current 4",power->current4);
     message.addElementFloat32("Current 5",power->current5);
     message.addElementFloat32("Current 6",power->current6);
-    message.addElementFloat32("Current 7",power->current7);
     
     BinaryMessage message2("Power2");
+    message2.addElementFloat32("Current 7",power->current7);
     message2.addElementFloat32("Current 8",power->current8);
     message2.addElementFloat32("Current 9",power->current9);
     message2.addElementFloat32("Current 10",power->current10);

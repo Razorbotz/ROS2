@@ -52,15 +52,15 @@ float PowerDistributionPanel::getTemperature(){
  * @return void
  * */
 void PowerDistributionPanel::parseFrame(struct can_frame frame){
-
-	if(frame.can_id == (this->STATUS_3 | this->canID)){
+	unsigned int can_id = frame.can_id & ID_MASK;
+	if(can_id == (this->STATUS_3 | this->canID)){
 		parseVoltage(frame);
 		parseTemperature(frame);
 	}
 	
-	if(frame.can_id == (this->STATUS_1 | this->canID) ||
-	   frame.can_id == (this->STATUS_2 | this->canID) || 
-	   frame.can_id == (this->STATUS_3 | this->canID)){
+	if(can_id == (this->STATUS_1 | this->canID) ||
+	   can_id == (this->STATUS_2 | this->canID) || 
+	   can_id == (this->STATUS_3 | this->canID)){
 		parseCurrent(frame);
 	}
 }
@@ -73,14 +73,14 @@ void PowerDistributionPanel::parseFrame(struct can_frame frame){
  * @return void
  * */
 void PowerDistributionPanel::parseVoltage(struct can_frame frame){
-	if(frame.can_id == (this->STATUS_3 | this->canID)){
-		this->voltage = .05 * frame.data[6] + 4;
+	if((frame.can_id & ID_MASK) == (this->STATUS_3 | this->canID)){
+		this->voltage = .16 * frame.data[7] + 0.48;
 	}
 }
 
 
 void PowerDistributionPanel::parseTemperature(struct can_frame frame){
-	if(frame.can_id == (this->STATUS_3 | this->canID)){
+	if((frame.can_id & ID_MASK) == (this->STATUS_3 | this->canID)){
 		this->temperature = 1.03250836957542 * frame.data[7] - 67.8564500484966;
 	}
 }
@@ -125,7 +125,7 @@ void PowerDistributionPanel::parseCurrent(struct can_frame frame){
 
 
 
-	if(frame.can_id == (this->STATUS_1 | this->canID)){
+	if((frame.can_id & ID_MASK) == (this->STATUS_1 | this->canID)){
 		this->current[0]=current1;
 		this->current[1]=current2;
 		this->current[2]=current3;
@@ -133,7 +133,7 @@ void PowerDistributionPanel::parseCurrent(struct can_frame frame){
 		this->current[4]=current5;
 		this->current[5]=current6;
 	}
-	if(frame.can_id == (this->STATUS_2 | this->canID)){
+	if((frame.can_id & ID_MASK) == (this->STATUS_2 | this->canID)){
 		this->current[6]=current1;
 		this->current[7]=current2;
 		this->current[8]=current3;
@@ -141,7 +141,7 @@ void PowerDistributionPanel::parseCurrent(struct can_frame frame){
 		this->current[10]=current5;
 		this->current[11]=current6;
 	}
-	if(frame.can_id == (this->STATUS_3 | this->canID)){
+	if((frame.can_id & ID_MASK) == (this->STATUS_3 | this->canID)){
 		this->current[12]=current1;
 		this->current[13]=current2;
 		this->current[14]=current3;

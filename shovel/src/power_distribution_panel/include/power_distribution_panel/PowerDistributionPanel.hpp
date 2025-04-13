@@ -13,6 +13,7 @@ class PowerDistributionPanel{
 		const uint32_t STATUS_1 = 0x08041400; //Channels 0-5
 		const uint32_t STATUS_2 = 0x08041440; //Channels 6-11
 		const uint32_t STATUS_3 = 0x08041480; //Channels 12-15
+		const uint32_t ID_MASK = 0x0FFFFFFF;
 
 		PowerDistributionPanel(int canID);
 		float getCurrent(int source);
