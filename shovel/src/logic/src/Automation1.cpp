@@ -23,7 +23,6 @@ void Automation1::automate(){
 
     if(robotState == INITIAL){
         RCLCPP_INFO(this->node->get_logger(), "Initialize");
-        setDestPosition(destX, destY);
         auto start = std::chrono::high_resolution_clock::now();
         setStartTime(start);
         setGo();
@@ -31,7 +30,8 @@ void Automation1::automate(){
         setBucketPosition(100);
         if(checkArmPosition(10)){
             robotState = LOCATE;
-        }
+            this->search.printMap();
+	}
     }
 
     if(robotState==DIAGNOSTICS){
@@ -160,7 +160,12 @@ void Automation1::automate(){
             changeSpeed(0,0);
             setStartPositionM(position.x, position.z);
             RCLCPP_INFO(this->node->get_logger(), "startX: %d, startY: %d", this->search.startX, this->search.startY);
-            setDestPosition(1.0, 2.0);
+            RCLCPP_INFO(this->node->get_logger(), "Position.x: %f, startX: %d", position.x, this->search.startX);
+            RCLCPP_INFO(this->node->get_logger(), "Position.z: %f, startY: %d", position.z, this->search.startY);
+            RCLCPP_INFO(this->node->get_logger(), "Row: %d, Col: %d", this->search.Row, this->search.Col);
+            setDestPositionM(1.75, 3.0);
+            RCLCPP_INFO(this->node->get_logger(), "destX: %d, destY: %d", this->search.destX, this->search.destY);
+            RCLCPP_INFO(this->node->get_logger(), "destX: %f, destZ: %f", this->destX, this->destZ);
             float angle = getAngle();
             RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
             setDestAngle(angle);
@@ -183,7 +188,8 @@ void Automation1::automate(){
             changeSpeed(0, 0);
             setStartPositionM(position.x, position.z);
             aStar();
-            RCLCPP_INFO(this->node->get_logger(), "Current Position: %d, %d", this->search.startX, this->search.startY);
+            RCLCPP_INFO(this->node->get_logger(), "Current Position: %f, %f", position.x, position.z);
+            RCLCPP_INFO(this->node->get_logger(), "DestX: %f, destZ: %f", this->destX, this->destZ);
             std::pair<int, int> initial = this->currentPath.top();
             this->currentPath.pop();
             //setDestX(initial.first / 10.0);
@@ -199,6 +205,10 @@ void Automation1::automate(){
     // excavation area
 
     if(robotState==GO_TO_DIG_SITE){
+	setStartPositionM(position.x, position.z);
+	float angle = getAngle();
+	RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
+	setDestAngle(angle);
         if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
             if(getAngleDiff() < 0){
                 changeSpeed(-0.15, 0.15);
@@ -226,9 +236,8 @@ void Automation1::automate(){
                     setDestAngle(getAngle());
                 }
                 */
-                setDestX(1.0);
-                setDestZ(1.0);
-                setDestAngle(getAngle());
+                setDestPositionM(1.75, 1.0);
+		        setDestAngle(getAngle());
                 robotState = GO_TO_DUMP;
             }
             else if(check == 1){

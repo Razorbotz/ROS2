@@ -374,10 +374,18 @@ while the arena has the zero position to the bottom, which is why the
 angle has 90 added to it.
 */
 float Automation::getAngle(){
-    float x = this->destX- this->position.x;
+    float x = this->destX- (this->position.x + this->xOffset);
     float y = this->destZ - this->position.z;
     float angle = std::atan2(y, x) * 180 / M_PI;
-    angle += 90;
+    if(x > 0){
+	angle = 90 - angle;
+    }
+    else{
+    	angle = -90 - angle;
+    }
+    RCLCPP_INFO(this->node->get_logger(), "Dest x: %f, Position.x: %f, x: %f", this->destX, this->position.x, x);
+    RCLCPP_INFO(this->node->get_logger(), "Dest z: %f, Position.z: %f, y: %f", this->destZ, this->position.z, y);
+    RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
     if(angle > 180){
         angle -= 360;
     }
@@ -441,8 +449,8 @@ and the destination. The greater the distance returned, the further out
 the robot is from the target location. 
 */
 int Automation::checkDistance(){
-    float dist = sqrt(pow(position.z - this->destZ, 2) + pow(position.x - this->destX, 2));
-    
+    float dist = sqrt(pow(position.z - this->destZ, 2) + pow((this->xOffset + position.x) - this->destX, 2));
+    RCLCPP_INFO(this->node->get_logger(), "Distance: %f", dist); 
     // Check to see if the distance is increasing. If the distance
     // is decreasing as expected, the diff should be greater than zero.
     float diff = prevDist - dist;
@@ -529,9 +537,9 @@ Function to set the start position of the robot given the current
 position in meters. These values are transformed into decimeters,
 then transformed to map it into the 2D array.
 */
-void Automation::setStartPositionM(float x, float y){
-    this->search.startX = this->search.Row - int(std::ceil(x * 10));
-    this->search.startY = int(std::ceil((y + this->xOffset) * 10));
+void Automation::setStartPositionM(float x, float z){
+    this->search.startY = this->search.Row - int(std::ceil(z * 10));
+    this->search.startX = int(std::ceil((x + this->xOffset) * 10));
 }
 
 
@@ -546,9 +554,11 @@ Function to set the destination position of the robot given the current
 position in meters. These values are transformed into decimeters,
 then transformed to map it into the 2D array.
 */
-void Automation::setDestPositionM(float x, float y){
-    this->search.destX = this->search.Row - int(std::ceil(x * 10));
-    this->search.destY = int(std::ceil((y + this->xOffset) * 10));
+void Automation::setDestPositionM(float x, float z){
+    this->search.destY = this->search.Row - int(std::ceil(x * 10));
+    this->search.destX = int(std::ceil((z + this->xOffset) * 10));
+    this->destX = x + this->xOffset;
+    this->destZ = z;
 }
 
 

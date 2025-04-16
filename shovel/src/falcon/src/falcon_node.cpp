@@ -85,6 +85,7 @@ bool VOLT_DISABLE = false;
 // 2 - Emergency 
 int op_mode = 0;
 int killKey = 0;
+bool printData = false;
 
 /** @brief STOP Callback
  * 
@@ -96,7 +97,8 @@ int killKey = 0;
  * @return void
  * */
 void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
-	RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
 	GO=false;
 	talonFX->Set(ControlMode::PercentOutput, 0.0);
 } 
@@ -111,7 +113,8 @@ void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
  * @return void
  * */
 void goCallback(std_msgs::msg::Empty::SharedPtr empty){
-	RCLCPP_INFO(nodeHandle->get_logger(),"GO");
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"GO");
 	GO=true;
 }
 
@@ -130,7 +133,8 @@ void commHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
  * @return void
  * */
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
-	RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
 	talonFX->Set(ControlMode::PercentOutput, speed->data);
 }
@@ -233,7 +237,8 @@ void checkVoltage(double voltage, double speed){
 }
 
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
-    std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
+    if(printData)
+		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
     if(keyState->key==killKey && keyState->state==1){
         return;
     }
@@ -260,6 +265,7 @@ int main(int argc,char** argv){
 	int publishingDelay = getParameter<int>("publishing_delay", 0);
 	killKey = getParameter<int>("kill_key", 0);
 	op_mode = getParameter<int>("op_mode", 0);
+	printData = getParameter<bool>("print_data", 0);
 
 	ctre::phoenix::platform::can::SetCANInterface("can0");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
@@ -293,6 +299,13 @@ int main(int argc,char** argv){
 	RCLCPP_INFO(nodeHandle->get_logger(),"configured falcon");
 
 	TalonFXConfiguration allConfigs;
+
+	ctre::phoenix::motorcontrol::SupplyCurrentLimitConfiguration supplyLimitConfig;
+    supplyLimitConfig.enable = true;
+    supplyLimitConfig.limit = 40.0;
+    supplyLimitConfig.triggerThresholdCurrent = 45.0;
+    supplyLimitConfig.triggerThresholdTime = 0.1; 
+	talonFX->ConfigSupplyCurrentLimit(supplyLimitConfig, kTimeoutMs);
 
 	messages::msg::FalconOut falconOut;
 	auto falconOutPublisher=nodeHandle->create_publisher<messages::msg::FalconOut>(infoTopic.c_str(),1);

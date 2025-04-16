@@ -54,7 +54,8 @@ def generate_launch_description():
                 {"kF": 0.0},
                 {"publishing_delay": 15},
                 {"kill_key": 50},
-                {"op_mode": 0}
+                {"op_mode": 0},
+                {"print_data": False}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -76,7 +77,8 @@ def generate_launch_description():
                 {"kF": 0.0},
                 {"publishing_delay": 15},
                 {"kill_key": 51},
-                {"op_mode": 0}
+                {"op_mode": 0},
+                {"print_data": False}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -98,7 +100,8 @@ def generate_launch_description():
                 {"kF": 0.0},
                 {"publishing_delay": 15},
                 {"kill_key": 52},
-                {"op_mode": 0}
+                {"op_mode": 0},
+                {"print_data": False}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -120,7 +123,8 @@ def generate_launch_description():
                 {"kF": 0.0},
                 {"publishing_delay": 15},
                 {"kill_key": 53},
-                {"op_mode": 0}
+                {"op_mode": 0},
+                {"print_data": False}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -147,7 +151,8 @@ def generate_launch_description():
                 {"kF": 0.0},
                 {"publishing_delay": 100},
                 {"kill_key": 54},
-                {"op_mode": 0}
+                {"op_mode": 0},
+                {"print_data": False}
             ]
         )
 	    ,
@@ -167,7 +172,8 @@ def generate_launch_description():
                 {"kF": 0.0},
                 {"publishing_delay": 100},
                 {"kill_key": 55},
-                {"op_mode": 0}
+                {"op_mode": 0},
+                {"print_data": False}
             ]
         )
         ,
@@ -187,7 +193,8 @@ def generate_launch_description():
                 {"kF": 0.0},
                 {"publishing_delay": 100},
                 {"kill_key": 56},
-                {"op_mode": 0}
+                {"op_mode": 0},
+                {"print_data": False}
             ]
         )
 	    ,
@@ -207,7 +214,8 @@ def generate_launch_description():
                 {"kF": 0.0},
                 {"publishing_delay": 100},
                 {"kill_key": 57},
-                {"op_mode": 0}
+                {"op_mode": 0},
+                {"print_data": False}
             ]
         )
 	    ,

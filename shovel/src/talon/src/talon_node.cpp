@@ -76,6 +76,7 @@ using namespace ctre::phoenix::motorcontrol::can;
 rclcpp::Node::SharedPtr nodeHandle;
 bool GO=false;
 std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
+bool printData = false;
 
 /** @brief STOP Callback
  * 
@@ -87,7 +88,8 @@ std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
  * @return void
  * */
 void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
-	RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
 	GO=false;
 } 
 
@@ -101,7 +103,8 @@ void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
  * @return void
  * */
 void goCallback(std_msgs::msg::Empty::SharedPtr empty){
-	RCLCPP_INFO(nodeHandle->get_logger(),"GO");
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"GO");
 	GO=true;
 }
 
@@ -131,13 +134,15 @@ int killKey = 0;
  * @return void
  * */
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
-	RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
 	talonSRX->Set(ControlMode::PercentOutput, speed->data);
 }
 
 void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
-	RCLCPP_INFO(nodeHandle->get_logger(),"Position---------->>> %d ", position->data);
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"Position---------->>> %d ", position->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
 	talonSRX->Set(ControlMode::Position, position->data);
 }
@@ -243,7 +248,8 @@ void checkVoltage(double voltage, double speed){
 
 
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
-    std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
+    if(printData)
+		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
     if(keyState->key==killKey && keyState->state==1){
         return;
     }
@@ -275,6 +281,7 @@ int main(int argc,char** argv){
 	int publishingDelay = getParameter<int>("publishing_delay", 0);
 	killKey = getParameter<int>("kill_key", 0);
 	op_mode = getParameter<int>("op_mode", 0);
+	printData = getParameter<bool>("print_data", 0);
 
 	ctre::phoenix::platform::can::SetCANInterface("can0");
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
