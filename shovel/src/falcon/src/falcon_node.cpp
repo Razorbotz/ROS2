@@ -302,8 +302,8 @@ int main(int argc,char** argv){
 
 	ctre::phoenix::motorcontrol::SupplyCurrentLimitConfiguration supplyLimitConfig;
     supplyLimitConfig.enable = true;
-    supplyLimitConfig.limit = 40.0;
-    supplyLimitConfig.triggerThresholdCurrent = 45.0;
+    supplyLimitConfig.limit = 70.0;
+    supplyLimitConfig.triggerThresholdCurrent = 75.0;
     supplyLimitConfig.triggerThresholdTime = 0.1; 
 	talonFX->ConfigSupplyCurrentLimit(supplyLimitConfig, kTimeoutMs);
 
@@ -363,7 +363,7 @@ int main(int argc,char** argv){
 			checkVoltage(busVoltage, motorOutputPercent);
 		}
 
-		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 || VOLT_DISABLE || TEMP_DISABLE){
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 ||  TEMP_DISABLE){
 			if(VOLT_DISABLE){
 				RCLCPP_INFO(nodeHandle->get_logger(),"Volt Disable, Voltage: %f", busVoltage);
 			}

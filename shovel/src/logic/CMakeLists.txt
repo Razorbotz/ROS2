@@ -22,8 +22,6 @@ add_executable(${PROJECT_NAME}_node
 	src/logic_node.cpp
 	src/Automation.cpp
 	src/Automation1.cpp
-	src/Automation2.cpp
-	src/Automation3.cpp
 	src/search.cpp
 )
 

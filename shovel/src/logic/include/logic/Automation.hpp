@@ -192,7 +192,6 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     float deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
     float prevDist = 0.0;
     int target1 = 0, target3 = 0;
-    float xOffset = 0.0;
     float robotWidth = 7.5;
     float angleThresh = 1.5;
     int targetTracking[4][int(std::floor(20/BUCKET_WIDTH))] = {0};
@@ -295,21 +294,13 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     void setRunSensorlessly(bool value);
 
-    void setStartPositionM(float x, float y);
+    void setStartPosition(float x, float y);
 
-    void setStartPosition(int x, int y);
-
-    void setDestPositionM(float x, float y);
-
-    void setDestPosition(int x, int y);
+    void setDestPosition(float x, float y);
 
     void aStar(bool includeHoles = false);
 
     void aStar(std::stack<Coord> points, bool includeHoles, bool simplify);
-
-    void setArmTarget(int potent);
-
-    void setBucketTarget(int potent);
 
     int checkArmPosition(int thresh);
 
@@ -320,8 +311,6 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     void setBucketPosition(int potent);
 
     void setMap(std::string mapUsed);
-
-    void setxOffset(float xOffset);
 
     void setTurnLeft(bool TurnLeft);
 

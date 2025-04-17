@@ -14,7 +14,6 @@ def generate_launch_description():
             executable='logic_node',
             parameters=[
                 {"map": "NASA"},
-                {"xOffset": 1.4},
                 {"turnLeft": True}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
@@ -224,6 +223,7 @@ def generate_launch_description():
             name='zed_tracking',
             executable='zed_tracking_node',
             parameters=[
+                {"xOffset": 1.4},
                 {"resolution": "VGA"}
             ]
         )

@@ -158,12 +158,12 @@ void Automation1::automate(){
         if(position.arucoInitialized==true){
             RCLCPP_INFO(this->node->get_logger(), "Roll: %f Pitch: %f Yaw: %f", position.roll, position.pitch, position.yaw);
             changeSpeed(0,0);
-            setStartPositionM(position.x, position.z);
+            setStartPosition(position.x, position.z);
             RCLCPP_INFO(this->node->get_logger(), "startX: %d, startY: %d", this->search.startX, this->search.startY);
             RCLCPP_INFO(this->node->get_logger(), "Position.x: %f, startX: %d", position.x, this->search.startX);
             RCLCPP_INFO(this->node->get_logger(), "Position.z: %f, startY: %d", position.z, this->search.startY);
             RCLCPP_INFO(this->node->get_logger(), "Row: %d, Col: %d", this->search.Row, this->search.Col);
-            setDestPositionM(1.75, 3.0);
+            setDestPosition(3.0, 3.0);
             RCLCPP_INFO(this->node->get_logger(), "destX: %d, destY: %d", this->search.destX, this->search.destY);
             RCLCPP_INFO(this->node->get_logger(), "destX: %f, destZ: %f", this->destX, this->destZ);
             float angle = getAngle();
@@ -186,7 +186,7 @@ void Automation1::automate(){
         } 
         else {
             changeSpeed(0, 0);
-            setStartPositionM(position.x, position.z);
+            setStartPosition(position.x, position.z);
             aStar();
             RCLCPP_INFO(this->node->get_logger(), "Current Position: %f, %f", position.x, position.z);
             RCLCPP_INFO(this->node->get_logger(), "DestX: %f, destZ: %f", this->destX, this->destZ);
@@ -205,7 +205,7 @@ void Automation1::automate(){
     // excavation area
 
     if(robotState==GO_TO_DIG_SITE){
-	setStartPositionM(position.x, position.z);
+	setStartPosition(position.x, position.z);
 	float angle = getAngle();
 	RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
 	setDestAngle(angle);
@@ -236,7 +236,7 @@ void Automation1::automate(){
                     setDestAngle(getAngle());
                 }
                 */
-                setDestPositionM(1.75, 1.0);
+                setDestPosition(3.0, 1.0);
 		        setDestAngle(getAngle());
                 robotState = GO_TO_DUMP;
             }

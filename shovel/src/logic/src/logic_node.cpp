@@ -20,8 +20,6 @@
 #include <messages/msg/linear_out.hpp>
 
 #include "logic/Automation1.hpp"
-#include "logic/Automation2.hpp"
-#include "logic/Automation3.hpp"
 #include "logic/AutomationTypes.hpp"
 
 
@@ -567,23 +565,19 @@ int main(int argc, char **argv){
     nodeHandle = rclcpp::Node::make_shared("logic");
 
     std::string mapUsed = getParameter<std::string>("map", "unset");
-    double xOffset = getParameter<double>("xOffset", 0);
     bool turnLeft = getParameter<bool>("turnLeft", 0);
 
     if(mapUsed == "NASA"){
         automation = new Automation1();
     }
     else if(mapUsed == "UCF_1" || mapUsed == "UCF_2"){
-        automation = new Automation2();
     }
     else if(mapUsed == "lab"){
-        automation = new Automation3();
     }
     else{
         automation = new Automation1();
     }
     automation->setMap(mapUsed);
-    automation->setxOffset(xOffset);
     automation->setTurnLeft(turnLeft);
     automation->setNode(nodeHandle);
 

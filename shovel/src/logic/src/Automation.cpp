@@ -374,7 +374,7 @@ while the arena has the zero position to the bottom, which is why the
 angle has 90 added to it.
 */
 float Automation::getAngle(){
-    float x = this->destX- (this->position.x + this->xOffset);
+    float x = this->destX - this->position.x;
     float y = this->destZ - this->position.z;
     float angle = std::atan2(y, x) * 180 / M_PI;
     if(x > 0){
@@ -449,7 +449,7 @@ and the destination. The greater the distance returned, the further out
 the robot is from the target location. 
 */
 int Automation::checkDistance(){
-    float dist = sqrt(pow(position.z - this->destZ, 2) + pow((this->xOffset + position.x) - this->destX, 2));
+    float dist = sqrt(pow(position.z - this->destZ, 2) + pow(position.x - this->destX, 2));
     RCLCPP_INFO(this->node->get_logger(), "Distance: %f", dist); 
     // Check to see if the distance is increasing. If the distance
     // is decreasing as expected, the diff should be greater than zero.
@@ -471,9 +471,10 @@ int Automation::checkDistance(){
 
 /*
 Function to set the X coordinate of the destination. 
+TODO: Double check that this is correct
 */
 void Automation::setDestX(float meters){
-    this->search.destY = int(std::ceil((meters + this->xOffset) * 10));
+    this->search.destY = int(std::ceil(meters * 10));
     this->destX = meters;
 }
 
@@ -537,15 +538,9 @@ Function to set the start position of the robot given the current
 position in meters. These values are transformed into decimeters,
 then transformed to map it into the 2D array.
 */
-void Automation::setStartPositionM(float x, float z){
+void Automation::setStartPosition(float x, float z){
     this->search.startY = this->search.Row - int(std::ceil(z * 10));
-    this->search.startX = int(std::ceil((x + this->xOffset) * 10));
-}
-
-
-void Automation::setStartPosition(int x, int y){
-    this->search.startX = x;
-    this->search.startY = y;
+    this->search.startX = int(std::ceil(x  * 10));
 }
 
 
@@ -554,17 +549,11 @@ Function to set the destination position of the robot given the current
 position in meters. These values are transformed into decimeters,
 then transformed to map it into the 2D array.
 */
-void Automation::setDestPositionM(float x, float z){
+void Automation::setDestPosition(float x, float z){
     this->search.destY = this->search.Row - int(std::ceil(x * 10));
-    this->search.destX = int(std::ceil((z + this->xOffset) * 10));
-    this->destX = x + this->xOffset;
+    this->search.destX = int(std::ceil(z * 10));
+    this->destX = x;
     this->destZ = z;
-}
-
-
-void Automation::setDestPosition(int x, int y){
-    this->search.destX = x;
-    this->search.destY = y;
 }
 
 
@@ -580,24 +569,6 @@ void Automation::aStar(bool includeHoles){
 
 void Automation::aStar(std::stack<Coord> points, bool includeHoles, bool simplify){
     this->currentPath = this->search.aStar(points, includeHoles, simplify);
-}
-
-
-/*
-* Function to set the target position of the arms.
-* @param potent - Desired int value of potentiometer
-*/
-void Automation::setArmTarget(int potent){
-    target1 = potent;
-}
-
-
-/*
-* Function to set the target position of the bucket.
-* @param potent - Desired int value of potentiometer
-*/
-void Automation::setBucketTarget(int potent){
-    target3 = potent;
 }
 
 
@@ -701,11 +672,6 @@ void Automation::setMap(std::string mapUsed){
         this->search.setRowCol(lab.height, lab.width);
     }
     this->search.initializeMap(this->robotWidth);
-}
-
-
-void Automation::setxOffset(float XOffset){
-    this->xOffset = XOffset;
 }
 
 

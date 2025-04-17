@@ -46,6 +46,37 @@ rclcpp::Node::SharedPtr nodeHandle;
  * 
  * */
 
+
+ /** @brief Function to get the value of the specified parameter
+ * 
+ * Function that takes a string as a parameter containing the
+ * name of the parameter that is being parsed from the launch
+ * file and the initial value of the parameter as inputs, then
+ * gets the parameter, casts it as the desired type, displays 
+ * the value of the parameter on the command line and the log 
+ * file, then returns the parsed value of the parameter.
+ * @param parametername String of the name of the parameter
+ * @param initialValue Initial value of the parameter
+ * @return value Value of the parameter
+ * */
+template <typename T>
+T getParameter(std::string parameterName, int initialValue){
+	nodeHandle->declare_parameter<T>(parameterName, initialValue);
+	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
+	T value;
+	if(typeid(value).name() == typeid(int).name())
+		value = param.as_int();
+	if(typeid(value).name() == typeid(double).name())
+		value = param.as_double();
+	if(typeid(value).name() == typeid(bool).name())
+		value = param.as_bool();
+	std::cout << parameterName << ": " << value << std::endl;
+	std::string output = parameterName + ": " + std::to_string(value);
+	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
+	return value;
+}
+
+
 /** @brief String parameter function
  * 
  * Function that takes a string as a parameter containing the
@@ -77,6 +108,8 @@ int main(int argc, char **argv) {
     RCLCPP_INFO(nodeHandle->get_logger(),"Starting zed_tracking");
 
     std::string resolution = getParameter<std::string>("resolution", "VGA");
+    double xOffset = getParameter<double>("xOffset", 0);
+
     messages::msg::ZedPosition zedPosition;
     auto zedPositionPublisher=nodeHandle->create_publisher<messages::msg::ZedPosition>("zed_position",1);
 
@@ -332,7 +365,7 @@ int main(int argc, char **argv) {
 */
 
         if (tracking_state == sl::POSITIONAL_TRACKING_STATE::OK) {
-            zedPosition.x=zedPose.getTranslation().x;
+            zedPosition.x=zedPose.getTranslation().x + xOffset;
             zedPosition.y=zedPose.getTranslation().y;
             zedPosition.z=zedPose.getTranslation().z;
             zedPosition.ox=zedPose.getOrientation().ox;
