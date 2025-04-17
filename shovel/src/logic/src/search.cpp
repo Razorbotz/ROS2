@@ -3,6 +3,10 @@
 #include <stdexcept>
 
 void Search::setRowCol(int row, int col){
+	if(row > ROW)
+		throw std::runtime_error("ROW out of bounds");
+	if(col > COL)
+		throw std::runtime_error("COL out of bounds");
 	Row = row;
 	Col = col;
 }
@@ -344,7 +348,12 @@ std::stack<Coord> Search::getSimplifiedPath(std::stack<Coord> rpath){
 void Search::printMap(){
 	for(int i = 0; i < Row; i++){
 		for(int j = 0; j < Col; j++){
-			std::cout << map[i][j] << " ";
+			if(i == startX && j == startY)
+				std::cout << "X ";
+			else if(i == destX && j == destY)
+				std::cout << "T ";
+			else
+				std::cout << map[i][j] << " ";
 		}
 		std::cout << std::endl;
 	}

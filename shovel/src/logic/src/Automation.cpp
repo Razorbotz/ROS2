@@ -539,8 +539,8 @@ position in meters. These values are transformed into decimeters,
 then transformed to map it into the 2D array.
 */
 void Automation::setStartPosition(float x, float z){
-    this->search.startY = this->search.Row - int(std::ceil(z * 10));
-    this->search.startX = int(std::ceil(x  * 10));
+    this->search.startX = this->search.Row - int(std::ceil(z * 10));
+    this->search.startY = int(std::ceil(x  * 10));
 }
 
 
@@ -550,8 +550,8 @@ position in meters. These values are transformed into decimeters,
 then transformed to map it into the 2D array.
 */
 void Automation::setDestPosition(float x, float z){
-    this->search.destY = this->search.Row - int(std::ceil(x * 10));
-    this->search.destX = int(std::ceil(z * 10));
+    this->search.destX = this->search.Row - int(std::ceil(z * 10));
+    this->search.destY = int(std::ceil(x * 10));
     this->destX = x;
     this->destZ = z;
 }
