@@ -136,7 +136,8 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
-	talonFX->Set(ControlMode::PercentOutput, speed->data);
+	double targetVelocity_RPM = 6000 * speed->data; 
+	talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
 }
 
 /** @brief String parameter function
@@ -207,35 +208,6 @@ void checkTemperature(double temperature){
 }
 
 
-void checkVoltage(double voltage, double speed){
-	if(speed != 0.0){
-		switch(op_mode){
-			case 0:
-				voltage < 14.5 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 13.5 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
-	}
-	else{
-		switch(op_mode){
-			case 0:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 14.5 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
-	}
-}
-
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(printData)
 		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
@@ -282,7 +254,7 @@ int main(int argc,char** argv){
 		talonFX->SetInverted(TalonFXInvertType::Clockwise);
 	}
 	talonFX->SelectProfileSlot(0,0);
-	talonFX->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, kTimeoutMs);
+	talonFX->ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, kTimeoutMs);
 	talonFX->ConfigClosedloopRamp(2);
 	talonFX->ConfigNominalOutputForward(0, kTimeoutMs);
 	talonFX->ConfigNominalOutputReverse(0, kTimeoutMs);
@@ -360,13 +332,9 @@ int main(int argc,char** argv){
 			falconOutPublisher->publish(falconOut);
 			start = std::chrono::high_resolution_clock::now();
 			checkTemperature(temperature);
-			checkVoltage(busVoltage, motorOutputPercent);
 		}
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 ||  TEMP_DISABLE){
-			if(VOLT_DISABLE){
-				RCLCPP_INFO(nodeHandle->get_logger(),"Volt Disable, Voltage: %f", busVoltage);
-			}
 			if(TEMP_DISABLE){
 				RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
 			}
