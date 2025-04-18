@@ -233,16 +233,6 @@ int main(int argc, char **argv) {
     sl::Mat depth_image;
     sl::Mat depth_map;
 
-    int currentRow=0;
-    float pastValues[ROW_COUNT][7];
-    float average[7];
-    for(int col=0;col<7;col++){
-	    average[col]=0;
-        for(int row=0;row<ROW_COUNT;row++){
-	        pastValues[row][col]=0;
-	    }
-    }
-
     sl::PositionalTrackingParameters tracking_params;
     tracking_params.enable_imu_fusion = true;
     tracking_params.enable_area_memory = true;
@@ -252,6 +242,9 @@ int main(int argc, char **argv) {
         zed.close();
         return EXIT_FAILURE;
     }
+
+    int aruco_seen_consecutive_frames = 0;
+    const int REQUIRED_CONSECUTIVE_FRAMES = 5;
 
     rclcpp::Rate rate(30);
     while (rclcpp::ok()) {
@@ -287,6 +280,7 @@ int main(int argc, char **argv) {
             
             // if at least one marker detected
             if (ids.size() > 0) {
+                aruco_seen_consecutive_frames++;
 	        //	int id=ids[0];
                 cv::aruco::estimatePoseSingleMarkers(corners, actual_marker_size_meters, camera_matrix, dist_coeffs, rvecs, tvecs);
                 arucoPose.setTranslation(sl::float3(tvecs[0](0), tvecs[0](1), tvecs[0](2)));
@@ -304,12 +298,13 @@ int main(int argc, char **argv) {
                 zedPosition.aruco_yaw = arucoPose.getEulerAngles(false).z;
 		        zedPosition.aruco_visible=true;
                 // Add check here to ensure that the angle to the marker is less than 90
-                if(!initialized && std::abs(zedPosition.aruco_pitch) > 135.0){
+                if(!initialized && std::abs(zedPosition.aruco_pitch) > 135.0 && aruco_seen_consecutive_frames >= REQUIRED_CONSECUTIVE_FRAMES){
                     zed.resetPositionalTracking(arucoPose);
                     initialized = true;                
                 }
 	        } 
             else {
+                aruco_seen_consecutive_frames = 0;
 	            zedPosition.aruco_visible=false;
 	        }
 

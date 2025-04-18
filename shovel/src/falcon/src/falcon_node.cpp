@@ -206,36 +206,6 @@ void checkTemperature(double temperature){
 	}
 }
 
-
-void checkVoltage(double voltage, double speed){
-	if(speed != 0.0){
-		switch(op_mode){
-			case 0:
-				voltage < 14.5 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 13.5 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
-	}
-	else{
-		switch(op_mode){
-			case 0:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 14.5 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
-	}
-}
-
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(printData)
 		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
@@ -302,7 +272,7 @@ int main(int argc,char** argv){
 
 	ctre::phoenix::motorcontrol::SupplyCurrentLimitConfiguration supplyLimitConfig;
     supplyLimitConfig.enable = true;
-    supplyLimitConfig.limit = 70.0;
+    supplyLimitConfig.currentLimit = 70.0;
     supplyLimitConfig.triggerThresholdCurrent = 75.0;
     supplyLimitConfig.triggerThresholdTime = 0.1; 
 	talonFX->ConfigSupplyCurrentLimit(supplyLimitConfig, kTimeoutMs);
@@ -360,13 +330,9 @@ int main(int argc,char** argv){
 			falconOutPublisher->publish(falconOut);
 			start = std::chrono::high_resolution_clock::now();
 			checkTemperature(temperature);
-			checkVoltage(busVoltage, motorOutputPercent);
 		}
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 ||  TEMP_DISABLE){
-			if(VOLT_DISABLE){
-				RCLCPP_INFO(nodeHandle->get_logger(),"Volt Disable, Voltage: %f", busVoltage);
-			}
 			if(TEMP_DISABLE){
 				RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
 			}

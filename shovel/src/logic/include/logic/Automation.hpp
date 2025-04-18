@@ -198,7 +198,6 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     int dumpCounter = 0, xCounter = 0, zCounter = 0;
     std::stack<Coord> currentPath;
     std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
-    std::chrono::time_point<std::chrono::high_resolution_clock> startBackupTime;
     Search search = Search();
     bool holes = false;
     bool turnLeft = true;
@@ -286,11 +285,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     void setStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime);
 
-    void setBackupStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime);
-
     std::chrono::time_point<std::chrono::high_resolution_clock> getStartTime();
-
-    std::chrono::time_point<std::chrono::high_resolution_clock> getBackupStartTime();
 
     void setRunSensorlessly(bool value);
 

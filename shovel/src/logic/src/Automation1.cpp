@@ -31,7 +31,7 @@ void Automation1::automate(){
         if(checkArmPosition(10)){
             robotState = LOCATE;
             this->search.printMap();
-	}
+        }
     }
 
     if(robotState==DIAGNOSTICS){
@@ -164,6 +164,7 @@ void Automation1::automate(){
             RCLCPP_INFO(this->node->get_logger(), "Position.z: %f, startY: %d", position.z, this->search.startY);
             RCLCPP_INFO(this->node->get_logger(), "Row: %d, Col: %d", this->search.Row, this->search.Col);
             setDestPosition(3.0, 3.0);
+            this->search.printMap();
             RCLCPP_INFO(this->node->get_logger(), "destX: %d, destY: %d", this->search.destX, this->search.destY);
             RCLCPP_INFO(this->node->get_logger(), "destX: %f, destZ: %f", this->destX, this->destZ);
             float angle = getAngle();
