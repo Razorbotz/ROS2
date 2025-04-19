@@ -18,6 +18,8 @@
 #include "power_distribution_panel/PowerDistributionPanel.hpp"
 #include "messages/msg/power.hpp"
 
+rclcpp::Node::SharedPtr nodeHandle;
+
 /** @file
  * @brief Node publishing Power Distribution Panel info
  * 
@@ -49,19 +51,19 @@ T getParameter(std::string parameterName, int initialValue){
 	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
 	T value = param.template get_value<T>();
 	std::cout << parameterName << ": " << value << std::endl;
-	RLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
+	RCLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
 	return value;
 }
 
 template <typename T>
 T getParameter(const std::string& parameterName, const char* initialValue){
-	retrn getParameter<T>(parameterName, std::string(initialValue));
+	return getParameter<T>(parameterName, std::string(initialValue));
 }
 
 int main(int argc, char **argv){
 
 	rclcpp::init(argc,argv);
-	rclcpp::Node::SharedPtr nodeHandle = rclcpp::Node::make_shared("power_distribution_panel");
+	nodeHandle = rclcpp::Node::make_shared("power_distribution_panel");
 	std::string can_interface = getParameter<std::string>("can_interface", "can0");
 
 	auto publisher = nodeHandle->create_publisher<messages::msg::Power>("power", 1);

@@ -166,13 +166,13 @@ T getParameter(std::string parameterName, int initialValue){
 	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
 	T value = param.template get_value<T>();
 	std::cout << parameterName << ": " << value << std::endl;
-	RLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
+	RCLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
 	return value;
 }
 
 template <typename T>
 T getParameter(const std::string& parameterName, const char* initialValue){
-	retrn getParameter<T>(parameterName, std::string(initialValue));
+	return getParameter<T>(parameterName, std::string(initialValue));
 }
 
 
