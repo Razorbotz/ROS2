@@ -149,10 +149,10 @@ void Automation1::automate(){
 
     if(robotState==LOCATE){
         if(turnLeft){
-            changeSpeed(-0.15, 0.15);
+            changeSpeed(-0.2, 0.2);
         }
         else{
-            changeSpeed(0.15, -0.15);
+            changeSpeed(0.2, -0.2);
         }
 
         if(position.arucoInitialized==true){
@@ -163,7 +163,7 @@ void Automation1::automate(){
             RCLCPP_INFO(this->node->get_logger(), "Position.x: %f, startX: %d", position.x, this->search.startX);
             RCLCPP_INFO(this->node->get_logger(), "Position.z: %f, startY: %d", position.z, this->search.startY);
             RCLCPP_INFO(this->node->get_logger(), "Row: %d, Col: %d", this->search.Row, this->search.Col);
-            setDestPosition(3.0, 3.0);
+            setDestPosition(3.5, 1.0);
             this->search.printMap();
             RCLCPP_INFO(this->node->get_logger(), "destX: %d, destY: %d", this->search.destX, this->search.destY);
             RCLCPP_INFO(this->node->get_logger(), "destX: %f, destZ: %f", this->destX, this->destZ);
@@ -179,76 +179,64 @@ void Automation1::automate(){
     if(robotState==ALIGN){
         if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
             if(getAngleDiff() < 0){
-                changeSpeed(-0.15, 0.15);
+                changeSpeed(-0.2, 0.2);
             }
             else{
-                changeSpeed(0.15, -0.15);
+                changeSpeed(0.2, -0.2);
             }
         } 
         else {
             changeSpeed(0, 0);
             setStartPosition(position.x, position.z);
             aStar();
-            RCLCPP_INFO(this->node->get_logger(), "Current Position: %f, %f", position.x, position.z);
-            RCLCPP_INFO(this->node->get_logger(), "DestX: %f, destZ: %f", this->destX, this->destZ);
-            std::pair<int, int> initial = this->currentPath.top();
-            this->currentPath.pop();
-            //setDestX(initial.first / 10.0);
-            //setDestZ(initial.second / 10.0);
+            getPosition();
             float angle = getAngle();
             RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
             setDestAngle(angle);
-            robotState = GO_TO_DIG_SITE;
+            robotState = INITIAL_NAV;
         }
     }
 
     // After aligning with the arena, navigate to the 
     // excavation area
 
-    if(robotState==GO_TO_DIG_SITE){
-	setStartPosition(position.x, position.z);
-	float angle = getAngle();
-	RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
-	setDestAngle(angle);
+    if(robotState==INITIAL_NAV){
+        setStartPosition(position.x, position.z);
+        float angle = getAngle();
+        RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
+        setDestAngle(angle);
         if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
             if(getAngleDiff() < 0){
-                changeSpeed(-0.15, 0.15);
+                changeSpeed(-0.2, 0.2);
             }
             else{
-                changeSpeed(0.15, -0.15);
+                changeSpeed(0.2, -0.2);
             }
         } 
         else{ 
             int check = checkDistance();
             if(check == -1){
-                setDestAngle(getAngle());
             }
             else if(check == 0){
                 changeSpeed(0.0, 0.0);
-                /*
-                if(this->currentPath.empty()){
-                    robotState = EXCAVATE;
-                }
-                else{
-                    std::pair<int, int> current = this->currentPath.top();
-                    this->currentPath.pop();
-                    setDestZ(current.first);
-                    setDestX(current.second);
+                if(getPosition()){
                     setDestAngle(getAngle());
                 }
-                */
-                setDestPosition(3.0, 1.0);
-		        setDestAngle(getAngle());
-                robotState = GO_TO_DUMP;
+                else{
+                    setDestPosition(3.5, 3.5);
+                    aStar();
+                    getPosition();
+                    robotState = EXCAVATE;
+                }
             }
             else if(check == 1){
-                changeSpeed(0.1, 0.1);
-            }
-            else if(check == 2){
                 changeSpeed(0.15, 0.15);
             }
+            else if(check == 2){
+                changeSpeed(0.2, 0.2);
+            }
             else{
-                changeSpeed(0.25, 0.25);
+                changeSpeed(0.3, 0.3);
             }
         }
     }
@@ -327,7 +315,7 @@ void Automation1::automate(){
     }
 
     // After mining, return to start position
-    if(robotState==GO_TO_DUMP){
+    if(robotState==NAVIGATE){
         if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
             if(getAngleDiff() < 0){
                 changeSpeed(-0.15, 0.15);
@@ -445,7 +433,7 @@ void Automation1::automate(){
         setDestZ(initial.first);
         setDestX(initial.second);
         setDestAngle(getAngle());
-        robotState = GO_TO_DIG_SITE;
+        robotState = EXCAVATE;
     }
 
     if(robotState == LEVEL){

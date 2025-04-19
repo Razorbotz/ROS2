@@ -548,17 +548,36 @@ void Automation::setDestPosition(float x, float z){
 
 
 /*
+TODO: Rename this to be more descriptive
+*/
+bool Automation::getPosition(){
+    if(this->currentPath.empty()){
+        return false;
+    }
+    else{
+        std::pair<int, int> current = this->currentPath.top();
+        this->currentPath.pop();
+        this->destZ = (this->search.Row - current.first) / 10.0;
+        this->destX = current.second / 10.0;
+        return true;
+    }
+}
+
+
+/*
 Function to run the A-Star algorithm. The includeHoles parameter
 tells the search algorithm whether or not holes should be included
 in the path or if they must be avoided.
 */
 void Automation::aStar(bool includeHoles){
-    this->currentPath = this->search.aStar(includeHoles);
+    this->currentPath = this->search.getSimplifiedPath(this->search.aStar(includeHoles)) ;
+    this->currentPath.pop();
 }
 
 
 void Automation::aStar(std::stack<Coord> points, bool includeHoles, bool simplify){
     this->currentPath = this->search.aStar(points, includeHoles, simplify);
+    this->currentPath.pop();
 }
 
 

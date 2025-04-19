@@ -77,7 +77,6 @@ bool GO=false;
 std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
 TalonFX* talonFX;
 bool TEMP_DISABLE = false;
-bool VOLT_DISABLE = false;
 
 // Operating modes:
 // 0 - Normal
@@ -139,29 +138,6 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	talonFX->Set(ControlMode::PercentOutput, speed->data);
 }
 
-/** @brief String parameter function
- * 
- * Function that takes a string as a parameter containing the
- * name of the parameter that is being parsed from the launch
- * file and the initial value of the parameter as inputs, then
- * gets the parameter, casts it as a string, displays the value
- * of the parameter on the command line and the log file, then
- * returns the parsed value of the parameter.
- * @param parametername String of the name of the parameter
- * @param initialValue Initial value of the parameter
- * @return value Value of the parameter
- * */
-template <typename T>
-T getParameter(std::string parameterName, std::string initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value = param.as_string();
-	std::cout << parameterName << ": " << value << std::endl;
-	std::string output = parameterName + ": " + value;
-	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
-	return value;
-}
-
 /** @brief Function to get the value of the specified parameter
  * 
  * Function that takes a string as a parameter containing the
@@ -178,17 +154,15 @@ template <typename T>
 T getParameter(std::string parameterName, int initialValue){
 	nodeHandle->declare_parameter<T>(parameterName, initialValue);
 	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value;
-	if(typeid(value).name() == typeid(int).name())
-		value = param.as_int();
-	if(typeid(value).name() == typeid(double).name())
-		value = param.as_double();
-	if(typeid(value).name() == typeid(bool).name())
-		value = param.as_bool();
+	T value = param.template get_value<T>();
 	std::cout << parameterName << ": " << value << std::endl;
-	std::string output = parameterName + ": " + std::to_string(value);
-	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
+	RLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
 	return value;
+}
+
+template <typename T>
+T getParameter(const std::string& parameterName, const char* initialValue){
+	retrn getParameter<T>(parameterName, std::string(initialValue));
 }
 
 
@@ -227,17 +201,18 @@ int main(int argc,char** argv){
 	c_Phoenix_Diagnostics_Create1(portNumber);
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
-	bool invertMotor = getParameter<bool>("invert_motor", 0);
-	double kP = getParameter<double>("kP", 1);
-	double kI = getParameter<double>("kI", 0);
-	double kD = getParameter<double>("kD", 0);
-	double kF = getParameter<double>("kF", 0);
+	bool invertMotor = getParameter<bool>("invert_motor", false);
+	double kP = getParameter<double>("kP", 1.0);
+	double kI = getParameter<double>("kI", 0.0);
+	double kD = getParameter<double>("kD", 0.0);
+	double kF = getParameter<double>("kF", 0.0);
 	int publishingDelay = getParameter<int>("publishing_delay", 0);
 	killKey = getParameter<int>("kill_key", 0);
 	op_mode = getParameter<int>("op_mode", 0);
-	printData = getParameter<bool>("print_data", 0);
+	printData = getParameter<bool>("print_data", false);
+	std::string can_interface = getParameter<std::string>("can_interface", "can0");
 
-	ctre::phoenix::platform::can::SetCANInterface("can0");
+	ctre::phoenix::platform::can::SetCANInterface(can_interface);
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
 
 	int kTimeoutMs=30;
@@ -322,7 +297,6 @@ int main(int argc,char** argv){
 			falconOut.integral_accumulator=integralAccumulator0;
 			falconOut.error_derivative=errorDerivative0;
 			falconOut.temp_disable = TEMP_DISABLE;
-			falconOut.volt_disable = VOLT_DISABLE;
 			if(outputCurrent > maxCurrent){
 				maxCurrent = outputCurrent;
 			}

@@ -35,14 +35,12 @@ class Automation{
         DIAGNOSTICS,
         LOCATE,
         ALIGN,
-        GO_TO_DIG_SITE,
+        INITIAL_NAV,
+        NAVIGATE,
         EXCAVATE,
-        OBSTACLE,
-        GO_TO_DUMP,
-        DUMP,
-        GO_TO_HOME,
         DOCK,
-        RETURN_TO_START,
+        DUMP,
+        OBSTACLE,
         LEVEL,
         ROBOT_IDLE
     };
@@ -103,14 +101,12 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         {DIAGNOSTICS, "Diagnostics"},
         {LOCATE, "Locate"},
         {ALIGN, "Align"},
-        {GO_TO_DIG_SITE, "Go To Dig Site"},
+        {INITIAL_NAV, "Initial Navigation"},
+        {NAVIGATE, "Navigate"},
         {EXCAVATE, "Excavate"},
-        {OBSTACLE, "Obstacle"},
-        {GO_TO_DUMP, "Go To Dump"},
-        {DUMP, "Dump"},
-        {GO_TO_HOME, "Go To Home"},
         {DOCK, "Dock"},
-        {RETURN_TO_START, "Return to Start"},
+        {DUMP, "Dump"},
+        {OBSTACLE, "Obstacle"},
         {LEVEL, "Level"},
         {ROBOT_IDLE,  "Idle"}
     };
@@ -237,8 +233,6 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     virtual void stopLevel() = 0;
     
-    void stopActuators();
-
     void setLinear1(const messages::msg::LinearOut::SharedPtr linearOut);
 
     void setLinear2(const messages::msg::LinearOut::SharedPtr linearOut);
@@ -280,6 +274,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     void setDestX(float meters);
 
     void setDestZ(float meters);
+
+    bool getPosition();
 
     void publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string dumpStateString, std::string tiltStateString, std::string bucketState, std::string armsState);
 

@@ -33,6 +33,9 @@ def generate_launch_description():
             package='power_distribution_panel',
             name='power_distribution_panel',
             executable='power_distribution_panel_node',
+            parameters=[
+                {"can_interface": "can0"}
+            ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
         ,
@@ -54,7 +57,8 @@ def generate_launch_description():
                 {"publishing_delay": 15},
                 {"kill_key": 50},
                 {"op_mode": 0},
-                {"print_data": False}
+                {"print_data": False},
+                {"can_interface": "can0"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -77,7 +81,8 @@ def generate_launch_description():
                 {"publishing_delay": 15},
                 {"kill_key": 51},
                 {"op_mode": 0},
-                {"print_data": False}
+                {"print_data": False},
+                {"can_interface": "can0"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -100,7 +105,8 @@ def generate_launch_description():
                 {"publishing_delay": 15},
                 {"kill_key": 52},
                 {"op_mode": 0},
-                {"print_data": False}
+                {"print_data": False},
+                {"can_interface": "can0"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -123,7 +129,8 @@ def generate_launch_description():
                 {"publishing_delay": 15},
                 {"kill_key": 53},
                 {"op_mode": 0},
-                {"print_data": False}
+                {"print_data": False},
+                {"can_interface": "can0"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
@@ -151,7 +158,8 @@ def generate_launch_description():
                 {"publishing_delay": 100},
                 {"kill_key": 54},
                 {"op_mode": 0},
-                {"print_data": False}
+                {"print_data": False},
+                {"can_interface": "can0"}
             ]
         )
 	    ,
@@ -172,7 +180,8 @@ def generate_launch_description():
                 {"publishing_delay": 100},
                 {"kill_key": 55},
                 {"op_mode": 0},
-                {"print_data": False}
+                {"print_data": False},
+                {"can_interface": "can0"}
             ]
         )
         ,
@@ -193,7 +202,8 @@ def generate_launch_description():
                 {"publishing_delay": 100},
                 {"kill_key": 56},
                 {"op_mode": 0},
-                {"print_data": False}
+                {"print_data": False},
+                {"can_interface": "can0"}
             ]
         )
 	    ,
@@ -214,7 +224,8 @@ def generate_launch_description():
                 {"publishing_delay": 100},
                 {"kill_key": 57},
                 {"op_mode": 0},
-                {"print_data": False}
+                {"print_data": False},
+                {"can_interface": "can0"}
             ]
         )
 	    ,

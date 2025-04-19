@@ -63,41 +63,15 @@ template <typename T>
 T getParameter(std::string parameterName, int initialValue){
 	nodeHandle->declare_parameter<T>(parameterName, initialValue);
 	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value;
-	if(typeid(value).name() == typeid(int).name())
-		value = param.as_int();
-	if(typeid(value).name() == typeid(double).name())
-		value = param.as_double();
-	if(typeid(value).name() == typeid(bool).name())
-		value = param.as_bool();
+	T value = param.template get_value<T>();
 	std::cout << parameterName << ": " << value << std::endl;
-	std::string output = parameterName + ": " + std::to_string(value);
-	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
+	RLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
 	return value;
 }
 
-
-/** @brief String parameter function
- * 
- * Function that takes a string as a parameter containing the
- * name of the parameter that is being parsed from the launch
- * file and the initial value of the parameter as inputs, then
- * gets the parameter, casts it as a string, displays the value
- * of the parameter on the command line and the log file, then
- * returns the parsed value of the parameter.
- * @param parametername String of the name of the parameter
- * @param initialValue Initial value of the parameter
- * @return value Value of the parameter
- * */
 template <typename T>
-T getParameter(std::string parameterName, std::string initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value = param.as_string();
-	std::cout << parameterName << ": " << value << std::endl;
-	std::string output = parameterName + ": " + value;
-	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
-	return value;
+T getParameter(const std::string& parameterName, const char* initialValue){
+	retrn getParameter<T>(parameterName, std::string(initialValue));
 }
 
 
@@ -281,7 +255,6 @@ int main(int argc, char **argv) {
             // if at least one marker detected
             if (ids.size() > 0) {
                 aruco_seen_consecutive_frames++;
-	        //	int id=ids[0];
                 cv::aruco::estimatePoseSingleMarkers(corners, actual_marker_size_meters, camera_matrix, dist_coeffs, rvecs, tvecs);
                 arucoPose.setTranslation(sl::float3(tvecs[0](0), tvecs[0](1), tvecs[0](2)));
                 arucoPose.setRotationVector(sl::float3(rvecs[0](0), rvecs[0](1), rvecs[0](2)));
