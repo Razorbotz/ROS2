@@ -138,7 +138,8 @@ void updateSpeed(){
     speedLeft.data  = speedLeft.data * maxSpeed;
     speedRight.data = speedRight.data * maxSpeed;
     
-    RCLCPP_INFO(nodeHandle->get_logger(),"speed left=%f right=%f  pitch=%f roll=%f", speedLeft.data,  speedRight.data, joystick1Pitch, joystick1Roll);
+    if(printData)
+        RCLCPP_INFO(nodeHandle->get_logger(),"speed left=%f right=%f  pitch=%f roll=%f", speedLeft.data,  speedRight.data, joystick1Pitch, joystick1Roll);
 
     driveLeftSpeedPublisher->publish(speedLeft);
     driveRightSpeedPublisher->publish(speedRight);
@@ -233,7 +234,8 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             if(buttonState->state){
                 stopSpeed();
             }
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 2");
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 2");
             break;
         case 2:
             if(buttonState->state){ 
@@ -244,7 +246,8 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             }
             armSpeedPublisher->publish(armSpeed);
             automation->stopArmsLevel();
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
             break;
         case 3:
             if(buttonState->state){
@@ -255,7 +258,8 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             }
             bucketSpeedPublisher->publish(bucketSpeed);
             automation->stopBucketLevel();
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
             break;
         case 4:
             if(buttonState->state){
@@ -266,7 +270,8 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             }
             armSpeedPublisher->publish(armSpeed);
             automation->stopArmsLevel();
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 5");
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 5");
             break;
         case 5:
             if(buttonState->state){
@@ -277,15 +282,18 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
             }
             bucketSpeedPublisher->publish(bucketSpeed);
             automation->stopBucketLevel();
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 6");
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 6");
             break;
         case 6:
             automation->startArmsLevel();
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 7");
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 7");
             break;
         case 7:
             automation->startBucketLevel();
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 8");
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 8");
             break;
         case 8:
             break;
@@ -341,7 +349,8 @@ void updateMaxSpeed(float deltaSpeed){
     if(maxSpeed > 1){
         maxSpeed = 1;
     }
-    RCLCPP_INFO(nodeHandle->get_logger(), "maxSpeed: %f", maxSpeed);
+    if(printData)
+        RCLCPP_INFO(nodeHandle->get_logger(), "maxSpeed: %f", maxSpeed);
 }
 
 

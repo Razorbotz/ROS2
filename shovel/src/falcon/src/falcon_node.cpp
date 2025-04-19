@@ -135,7 +135,8 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
-	talonFX->Set(ControlMode::PercentOutput, speed->data);
+	double targetVelocity_RPM = 6000 * speed->data; 
+	talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
 }
 
 /** @brief Function to get the value of the specified parameter
@@ -227,7 +228,7 @@ int main(int argc,char** argv){
 		talonFX->SetInverted(TalonFXInvertType::Clockwise);
 	}
 	talonFX->SelectProfileSlot(0,0);
-	talonFX->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, kTimeoutMs);
+	talonFX->ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, kTimeoutMs);
 	talonFX->ConfigClosedloopRamp(2);
 	talonFX->ConfigNominalOutputForward(0, kTimeoutMs);
 	talonFX->ConfigNominalOutputReverse(0, kTimeoutMs);
