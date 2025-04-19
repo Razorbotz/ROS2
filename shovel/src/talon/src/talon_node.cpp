@@ -161,7 +161,7 @@ void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
  * @return value Value of the parameter
  * */
 template <typename T>
-T getParameter(std::string parameterName, int initialValue){
+T getParameter(std::string parameterName, T initialValue){
 	nodeHandle->declare_parameter<T>(parameterName, initialValue);
 	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
 	T value = param.template get_value<T>();
@@ -217,18 +217,18 @@ int main(int argc,char** argv){
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
 	std::string positionTopic = getParameter<std::string>("position_topic", "unset");
 
-	bool invertMotor = getParameter<bool>("invert_motor", 0);
-	double kP = getParameter<double>("kP", 1);
-	double kI = getParameter<double>("kI", 0);
-	double kD = getParameter<double>("kD", 0);
-	double kF = getParameter<double>("kF", 0);
+	bool invertMotor = getParameter<bool>("invert_motor", false);
+	double kP = getParameter<double>("kP", 1.0);
+	double kI = getParameter<double>("kI", 0.0);
+	double kD = getParameter<double>("kD", 0.0);
+	double kF = getParameter<double>("kF", 0.0);
 	int publishingDelay = getParameter<int>("publishing_delay", 0);
 	killKey = getParameter<int>("kill_key", 0);
 	op_mode = getParameter<int>("op_mode", 0);
-	printData = getParameter<bool>("print_data", 0);
+	printData = getParameter<bool>("print_data", false);
 	std::string can_interface = getParameter<std::string>("can_interface", "can0");
 
-	ctre::phoenix::platform::can::SetCANInterface(can_interface);
+	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
 
 	int kTimeoutMs=30;

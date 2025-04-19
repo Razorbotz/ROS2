@@ -46,7 +46,7 @@ rclcpp::Node::SharedPtr nodeHandle;
  * @return value Value of the parameter
  * */
 template <typename T>
-T getParameter(std::string parameterName, int initialValue){
+T getParameter(std::string parameterName, T initialValue){
 	nodeHandle->declare_parameter<T>(parameterName, initialValue);
 	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
 	T value = param.template get_value<T>();

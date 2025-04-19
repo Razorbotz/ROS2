@@ -152,7 +152,7 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
  * @return value Value of the parameter
  * */
 template <typename T>
-T getParameter(std::string parameterName, int initialValue){
+T getParameter(std::string parameterName, T initialValue){
 	nodeHandle->declare_parameter<T>(parameterName, initialValue);
 	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
 	T value = param.template get_value<T>();
@@ -213,7 +213,7 @@ int main(int argc,char** argv){
 	printData = getParameter<bool>("print_data", false);
 	std::string can_interface = getParameter<std::string>("can_interface", "can0");
 
-	ctre::phoenix::platform::can::SetCANInterface(can_interface);
+	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
 
 	int kTimeoutMs=30;

@@ -88,6 +88,7 @@ float maxSpeed=0.4;
 
 bool automationGo=false;
 bool excavationGo = false;
+bool printData = false;
 
 Automation* automation;
 
@@ -528,7 +529,7 @@ void falcon4Callback(const messages::msg::FalconOut::SharedPtr falconOut){
  * @return value Value of the parameter
  * */
 template <typename T>
-T getParameter(std::string parameterName, int initialValue){
+T getParameter(std::string parameterName, T initialValue){
 	nodeHandle->declare_parameter<T>(parameterName, initialValue);
 	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
 	T value = param.template get_value<T>();
@@ -547,8 +548,9 @@ int main(int argc, char **argv){
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("logic");
 
-    std::string mapUsed = getParameter<std::string>("map", "unset");
-    bool turnLeft = getParameter<bool>("turnLeft", 0);
+    std::string mapUsed = getParameter<std::string>("map", "NASA");
+    bool turnLeft = getParameter<bool>("turnLeft", false);
+    printData = getParameter<bool>("print_data", false);
 
     if(mapUsed == "NASA"){
         automation = new Automation1();
