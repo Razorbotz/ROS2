@@ -169,20 +169,12 @@ void Automation1::automate(){
     // After finding the Aruco marker, turn the bot to 
     // align with the arena
     if(robotState==ALIGN){
-        if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
-            if(getAngleDiff() < 0){
-                changeSpeed(-0.2, 0.2);
-            }
-            else{
-                changeSpeed(0.2, -0.2);
-            }
-        } 
-        else {
+        if(checkAngle()){
             changeSpeed(0, 0);
             setStartPosition(position.x, position.z);
-            addPositionToStack(position.x, position.z);
-            addPositionToStack(3.75, 1.0);
-            addPositionToStack(3.75, 3.25);
+            addPointToStack(position.x, position.z);
+            addPointToStack(3.75, 1.0);
+            addPointToStack(3.75, 3.25);
             aStarStack(false, true);
             getPosition();
             float angle = getAngle();
@@ -200,15 +192,7 @@ void Automation1::automate(){
         float angle = getAngle();
         RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
         setDestAngle(angle);
-        if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
-            if(getAngleDiff() < 0){
-                changeSpeed(-0.2, 0.2);
-            }
-            else{
-                changeSpeed(0.2, -0.2);
-            }
-        } 
-        else{ 
+        if(checkAngle()){ 
             int check = checkDistance(.15);
             if(check == -1){
             }
@@ -241,15 +225,7 @@ void Automation1::automate(){
         float angle = getAngle();
         RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
         setDestAngle(angle);
-        if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
-            if(getAngleDiff() < 0){
-                changeSpeed(-0.2, 0.2);
-            }
-            else{
-                changeSpeed(0.2, -0.2);
-            }
-        }
-        else{ 
+        if (checkAngle()){ 
             int check = checkDistance(.10);
             if(check == -1){
             }
@@ -351,15 +327,7 @@ void Automation1::automate(){
         float angle = getAngle();
         RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
         setDestAngle(angle + 180);
-        if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
-            if(getAngleDiff() < 0){
-                changeSpeed(0.15, -0.15);
-            }
-            else{
-                changeSpeed(-0.15, 0.15);
-            }
-        } 
-        else{ 
+        if(checkAngle()){ 
             int distance = checkDistance(.1);
             if(distance == -1){
                 setDestAngle(getAngle());
@@ -382,23 +350,19 @@ void Automation1::automate(){
 
     // After collecting lunar regolith, align the center of the robot with the corresponding dump zone
     if(robotState==DOCK){
-    	
+    	setStartPosition(position.x, position.z);
+        float angle = getAngle();
+        RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
+        setDestAngle(angle);
+        /*
 		if (dumpCounter % 4 == 0){ // handles finishing a row of dumps
 			xCounter = 0;
 			zCounter ++; 
 		}
 		
 		centering(xCounter, zCounter); // Two stage centering on the current dumping site
-		
-		if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
-            if(getAngleDiff() < 0){
-                changeSpeed(-0.15, 0.15);
-            }
-            else{
-                changeSpeed(0.15, -0.15);
-            }
-        } 
-        else{ 
+		*/
+		if(checkAngle()){ 
             int distance = checkDistance(.05);
             if(distance == -1){
                 setDestAngle(getAngle());
@@ -425,7 +389,7 @@ void Automation1::automate(){
     if(robotState==DUMP){
 
         setArmPosition(900);
-        setBucketPosition(700);
+        setBucketPosition(50);
         
         
         if(checkArmPosition(20) && checkBucketPosition(20))	{				
@@ -434,7 +398,7 @@ void Automation1::automate(){
             
             //setArmPosition(100);	// handle bringing the arm and bucket to appropriate driving heights and return to loop
             //setBucketPosition(100);
-            
+            setDestPosition(3.25, 3.75);
             robotState = NAVIGATE;
         
         }
@@ -487,7 +451,7 @@ void Automation1::automate(){
         setStartPosition(this->search.Row - std::ceil(position.z * 10), std::ceil(position.x * 10));
         int x = this->search.Row - std::ceil(position.z * 10);
         int y = std::ceil(position.x * 10);
-        this->search.setObstacle(x, y, 2);
+        this->search.setObstacle(x, y, 2, 1);
         aStar();
         RCLCPP_INFO(this->node->get_logger(), "Current Position: %d, %d", this->search.startX, this->search.startY);
         setGo();

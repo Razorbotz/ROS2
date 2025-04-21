@@ -705,7 +705,7 @@ void communicationInterval(){
             std::cerr << "Failed to restart CAN interface" << std::endl;
             downCounter += 1;
             if(usingCAN1)
-                RCLCPP_FATAL(nodeHandle->get_logger(), "CAN1 interface down after switch from CAN0.")
+                RCLCPP_FATAL(nodeHandle->get_logger(), "CAN1 interface down after switch from CAN0.");
             if(downCounter == 5){
                 if(!usingCAN1){
                     std::cout << "Switching from CAN0 interface to CAN1 interface" << std::endl;

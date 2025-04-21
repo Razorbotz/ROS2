@@ -135,8 +135,9 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
-	double targetVelocity_RPM = 6000 * speed->data; 
-	talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
+	//double targetVelocity_RPM = 6000 * speed->data; 
+	//talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
+	talonFX->Set(ControlMode::PercentOutput, speed->data);
 }
 
 /** @brief Function to get the value of the specified parameter

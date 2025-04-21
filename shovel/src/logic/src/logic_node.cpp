@@ -84,7 +84,7 @@ float joystick1Pitch=0;
 float joystick1Yaw=0;
 float joystick1Throttle=0;
 
-float maxSpeed=0.4;
+float maxSpeed=0.8;
 
 bool automationGo=false;
 bool excavationGo = false;

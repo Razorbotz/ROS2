@@ -267,7 +267,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     float getAngleDiff();
 
-    int checkAngle();
+    bool checkAngle();
 
     int checkDistance(float thresh);
 

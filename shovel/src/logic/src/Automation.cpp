@@ -430,22 +430,33 @@ gets a little bit fuzzy.
 The expected use of this function is that the function will detect if the
 robot has gone outside of the expected angle.
 */
-int Automation::checkAngle(){
-    if(abs(this->destAngle) > 177){
-        if(std::abs(position.pitch) < std::abs(this->destAngle) + angleThresh && std::abs(position.pitch) > std::abs(this->destAngle) - angleThresh){
-            return 1;
-        }
+bool Automation::checkAngle(){
+    float diff = std::abs(position.pitch - this->destAngle);
+    float speed = 0.0;
+    if(diff > 20){
+        speed = 0.3;
+    }
+    else if(diff > 10){
+        speed = 0.2;
+    }
+    else if(diff > 5){
+        speed = 0.15;
     }
     else{
-        if(position.pitch < this->destAngle + angleThresh && position.pitch > this->destAngle - angleThresh){
-            return 1;
+        speed = 0.1;
+    }
+    if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
+        if(getAngleDiff() < 0){
+            changeSpeed(-speed, speed);
         }
+        else{
+            changeSpeed(speed, -speed);
+        }
+        return false;
     }
-    float angle = getAngleDiff(position.pitch);
-    if(angle < 0){
-        return 1;
+    else{
+        return true;
     }
-    return 0;
 }
 
 
@@ -571,9 +582,9 @@ bool Automation::getPosition(){
 
 
 void Automation::addPointToStack(float x, float z){
-    int x = this->search.Row - int(std::ceil(z * 10));
-    int y = int(std::ceil(x  * 10));
-    this->search.addPointToStack(x, y);
+    int X = this->search.Row - int(std::ceil(z * 10));
+    int Y = int(std::ceil(x  * 10));
+    this->search.addPointToStack(X, Y);
 }
 
 
