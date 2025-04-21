@@ -269,7 +269,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     int checkAngle();
 
-    int checkDistance();
+    int checkDistance(float thresh);
 
     void setDestX(float meters);
 
@@ -291,7 +291,9 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     void aStar(bool includeHoles = false);
 
-    void aStar(std::stack<Coord> points, bool includeHoles, bool simplify);
+    void aStarStack(bool includeHoles, bool simplify);
+
+    void addPointToStack(float x, float z);
 
     int checkArmPosition(int thresh);
 

@@ -39,6 +39,10 @@ class Search{
     int startX, startY, destX, destY;
     double newCost, newH, newTotal;
 
+    float Width = 0;
+
+    std::stack<Coord> points;
+
     void setRowCol(int row, int col);
 
     void initializeMap();
@@ -47,7 +51,7 @@ class Search{
 
     void setMap(int map[][COL]);
 
-    void setObstacle(int x, int y, int type);
+    void setObstacle(int x, int y, int type, int radius);
 
     void setOpen(int x, int y);
 
@@ -79,9 +83,11 @@ class Search{
 
     std::stack<Coord> aStar(std::stack<Coord> points, bool includeHoles = false, bool simplify = false);
 
+    bool isCollinear(Coord p1, Coord p2, Coord p3);
+
     std::stack<Coord> getSimplifiedPath(std::stack<Coord> rpath);
 
-    float getAngle(int destX, int destY, int startX, int startY);
-
     void printMap();
+
+    void addPointToStack(int x, int y);
 };

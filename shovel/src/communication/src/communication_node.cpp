@@ -86,6 +86,8 @@ int previousTX = 0;
 int previousRX = 0;
 std::string canMessage = "";
 char wifiCommand[128];
+bool usingCAN1 = false;
+int downCounter = 0;
 
 #define LOWER_THRESH 67
 #define UPPER_THRESH 80
@@ -332,6 +334,10 @@ void communicationCallback(){
     else
         message.addElementString("Wi-Fi", "NON-FUNCIONAL");
     message.addElementString("CAN Bus", canMessage);
+    if(!usingCAN1)
+        message.addElementString("Interface", "can0");
+    else
+        message.addElementString("Interface", "can1");
     message.addElementInt32("RX packets", previousRX);
     message.addElementInt32("TX packets", previousTX);
     send(message);
@@ -674,7 +680,11 @@ void communicationInterval(){
     rssi = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
     pclose(pipe);
     result = "";
-    FILE* pipe2 = popen("ip link show can0 | grep DOWN", "r");
+    FILE* pipe2;
+    if(!usingCAN1)
+        pipe2 = popen("ip link show can0 | grep DOWN", "r");
+    else
+        pipe2 = popen("ip link show can1 | grep DOWN", "r");
     while(!feof(pipe2)){
         if(fgets(buffer2, 128, pipe2) != nullptr){
             result += buffer2;
@@ -682,20 +692,46 @@ void communicationInterval(){
     }
     if(result.erase(result.find_last_not_of("\n\r") + 1).size() > 0){
         canMessage = "DOWN";
-        int result = std::system("./../../restart_can.sh");
+        int result;
+        if(!usingCAN1)
+            result = std::system("./../../restart_can.sh");
+        else
+            result = std::system("./../../restart_can1.sh");
         if (result == 0) {
             std::cout << "Restarted CAN interface" << std::endl;
+            downCounter = 0;
         }
         else {
             std::cerr << "Failed to restart CAN interface" << std::endl;
+            downCounter += 1;
+            if(usingCAN1)
+                RCLCPP_FATAL(nodeHandle->get_logger(), "CAN1 interface down after switch from CAN0.")
+            if(downCounter == 5){
+                if(!usingCAN1){
+                    std::cout << "Switching from CAN0 interface to CAN1 interface" << std::endl;
+                    int result = std::system("./../../launch_motors_can1.sh");
+                    usingCAN1 = true;
+                }
+                else{
+                    std::cout << "Switching from CAN0 interface to CAN1 interface" << std::endl;
+                    int result = std::system("./../../launch_motors.sh");
+                    usingCAN1 = false;
+                }
+                
+            }
         }
     }
     else{
         canMessage = "UP";
+        downCounter = 0;
     }
     result = "";
     pclose(pipe2);
-    FILE* pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)'", "r");
+    FILE* pipe3;
+    if(!usingCAN1)
+        pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)'", "r");
+    else
+        pipe3 = popen("ifconfig can1 | grep -o -P '(?<=RX packets ).*(?= bytes)'", "r");
     while(!feof(pipe3)){
         if(fgets(buffer2, 128, pipe3) != nullptr){
             result += buffer2;
@@ -713,7 +749,11 @@ void communicationInterval(){
     previousRX = rx;
     result = "";
     pclose(pipe3);
-    FILE* pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)'", "r");
+    FILE* pipe4;
+    if(!usingCAN1)
+        pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)'", "r");
+    else
+        pipe4 = popen("ifconfig can1 | grep -o -P '(?<=TX packets ).*(?= bytes)'", "r");
     while(!feof(pipe4)){
         if(fgets(buffer2, 128, pipe4) != nullptr){
             result += buffer2;

@@ -377,8 +377,14 @@ float Automation::getAngle(){
     float x = this->destX - this->position.x;
     float y = this->destZ - this->position.z;
     float angle = std::atan2(y, x) * 180 / M_PI;
+    if(angle < -90){
+        angle += 180;
+    }
+    if(angle > 90){
+        angle -= 180;
+    }
     if(x > 0){
-	angle = 90 - angle;
+	    angle = 90 - angle;
     }
     else{
     	angle = -90 - angle;
@@ -448,7 +454,7 @@ Function that checks the distance between the robot's current position
 and the destination. The greater the distance returned, the further out
 the robot is from the target location. 
 */
-int Automation::checkDistance(){
+int Automation::checkDistance(float thresh){
     float dist = sqrt(pow(position.z - this->destZ, 2) + pow(position.x - this->destX, 2));
     RCLCPP_INFO(this->node->get_logger(), "Distance: %f", dist); 
     // Check to see if the distance is increasing. If the distance
@@ -458,11 +464,11 @@ int Automation::checkDistance(){
     if(diff < 0)
         return -1;
     
-    if(dist < 0.05)
+    if(dist < thresh)
         return 0;
-    if(dist < 0.1)
+    if(dist < 2*thresh)
         return 1;
-    if(dist < 0.25)
+    if(dist < 3*thresh)
         return 2;
     return 3;
     
@@ -564,6 +570,13 @@ bool Automation::getPosition(){
 }
 
 
+void Automation::addPointToStack(float x, float z){
+    int x = this->search.Row - int(std::ceil(z * 10));
+    int y = int(std::ceil(x  * 10));
+    this->search.addPointToStack(x, y);
+}
+
+
 /*
 Function to run the A-Star algorithm. The includeHoles parameter
 tells the search algorithm whether or not holes should be included
@@ -575,8 +588,8 @@ void Automation::aStar(bool includeHoles){
 }
 
 
-void Automation::aStar(std::stack<Coord> points, bool includeHoles, bool simplify){
-    this->currentPath = this->search.aStar(points, includeHoles, simplify);
+void Automation::aStarStack(bool includeHoles, bool simplify){
+    this->currentPath = this->search.aStar(this->search.points, includeHoles, simplify);
     this->currentPath.pop();
 }
 

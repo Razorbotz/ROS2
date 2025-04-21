@@ -12,9 +12,15 @@ void Search::setRowCol(int row, int col){
 }
 
 void Search::initializeMap(){
+    int buffer = std::ceil(Width / 2);
 	for(int i = 0; i < Row; i++){
 		for(int j = 0; j < Col; j++){
-			this->map[i][j] = 0;
+			if(i >= buffer && i < Row - buffer && j >= buffer && j < Col - buffer){
+				this->map[i][j] = 0;
+			}
+			else{
+				this->map[i][j] = 3;
+			}
 		}
 	}
 }
@@ -31,6 +37,7 @@ void Search::initializeMap(float width){
 			}
 		}
 	}
+	Width = width;
 }
 
 void Search::setMap(int map[][COL]){
@@ -41,8 +48,14 @@ void Search::setMap(int map[][COL]){
 	}
 }
 
-void Search::setObstacle(int x, int y, int type){
-    this->map[x][y] = type;
+void Search::setObstacle(int x, int y, int type, int radius){
+    int buffer = std::ceil(Width / 2);
+
+    for(int i = (x - radius / 2) - buffer; i < x + (radius / 2) + buffer; i++){
+        for(int j = (y - radius / 2) - buffer; j < y + (radius / 2) + buffer; j++){
+            this->map[i][j] = type;
+        }
+    }
 }
 
 void Search::setOpen(int x, int y){
@@ -245,104 +258,53 @@ std::stack<Coord> Search::aStar(std::stack<Coord> points, bool includeHoles, boo
 	return Path;
 }
 
+bool Search::isCollinear(Coord p1, Coord p2, Coord p3) {
+    return (long long)(p2.second - p1.second) * (p3.first - p2.first) ==
+           (long long)(p3.second - p2.second) * (p2.first - p1.first);
+}
+
 std::stack<Coord> Search::getSimplifiedPath(std::stack<Coord> rpath){
-	std::stack<Coord> path;
-	while (!rpath.empty()){
-		std::pair<int, int> value = rpath.top();
-		rpath.pop();
-		path.push(value);
-	}
-	std::stack<Coord> simplifiedPath;
-	std::pair<int, int> initial = path.top();
-	path.pop();
-	simplifiedPath.push(initial);
-	bool xSecond = false;
-	bool ySecond = false;
-	bool topRight = false;
-	bool topLeft = false;
-	bool bottomLeft = false;
-	bool bottomRight = false;
-	while (!path.empty()) {
-		std::pair<int, int> previous = simplifiedPath.top();
-		std::pair<int, int> p = path.top();
-		path.pop();
-		if(previous.first == p.first){
-			if(xSecond){
-				simplifiedPath.pop();
-			}
-			xSecond = true;
-			ySecond = false;
-			topRight = false;
-			topLeft = false;
-			bottomLeft = false;
-			bottomRight = false;
-		}
-		else if(previous.second == p.second){
-			if(ySecond){
-				simplifiedPath.pop();
-			}
-			xSecond = false;
-			ySecond = true;
-			topRight = false;
-			topLeft = false;
-			bottomLeft = false;
-			bottomRight = false;
-		}
-		else if(previous.first == p.first + 1 &&  previous.second == p.second + 1){
-			if(bottomRight){
-				simplifiedPath.pop();
-			}
-			xSecond = false;
-			ySecond = false;
-			topLeft = false;
-			topRight = false;
-			bottomLeft = false;
-			bottomRight = true;
-		}
-		else if(previous.first == p.first - 1 &&  previous.second == p.second + 1){
-			if(bottomLeft){
-				simplifiedPath.pop();
-			}
-			xSecond = false;
-			ySecond = false;
-			topLeft = false;
-			topRight = false;
-			bottomLeft = true;
-			bottomRight = false;
-		}
-		else if(previous.first == p.first + 1 &&  previous.second == p.second - 1){
-			if(topRight){
-				simplifiedPath.pop();
-			}
-			xSecond = false;
-			ySecond = false;
-			topLeft = false;
-			topRight = true;
-			bottomLeft = false;
-			bottomRight = false;
-		}
-		else if(previous.first == p.first - 1 &&  previous.second == p.second - 1){
-			if(topLeft){
-				simplifiedPath.pop();
-			}
-			xSecond = false;
-			ySecond = false;
-			topLeft = true;
-			topRight = false;
-			bottomLeft = false;
-			bottomRight = false;
-		}
-		else{
-			xSecond = false;
-			ySecond = false;
-			topRight = false;
-			topLeft = false;
-			bottomLeft = false;
-			bottomRight = false;
-		}
-		simplifiedPath.push(p);
-	}
-	return simplifiedPath;
+    std::vector<Coord> pathVec;
+    while (!rpath.empty()){
+        pathVec.push_back(rpath.top());
+        rpath.pop();
+    }
+    std::reverse(pathVec.begin(), pathVec.end());
+
+    std::vector<Coord> simplifiedPathVec;
+
+    if (pathVec.empty()) {
+        return std::stack<Coord>(); 
+    }
+
+    simplifiedPathVec.push_back(pathVec[0]);
+
+    for (size_t i = 1; i < pathVec.size(); ++i) {
+        Coord currentPoint = pathVec[i];
+        Coord lastSimplifiedPoint = simplifiedPathVec.back();
+
+        if (simplifiedPathVec.size() >= 2) {
+            Coord secondLastSimplifiedPoint = simplifiedPathVec[simplifiedPathVec.size() - 2];
+
+            if (isCollinear(secondLastSimplifiedPoint, lastSimplifiedPoint, currentPoint)) {
+                simplifiedPathVec.pop_back();
+        	    simplifiedPathVec.push_back(currentPoint);
+            }
+			else {
+                simplifiedPathVec.push_back(currentPoint);
+            }
+        }
+		else {
+            simplifiedPathVec.push_back(currentPoint);
+        }
+    }
+
+    std::stack<Coord> simplifiedPath;
+    for (const auto& point : simplifiedPathVec) {
+        simplifiedPath.push(point);
+    }
+
+    return simplifiedPath;
 }
 
 void Search::printMap(){
@@ -357,4 +319,9 @@ void Search::printMap(){
 		}
 		std::cout << std::endl;
 	}
+}
+
+void Search::addPointToStack(int x, int y){
+    Coord point = Coord(x, y);
+    points.push(point);
 }

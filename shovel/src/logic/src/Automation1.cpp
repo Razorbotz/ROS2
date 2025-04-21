@@ -156,19 +156,11 @@ void Automation1::automate(){
         }
 
         if(position.arucoInitialized==true){
-            RCLCPP_INFO(this->node->get_logger(), "Roll: %f Pitch: %f Yaw: %f", position.roll, position.pitch, position.yaw);
             changeSpeed(0,0);
             setStartPosition(position.x, position.z);
-            RCLCPP_INFO(this->node->get_logger(), "startX: %d, startY: %d", this->search.startX, this->search.startY);
-            RCLCPP_INFO(this->node->get_logger(), "Position.x: %f, startX: %d", position.x, this->search.startX);
-            RCLCPP_INFO(this->node->get_logger(), "Position.z: %f, startY: %d", position.z, this->search.startY);
-            RCLCPP_INFO(this->node->get_logger(), "Row: %d, Col: %d", this->search.Row, this->search.Col);
             setDestPosition(3.5, 1.0);
             this->search.printMap();
-            RCLCPP_INFO(this->node->get_logger(), "destX: %d, destY: %d", this->search.destX, this->search.destY);
-            RCLCPP_INFO(this->node->get_logger(), "destX: %f, destZ: %f", this->destX, this->destZ);
             float angle = getAngle();
-            RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
             setDestAngle(angle);
             robotState=ALIGN;
         }
@@ -188,7 +180,10 @@ void Automation1::automate(){
         else {
             changeSpeed(0, 0);
             setStartPosition(position.x, position.z);
-            aStar();
+            addPositionToStack(position.x, position.z);
+            addPositionToStack(3.75, 1.0);
+            addPositionToStack(3.75, 3.25);
+            aStarStack(false, true);
             getPosition();
             float angle = getAngle();
             RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
@@ -214,7 +209,7 @@ void Automation1::automate(){
             }
         } 
         else{ 
-            int check = checkDistance();
+            int check = checkDistance(.15);
             if(check == -1){
             }
             else if(check == 0){
@@ -223,9 +218,7 @@ void Automation1::automate(){
                     setDestAngle(getAngle());
                 }
                 else{
-                    setDestPosition(3.5, 3.5);
-                    aStar();
-                    getPosition();
+                    setDestPosition(3.75, 2);
                     robotState = EXCAVATE;
                 }
             }
@@ -244,7 +237,45 @@ void Automation1::automate(){
     // After reaching the excavation area, go through mining sequence
     // Check that the potentiometers are in the correct range
     if(robotState==EXCAVATE){
+        setStartPosition(position.x, position.z);
+        float angle = getAngle();
+        RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
+        setDestAngle(angle);
+        if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
+            if(getAngleDiff() < 0){
+                changeSpeed(-0.2, 0.2);
+            }
+            else{
+                changeSpeed(0.2, -0.2);
+            }
+        }
+        else{ 
+            int check = checkDistance(.10);
+            if(check == -1){
+            }
+            else if(check == 0){
+                changeSpeed(0.0, 0.0);
+                if(getPosition()){
+                    setDestAngle(getAngle());
+                }
+                else{
+                    setDestPosition(3.75, 1.25);
+                    robotState = DOCK;
+                }
+            }
+            else if(check == 1){
+                changeSpeed(0.15, 0.15);
+            }
+            else if(check == 2){
+                changeSpeed(0.2, 0.2);
+            }
+            else{
+                changeSpeed(0.3, 0.3);
+            }
+        }
+        /*
         RCLCPP_INFO(this->node->get_logger(), "EXCAVATE");
+
         if(excavationState == RAISE_ARM){
             RCLCPP_INFO(this->node->get_logger(), "RAISE_ARM");
             RCLCPP_INFO(this->node->get_logger(), "linear1.potentiometer: %d", linear1.potentiometer);
@@ -311,21 +342,25 @@ void Automation1::automate(){
         if(excavationState == EXCAVATION_ERROR_RECOVERY){
 
         }
-
+        */
     }
 
     // After mining, return to start position
     if(robotState==NAVIGATE){
+        setStartPosition(position.x, position.z);
+        float angle = getAngle();
+        RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
+        setDestAngle(angle + 180);
         if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
             if(getAngleDiff() < 0){
-                changeSpeed(-0.15, 0.15);
+                changeSpeed(0.15, -0.15);
             }
             else{
-                changeSpeed(0.15, -0.15);
+                changeSpeed(-0.15, 0.15);
             }
         } 
         else{ 
-            int distance = checkDistance();
+            int distance = checkDistance(.1);
             if(distance == -1){
                 setDestAngle(getAngle());
             }
@@ -334,13 +369,13 @@ void Automation1::automate(){
                 robotState = ROBOT_IDLE;
             }
             else if(distance == 1){
-                changeSpeed(0.1, 0.1);
+                changeSpeed(-0.1, -0.1);
             }
             else if(distance == 2){
-                changeSpeed(0.15, 0.15);
+                changeSpeed(-0.15, -0.15);
             }
             else{
-                changeSpeed(0.25, 0.25);
+                changeSpeed(-0.25, -0.25);
             }
         }
     }
@@ -355,10 +390,38 @@ void Automation1::automate(){
 		
 		centering(xCounter, zCounter); // Two stage centering on the current dumping site
 		
-		robotState = DUMP;
+		if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
+            if(getAngleDiff() < 0){
+                changeSpeed(-0.15, 0.15);
+            }
+            else{
+                changeSpeed(0.15, -0.15);
+            }
+        } 
+        else{ 
+            int distance = checkDistance(.05);
+            if(distance == -1){
+                setDestAngle(getAngle());
+            }
+            else if(distance == 0){
+                changeSpeed(0.0, 0.0);
+                robotState = DUMP;
+            }
+            else if(distance == 1){
+                changeSpeed(0.1, 0.1);
+            }
+            else if(distance == 2){
+                changeSpeed(0.15, 0.15);
+            }
+            else{
+                changeSpeed(0.25, 0.25);
+            }
+        }
     }
 
     // Dump the collected regolith in the dump zone
+    // TODO: Need to check whether the camera can actually track the position
+    // before moving again
     if(robotState==DUMP){
 
         setArmPosition(900);
@@ -369,10 +432,10 @@ void Automation1::automate(){
             dumpCounter++;		// Keepping track of how many dumps 
             xCounter++;			// Which coloumn to dump into
             
-            setArmPosition(100);	// handle bringing the arm and bucket to appropriate driving heights and return to loop
-            setBucketPosition(100);
+            //setArmPosition(100);	// handle bringing the arm and bucket to appropriate driving heights and return to loop
+            //setBucketPosition(100);
             
-            robotState = EXCAVATE;
+            robotState = NAVIGATE;
         
         }
 
