@@ -37,7 +37,7 @@ void Search::initializeMap(float width){
 			}
 		}
 	}
-	Width = width;
+    Width = width;
 }
 
 void Search::setMap(int map[][COL]){
@@ -53,7 +53,9 @@ void Search::setObstacle(int x, int y, int type, int radius){
 
     for(int i = (x - radius / 2) - buffer; i < x + (radius / 2) + buffer; i++){
         for(int j = (y - radius / 2) - buffer; j < y + (radius / 2) + buffer; j++){
-            this->map[i][j] = type;
+            if(isValid(i, j)) {
+                this->map[i][j] = type;
+            }
         }
     }
 }
@@ -68,9 +70,15 @@ bool Search::isValid(int x, int y){
 
 bool Search::isOpen(int x, int y, bool includeHoles){
 	if(includeHoles){
+		if(!(this->map[x][y] == 0 || this->map[x][y] == 1)){
+			obstacleFound = true;
+		}
 		return (this->map[x][y] == 0 || this->map[x][y] == 1);
 	}
 	else{
+		if(this->map[x][y] != 0){
+			obstacleFound = true;
+		}
 	    return this->map[x][y] == 0;
 	}
 }
@@ -234,14 +242,13 @@ std::stack<Coord> Search::aStar(std::stack<Coord> points, bool includeHoles, boo
 	std::stack<Coord> Path;
 	Coord top = points.top();
 	Point start = Point(top.first, top.second);
-	std::cout << top.first << " " << top.second << std::endl;
 	points.pop();
 	bool first = true;
 	while(!points.empty()){
+		obstacleFound = false;
 		top = points.top();
 		Point dest = Point(top.first, top.second);
 		points.pop();
-		std::cout << top.first << " " << top.second << std::endl;
 		std::stack<Coord> newPath = aStar(start, dest, includeHoles);
 		if(first)
 			first = false;
@@ -254,8 +261,20 @@ std::stack<Coord> Search::aStar(std::stack<Coord> points, bool includeHoles, boo
 		start = dest;
 	}
 	if(simplify)
-		return getSimplifiedPath(Path);
+		return getSimplifiedPath(Path, points);
 	return Path;
+}
+
+std::unordered_set<Coord> Search::stackToSet(const std::stack<Coord>& stk) {
+    std::unordered_set<Coord> result;
+    std::stack<Coord> temp = stk;
+
+    while (!temp.empty()) {
+        result.insert(temp.top());
+        temp.pop();
+    }
+
+    return result;
 }
 
 bool Search::isCollinear(Coord p1, Coord p2, Coord p3) {
@@ -263,55 +282,151 @@ bool Search::isCollinear(Coord p1, Coord p2, Coord p3) {
            (long long)(p3.second - p2.second) * (p2.first - p1.first);
 }
 
-std::stack<Coord> Search::getSimplifiedPath(std::stack<Coord> rpath){
+bool Search::isObstacleBetweenPoints(Coord p1, Coord p2) {
+    int x1 = p1.first, y1 = p1.second;
+    int x2 = p2.first, y2 = p2.second;
+
+    int dx = abs(x2 - x1), dy = abs(y2 - y1);
+    int sx = (x1 < x2) ? 1 : -1;
+    int sy = (y1 < y2) ? 1 : -1;
+    int err = dx - dy;
+
+    while (true) {
+        if (!isValid(x1, y1) || !isOpen(x1, y1)) return true;
+
+        if (x1 == x2 && y1 == y2) break;
+
+        int e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x1 += sx; }
+        if (e2 < dx)  { err += dx; y1 += sy; }
+    }
+
+    return false;
+}
+
+std::stack<Coord> Search::getSimplifiedPath(std::stack<Coord> rpath) {
     std::vector<Coord> pathVec;
-    while (!rpath.empty()){
+    while (!rpath.empty()) {
         pathVec.push_back(rpath.top());
         rpath.pop();
     }
     std::reverse(pathVec.begin(), pathVec.end());
 
-    std::vector<Coord> simplifiedPathVec;
-
     if (pathVec.empty()) {
-        return std::stack<Coord>(); 
+        return std::stack<Coord>();
     }
 
+    std::vector<Coord> simplifiedPathVec;
     simplifiedPathVec.push_back(pathVec[0]);
 
-    for (size_t i = 1; i < pathVec.size(); ++i) {
-        Coord currentPoint = pathVec[i];
-        Coord lastSimplifiedPoint = simplifiedPathVec.back();
+    size_t i = 1;
+    while (i < pathVec.size()) {
+        Coord lastSimplified = simplifiedPathVec.back();
+        size_t furthest = i;
 
-        if (simplifiedPathVec.size() >= 2) {
-            Coord secondLastSimplifiedPoint = simplifiedPathVec[simplifiedPathVec.size() - 2];
-
-            if (isCollinear(secondLastSimplifiedPoint, lastSimplifiedPoint, currentPoint)) {
-                simplifiedPathVec.pop_back();
-        	    simplifiedPathVec.push_back(currentPoint);
-            }
-			else {
-                simplifiedPathVec.push_back(currentPoint);
+        for (size_t j = i + 1; j < pathVec.size(); ++j) {
+            if (!isObstacleBetweenPoints(lastSimplified, pathVec[j])) {
+                furthest = j;
+            } else {
+                break;
             }
         }
-		else {
-            simplifiedPathVec.push_back(currentPoint);
+
+        simplifiedPathVec.push_back(pathVec[furthest]);
+        i = furthest + 1;
+    }
+
+    std::vector<Coord> finalPathVec;
+    finalPathVec.push_back(simplifiedPathVec[0]);
+
+    for (size_t i = 1; i < simplifiedPathVec.size(); ++i) {
+        Coord current = simplifiedPathVec[i];
+        Coord last = finalPathVec.back();
+
+        if (finalPathVec.size() >= 2) {
+            Coord secondLast = finalPathVec[finalPathVec.size() - 2];
+            if (isCollinear(secondLast, last, current)) {
+                finalPathVec.pop_back();
+            }
         }
+        finalPathVec.push_back(current);
     }
 
-    std::stack<Coord> simplifiedPath;
-    for (const auto& point : simplifiedPathVec) {
-        simplifiedPath.push(point);
+    std::stack<Coord> result;
+    for (const auto& pt : finalPathVec) {
+        result.push(pt);
     }
 
-    return simplifiedPath;
+    return result;
+}
+
+std::stack<Coord> Search::getSimplifiedPath(std::stack<Coord> rpath, const std::stack<Coord> pointsToKeep) {
+	std::unordered_set<Coord> mustKeep = stackToSet(pointsToKeep);
+	std::vector<Coord> pathVec;
+    while (!rpath.empty()) {
+        pathVec.push_back(rpath.top());
+        rpath.pop();
+    }
+    std::reverse(pathVec.begin(), pathVec.end());
+
+    if (pathVec.empty()) {
+        return std::stack<Coord>();
+    }
+
+    std::vector<Coord> simplifiedPathVec;
+    simplifiedPathVec.push_back(pathVec[0]);
+
+    size_t i = 1;
+    while (i < pathVec.size()) {
+        Coord lastSimplified = simplifiedPathVec.back();
+        size_t furthest = i;
+
+        for (size_t j = i + 1; j < pathVec.size(); ++j) {
+            if (mustKeep.count(pathVec[j])) {
+                furthest = j;
+                break;
+            }
+
+            if (!isObstacleBetweenPoints(lastSimplified, pathVec[j])) {
+                furthest = j;
+            } else {
+                break;
+            }
+        }
+
+        simplifiedPathVec.push_back(pathVec[furthest]);
+        i = furthest + 1;
+    }
+
+    std::vector<Coord> finalPathVec;
+    finalPathVec.push_back(simplifiedPathVec[0]);
+
+    for (size_t i = 1; i < simplifiedPathVec.size(); ++i) {
+        Coord current = simplifiedPathVec[i];
+        Coord last = finalPathVec.back();
+
+        if (finalPathVec.size() >= 2) {
+            Coord secondLast = finalPathVec[finalPathVec.size() - 2];
+            if (isCollinear(secondLast, last, current) && !mustKeep.count(last)) {
+                finalPathVec.pop_back();
+            }
+        }
+        finalPathVec.push_back(current);
+    }
+
+    std::stack<Coord> result;
+    for (const auto& pt : finalPathVec) {
+        result.push(pt);
+    }
+
+    return result;
 }
 
 void Search::printMap(){
 	for(int i = 0; i < Row; i++){
 		for(int j = 0; j < Col; j++){
 			if(i == startX && j == startY)
-				std::cout << "X ";
+				std::cout << "S ";
 			else if(i == destX && j == destY)
 				std::cout << "T ";
 			else
@@ -319,6 +434,54 @@ void Search::printMap(){
 		}
 		std::cout << std::endl;
 	}
+}
+
+void Search::printMap(std::stack<Coord> points){
+    std::set<Coord> pathCoords;
+    Coord firstPathPoint = {-1, -1};
+    Coord lastPathPoint = {-1, -1};
+
+	lastPathPoint = points.top();
+    bool isFirstElement = true;
+
+    while(!points.empty()) {
+        Coord current = points.top();
+
+        if (isFirstElement) {
+            isFirstElement = false;
+        }
+
+        firstPathPoint = current;
+
+        pathCoords.insert(current);
+        points.pop();
+    }
+
+	for(int i = 0; i < Row; i++){
+        for(int j = 0; j < Col; j++){
+            Coord currentCoord = {i, j};
+
+            if(currentCoord == firstPathPoint) {
+                std::cout << "S ";
+            }
+			else if(currentCoord == lastPathPoint) {
+                std::cout << "T ";
+            }
+			else if (pathCoords.count(currentCoord) > 0) {
+                std::cout << "* ";
+            }
+			else {
+                switch (map[i][j]) {
+                    case 0: std::cout << ". "; break;
+                    case 1: std::cout << ". "; break;
+                    case 2: std::cout << "# "; break;
+                    case 3: std::cout << "X "; break;
+                    default: std::cout << "? "; break;
+                }
+            }
+        }
+        std::cout << std::endl;
+    }
 }
 
 void Search::addPointToStack(int x, int y){

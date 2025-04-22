@@ -1,6 +1,18 @@
 #include <bits/stdc++.h>
+#include <utility>
+#include <unordered_set>
 #define COL 82
 #define ROW 50
+
+
+namespace std {
+    template <>
+    struct hash<std::pair<int, int>> {
+        std::size_t operator()(const std::pair<int, int>& coord) const {
+            return std::hash<int>()(coord.first) ^ (std::hash<int>()(coord.second) << 1);
+        }
+    };
+}
 
 struct Point{
     int x;
@@ -25,6 +37,9 @@ typedef std::pair<int, int> Coord;
 typedef std::pair<double, std::pair<int, int> > Node;
  
 class Search{
+    private:
+    bool obstacleFound = false;
+
     public:
     cell cells[ROW][COL];
 
@@ -83,11 +98,19 @@ class Search{
 
     std::stack<Coord> aStar(std::stack<Coord> points, bool includeHoles = false, bool simplify = false);
 
+    std::unordered_set<Coord> stackToSet(const std::stack<Coord>& stk);
+
     bool isCollinear(Coord p1, Coord p2, Coord p3);
+
+    bool isObstacleBetweenPoints(Coord p1, Coord p2);
 
     std::stack<Coord> getSimplifiedPath(std::stack<Coord> rpath);
 
+    std::stack<Coord> getSimplifiedPath(std::stack<Coord> rpath, const std::stack<Coord> pointsToKeep);
+
     void printMap();
+
+    void printMap(std::stack<Coord> points);
 
     void addPointToStack(int x, int y);
 };

@@ -326,11 +326,12 @@ void Automation1::automate(){
         setStartPosition(position.x, position.z);
         float angle = getAngle();
         RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
+        // TODO: This doesn't work atm, need to revise it
         setDestAngle(angle + 180);
         if(checkAngle()){ 
             int distance = checkDistance(.1);
             if(distance == -1){
-                setDestAngle(getAngle());
+                setDestAngle(getAngle() + 180);
             }
             else if(distance == 0){
                 changeSpeed(0.0, 0.0);

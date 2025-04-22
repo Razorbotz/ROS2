@@ -16,51 +16,30 @@ def generate_launch_description():
 
     # Define the path to the included launch files
     motors_launch_file = os.path.join(launch_dir, 'launch', 'launch_motors.py')
+    logic_launch_file = os.path.join(launch_dir, 'launch', 'launch_logic.py')
+    comm_launch_file = os.path.join(launch_dir, 'launch', 'launch_comm.py')
+    excav_launch_file = os.path.join(launch_dir, 'launch', 'launch_excav.py')
+    cam_launch_file = os.path.join(launch_dir, 'launch', 'launch_cam.py')
+    
     return LaunchDescription([
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(motors_launch_file)
-        ),
-        Node(
-            package='logic',
-            name='logic',
-            executable='logic_node',
-            parameters=[
-                {"map": "NASA"},
-                {"turnLeft": True}
-            ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
         )
         ,
-        Node(
-            package='communication',
-            name='communication',
-            executable='communication_node',
-            parameters=[
-                {"robot_name": "Shovel"}
-            ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(logic_launch_file)
         )
         ,
-        Node(
-            package='excavation',
-            name='excavation',
-            executable='excavation_node'
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(comm_launch_file)
         )
         ,
-        Node(
-            package='zed_tracking',
-            name='zed_tracking',
-            executable='zed_tracking_node',
-            parameters=[
-                {"xOffset": 1.4},
-                {"resolution": "VGA"}
-            ]
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(excav_launch_file)
         )
         ,
-        Node(
-            package='video_streaming',
-            name='video_streaming',
-            executable='video_streaming_node'
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(cam_launch_file)
         )
         #,
         #ExecuteProcess(
