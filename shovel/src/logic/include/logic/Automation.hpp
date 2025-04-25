@@ -202,6 +202,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     bool levelBucket = true;
     bool levelArms = true;
+    bool centeringSecond = false;
 
     virtual void automate() = 0;
 
