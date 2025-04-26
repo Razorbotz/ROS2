@@ -239,6 +239,8 @@ std::stack<Coord> Search::aStar(Point src, Point dest, bool includeHoles, bool s
 }
 
 std::stack<Coord> Search::aStar(std::stack<Coord> points, bool includeHoles, bool simplify){
+	
+	auto origPoints = points; 
 	std::stack<Coord> Path;
 	Coord top = points.top();
 	Point start = Point(top.first, top.second);
@@ -261,7 +263,7 @@ std::stack<Coord> Search::aStar(std::stack<Coord> points, bool includeHoles, boo
 		start = dest;
 	}
 	if(simplify)
-		return getSimplifiedPath(Path, points);
+		return getSimplifiedPath(Path, origPoints);
 	return Path;
 }
 

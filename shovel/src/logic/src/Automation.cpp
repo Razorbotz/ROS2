@@ -430,34 +430,45 @@ gets a little bit fuzzy.
 The expected use of this function is that the function will detect if the
 robot has gone outside of the expected angle.
 */
+// place up near your helpers:
+static float normalizeAngle(float θ) {
+    // bring any θ into (–180, +180]
+    while (θ >  180.0f) θ -= 360.0f;
+    while (θ <= -180.0f) θ += 360.0f;
+    return θ;
+}
+
 bool Automation::checkAngle(){
-    float diff = std::abs(position.pitch - this->destAngle);
-    float speed = 0.0;
-    if(diff > 20){
-        speed = 0.3;
-    }
-    else if(diff > 10){
-        speed = 0.2;
-    }
-    else if(diff > 5){
-        speed = 0.15;
-    }
-    else{
-        speed = 0.1;
-    }
-    if (!(position.pitch < this->destAngle+angleThresh && position.pitch > this->destAngle-angleThresh)) {
-        if(getAngleDiff() < 0){
+    // 1) compute signed error in [–180, +180]
+    float error = normalizeAngle(this->destAngle - position.pitch);
+
+    // 2) magnitude
+    float absErr = std::abs(error);
+
+    // 3) pick spin speed based on how far off we are
+    float speed;
+    if      (absErr > 20.0f) speed = 0.3f;
+    else if (absErr > 10.0f) speed = 0.2f;
+    else if (absErr >  5.0f) speed = 0.15f;
+    else                      speed = 0.1f;
+
+    // 4) if we’re still outside our dead-band, spin; otherwise we’re aligned
+    if (absErr > angleThresh) {
+        if (error < 0.0f) {
+            // negative error ⇒ need to turn “left”
             changeSpeed(-speed, speed);
-        }
-        else{
+        } else {
+            // positive error ⇒ turn “right”
             changeSpeed(speed, -speed);
         }
         return false;
     }
-    else{
-        return true;
-    }
+
+    // 5) we’re within the dead-band—stop turning
+    changeSpeed(0.0f, 0.0f);
+    return true;
 }
+
 
 
 /*
