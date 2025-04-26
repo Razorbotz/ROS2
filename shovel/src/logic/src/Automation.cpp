@@ -431,11 +431,11 @@ The expected use of this function is that the function will detect if the
 robot has gone outside of the expected angle.
 */
 // place up near your helpers:
-static float normalizeAngle(float θ) {
+static float normalizeAngle(float x) {
     // bring any θ into (–180, +180]
-    while (θ >  180.0f) θ -= 360.0f;
-    while (θ <= -180.0f) θ += 360.0f;
-    return θ;
+    while (x >  180.0f) x -= 360.0f;
+    while (x <= -180.0f) x += 360.0f;
+    return x;
 }
 
 bool Automation::checkAngle(){

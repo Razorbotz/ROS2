@@ -175,7 +175,7 @@ void Automation1::automate(){
             addPointToStack(position.x, position.z);
             addPointToStack(3.75, 1.0);
             addPointToStack(3.75, 3.25);
-            aStarStack(false, false);
+            aStarStack(false, true);
             getPosition();
             float angle = getAngle();
             RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);

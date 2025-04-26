@@ -242,7 +242,6 @@ std::stack<Coord> Search::aStar(std::stack<Coord> points, bool includeHoles, boo
 	
 	auto origPoints = points; 
 	std::stack<Coord> Path;
-	auto origPoints = points;
 	Coord top = points.top();
 	Point start = Point(top.first, top.second);
 	points.pop();
