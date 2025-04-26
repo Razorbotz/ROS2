@@ -8,7 +8,7 @@ def generate_launch_description():
             name='zed_tracking',
             executable='zed_tracking_node',
             parameters=[
-                {"xOffset": 1.4},
+                {"xOffset": 1.25},
                 {"resolution": "VGA"}
             ]
         )
