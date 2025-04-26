@@ -350,43 +350,40 @@ void Automation1::automate(){
     }
 
     // After collecting lunar regolith, align the center of the robot with the corresponding dump zone
-    if (robotState == DOCK) {
-        // 1) Compute the two‐stage center & set destX,destZ,destAngle
-        centering(xCounter, zCounter);
-    
-        // 2) Always measure distance first
-        int distState = checkDistance(0.05f);   // 5 cm thresh
-    
-        // 2a) If we’ve arrived _at_ the center point, stop and advance
-        if (distState == 0) {
-            changeSpeed(0.0f, 0.0f);
-    
-            if (centeringSecond) {
-                // second‐stage done → go dump
-                robotState      = DUMP;
-                centeringSecond = false;
-            } else {
-                // first‐stage done → move on to stage 2
-                centeringSecond = true;
+    if(robotState==DOCK){
+    	//setStartPosition(position.x, position.z);
+        //float angle = getAngle();
+        //RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
+        //setDestAngle(angle);
+        /*
+		
+		*/
+		centering(xCounter, zCounter); // Two stage centering on the current dumping site
+		
+		if(checkAngle()){ 
+            int distance = checkDistance(.05);
+            if(distance == -1){
+                setDestAngle(getAngle());
             }
-            return;  // *** skip any heading logic ***
-        }
-    
-        // 3) Not at goal yet, so make sure we’re pointed the right way
-        if (!checkAngle()) {
-            // still spinning up to face the center; don’t drive forward
-            return;
-        }
-    
-        // 4) Aligned + not at goal ⇒ drive in
-        if (distState == 1) {
-            changeSpeed(0.10f, 0.10f);
-        }
-        else if (distState == 2) {
-            changeSpeed(0.15f, 0.15f);
-        }
-        else {  // 3 or more
-            changeSpeed(0.25f, 0.25f);
+            else if(distance == 0){
+                changeSpeed(0.0, 0.0);
+                if(centeringSecond){
+                    robotState = DUMP;
+                    centeringSecond = false;
+                }
+                else{
+                    centeringSecond = true;
+                }
+            }
+            else if(distance == 1){
+                changeSpeed(0.1, 0.1);
+            }
+            else if(distance == 2){
+                changeSpeed(0.15, 0.15);
+            }
+            else{
+                changeSpeed(0.25, 0.25);
+            }
         }
     }
 
