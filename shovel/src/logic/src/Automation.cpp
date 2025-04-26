@@ -717,17 +717,17 @@ void Automation::centering(int xCounter, int zCounter){ // centering function to
     float originX = 3.5; //top left x of the target dump zone
     float originZ = 1.7; //top left z of the target dump zone
     float zChange = 0.3; //meters of change in the Z axis per row change
-    float zAlign = 1.35; //meters south of the origin for aligning bucket to dump site
+    float zAlign = 0.35; //meters south of the origin for aligning bucket to dump site
     float bucketOffset = .508; //offset for aligning to the front of the bucket
 
     if(!centeringSecond){
         setStartPosition(position.x, position.z);
-        setDestPosition((originX + ((xCounter*BUCKET_WIDTH) + (BUCKET_WIDTH/2))), originZ + zAlign); // calculate angle 1
+        setDestPosition((originX + ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20))), originZ + zAlign); // calculate angle 1
         setDestAngle(getAngle());
     }
     else{
         setStartPosition(position.x, position.z);
-        setDestPosition((originX + ((xCounter*BUCKET_WIDTH) + (BUCKET_WIDTH/2))), originZ + (zCounter*zChange + (zChange/2) + bucketOffset)); // calculate angle 2
+        setDestPosition((originX + ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20))), originZ + (zCounter*zChange + (zChange/2) + bucketOffset)); // calculate angle 2
         setDestAngle(getAngle());
     }
 }
