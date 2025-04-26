@@ -350,41 +350,33 @@ void Automation1::automate(){
     }
 
     // After collecting lunar regolith, align the center of the robot with the corresponding dump zone
-    if(robotState==DOCK){
-    	//setStartPosition(position.x, position.z);
-        //float angle = getAngle();
-        //RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
-        //setDestAngle(angle);
-        /*
-		
-		*/
-		centering(xCounter, zCounter); // Two stage centering on the current dumping site
-		
-		if(checkAngle()){ 
-            int distance = checkDistance(.05);
-            if(distance == -1){
-                setDestAngle(getAngle());
-            }
-            else if(distance == 0){
-                changeSpeed(0.0, 0.0);
-                if(centeringSecond){
-                    robotState = DUMP;
-                    centeringSecond = false;
-                }
-                else{
-                    centeringSecond = true;
-                }
-            }
-            else if(distance == 1){
-                changeSpeed(0.1, 0.1);
-            }
-            else if(distance == 2){
-                changeSpeed(0.15, 0.15);
-            }
-            else{
-                changeSpeed(0.25, 0.25);
-            }
+    if (robotState == DOCK) {
+        // 1) Compute centering target & feed into your Automation
+        centering(xCounter, zCounter);
+    
+        // 2) Direct continuous distance check (in meters)
+        float dx   = destX - position.x;
+        float dz   = destZ - position.z;
+        float dist = std::hypot(dx, dz);
+        constexpr float FINAL_THRESH = 0.05f;  // 5 cm
+    
+        if (dist < FINAL_THRESH) {
+            changeSpeed(0.0f, 0.0f);
+            centeringSecond = false;    // reset for next time
+            robotState      = DUMP;     // force the state change
+            return;                     // skip the rest of DOCK logic
         }
+    
+        // 3) Otherwise, do your usual align-then-drive…
+        if (!checkAngle()) {
+            return;
+        }
+        int d = checkDistance(FINAL_THRESH);
+        if      (d <  0)   { setDestAngle(getAngle()); }
+        else if (d == 0)   { changeSpeed(0,0); }
+        else if (d == 1)   { changeSpeed(0.1f, 0.1f); }
+        else if (d == 2)   { changeSpeed(0.15f, 0.15f); }
+        else               { changeSpeed(0.25f, 0.25f); }
     }
 
     // Dump the collected regolith in the dump zone
