@@ -424,236 +424,39 @@ Element BinaryMessage::decodeElement(std::list<uint8_t>::iterator& currentByte){
     std::vector<size_t> sizeList;
     std::list<Data> dataList;
 
-    if(type == TYPE::BOOLEAN){
-        sizeList.push_back(1);
-        Data data;
-        data.boolean = *currentByte;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::CHARACTER){
-        sizeList.push_back(1);
-        Data data;
-        data.character = *currentByte;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::INT8){
-        sizeList.push_back(1);
-        Data data;
-        data.int8 = *currentByte;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::INT16){
-        sizeList.push_back(1);
-        Data data;
-        data.int16  = (int16_t)(*currentByte) << 8;
-        currentByte++;
-        data.int16 |= (int16_t)(*currentByte) << 0;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::INT32){
-        sizeList.push_back(1);
-        Data data;
-        data.int32  = (int32_t)(*currentByte) << 24;
-        currentByte++;
-        data.int32 |= (int32_t)(*currentByte) << 16;
-        currentByte++;
-        data.int32 |= (int32_t)(*currentByte) << 8;
-        currentByte++;
-        data.int32 |= (int32_t)(*currentByte) << 0;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::INT64){
-        sizeList.push_back(1);
-        Data data;
-        data.int64  = (int64_t)(*currentByte) << 56;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 48;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 40;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 32;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 24;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 16;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 8;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 0;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::UINT8){
-        sizeList.push_back(1);
-        Data data;
-        data.uint8 = *currentByte;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::UINT16){
-        sizeList.push_back(1);
-        Data data;
-        data.uint16  = (uint16_t)(*currentByte) << 8;
-        currentByte++;
-        data.uint16 |= (uint16_t)(*currentByte) << 0;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::UINT32){
-        sizeList.push_back(1);
-        Data data;
-        data.uint32  = (uint32_t)(*currentByte) << 24;
-        currentByte++;
-        data.uint32 |= (uint32_t)(*currentByte) << 16;
-        currentByte++;
-        data.uint32 |= (uint32_t)(*currentByte) << 8;
-        currentByte++;
-        data.uint32 |= (uint32_t)(*currentByte) << 0;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::UINT64){
-        sizeList.push_back(1);
-        Data data;
-        data.uint64  = ((uint64_t)(*currentByte)) << 56;
-        currentByte++;
-        data.uint64 |= ((uint64_t)(*currentByte)) << 48;
-        currentByte++;
-        data.uint64 |= ((uint64_t)(*currentByte)) << 40;
-        currentByte++;
-        data.uint64 |= ((uint64_t)(*currentByte)) << 32;
-        currentByte++;
-        data.uint64 |= ((uint64_t)(*currentByte)) << 24;
-        currentByte++;
-        data.uint64 |= ((uint64_t)(*currentByte)) << 16;
-        currentByte++;
-        data.uint64 |= ((uint64_t)(*currentByte)) << 8;
-        currentByte++;
-        data.uint64 |= ((uint64_t)(*currentByte)) << 0;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::FLOAT32){
-        sizeList.push_back(1);
-        Data data;
-        data.int32  = (int32_t)(*currentByte) << 24;
-        currentByte++;
-        data.int32 |= (int32_t)(*currentByte) << 16;
-        currentByte++;
-        data.int32 |= (int32_t)(*currentByte) << 8;
-        currentByte++;
-        data.int32 |= (int32_t)(*currentByte) << 0;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::FLOAT64){
-        sizeList.push_back(1);
-        Data data;
-        data.int64  = (int64_t)(*currentByte) << 56;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 48;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 40;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 32;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 24;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 16;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 8;
-        currentByte++;
-        data.int64 |= (int64_t)(*currentByte) << 0;
-        currentByte++;
-        dataList.push_back(data);
-    }
-    else if(type == TYPE::STRING){
-        size_t size = decodeSizeBytes(currentByte);
-        sizeList.push_back(size);
+    switch (type)
+    {
+        
 
-        for(int index = 0; index < size ; index++){
-            Data data;
-            data.character = *currentByte;
-            currentByte++;
-            dataList.push_back(data);
-        }
-    }
-    else if(type == TYPE::ARRAYBOOLEAN){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
-            Data data;
-            data.boolean = *currentByte;
-            currentByte++;
-            dataList.push_back(data);
-        }
-    }
-    else if(type == TYPE::ARRAYCHARACTER){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
-            Data data;
-            data.character = *currentByte;
-            currentByte++;
-            dataList.push_back(data);
-        }
-    }
-    else if(type == TYPE::ARRAYINT8){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
+        case TYPE::BOOLEAN:
+        case TYPE::CHARACTER:
+        case TYPE::INT8:
+        {
+            sizeList.push_back(1);
             Data data;
             data.int8 = *currentByte;
             currentByte++;
             dataList.push_back(data);
+            break;
+
         }
-    }
-    else if(type == TYPE::ARRAYINT16){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
+
+        case TYPE::INT16:
+        {
+            sizeList.push_back(1);
             Data data;
-            data.uint16  = (uint16_t)(*currentByte) << 8;
+            data.int16  = (int16_t)(*currentByte) << 8;
             currentByte++;
-            data.uint16 |= (uint16_t)(*currentByte) << 0;
+            data.int16 |= (int16_t)(*currentByte) << 0;
             currentByte++;
             dataList.push_back(data);
+            break;
+
+            
         }
-    }
-    else if(type == TYPE::ARRAYINT32){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
+        case TYPE::INT32:
+        {
+            sizeList.push_back(1);
             Data data;
             data.int32  = (int32_t)(*currentByte) << 24;
             currentByte++;
@@ -664,17 +467,11 @@ Element BinaryMessage::decodeElement(std::list<uint8_t>::iterator& currentByte){
             data.int32 |= (int32_t)(*currentByte) << 0;
             currentByte++;
             dataList.push_back(data);
+            break;
         }
-    }
-    else if(type == TYPE::ARRAYINT64){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
+        case TYPE::INT64:
+        {
+            sizeList.push_back(1);
             Data data;
             data.int64  = (int64_t)(*currentByte) << 56;
             currentByte++;
@@ -693,139 +490,371 @@ Element BinaryMessage::decodeElement(std::list<uint8_t>::iterator& currentByte){
             data.int64 |= (int64_t)(*currentByte) << 0;
             currentByte++;
             dataList.push_back(data);
+            break;
         }
-    }
-    else if(type == TYPE::ARRAYUINT8){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
+        case TYPE::UINT8:
+        {
+            sizeList.push_back(1);
             Data data;
-            data.int8 = *currentByte;
+            data.uint8 = *currentByte;
             currentByte++;
             dataList.push_back(data);
+            break;
         }
-    }
-    else if(type == TYPE::ARRAYUINT16){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
+        case TYPE::UINT16:
+        {
+            sizeList.push_back(1);
             Data data;
             data.uint16  = (uint16_t)(*currentByte) << 8;
             currentByte++;
             data.uint16 |= (uint16_t)(*currentByte) << 0;
             currentByte++;
             dataList.push_back(data);
+            break;
         }
-    }
-    else if(type == TYPE::ARRAYUINT32){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
+        case TYPE::UINT32:
+        {
+            sizeList.push_back(1);
             Data data;
-            data.uint32  = (int32_t)(*currentByte) << 24;
+            data.uint32  = (uint32_t)(*currentByte) << 24;
             currentByte++;
-            data.uint32 |= (int32_t)(*currentByte) << 16;
+            data.uint32 |= (uint32_t)(*currentByte) << 16;
             currentByte++;
-            data.uint32 |= (int32_t)(*currentByte) << 8;
+            data.uint32 |= (uint32_t)(*currentByte) << 8;
             currentByte++;
-            data.uint32 |= (int32_t)(*currentByte) << 0;
+            data.uint32 |= (uint32_t)(*currentByte) << 0;
             currentByte++;
             dataList.push_back(data);
+            break;
         }
-    }
-    else if(type == TYPE::ARRAYUINT64){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
+        case TYPE::UINT64:
+        {
+            sizeList.push_back(1);
             Data data;
-            data.uint64  = (int64_t)(*currentByte) << 56;
+            data.uint64  = ((uint64_t)(*currentByte)) << 56;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 48;
+            data.uint64 |= ((uint64_t)(*currentByte)) << 48;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 40;
+            data.uint64 |= ((uint64_t)(*currentByte)) << 40;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 32;
+            data.uint64 |= ((uint64_t)(*currentByte)) << 32;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 24;
+            data.uint64 |= ((uint64_t)(*currentByte)) << 24;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 16;
+            data.uint64 |= ((uint64_t)(*currentByte)) << 16;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 8;
+            data.uint64 |= ((uint64_t)(*currentByte)) << 8;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 0;
+            data.uint64 |= ((uint64_t)(*currentByte)) << 0;
             currentByte++;
             dataList.push_back(data);
+            break;
         }
-    }
-    else if(type == TYPE::ARRAYFLOAT32){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
+        case TYPE::FLOAT32:
+        {
+            sizeList.push_back(1);
             Data data;
-            data.uint32  = (int32_t)(*currentByte) << 24;
+            data.int32  = (int32_t)(*currentByte) << 24;
             currentByte++;
-            data.uint32 |= (int32_t)(*currentByte) << 16;
+            data.int32 |= (int32_t)(*currentByte) << 16;
             currentByte++;
-            data.uint32 |= (int32_t)(*currentByte) << 8;
+            data.int32 |= (int32_t)(*currentByte) << 8;
             currentByte++;
-            data.uint32 |= (int32_t)(*currentByte) << 0;
+            data.int32 |= (int32_t)(*currentByte) << 0;
             currentByte++;
             dataList.push_back(data);
+            break;
         }
-    }
-    else if(type == TYPE::ARRAYFLOAT64){
-        dimensionCount = decodeSizeBytes(currentByte);
-        uint64_t totalValues=1;
-        for(int index = 0; index < dimensionCount; index++){
-            size_t size = decodeSizeBytes(currentByte);
-            sizeList.push_back(size);
-            totalValues *= size;
-        }
-        for(uint64_t index = 0; index < totalValues; index++){
+        case TYPE::FLOAT64:
+        {
+            sizeList.push_back(1);
             Data data;
-            data.uint64  = (int64_t)(*currentByte) << 56;
+            data.int64  = (int64_t)(*currentByte) << 56;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 48;
+            data.int64 |= (int64_t)(*currentByte) << 48;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 40;
+            data.int64 |= (int64_t)(*currentByte) << 40;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 32;
+            data.int64 |= (int64_t)(*currentByte) << 32;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 24;
+            data.int64 |= (int64_t)(*currentByte) << 24;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 16;
+            data.int64 |= (int64_t)(*currentByte) << 16;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 8;
+            data.int64 |= (int64_t)(*currentByte) << 8;
             currentByte++;
-            data.uint64 |= (int64_t)(*currentByte) << 0;
+            data.int64 |= (int64_t)(*currentByte) << 0;
             currentByte++;
             dataList.push_back(data);
+            break;
         }
+        case TYPE::STRING:
+        {
+            size_t size = decodeSizeBytes(currentByte);
+            sizeList.push_back(size);
+    
+            for(int index = 0; index < size ; index++){
+                Data data;
+                data.character = *currentByte;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+        case TYPE::ARRAYBOOLEAN:
+        {
+            dimensionCount = decodeSizeBytes(currentByte);
+            uint64_t totalValues=1;
+            for(int index = 0; index < dimensionCount; index++){
+                size_t size = decodeSizeBytes(currentByte);
+                sizeList.push_back(size);
+                totalValues *= size;
+            }
+            for(uint64_t index = 0; index < totalValues; index++){
+                Data data;
+                data.boolean = *currentByte;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+
+        case TYPE::ARRAYCHARACTER:
+        case TYPE::ARRAYINT8:
+        {
+            dimensionCount = decodeSizeBytes(currentByte);
+            uint64_t totalValues=1;
+            for(int index = 0; index < dimensionCount; index++){
+                size_t size = decodeSizeBytes(currentByte);
+                sizeList.push_back(size);
+                totalValues *= size;
+            }
+            for(uint64_t index = 0; index < totalValues; index++){
+                Data data;
+                data.int8 = *currentByte;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+        case TYPE::ARRAYINT16:
+        {
+            dimensionCount = decodeSizeBytes(currentByte);
+            uint64_t totalValues=1;
+            for(int index = 0; index < dimensionCount; index++){
+                size_t size = decodeSizeBytes(currentByte);
+                sizeList.push_back(size);
+                totalValues *= size;
+            }
+            for(uint64_t index = 0; index < totalValues; index++){
+                Data data;
+                data.uint16  = (uint16_t)(*currentByte) << 8;
+                currentByte++;
+                data.uint16 |= (uint16_t)(*currentByte) << 0;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+        case TYPE::ARRAYINT32:
+        {
+            dimensionCount = decodeSizeBytes(currentByte);
+            uint64_t totalValues=1;
+            for(int index = 0; index < dimensionCount; index++){
+                size_t size = decodeSizeBytes(currentByte);
+                sizeList.push_back(size);
+                totalValues *= size;
+            }
+            for(uint64_t index = 0; index < totalValues; index++){
+                Data data;
+                data.int32  = (int32_t)(*currentByte) << 24;
+                currentByte++;
+                data.int32 |= (int32_t)(*currentByte) << 16;
+                currentByte++;
+                data.int32 |= (int32_t)(*currentByte) << 8;
+                currentByte++;
+                data.int32 |= (int32_t)(*currentByte) << 0;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+        case TYPE::ARRAYINT64:
+        {
+            dimensionCount = decodeSizeBytes(currentByte);
+            uint64_t totalValues=1;
+            for(int index = 0; index < dimensionCount; index++){
+                size_t size = decodeSizeBytes(currentByte);
+                sizeList.push_back(size);
+                totalValues *= size;
+            }
+            for(uint64_t index = 0; index < totalValues; index++){
+                Data data;
+                data.int64  = (int64_t)(*currentByte) << 56;
+                currentByte++;
+                data.int64 |= (int64_t)(*currentByte) << 48;
+                currentByte++;
+                data.int64 |= (int64_t)(*currentByte) << 40;
+                currentByte++;
+                data.int64 |= (int64_t)(*currentByte) << 32;
+                currentByte++;
+                data.int64 |= (int64_t)(*currentByte) << 24;
+                currentByte++;
+                data.int64 |= (int64_t)(*currentByte) << 16;
+                currentByte++;
+                data.int64 |= (int64_t)(*currentByte) << 8;
+                currentByte++;
+                data.int64 |= (int64_t)(*currentByte) << 0;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+        case TYPE::ARRAYUINT8:
+        {
+            dimensionCount = decodeSizeBytes(currentByte);
+            uint64_t totalValues=1;
+            for(int index = 0; index < dimensionCount; index++){
+                size_t size = decodeSizeBytes(currentByte);
+                sizeList.push_back(size);
+                totalValues *= size;
+            }
+            for(uint64_t index = 0; index < totalValues; index++){
+                Data data;
+                data.int8 = *currentByte;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+        case TYPE::ARRAYUINT16:
+        {
+            dimensionCount = decodeSizeBytes(currentByte);
+            uint64_t totalValues=1;
+            for(int index = 0; index < dimensionCount; index++){
+                size_t size = decodeSizeBytes(currentByte);
+                sizeList.push_back(size);
+                totalValues *= size;
+            }
+            for(uint64_t index = 0; index < totalValues; index++){
+                Data data;
+                data.uint16  = (uint16_t)(*currentByte) << 8;
+                currentByte++;
+                data.uint16 |= (uint16_t)(*currentByte) << 0;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+        case TYPE::ARRAYUINT32:
+        {
+            dimensionCount = decodeSizeBytes(currentByte);
+            uint64_t totalValues=1;
+            for(int index = 0; index < dimensionCount; index++){
+                size_t size = decodeSizeBytes(currentByte);
+                sizeList.push_back(size);
+                totalValues *= size;
+            }
+            for(uint64_t index = 0; index < totalValues; index++){
+                Data data;
+                data.uint32  = (int32_t)(*currentByte) << 24;
+                currentByte++;
+                data.uint32 |= (int32_t)(*currentByte) << 16;
+                currentByte++;
+                data.uint32 |= (int32_t)(*currentByte) << 8;
+                currentByte++;
+                data.uint32 |= (int32_t)(*currentByte) << 0;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+        case TYPE::ARRAYUINT64:
+        {
+            dimensionCount = decodeSizeBytes(currentByte);
+            uint64_t totalValues=1;
+            for(int index = 0; index < dimensionCount; index++){
+                size_t size = decodeSizeBytes(currentByte);
+                sizeList.push_back(size);
+                totalValues *= size;
+            }
+            for(uint64_t index = 0; index < totalValues; index++){
+                Data data;
+                data.uint64  = (int64_t)(*currentByte) << 56;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 48;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 40;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 32;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 24;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 16;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 8;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 0;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+        case TYPE::ARRAYFLOAT32:
+        {
+            dimensionCount = decodeSizeBytes(currentByte);
+            uint64_t totalValues=1;
+            for(int index = 0; index < dimensionCount; index++){
+                size_t size = decodeSizeBytes(currentByte);
+                sizeList.push_back(size);
+                totalValues *= size;
+            }
+            for(uint64_t index = 0; index < totalValues; index++){
+                Data data;
+                data.uint32  = (int32_t)(*currentByte) << 24;
+                currentByte++;
+                data.uint32 |= (int32_t)(*currentByte) << 16;
+                currentByte++;
+                data.uint32 |= (int32_t)(*currentByte) << 8;
+                currentByte++;
+                data.uint32 |= (int32_t)(*currentByte) << 0;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+        case TYPE::ARRAYFLOAT64:
+        {
+            dimensionCount = decodeSizeBytes(currentByte);
+            uint64_t totalValues=1;
+            for(int index = 0; index < dimensionCount; index++){
+                size_t size = decodeSizeBytes(currentByte);
+                sizeList.push_back(size);
+                totalValues *= size;
+            }
+            for(uint64_t index = 0; index < totalValues; index++){
+                Data data;
+                data.uint64  = (int64_t)(*currentByte) << 56;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 48;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 40;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 32;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 24;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 16;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 8;
+                currentByte++;
+                data.uint64 |= (int64_t)(*currentByte) << 0;
+                currentByte++;
+                dataList.push_back(data);
+            }
+            break;
+        }
+
     }
 
     Element element(label, dataList, type, dimensionCount, sizeList);
