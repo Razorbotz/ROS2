@@ -728,7 +728,7 @@ void Automation::centering(int xCounter, int zCounter){ // centering function to
     float originX = 3.5; //top left x of the target dump zone
     float originZ = 0.7; //top left z of the target dump zone
     float zChange = 0.3; //meters of change in the Z axis per row change
-    float zAlign = 0.35; //meters south of the origin for aligning bucket to dump site
+    float zAlign = 0.5; //meters south of the origin for aligning bucket to dump site
     float bucketOffset = .508; //offset for aligning to the front of the bucket
 
     if(!centeringSecond){

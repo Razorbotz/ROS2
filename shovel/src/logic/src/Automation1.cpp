@@ -405,7 +405,7 @@ void Automation1::automate(){
             }
             //setArmPosition(100);	// handle bringing the arm and bucket to appropriate driving heights and return to loop
             //setBucketPosition(100);
-            setDestPosition(3.25 + ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20)), 3.25);
+            setDestPosition(3.5 + ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20)), 3.25);
             robotState = NAVIGATE;
         
         }        

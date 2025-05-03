@@ -148,6 +148,7 @@ int main(int argc, char **argv) {
 //    init_params.coordinate_system = sl::COORDINATE_SYSTEM::LEFT_HANDED_Z_UP;
 //    init_params.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Z_UP_X_FWD;
     init_params.sensors_required = true;
+    init_params.depth_mode = sl::DEPTH_MODE::NEURAL;
 
     // Open the camera
     auto err = zed.open(init_params);
@@ -211,6 +212,7 @@ int main(int argc, char **argv) {
     tracking_params.enable_imu_fusion = true;
     tracking_params.enable_area_memory = true;
     tracking_params.enable_pose_smoothing = true;
+    tracking_params.mode = sl::POSITIONAL_TRACKING_MODE::GEN_2;
     auto returned_state = zed.enablePositionalTracking(tracking_params);
     if (returned_state != sl::ERROR_CODE::SUCCESS) {
         zed.close();
@@ -225,17 +227,6 @@ int main(int argc, char **argv) {
         if (zed.grab() == sl::ERROR_CODE::SUCCESS) {
             // Retrieve the left image
             zed.retrieveImage(image_zed, sl::VIEW::LEFT, sl::MEM::CPU, image_size);
-            zed.retrieveImage(depth_image, sl::VIEW::DEPTH);
-            zed.retrieveMeasure(depth_map, sl::MEASURE::DEPTH);
-
-            cv::Mat fullImage = cv::Mat((int) depth_image.getHeight(), (int) depth_image.getWidth(), CV_8UC4, depth_image.getPtr<sl::uchar1>(sl::MEM::CPU));
-            // Remove part of image that holds the robot arms
-            cv::Rect roi(300, 30, depth_image.getWidth() - 600, depth_image.getHeight() - 80);
-
-            cv::Mat cvImage = fullImage(roi);
-            cv::Mat canny;
-            cv::Canny(cvImage, canny, 5, 30, 3);
-            cv::findContours(canny, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
             // convert to RGB
             cv::cvtColor(image_ocv, image_ocv_rgb, cv::COLOR_RGBA2RGB);
@@ -294,48 +285,10 @@ int main(int argc, char **argv) {
             y_vel = vel[1];
             z_vel = vel[2];
 
-            /*
-            This code was intended to identify the obstacles that are in the way of the 
-            robot and get the bounding box of the obstacle.
-            */
-            for(size_t i = 0; i < contours.size(); i++){
-                if(cv::contourArea(contours[i]) > 20){
-                    cv::Rect box = boundingRect(contours[i]);
-                    float depth_value = 0;
-                    depth_map.getValue(int(box.x + box.width / 2)+300, int(box.y + box.height / 2) + 50, &depth_value);
-                    float calcWidth = box.width * depth_value * 0.00018474;
-                    if(calcWidth > 20){
-                        float x = depth_value * sin(zedPose.getEulerAngles(false).y) / sin(90.0) + calcWidth;
-                        float y = depth_value * sin(90- zedPose.getEulerAngles(false).y) / sin(90.0) + calcWidth;
-                        // publish values here
-                    }
-                }
-            }
-
-/*
-            zed.retrieveImage(image_zed, sl::VIEW::LEFT);
-            zed.retrieveMeasure(depth, sl::MEASURE::DEPTH);
-            zed.retrieveMeasure(point_cloud, sl::MEASURE::XYZRGBA);
-
-            int x = image_zed.getWidth() / 2;
-            int y = image_zed.getHeight() / 2;
-            sl::float4 point_cloud_value;
-            point_cloud.getValue(x, y, &point_cloud_value);
-
-            if(std::isfinite(point_cloud_value.z)){
-                distance = sqrt(point_cloud_value.x * point_cloud_value.x + point_cloud_value.y * point_cloud_value.y + point_cloud_value.z * point_cloud_value.z);
-                distance *= 10;
-                RCLCPP_INFO(nodeHandle->get_logger(), "Distance: %f", distance);
-            }
-            else{
-                distance = -1;
-            }
-*/
-
         if (tracking_state == sl::POSITIONAL_TRACKING_STATE::OK) {
-            zedPosition.x=zedPose.getTranslation().x + xOffset;
-            zedPosition.y=zedPose.getTranslation().y;
-            zedPosition.z=zedPose.getTranslation().z;
+            zedPosition.x=zedPose.pose_data.tx + xOffset;
+            zedPosition.y=zedPose.pose_data.ty;
+            zedPosition.z=zedPose.pose_data.tz;
             zedPosition.ox=zedPose.getOrientation().ox;
             zedPosition.oy=zedPose.getOrientation().oy;
             zedPosition.oz=zedPose.getOrientation().oz;

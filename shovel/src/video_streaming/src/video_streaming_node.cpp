@@ -63,16 +63,16 @@ bool send_all(int sock, const void* data, size_t len) {
         }
         else {
             if (errno == EINTR) {
-                RCLCPP_INFO(nodeHandle->get_logger(), "send interrupted by EINTR, retrying.");
+                //RCLCPP_INFO(nodeHandle->get_logger(), "send interrupted by EINTR, retrying.");
                 continue;
             }
             else if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                RCLCPP_INFO(nodeHandle->get_logger(), "send temporarily unavailable, retrying.");
+                //RCLCPP_INFO(nodeHandle->get_logger(), "send temporarily unavailable, retrying.");
                 std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Add a small delay before retrying
                 continue;
             }
             else {
-                RCLCPP_ERROR(nodeHandle->get_logger(), "send failed: %s", strerror(errno));
+                //RCLCPP_ERROR(nodeHandle->get_logger(), "send failed: %s", strerror(errno));
                 return false;
             }
         }
