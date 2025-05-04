@@ -134,10 +134,10 @@ int main(int argc, char **argv) {
     }
     else if(resolution == "HD2K"){
         init_params.camera_resolution = sl::RESOLUTION::HD2K;
-        init_params.camera_fps = 30; 
+        init_params.camera_fps = 15; 
     }
     else{
-        init_params.camera_resolution = sl::RESOLUTION::VGA;
+        init_params.camera_resolution = sl::RESOLUTION::HD720;
         init_params.camera_fps = 30; 
     }
     init_params.coordinate_units = sl::UNIT::METER;
@@ -293,9 +293,9 @@ int main(int argc, char **argv) {
             zedPosition.oy=zedPose.getOrientation().oy;
             zedPosition.oz=zedPose.getOrientation().oz;
             zedPosition.ow=zedPose.getOrientation().ow;
-            zedPosition.roll = zedPose.getEulerAngles(false).x - 12.33;
-            zedPosition.pitch = zedPose.getEulerAngles(false).y;
-            zedPosition.yaw = zedPose.getEulerAngles(false).z;
+            zedPosition.roll = zedPose.pose_data.getEulerAngles(false).x - 12.33;
+            zedPosition.pitch = zedPose.pose_data.getEulerAngles(false).y;
+            zedPosition.yaw = zedPose.pose_data.getEulerAngles(false).z;
             zedPosition.x_acc = x_acc;
             zedPosition.y_acc = y_acc;
             zedPosition.z_acc = z_acc;

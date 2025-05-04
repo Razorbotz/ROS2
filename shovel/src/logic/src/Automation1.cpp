@@ -192,28 +192,13 @@ void Automation1::automate(){
         float angle = getAngle();
         RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
         setDestAngle(angle);
-        if(checkAngle()){ 
-            int check = checkDistance(.15);
-            if(check == -1){
-            }
-            else if(check == 0){
-                changeSpeed(0.0, 0.0);
-                if(getPosition()){
-                    setDestAngle(getAngle());
-                }
-                else{
-                    setDestPosition(3.75, 2);
-                    robotState = EXCAVATE;
-                }
-            }
-            else if(check == 1){
-                changeSpeed(0.15, 0.15);
-            }
-            else if(check == 2){
-                changeSpeed(0.2, 0.2);
+        if(driveToTarget(0.05)){
+            if(getPosition()){
+                setDestAngle(getAngle());
             }
             else{
-                changeSpeed(0.3, 0.3);
+                setDestPosition(3.75, 2);
+                robotState = EXCAVATE;
             }
         }
     }
@@ -235,7 +220,7 @@ void Automation1::automate(){
                     setDestAngle(getAngle());
                 }
                 else{
-                    setDestPosition(3.75, 1.25);
+                    setDestPosition(3.75+ ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20)), 1.25);
                     robotState = DOCK;
                 }
             }
@@ -327,53 +312,16 @@ void Automation1::automate(){
         float angle = getAngle();
         RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
         // TODO: This doesn't work atm, need to revise it
-        setDestAngle(angle + 180);
+        setDestAngle(angle);
         if(checkAngle()){ 
             int distance = checkDistance(.1);
-            if(distance == -1){
-                setDestAngle(getAngle() + 180);
-            }
-            else if(distance == 0){
-                changeSpeed(0.0, 0.0);
-                robotState = DOCK;
-            }
-            else if(distance == 1){
-                changeSpeed(-0.1, -0.1);
-            }
-            else if(distance == 2){
-                changeSpeed(-0.15, -0.15);
-            }
-            else{
-                changeSpeed(-0.25, -0.25);
-            }
-        }
-    }
-
-    // After collecting lunar regolith, align the center of the robot with the corresponding dump zone
-    if(robotState==DOCK){
-    	//setStartPosition(position.x, position.z);
-        //float angle = getAngle();
-        //RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
-        //setDestAngle(angle);
-        /*
-		
-		*/
-		centering(xCounter, zCounter); // Two stage centering on the current dumping site
-		
-		if(checkAngle()){ 
-            int distance = checkDistance(.05);
             if(distance == -1){
                 setDestAngle(getAngle());
             }
             else if(distance == 0){
                 changeSpeed(0.0, 0.0);
-                if(centeringSecond){
-                    robotState = DUMP;
-                    centeringSecond = false;
-                }
-                else{
-                    centeringSecond = true;
-                }
+                setDestPosition(3.75 + ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20)), 2.0);
+                robotState = EXCAVATE;
             }
             else if(distance == 1){
                 changeSpeed(0.1, 0.1);
@@ -387,28 +335,53 @@ void Automation1::automate(){
         }
     }
 
+    // After collecting lunar regolith, align the center of the robot with the corresponding dump zone
+    if(robotState==DOCK){
+		centering(xCounter, zCounter); // Two stage centering on the current dumping site
+		
+		if(driveToTarget(0.05)){
+            if(centeringSecond){
+                robotState = DUMP;
+                centeringSecond = false;
+            }
+            else{
+                centeringSecond = true;
+            }
+        }
+    }
+
     // Dump the collected regolith in the dump zone
     // TODO: Need to check whether the camera can actually track the position
     // before moving again
     if(robotState==DUMP){
-
-        setArmPosition(950);
-        setBucketPosition(50);
-        
-        
-        if(checkArmPosition(20) && checkBucketPosition(20))	{				
-            dumpCounter++;		// Keeping track of how many dumps 
-            xCounter++;			// Which column to dump into
-            if (dumpCounter % 4 == 0){ // handles finishing a row of dumps
-                xCounter = 0;
-                zCounter ++; 
+        if(dumpState == DUMP_IDLE){
+            setArmPosition(950);
+            setBucketPosition(650);
+            dumpState = DUMP_EXTEND;
+        }
+        if(dumpState == DUMP_EXTEND){
+            if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+                setArmPosition(950);
+                setBucketPosition(50);
+                dumpState = DUMP_RETRACT;
             }
-            //setArmPosition(100);	// handle bringing the arm and bucket to appropriate driving heights and return to loop
-            //setBucketPosition(100);
-            setDestPosition(3.5 + ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20)), 3.25);
-            robotState = NAVIGATE;
+        }
+        if(dumpState == DUMP_RETRACT){
+            if(checkArmPosition(20) && checkBucketPosition(20))	{				
+                dumpCounter++;		// Keeping track of how many dumps 
+                xCounter++;			// Which column to dump into
+                if (dumpCounter % 4 == 0){ // handles finishing a row of dumps
+                    xCounter = 0;
+                    zCounter ++; 
+                }
+                //setArmPosition(100);	// handle bringing the arm and bucket to appropriate driving heights and return to loop
+                //setBucketPosition(100);
+                setDestPosition(3.5 + ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20)), 3.25);
+                robotState = NAVIGATE;
+                dumpState = DUMP_IDLE;
+            }        
+        }
         
-        }        
     }
     /*
     // Dump the collected rocks in the dump bin
@@ -419,15 +392,6 @@ void Automation1::automate(){
             dumpState = DUMP_EXTEND;
         }
         if(dumpState == DUMP_EXTEND){
-            if(checkArmPosition(30)){
-                setBucketSpeed(1.0);
-            }
-            if(checkArmPosition(30)){
-                setArmSpeed(0.0);
-            }
-            if(checkBucketPosition(30)){
-                setBucketSpeed(0.0);
-            }
             if(checkArmPosition(30) && checkBucketPosition(30)){
                 setBucketPosition(10);
                 setArmPosition(10);
@@ -435,12 +399,6 @@ void Automation1::automate(){
             }
         }
         if(dumpState == DUMP_RETRACT){
-            if(checkArmPosition(30) == 1){
-                setArmSpeed(0.0);
-            }
-            if(checkBucketPosition(30) == 1){
-                setBucketSpeed(0.0);
-            }
             if(checkArmPosition(30) == 1 && checkBucketPosition(30) == 1){
                 robotState = ROBOT_IDLE;
                 dumpState = DUMP_IDLE;

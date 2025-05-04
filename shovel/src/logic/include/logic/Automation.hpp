@@ -272,6 +272,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     int checkDistance(float thresh);
 
+    bool driveToTarget(float closeThresh);
+
     void setDestX(float meters);
 
     void setDestZ(float meters);

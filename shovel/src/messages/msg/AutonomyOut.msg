@@ -5,3 +5,5 @@ string diagnostics_state
 string tilt_state
 string bucket_state
 string arms_state
+float32 dest_x
+float32 dest_z

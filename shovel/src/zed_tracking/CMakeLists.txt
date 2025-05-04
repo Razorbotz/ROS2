@@ -25,7 +25,7 @@ find_package(messages REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(cv_bridge REQUIRED)
 
-find_package(ZED 5 REQUIRED)
+find_package(ZED 4 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(CUDA ${ZED_CUDA_VERSION} EXACT REQUIRED)
 

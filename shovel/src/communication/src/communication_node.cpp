@@ -290,6 +290,8 @@ void send(std::string messageLabel, const messages::msg::AutonomyOut::SharedPtr 
     message.addElementString("Tilt State", autonomy->tilt_state);
     message.addElementString("Level Bucket", autonomy->bucket_state);
     message.addElementString("Level Arms", autonomy->arms_state);
+    message.addElementFloat32("Dest X", autonomy->dest_x);
+    message.addElementFloat32("Dest Z", autonomy->dest_z);
 
     send(message);
 }

@@ -66,6 +66,7 @@ void Automation::setPosition(Position position){
         prevY = position.y;
         prevZ = position.z;
     }
+    RCLCPP_INFO(this->node->get_logger(), "Roll: %f, Pitch: %f, Yaw: %f", this->orientation.roll, this->orientation.pitch, this->orientation.yaw);
 }
 
 
@@ -374,8 +375,14 @@ while the arena has the zero position to the bottom, which is why the
 angle has 90 added to it.
 */
 float Automation::getAngle(){
-    float x = this->destX - this->position.x;
-    float y = this->destZ - this->position.z;
+    // The robot rotates around a point that's offset from the camera
+    // This takes that offset into account
+    float offset_from_center = 0.35;
+    float center_x = this->position.x - offset_from_center * std::cos(this->position.pitch);
+    float center_y = this->position.z - offset_from_center * std::sin(this->position.pitch);
+
+    float x = this->destX - center_x;
+    float y = this->destZ - center_y;
     float angle = std::atan2(y, x) * 180 / M_PI;
     if(angle < -90){
         angle += 180;
@@ -394,6 +401,15 @@ float Automation::getAngle(){
     RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
     if(angle > 180){
         angle -= 360;
+    }
+    // Dot product between heading vector and vector to target
+    // Testing to determine when the robot should back up vs turn around
+    double heading_x = std::cos(this->position.pitch);
+    double heading_y = std::sin(this->position.pitch);
+    double dot_product = x * heading_x + y * heading_y;
+
+    if (dot_product < 0) {
+        RCLCPP_INFO(this->node->get_logger(), "Target is behind the robot. Consider reversing.");
     }
     return angle;
 }
@@ -438,35 +454,40 @@ static float normalizeAngle(float x) {
     return x;
 }
 
+
+// Testing some logic that will make more gradual turns to the robot
 bool Automation::checkAngle(){
     // 1) compute signed error in [–180, +180]
     float error = normalizeAngle(this->destAngle - position.pitch);
-
-    // 2) magnitude
     float absErr = std::abs(error);
 
-    // 3) pick spin speed based on how far off we are
-    float speed;
-    if      (absErr > 20.0f) speed = 0.3f;
-    else if (absErr > 10.0f) speed = 0.2f;
-    else if (absErr >  5.0f) speed = 0.15f;
-    else                      speed = 0.1f;
-
-    // 4) if we’re still outside our dead-band, spin; otherwise we’re aligned
-    if (absErr > angleThresh) {
-        if (error < 0.0f) {
-            // negative error ⇒ need to turn “left”
-            changeSpeed(-speed, speed);
-        } else {
-            // positive error ⇒ turn “right”
-            changeSpeed(speed, -speed);
-        }
-        return false;
+    // 2) check if we're aligned
+    if (absErr <= angleThresh) {
+        // Aligned
+        return true;
     }
 
-    // 5) we’re within the dead-band—stop turning
-    changeSpeed(0.0f, 0.0f);
-    return true;
+    // 3) scale a turn factor based on angle error (max 1.0)
+    float turnStrength;
+    if      (absErr > 30.0f) turnStrength = 1.0f;
+    else if (absErr > 15.0f) turnStrength = 0.7f;
+    else if (absErr > 5.0f)  turnStrength = 0.4f;
+    else                    turnStrength = 0.2f;
+
+    // 4) direction of the turn
+    float direction = (error < 0.0f) ? -1.0f : 1.0f;
+
+    // 5) set wheel speeds for curved motion
+    float baseSpeed = 0.15f;  // Forward motion
+    float leftSpeed  = baseSpeed - direction * turnStrength * baseSpeed;
+    float rightSpeed = baseSpeed + direction * turnStrength * baseSpeed;
+
+    // Clamp speeds if needed
+    leftSpeed  = std::clamp(leftSpeed,  -0.3f, 0.3f);
+    rightSpeed = std::clamp(rightSpeed, -0.3f, 0.3f);
+
+    changeSpeed(leftSpeed, rightSpeed);
+    return false;
 }
 
 
@@ -497,6 +518,102 @@ int Automation::checkDistance(float thresh){
 }
 
 
+// Testing merge of checkAngle and checkDistance
+bool Automation::driveToTarget(float closeThresh) {
+    float camTheta = this->position.pitch * (M_PI / 180.0f);
+
+    // Compute robot rotation center (camera is offset forward)
+    float centerX = this->position.x - 0.35 * std::cos(camTheta);
+    float centerZ = this->position.z - 0.35 * std::sin(camTheta);
+
+    // Vector from center to target
+    float dx = this->destX - centerX;
+    float dz = this->destZ - centerZ;
+    float dist = std::sqrt(dx * dx + dz * dz);
+
+    float diff = prevDist - dist;
+    prevDist = dist;
+
+    if (diff < 0) {
+        // We're getting farther — maybe stuck or overshooting
+        setDestAngle(getAngle());
+        return false;
+    }
+
+    // Arrival check
+    const float closeThresh = 0.05f;
+    if (dist < closeThresh) {
+        changeSpeed(0.0f, 0.0f);
+        return true;
+    }
+
+    // Heading vector from camera
+    float hx = std::cos(camTheta);
+    float hz = std::sin(camTheta);
+
+    // Dot product tells if target is in front or behind
+    float dot = dx * hx + dz * hz;
+    bool reverse = (dot < 0);
+
+    // Desired angle from center to target
+    float desiredAngle = std::atan2(dz, dx) * 180 / M_PI;
+
+    // If reversing, rotate 180° to face away from target
+    if (reverse) {
+        desiredAngle = normalizeAngle(desiredAngle + 180);
+    }
+
+    float angleError = normalizeAngle(desiredAngle - this->position.pitch);  // Still in degrees
+    float absErr = std::abs(angleError);
+
+    // Base forward/reverse speed based on distance
+    float baseSpeed;
+    if      (dist < 2 * closeThresh) baseSpeed = 0.1f;
+    else if (dist < 3 * closeThresh) baseSpeed = 0.15f;
+    else                             baseSpeed = 0.25f;
+
+    // Reverse speed is negative
+    if (reverse) baseSpeed = -baseSpeed;
+
+    float leftSpeed = baseSpeed;
+    float rightSpeed = baseSpeed;
+
+    // Thresholds
+    const float spinThreshold = 30.0f;
+    const float angleThresh   = 5.0f;
+
+    if (absErr > spinThreshold) {
+        // Spin in place
+        float spinSpeed = (absErr > 60.0f) ? 0.3f : 0.2f;
+        if (angleError < 0.0f) {
+            leftSpeed = -spinSpeed;
+            rightSpeed = spinSpeed;
+        } else {
+            leftSpeed = spinSpeed;
+            rightSpeed = -spinSpeed;
+        }
+    } else if (absErr > angleThresh) {
+        // Gradual turning while moving
+        float turnStrength;
+        if      (absErr > 15.0f) turnStrength = 0.7f;
+        else if (absErr > 5.0f)  turnStrength = 0.4f;
+        else                    turnStrength = 0.2f;
+
+        float direction = (angleError < 0.0f) ? -1.0f : 1.0f;
+
+        leftSpeed  = baseSpeed - direction * turnStrength * std::abs(baseSpeed);
+        rightSpeed = baseSpeed + direction * turnStrength * std::abs(baseSpeed);
+
+        // Clamp speeds
+        leftSpeed  = std::clamp(leftSpeed,  -0.3f, 0.3f);
+        rightSpeed = std::clamp(rightSpeed, -0.3f, 0.3f);
+    }
+
+    changeSpeed(leftSpeed, rightSpeed);
+    return false;
+}
+
+
 /*
 Function to set the X coordinate of the destination. 
 TODO: Double check that this is correct
@@ -522,6 +639,8 @@ void Automation::publishAutonomyOut(std::string robotStateString, std::string ex
     aOut.tilt_state = tiltStateString;
     aOut.bucket_state = bucketState;
     aOut.arms_state = armsState;
+    aOut.dest_x = this->destX;
+    aOut.dest_z = this->destZ;
     autonomyOutPublisher->publish(aOut);
 }
 
