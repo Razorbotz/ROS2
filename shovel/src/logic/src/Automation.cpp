@@ -66,7 +66,7 @@ void Automation::setPosition(Position position){
         prevY = position.y;
         prevZ = position.z;
     }
-    RCLCPP_INFO(this->node->get_logger(), "Roll: %f, Pitch: %f, Yaw: %f", this->orientation.roll, this->orientation.pitch, this->orientation.yaw);
+    //RCLCPP_INFO(this->node->get_logger(), "Roll: %f, Pitch: %f, Yaw: %f", this->orientation.roll, this->orientation.pitch, this->orientation.yaw);
 }
 
 

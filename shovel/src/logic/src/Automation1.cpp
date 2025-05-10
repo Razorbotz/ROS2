@@ -354,13 +354,29 @@ void Automation1::automate(){
     if(robotState==DOCK){
 		centering(xCounter, zCounter); // Two stage centering on the current dumping site
 		
-		if(driveToTarget(0.05)){
-            if(centeringSecond){
-                robotState = DUMP;
-                centeringSecond = false;
+		if(checkAngle()){ 
+            int distance = checkDistance(.05);
+            if(distance == -1){
+                setDestAngle(getAngle());
+            }
+            else if(distance == 0){
+                changeSpeed(0.0, 0.0);
+                if(centeringSecond){
+                    robotState = DUMP;
+                    centeringSecond = false;
+                }
+                else{
+                    centeringSecond = true;
+                }
+            }
+            else if(distance == 1){
+                changeSpeed(0.1, 0.1);
+            }
+            else if(distance == 2){
+                changeSpeed(0.15, 0.15);
             }
             else{
-                centeringSecond = true;
+                changeSpeed(0.25, 0.25);
             }
         }
     }
