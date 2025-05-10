@@ -192,13 +192,28 @@ void Automation1::automate(){
         float angle = getAngle();
         RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
         setDestAngle(angle);
-        if(driveToTarget(0.05)){
-            if(getPosition()){
-                setDestAngle(getAngle());
+        if(checkAngle()){ 
+            int check = checkDistance(.15);
+            if(check == -1){
+            }
+            else if(check == 0){
+                changeSpeed(0.0, 0.0);
+                if(getPosition()){
+                    setDestAngle(getAngle());
+                }
+                else{
+                    setDestPosition(3.75, 2);
+                    robotState = EXCAVATE;
+                }
+            }
+            else if(check == 1){
+                changeSpeed(0.15, 0.15);
+            }
+            else if(check == 2){
+                changeSpeed(0.2, 0.2);
             }
             else{
-                setDestPosition(3.75, 2);
-                robotState = EXCAVATE;
+                changeSpeed(0.3, 0.3);
             }
         }
     }

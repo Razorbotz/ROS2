@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
     -FOV: 56(V), 87(H)
     */
     if(resolution == "VGA"){
-        init_params.camera_resolution = sl::RESOLUTION::VGA;
+        init_params.camera_resolution = sl::RESOLUTION::HD720;
         init_params.camera_fps = 30;    
     }
     else if(resolution == "HD720"){

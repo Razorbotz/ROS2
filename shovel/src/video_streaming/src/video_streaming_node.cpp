@@ -88,66 +88,49 @@ bool send_all(int sock, const void* data, size_t len) {
  * using a framing protocol (4-byte size header + raw data).
  * @param inputImage The ROS image message.
  */
-void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage){
-    if(videoStreaming && new_socket >= 0){
+void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage) {
+    if(videoStreaming && new_socket >= 0) {
         cv::Mat frame_to_send;
         try {
-             cv::Mat img_color = cv_bridge::toCvCopy(inputImage, "rgb8")->image;
+            cv::Mat img_color = cv_bridge::toCvCopy(inputImage, "rgb8")->image;
+            if(isGray) {
+                cv::cvtColor(img_color, gray, cv::COLOR_RGB2GRAY);
+                frame_to_send = gray;
+            } else {
+                frame_to_send = img_color;
+            }
 
-             if(isGray){
-                 cv::cvtColor(img_color, gray, cv::COLOR_RGB2GRAY);
-                 frame_to_send = gray;
-             }
-             else{
-                 frame_to_send = img_color;
-             }
+            if (frame_to_send.empty()) {
+                //RCLCPP_WARN(nodeHandle->get_logger(), "Frame to send is empty after conversion.");
+                return;
+            }
 
-             if (frame_to_send.empty()) {
-                 RCLCPP_WARN(nodeHandle->get_logger(), "Frame to send is empty after conversion.");
-                 return;
-             }
-             if (!frame_to_send.isContinuous()) {
-                 frame_to_send = frame_to_send.clone();
-             }
+            std::vector<uchar> encoded_frame;
+            cv::imencode(".jpg", frame_to_send, encoded_frame);
+            size_t encoded_size = encoded_frame.size();
+            uint32_t network_frame_size = htonl(encoded_size);
 
-             uint32_t frame_size = frame_to_send.total() * frame_to_send.elemSize();
-             uint32_t network_frame_size = htonl(frame_size);
+            // Send frame size
+            if (!send_all(new_socket, &network_frame_size, sizeof(network_frame_size))) {
+                //RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send frame size header. Stopping stream.");
+                videoStreaming = false;
+                return;
+            }
 
-             if (!send_all(new_socket, &network_frame_size, sizeof(network_frame_size))) {
-                 RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send frame size header. Stopping stream.");
-                 videoStreaming = false;
-                 return;
-             }
+            if (!send_all(new_socket, encoded_frame.data(), encoded_size)) {
+                //RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send frame data. Stopping stream.");
+                videoStreaming = false;
+                return;
+            }
 
-             if (!send_all(new_socket, frame_to_send.data, frame_size)) {
-                 RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send frame data. Stopping stream.");
-                 videoStreaming = false;
-                 return;
-             }
-
-         }
-         catch (cv_bridge::Exception& e) {
-             RCLCPP_ERROR(nodeHandle->get_logger(), "cv_bridge exception: %s", e.what());
-             videoStreaming = false;
-             return;
-         }
-         catch (cv::Exception& e) {
-             RCLCPP_ERROR(nodeHandle->get_logger(), "OpenCV exception: %s", e.what());
-             videoStreaming = false;
-             return;
-         }
-         catch (const std::exception& e) {
-             RCLCPP_ERROR(nodeHandle->get_logger(), "Standard exception: %s", e.what());
-             videoStreaming = false;
-             return;
-         }
-         catch (...) {
-             RCLCPP_ERROR(nodeHandle->get_logger(), "Unknown exception occurred in zedImageCallback.");
-             videoStreaming = false;
-             return;
-         }
+        } catch (const std::exception& e) {
+            //RCLCPP_ERROR(nodeHandle->get_logger(), "Exception in zedImageCallback: %s", e.what());
+            videoStreaming = false;
+            return;
+        }
     }
 }
+
 
 std::string getAddressString(int family, std::string interfaceName){
     std::string addressString("");
@@ -334,12 +317,8 @@ int main(int argc, char **argv){
         catch(int x){
             RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to read data from client");
         }
-        RCLCPP_INFO(nodeHandle->get_logger(),"bytes read %ld", bytesRead);
-        RCLCPP_INFO(nodeHandle->get_logger(), "messageBytesList.size(): %ld", messageBytesList.size());
-        RCLCPP_INFO(nodeHandle->get_logger(), "messageBytesList.front(): %d", messageBytesList.front());
         
         while(messageBytesList.size()>0 && messageBytesList.front()<=messageBytesList.size()){
-            RCLCPP_INFO(nodeHandle->get_logger(),"bytes read %ld", bytesRead);
             int messageSize=messageBytesList.front();    
             messageBytesList.pop_front();
             messageSize--;

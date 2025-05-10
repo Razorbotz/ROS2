@@ -119,19 +119,19 @@ EulerAngles Automation::toEulerAngles(Quaternion q) {
      // roll (x-axis rotation)
     double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
     double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
-    angles.roll = std::atan2(sinr_cosp, cosr_cosp);
+    angles.roll = std::atan2(sinr_cosp, cosr_cosp) * 180 / M_PI;
 
     // pitch (y-axis rotation)
     double sinp = 2 * (q.w * q.y - q.z * q.x);
     if (std::abs(sinp) >= 1)
-        angles.pitch = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+        angles.pitch = std::copysign(M_PI / 2, sinp) * 180 / M_PI; // use 90 degrees if out of range
     else
-        angles.pitch = std::asin(sinp);
+        angles.pitch = std::asin(sinp) * 180 / M_PI;
 
     // yaw (z-axis rotation)
     double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
     double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
-    angles.yaw = std::atan2(siny_cosp, cosy_cosp);
+    angles.yaw = std::atan2(siny_cosp, cosy_cosp) * 180 / M_PI;
 
     return angles;
 }
@@ -365,16 +365,33 @@ void Automation::setDestAngle(float degrees){
     }
 }
 
-
-/*
-Function to get the angle that the robot should be facing to
-travel to the destination. This should be between the values of
-[-180, 180]. 
-The atan2 function assumes that the zero angle location is to the right,
-while the arena has the zero position to the bottom, which is why the 
-angle has 90 added to it.
-*/
 float Automation::getAngle(){
+    float x = this->destX - this->position.x;
+    float y = this->destZ - this->position.z;
+    float angle = std::atan2(y, x) * 180 / M_PI;
+    if(angle < -90){
+        angle += 180;
+    }
+    if(angle > 90){
+        angle -= 180;
+    }
+    if(x > 0){
+	    angle = 90 - angle;
+    }
+    else{
+    	angle = -90 - angle;
+    }
+    RCLCPP_INFO(this->node->get_logger(), "Dest x: %f, Position.x: %f, x: %f", this->destX, this->position.x, x);
+    RCLCPP_INFO(this->node->get_logger(), "Dest z: %f, Position.z: %f, y: %f", this->destZ, this->position.z, y);
+    RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
+    if(angle > 180){
+        angle -= 360;
+    }
+    return angle;
+}
+
+
+float Automation::getAngle2(){
     // The robot rotates around a point that's offset from the camera
     // This takes that offset into account
     float offset_from_center = 0.35;
@@ -455,8 +472,48 @@ static float normalizeAngle(float x) {
 }
 
 
-// Testing some logic that will make more gradual turns to the robot
+/*
+Function to get the angle that the robot should be facing to
+travel to the destination. This should be between the values of
+[-180, 180]. 
+The atan2 function assumes that the zero angle location is to the right,
+while the arena has the zero position to the bottom, which is why the 
+angle has 90 added to it.
+*/
 bool Automation::checkAngle(){
+    // 1) compute signed error in [–180, +180]
+    float error = normalizeAngle(this->destAngle - position.pitch);
+
+    // 2) magnitude
+    float absErr = std::abs(error);
+
+    // 3) pick spin speed based on how far off we are
+    float speed;
+    if      (absErr > 20.0f) speed = 0.3f;
+    else if (absErr > 10.0f) speed = 0.2f;
+    else if (absErr >  5.0f) speed = 0.15f;
+    else                      speed = 0.1f;
+
+    // 4) if we’re still outside our dead-band, spin; otherwise we’re aligned
+    if (absErr > angleThresh) {
+        if (error < 0.0f) {
+            // negative error ⇒ need to turn “left”
+            changeSpeed(-speed, speed);
+        } else {
+            // positive error ⇒ turn “right”
+            changeSpeed(speed, -speed);
+        }
+        return false;
+    }
+
+    // 5) we’re within the dead-band—stop turning
+    changeSpeed(0.0f, 0.0f);
+    return true;
+}
+
+
+// Testing some logic that will make more gradual turns to the robot
+bool Automation::checkAngle2(){
     // 1) compute signed error in [–180, +180]
     float error = normalizeAngle(this->destAngle - position.pitch);
     float absErr = std::abs(error);
@@ -541,7 +598,6 @@ bool Automation::driveToTarget(float closeThresh) {
     }
 
     // Arrival check
-    const float closeThresh = 0.05f;
     if (dist < closeThresh) {
         changeSpeed(0.0f, 0.0f);
         return true;
