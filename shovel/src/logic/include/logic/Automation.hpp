@@ -88,7 +88,12 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         TIP_RIGHT,
         TIP_LEFT
     };
+    enum DumpState{DUMP_IDLE, 
+                    DUMP_EXTEND, 
+                    DUMP_RETRACT};
+    
 
+    DumpState dumpState = DUMP_IDLE;
     RobotState robotState = ROBOT_IDLE;
     RobotState previousState = ROBOT_IDLE;
     ExcavationState excavationState = EXCAVATION_IDLE;
@@ -156,6 +161,12 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         {TIP_BACK, "Tip Back"},
         {TIP_RIGHT, "Tip Right"},
         {TIP_LEFT, "Tip Left"}
+    };
+
+    std::map<DumpState, const char*> dumpStateMap = {
+        {DUMP_IDLE, "Idle"},
+        {DUMP_EXTEND, "Extend"},
+        {DUMP_RETRACT, "Retract"},
     };
 
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
@@ -284,7 +295,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     bool getPosition();
 
-    void publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string dumpStateString, std::string tiltStateString, std::string bucketState, std::string armsState);
+    void publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString, std::string tiltStateString, std::string dumpStateString, std::string bucketState, std::string armsState);
 
     void setStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime);
 

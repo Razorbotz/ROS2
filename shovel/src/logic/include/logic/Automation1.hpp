@@ -3,14 +3,7 @@
 #include "Automation.hpp"
 
 
-class Automation1 : public Automation{
-
-    enum DumpState{DUMP_IDLE, 
-                    DUMP_EXTEND, 
-                    DUMP_RETRACT};
-    
-    DumpState dumpState = DUMP_IDLE;
-    
+class Automation1 : public Automation{   
     Location destination;
     float normalDistance = 1.2;
     bool inExcavation = false;

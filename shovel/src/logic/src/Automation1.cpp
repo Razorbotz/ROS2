@@ -398,15 +398,13 @@ void Automation1::automate(){
             }
         }
         if(dumpState == DUMP_RETRACT){
-            if(checkArmPosition(20) && checkBucketPosition(20))	{				
+            if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1)	{				
                 dumpCounter++;		// Keeping track of how many dumps 
                 xCounter++;			// Which column to dump into
                 if (dumpCounter % 4 == 0){ // handles finishing a row of dumps
                     xCounter = 0;
                     zCounter ++; 
                 }
-                //setArmPosition(100);	// handle bringing the arm and bucket to appropriate driving heights and return to loop
-                //setBucketPosition(100);
                 setDestPosition(3.5 + ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20)), 3.25);
                 robotState = NAVIGATE;
                 dumpState = DUMP_IDLE;
@@ -468,7 +466,8 @@ void Automation1::publishAutomationOut(){
     std::string errorStateString = errorStateMap.at(errorState);
     std::string diagnosticsStateString = diagnosticsStateMap.at(diagnosticsState);
     std::string tiltStateString = tiltStateMap.at(tiltState);
-    publishAutonomyOut(robotStateString, excavationStateString, errorStateString, diagnosticsStateString, tiltStateString, std::to_string(levelBucket), std::to_string(levelArms));
+    std::string dumpStateString = dumpStateMap.at(dumpState);
+    publishAutonomyOut(robotStateString, excavationStateString, errorStateString, diagnosticsStateString, tiltStateString, dumpStateString, std::to_string(levelBucket), std::to_string(levelArms));
 }
 
 void Automation1::setDiagnostics(){

@@ -686,13 +686,14 @@ void Automation::setDestZ(float meters){
 }
 
 
-void Automation::publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString, std::string tiltStateString, std::string bucketState, std::string armsState){
+void Automation::publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString, std::string tiltStateString, std::string dumpStateString, std::string bucketState, std::string armsState){
     messages::msg::AutonomyOut aOut;
     aOut.robot_state = robotStateString;
     aOut.excavation_state = excavationStateString;
     aOut.error_state = errorStateString;
     aOut.diagnostics_state = diagnosticsStateString;
     aOut.tilt_state = tiltStateString;
+    aOut.dump_state = dumpStateString;
     aOut.bucket_state = bucketState;
     aOut.arms_state = armsState;
     aOut.dest_x = this->destX;
@@ -854,6 +855,7 @@ which is bad practice because it will block other thread executions.
 This should probably be rewritten to use an if statement instead.
 */
 void Automation::setArmPosition(int potent){
+    target1 = potent;
     std_msgs::msg::Int32 position;
     position.data = potent;
     talon14PositionPublisher->publish(position);
@@ -870,6 +872,7 @@ This should probably be rewritten to use an if statement instead.
 void Automation::setBucketPosition(int potent){
     if(potent > 700)
         potent = 700;
+    target3 = potent;
     std_msgs::msg::Int32 position;
     position.data = potent;
     talon16PositionPublisher->publish(position);
