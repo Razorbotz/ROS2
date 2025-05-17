@@ -316,9 +316,6 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     message.addElementFloat32("roll", zedPosition->roll);
     message.addElementFloat32("pitch", zedPosition->pitch);
     message.addElementFloat32("yaw", zedPosition->yaw);
-    message.addElementFloat32("aruco roll", zedPosition->aruco_roll);
-    message.addElementFloat32("aruco pitch", zedPosition->aruco_pitch);
-    message.addElementFloat32("aruco yaw", zedPosition->aruco_yaw);
     message.addElementBoolean("aruco", zedPosition->aruco_visible);
     send(message);
 }

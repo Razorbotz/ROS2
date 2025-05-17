@@ -75,6 +75,20 @@ T getParameter(const std::string& parameterName, const char* initialValue){
 }
 
 
+bool isTagValidForReset(const std::vector<cv::Point2f> &corners, const cv::Size &image_size, float ratio = 0.05) {
+  float image_area = image_size.width * image_size.height;
+
+  double side1 = cv::norm(corners[1] - corners[0]);
+  double side2 = cv::norm(corners[2] -corners[1]);
+
+  float tag_area = side1 * side2;
+
+  auto size_ratio = tag_area / image_area;
+
+  return size_ratio > ratio;
+}
+
+
 int main(int argc, char **argv) {
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("zed_tracking");
@@ -150,6 +164,9 @@ int main(int argc, char **argv) {
     init_params.sensors_required = true;
     init_params.depth_mode = sl::DEPTH_MODE::NEURAL;
 
+    init_params.svo_real_time_mode = false;
+    init_params.camera_image_flip = sl::FLIP_MODE::AUTO;
+
     // Open the camera
     auto err = zed.open(init_params);
     if (err != sl::ERROR_CODE::SUCCESS) {
@@ -180,7 +197,7 @@ int main(int argc, char **argv) {
 
     std::cout << "Make sure the ArUco marker is a 6x6 (100), measuring " << actual_marker_size_meters * 1000 << " mm" << std::endl;
 
-    sl::Transform arucoPose;
+    sl::Transform pose;
     sl::Pose zedPose;
     std::vector<cv::Vec3d> rvecs, tvecs;
     std::vector<int> ids;
@@ -189,6 +206,22 @@ int main(int argc, char **argv) {
     std::string zed_rotation_txt;
     std::string aruco_position_txt;
     sl::float3 angles;
+
+    float auto_reset_aruco_screen_ratio = 0.01;
+
+    bool can_reset = false;
+    bool has_reset = false;
+
+    sl::PositionalTrackingParameters tracking_params;
+    tracking_params.enable_imu_fusion = true;
+    tracking_params.enable_area_memory = true;
+    //tracking_params.enable_pose_smoothing = true;
+    tracking_params.mode = sl::POSITIONAL_TRACKING_MODE::GEN_2;
+    auto returned_state = zed.enablePositionalTracking(tracking_params);
+    if (returned_state != sl::ERROR_CODE::SUCCESS) {
+        zed.close();
+        return EXIT_FAILURE;
+    }
 
     sl::SensorsData sensors_data;
     sl::SensorsData::IMUData imu_data;
@@ -199,77 +232,57 @@ int main(int argc, char **argv) {
     sl::Transform IMAGE_TO_ARUCO_basis_change;
     IMAGE_TO_ARUCO_basis_change = sl::Transform::inverse(ARUCO_TO_IMAGE_basis_change);
 
+    sl::POSITIONAL_TRACKING_STATE tracking_state;
     bool initialized = false;
 
     double x_acc, y_acc, z_acc, x_vel, y_vel, z_vel;
 
-    std::vector<std::vector<cv::Point> > contours;
-    std::vector<cv::Vec4i> hierarchy;
-    sl::Mat depth_image;
-    sl::Mat depth_map;
-
-    sl::PositionalTrackingParameters tracking_params;
-    tracking_params.enable_imu_fusion = true;
-    tracking_params.enable_area_memory = true;
-    tracking_params.enable_pose_smoothing = true;
-    tracking_params.mode = sl::POSITIONAL_TRACKING_MODE::GEN_2;
-    auto returned_state = zed.enablePositionalTracking(tracking_params);
-    if (returned_state != sl::ERROR_CODE::SUCCESS) {
-        zed.close();
-        return EXIT_FAILURE;
-    }
-
-    int aruco_seen_consecutive_frames = 0;
-    const int REQUIRED_CONSECUTIVE_FRAMES = 5;
-
     rclcpp::Rate rate(30);
     while (rclcpp::ok()) {
         if (zed.grab() == sl::ERROR_CODE::SUCCESS) {
-            // Retrieve the left image
             zed.retrieveImage(image_zed, sl::VIEW::LEFT, sl::MEM::CPU, image_size);
-
-            // convert to RGB
-            cv::cvtColor(image_ocv, image_ocv_rgb, cv::COLOR_RGBA2RGB);
-            
+            cv::cvtColor(image_ocv, image_ocv_rgb, cv::COLOR_BGRA2BGR);
             cv::Mat grayImage;
             cv::cvtColor(image_ocv_rgb, grayImage, cv::COLOR_BGR2GRAY);
-
-            // detect marker
             cv::aruco::detectMarkers(image_ocv_rgb, dictionary, corners, ids);
 
-            for(size_t i = 0; i < corners.size(); ++i){
-                cv::cornerSubPix(grayImage, corners[i], cv::Size(5, 5), cv::Size(-1, -1), cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
+            for (size_t i = 0; i < corners.size(); ++i) {
+                cv::cornerSubPix(grayImage, corners[i], cv::Size(5, 5), cv::Size(-1, -1),
+                                cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
             }
-
-            sl::POSITIONAL_TRACKING_STATE tracking_state = zed.getPosition(zedPose);
-            
+            tracking_state = zed.getPosition(zedPose);
+            std::string position_txt = "ZED  x: " + std::to_string(zedPose.pose_data.tx + 1.35) +
+                     "; y: " + std::to_string(zedPose.pose_data.ty) +
+                     "; z: " + std::to_string(zedPose.pose_data.tz);
+            RCLCPP_INFO(nodeHandle->get_logger(), "%s", position_txt.c_str());
             // if at least one marker detected
             if (ids.size() > 0) {
-                aruco_seen_consecutive_frames++;
-                cv::aruco::estimatePoseSingleMarkers(corners, actual_marker_size_meters, camera_matrix, dist_coeffs, rvecs, tvecs);
-                arucoPose.setTranslation(sl::float3(tvecs[0](0), tvecs[0](1), tvecs[0](2)));
-                arucoPose.setRotationVector(sl::float3(rvecs[0](0), rvecs[0](1), rvecs[0](2)));
-                arucoPose = IMAGE_TO_ARUCO_basis_change * arucoPose;
-                arucoPose.inverse();
-                auto user_coordinate_to_image = sl::getCoordinateTransformConversion4f(init_params.coordinate_system, sl::COORDINATE_SYSTEM::IMAGE);
-                sl::Transform user_coordinate_to_aruco = IMAGE_TO_ARUCO_basis_change * user_coordinate_to_image;
-                sl::Transform aruco_to_user_coordinate = sl::Transform::inverse(user_coordinate_to_aruco);
+                cv::aruco::estimatePoseSingleMarkers(corners, actual_marker_size_meters,
+                                             camera_matrix, dist_coeffs, rvecs,
+                                             tvecs);
 
-                arucoPose = aruco_to_user_coordinate * arucoPose * user_coordinate_to_aruco;
+                pose.setTranslation(sl::float3(tvecs[0](0), tvecs[0](1), tvecs[0](2)));
+                pose.setRotationVector(
+                    sl::float3(rvecs[0](0), rvecs[0](1), rvecs[0](2)));
 
-                zedPosition.aruco_roll = arucoPose.getEulerAngles(false).x;
-                zedPosition.aruco_pitch = arucoPose.getEulerAngles(false).y;
-                zedPosition.aruco_yaw = arucoPose.getEulerAngles(false).z;
+                pose = IMAGE_TO_ARUCO_basis_change * pose;
+
+                pose.inverse();
+                auto user_coordinate_to_image = sl::getCoordinateTransformConversion4f(
+                    init_params.coordinate_system, sl::COORDINATE_SYSTEM::IMAGE);
+                can_reset = true;
+
+                sl::Transform user_coordinate_to_ARUCO =
+                    IMAGE_TO_ARUCO_basis_change * user_coordinate_to_image;
+                sl::Transform ARUCO_to_user_coordinate =
+                    sl::Transform::inverse(user_coordinate_to_ARUCO);
+
+                pose = ARUCO_to_user_coordinate * pose * user_coordinate_to_ARUCO;
 		        zedPosition.aruco_visible=true;
-                // Add check here to ensure that the angle to the marker is less than 90
-                if(!initialized && std::abs(zedPosition.aruco_pitch) > 135.0 && aruco_seen_consecutive_frames >= REQUIRED_CONSECUTIVE_FRAMES){
-                    zed.resetPositionalTracking(arucoPose);
-                    initialized = true;                
-                }
 	        } 
             else {
-                aruco_seen_consecutive_frames = 0;
 	            zedPosition.aruco_visible=false;
+                can_reset = false;
 	        }
 
             zed.getSensorsData(sensors_data, sl::TIME_REFERENCE::IMAGE);
@@ -285,31 +298,60 @@ int main(int argc, char **argv) {
             y_vel = vel[1];
             z_vel = vel[2];
 
-        if (tracking_state == sl::POSITIONAL_TRACKING_STATE::OK) {
-            zedPosition.x=zedPose.pose_data.tx + xOffset;
-            zedPosition.y=zedPose.pose_data.ty;
-            zedPosition.z=zedPose.pose_data.tz;
-            zedPosition.ox=zedPose.getOrientation().ox;
-            zedPosition.oy=zedPose.getOrientation().oy;
-            zedPosition.oz=zedPose.getOrientation().oz;
-            zedPosition.ow=zedPose.getOrientation().ow;
-            zedPosition.roll = zedPose.pose_data.getEulerAngles(false).x - 12.33;
-            zedPosition.pitch = zedPose.pose_data.getEulerAngles(false).y;
-            zedPosition.yaw = zedPose.pose_data.getEulerAngles(false).z;
-            zedPosition.x_acc = x_acc;
-            zedPosition.y_acc = y_acc;
-            zedPosition.z_acc = z_acc;
-            zedPosition.x_vel = x_vel;
-            zedPosition.y_vel = y_vel;
-            zedPosition.z_vel = z_vel;
-            zedPosition.aruco_initialized = initialized;
-            zedPositionPublisher->publish(zedPosition);
-        }
+            if (ids.size() == 0) {
+                rvecs.clear();
+                tvecs.clear();
+                rvecs.resize(1);
+                tvecs.resize(1);
+            }
+            auto transform = pose;
 
-	    if(!image_ocv_rgb.empty()){
-	        msg = cv_bridge::CvImage(hdr, "rgb8", image_ocv_rgb).toImageMsg();
-            zedImagePublisher.publish(msg);
-	    }
+            transform.inverse();
+
+            auto user_coordinate_to_image = sl::getCoordinateTransformConversion4f(
+                init_params.coordinate_system, sl::COORDINATE_SYSTEM::IMAGE);
+            transform = user_coordinate_to_image * transform;
+
+            sl::float3 rotation = transform.getRotationVector();
+            rvecs[0](0) = rotation.x;
+            rvecs[0](1) = rotation.y;
+            rvecs[0](2) = rotation.z;
+            tvecs[0](0) = transform.tx;
+            tvecs[0](1) = transform.ty;
+            tvecs[0](2) = transform.tz;
+            if (!ids.empty() && can_reset && !has_reset) {
+                bool resetPose = isTagValidForReset(corners[0], cv::Size(image_zed.getWidth(), image_zed.getHeight()), auto_reset_aruco_screen_ratio);
+                if (resetPose) {
+                    RCLCPP_INFO(nodeHandle->get_logger(), "Reset pose");
+                    zed.resetPositionalTracking(pose);
+                    has_reset = true;
+                }
+            }
+            if (tracking_state == sl::POSITIONAL_TRACKING_STATE::OK) {
+                zedPosition.x=zedPose.pose_data.tx + xOffset;
+                zedPosition.y=zedPose.pose_data.ty;
+                zedPosition.z=zedPose.pose_data.tz;
+                zedPosition.ox=zedPose.getOrientation().ox;
+                zedPosition.oy=zedPose.getOrientation().oy;
+                zedPosition.oz=zedPose.getOrientation().oz;
+                zedPosition.ow=zedPose.getOrientation().ow;
+                zedPosition.roll = zedPose.pose_data.getEulerAngles(false).x - 12.33;
+                zedPosition.pitch = zedPose.pose_data.getEulerAngles(false).y;
+                zedPosition.yaw = zedPose.pose_data.getEulerAngles(false).z;
+                zedPosition.x_acc = x_acc;
+                zedPosition.y_acc = y_acc;
+                zedPosition.z_acc = z_acc;
+                zedPosition.x_vel = x_vel;
+                zedPosition.y_vel = y_vel;
+                zedPosition.z_vel = z_vel;
+                zedPosition.aruco_initialized = initialized;
+                zedPositionPublisher->publish(zedPosition);
+            }
+
+            if(!image_ocv_rgb.empty()){
+                msg = cv_bridge::CvImage(hdr, "rgb8", image_ocv_rgb).toImageMsg();
+                zedImagePublisher.publish(msg);
+            }
 
         }
 	    rate.sleep();
