@@ -325,6 +325,7 @@ int main(int argc, char **argv) {
                     RCLCPP_INFO(nodeHandle->get_logger(), "Reset pose");
                     zed.resetPositionalTracking(pose);
                     has_reset = true;
+                    initialized = true;
                 }
             }
             if (tracking_state == sl::POSITIONAL_TRACKING_STATE::OK) {

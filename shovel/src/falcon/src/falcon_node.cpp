@@ -77,6 +77,7 @@ bool GO=false;
 std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
 TalonFX* talonFX;
 bool TEMP_DISABLE = false;
+float Speed = 0.0;
 
 // Operating modes:
 // 0 - Normal
@@ -85,6 +86,7 @@ bool TEMP_DISABLE = false;
 int op_mode = 0;
 int killKey = 0;
 bool printData = false;
+int errorCounter = 0;
 
 /** @brief STOP Callback
  * 
@@ -100,6 +102,7 @@ void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
 		RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
 	GO=false;
 	talonFX->Set(ControlMode::PercentOutput, 0.0);
+	Speed = 0.0;
 } 
 
 /** @brief GO Callback
@@ -138,6 +141,7 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	//double targetVelocity_RPM = 6000 * speed->data; 
 	//talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
 	talonFX->Set(ControlMode::PercentOutput, speed->data);
+	Speed = speed->data;
 }
 
 /** @brief Function to get the value of the specified parameter
@@ -280,6 +284,14 @@ int main(int argc,char** argv){
 			bool isInverted=talonFX->GetInverted();
 			double motorOutputVoltage=talonFX->GetMotorOutputVoltage();
 			double motorOutputPercent=talonFX->GetMotorOutputPercent();
+			if(Speed > 0.1 && motorOutputPercent == 0.0){
+				errorCounter++;
+				if(errorCounter > 5)
+					RCLCPP_INFO(nodeHandle->get_logger(), "Falcon %d ERROR", deviceID);
+			}
+			else{
+				errorCounter = 0;
+			}
 			double temperature=talonFX->GetTemperature();
 			int sensorPosition0=talonFX->GetSelectedSensorPosition(0);
 			int sensorVelocity0=talonFX->GetSelectedSensorVelocity(0);
