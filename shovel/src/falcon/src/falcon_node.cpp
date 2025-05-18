@@ -78,6 +78,7 @@ std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
 TalonFX* talonFX;
 bool TEMP_DISABLE = false;
 float Speed = 0.0;
+bool error = false;
 
 // Operating modes:
 // 0 - Normal
@@ -286,11 +287,14 @@ int main(int argc,char** argv){
 			double motorOutputPercent=talonFX->GetMotorOutputPercent();
 			if(Speed > 0.1 && motorOutputPercent == 0.0){
 				errorCounter++;
-				if(errorCounter > 5)
+				if(errorCounter > 5){
 					RCLCPP_INFO(nodeHandle->get_logger(), "Falcon %d ERROR", deviceID);
+					error = true;
+				}
 			}
 			else{
-				errorCounter = 0;
+				if(motorOutputPercent != 0.0)
+					errorCounter = 0;
 			}
 			double temperature=talonFX->GetTemperature();
 			int sensorPosition0=talonFX->GetSelectedSensorPosition(0);
@@ -311,6 +315,7 @@ int main(int argc,char** argv){
 			falconOut.integral_accumulator=integralAccumulator0;
 			falconOut.error_derivative=errorDerivative0;
 			falconOut.temp_disable = TEMP_DISABLE;
+			falconOut.error = error;
 			if(outputCurrent > maxCurrent){
 				maxCurrent = outputCurrent;
 			}
