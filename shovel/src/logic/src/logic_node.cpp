@@ -78,6 +78,7 @@ Zed tracking node - Critical systems should not be impacted.
  * */
 
 rclcpp::Node::SharedPtr nodeHandle;
+std_msgs::msg::Empty heartbeat;
 
 float joystick1Roll=0;
 float joystick1Pitch=0;
@@ -102,6 +103,15 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > automationGoPublisher;
 std::chrono::time_point<std::chrono::high_resolution_clock> zedPrevious;
+std::chrono::time_point<std::chrono::high_resolution_clock> falcon1Previous;
+std::chrono::time_point<std::chrono::high_resolution_clock> falcon2Previous;
+std::chrono::time_point<std::chrono::high_resolution_clock> falcon3Previous;
+std::chrono::time_point<std::chrono::high_resolution_clock> falcon4Previous;
+
+std::chrono::time_point<std::chrono::high_resolution_clock> talon1Previous;
+std::chrono::time_point<std::chrono::high_resolution_clock> talon2Previous;
+std::chrono::time_point<std::chrono::high_resolution_clock> talon3Previous;
+std::chrono::time_point<std::chrono::high_resolution_clock> talon4Previous;
 
 
 /** @brief Function to initialize the motors to zero
@@ -446,12 +456,11 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     position.z_vel = zedPosition->z_vel;
     position.arucoInitialized = zedPosition->aruco_initialized;
 
-	zedPrevious = std::chrono::high_resolution_clock::now();
-
     if(!zedInit)
         zedInit = true;
     
     automation->setPosition(position);
+	zedPrevious = std::chrono::high_resolution_clock::now();
 }
 
 
@@ -493,35 +502,43 @@ void linearOut4Callback(const messages::msg::LinearOut::SharedPtr linearOut){
 
 void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     automation->setTalon1(talonOut);
+    talon1Previous = std::chrono::high_resolution_clock::now();
 }
 
 void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     automation->setTalon2(talonOut);
+    talon2Previous = std::chrono::high_resolution_clock::now();
 }
 
 void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     automation->setTalon3(talonOut);
+    talon3Previous = std::chrono::high_resolution_clock::now();
 }
 
 void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
     automation->setTalon4(talonOut);
+    talon4Previous = std::chrono::high_resolution_clock::now();
 }
 
 
 void falcon1Callback(const messages::msg::FalconOut::SharedPtr falconOut){
     automation->setFalcon1(falconOut);
+    falcon1Previous = std::chrono::high_resolution_clock::now();
 }
 
 void falcon2Callback(const messages::msg::FalconOut::SharedPtr falconOut){
     automation->setFalcon2(falconOut);
+    falcon2Previous = std::chrono::high_resolution_clock::now();
 }
 
 void falcon3Callback(const messages::msg::FalconOut::SharedPtr falconOut){
     automation->setFalcon3(falconOut);
+    falcon3Previous = std::chrono::high_resolution_clock::now();
 }
 
 void falcon4Callback(const messages::msg::FalconOut::SharedPtr falconOut){
     automation->setFalcon4(falconOut);
+    falcon4Previous = std::chrono::high_resolution_clock::now();
 }
 
 
@@ -553,6 +570,48 @@ T getParameter(const std::string& parameterName, const char* initialValue){
 }
 
 
+bool checkTimes(){
+    auto finish = std::chrono::high_resolution_clock::now();
+    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-zedPrevious).count() > 200 || !zedInit){
+        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Zed hasn't updated in time.");
+        return false;
+    }
+    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-talon1Previous).count() > 150){
+        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Talon1 hasn't updated in time.");
+        return false;
+    }
+    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-talon2Previous).count() > 150){
+        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Talon2 hasn't updated in time.");
+        return false;
+    }
+    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-talon3Previous).count() > 150){
+        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Talon3 hasn't updated in time.");
+        return false;
+    }
+    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-talon4Previous).count() > 150){
+        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Talon4 hasn't updated in time.");
+        return false;
+    }
+    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon1Previous).count() > 200){
+        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon1 hasn't updated in time.");
+        return false;
+    }
+    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon2Previous).count() > 200){
+        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon2 hasn't updated in time.");
+        return false;
+    }
+    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon3Previous).count() > 200){
+        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon3 hasn't updated in time.");
+        return false;
+    }
+    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon4Previous).count() > 200){
+        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon4 hasn't updated in time.");
+        return false;
+    }
+    return true;
+}
+
+
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("logic");
@@ -560,17 +619,7 @@ int main(int argc, char **argv){
     std::string mapUsed = getParameter<std::string>("map", "NASA");
     bool turnLeft = getParameter<bool>("turnLeft", false);
     printData = getParameter<bool>("print_data", false);
-
-    if(mapUsed == "NASA"){
-        automation = new Automation1();
-    }
-    else if(mapUsed == "UCF_1" || mapUsed == "UCF_2"){
-    }
-    else if(mapUsed == "lab"){
-    }
-    else{
-        automation = new Automation1();
-    }
+    automation = new Automation1();
     automation->setMap(mapUsed);
     automation->setTurnLeft(turnLeft);
     automation->setNode(nodeHandle);
@@ -604,21 +653,21 @@ int main(int argc, char **argv){
     userLeftSpeedPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("user_left_speed",1);
     userRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("user_right_speed",1);
 
+    auto logicHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("logic_heartbeat",1);
+
     initSetSpeed();
 
     rclcpp::Rate rate(30);
     while(rclcpp::ok()){
 		auto finish = std::chrono::high_resolution_clock::now();
         if(automationGo){
-            if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-zedPrevious).count() < 100 && zedInit){
+            if(checkTimes()){
                 automation->automate();
-            }
-            else{
-                RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Zed hasn't updated in time.");
             }
         }
         automation->publishAutomationOut();
         rclcpp::spin_some(nodeHandle);
+        logicHeartbeatPublisher->publish(heartbeat);
         rate.sleep();
     }
     rclcpp::shutdown();

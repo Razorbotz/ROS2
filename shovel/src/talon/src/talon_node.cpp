@@ -20,7 +20,7 @@
 #include <chrono>
 #include <linux/reboot.h>
 #include <sys/reboot.h>
-
+#include <cstdlib>
 
 #include <rclcpp/rclcpp.hpp>
 //#include <rclcpp/console.h>
@@ -76,6 +76,7 @@ using namespace ctre::phoenix::motorcontrol::can;
 rclcpp::Node::SharedPtr nodeHandle;
 bool GO=false;
 std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
+std::chrono::time_point<std::chrono::high_resolution_clock> logicPrevious;
 bool printData = false;
 
 /** @brief STOP Callback
@@ -110,6 +111,10 @@ void goCallback(std_msgs::msg::Empty::SharedPtr empty){
 
 void commHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
 	commPrevious = std::chrono::high_resolution_clock::now();
+}
+
+void logicHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
+	logicPrevious = std::chrono::high_resolution_clock::now();
 }
 
 TalonSRX* talonSRX;
@@ -195,6 +200,7 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(printData)
 		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
     if(keyState->key==killKey && keyState->state==1){
+		exit(0);
         return;
     }
 }
@@ -270,6 +276,7 @@ int main(int argc,char** argv){
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
 	auto commHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("comm_heartbeat",1,commHeartbeatCallback);
+	auto logicHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("logic_heartbeat",1,logicHeartbeatCallback);
 	auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
 	
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
@@ -319,7 +326,8 @@ int main(int argc,char** argv){
 			checkTemperature(temperature);
         	start = std::chrono::high_resolution_clock::now();
 		}
-		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 || TEMP_DISABLE){
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 || TEMP_DISABLE
+		||	std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100 ){
 			if(TEMP_DISABLE){
 				RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
 			}

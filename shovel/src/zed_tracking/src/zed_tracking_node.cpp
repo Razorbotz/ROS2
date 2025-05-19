@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <unistd.h> 
 #include <fcntl.h>
+#include <cstdlib>
 
 #define ROW_COUNT 10
 rclcpp::Node::SharedPtr nodeHandle;
@@ -208,7 +209,7 @@ void check_for_crash() {
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(keyState->key==killKey && keyState->state==1){
         RCLCPP_INFO(nodeHandle->get_logger(), "Kill key pressed");
-        std::exit(0);
+        exit(0);
         return;
     }
 }
@@ -392,7 +393,6 @@ int main(int argc, char **argv) {
             std::string position_txt = "ZED  x: " + std::to_string(zedPose.pose_data.tx + 1.35) +
                      "; y: " + std::to_string(zedPose.pose_data.ty) +
                      "; z: " + std::to_string(zedPose.pose_data.tz);
-            RCLCPP_INFO(nodeHandle->get_logger(), "%s", position_txt.c_str());
             // if at least one marker detected
             if (ids.size() > 0) {
                 cv::aruco::estimatePoseSingleMarkers(corners, actual_marker_size_meters,
@@ -471,6 +471,7 @@ int main(int argc, char **argv) {
                 zedPosition.z_vel = z_vel;
                 zedPosition.aruco_initialized = initialized;
                 zedPositionPublisher->publish(zedPosition);
+                RCLCPP_INFO(nodeHandle->get_logger(), "%s", position_txt.c_str());
 
                 // Saves the position values to a file
                 try{
