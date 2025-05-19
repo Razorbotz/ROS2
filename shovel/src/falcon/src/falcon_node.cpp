@@ -28,6 +28,7 @@
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <std_msgs/msg/empty.hpp>
 #include <messages/msg/key_state.hpp>
+#include <std_msgs/msg/string.hpp>
 
 #define Phoenix_No_WPI // remove WPI dependencies
 #include <ctre/Phoenix.h>
@@ -73,6 +74,7 @@ using namespace ctre::phoenix::motorcontrol::can;
 
 
 rclcpp::Node::SharedPtr nodeHandle;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String_<std::allocator<void> >, std::allocator<void> > > resetPublisher;
 bool GO=false;
 std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
 TalonFX* talonFX;
@@ -88,6 +90,7 @@ int op_mode = 0;
 int killKey = 0;
 bool printData = false;
 int errorCounter = 0;
+std::string resetString = "";
 
 /** @brief STOP Callback
  * 
@@ -197,6 +200,12 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(keyState->key==killKey && keyState->state==1){
         return;
     }
+	if(keyState->key == 98 && keyState->state==1){
+		std_msgs::msg::String speed;
+		speed.data = resetString;
+		resetPublisher->publish(speed);
+	}
+	
 }
 
 
@@ -213,6 +222,7 @@ int main(int argc,char** argv){
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
 	std::string userTopic = getParameter<std::string>("user_topic", "unset");
+	resetString = getParameter<std::string>("reset_topic", "1");
 	bool invertMotor = getParameter<bool>("invert_motor", false);
 	double kP = getParameter<double>("kP", 1.0);
 	double kI = getParameter<double>("kI", 0.0);
@@ -268,6 +278,7 @@ int main(int argc,char** argv){
 	auto falconOutPublisher=nodeHandle->create_publisher<messages::msg::FalconOut>(infoTopic.c_str(),1);
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
 	auto userSpeedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(userTopic.c_str(),1,userSpeedCallback);
+	resetPublisher=nodeHandle->create_publisher<std_msgs::msg::String>("reset_topic",1);
 
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
