@@ -94,6 +94,8 @@ Automation* automation;
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > userLeftSpeedPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > userRightSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > armSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > bucketSpeedPublisher;
 
@@ -142,8 +144,8 @@ void updateSpeed(){
     if(printData)
         RCLCPP_INFO(nodeHandle->get_logger(),"speed left=%f right=%f  pitch=%f roll=%f", speedLeft.data,  speedRight.data, joystick1Pitch, joystick1Roll);
 
-    driveLeftSpeedPublisher->publish(speedLeft);
-    driveRightSpeedPublisher->publish(speedRight);
+    userLeftSpeedPublisher->publish(speedLeft);
+    userRightSpeedPublisher->publish(speedRight);
 }
 
 /** @brief Function to stop drive train motors
@@ -157,8 +159,8 @@ void updateSpeed(){
 void stopSpeed(){
     std_msgs::msg::Float32 speed;
     speed.data = 0.0;
-    driveLeftSpeedPublisher->publish(speed);
-    driveRightSpeedPublisher->publish(speed);
+    userLeftSpeedPublisher->publish(speed);
+    userRightSpeedPublisher->publish(speed);
 }
 
 /**
@@ -592,6 +594,8 @@ int main(int argc, char **argv){
     armSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("arm_speed",1);
     bucketSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("bucket_speed",1);
     automationGoPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
+    userLeftSpeedPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("user_left_speed",1);
+    userRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("user_right_speed",1);
 
     initSetSpeed();
 

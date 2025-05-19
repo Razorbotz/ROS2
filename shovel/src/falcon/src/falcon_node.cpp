@@ -138,11 +138,15 @@ void commHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
-	//std::cout << "---------->>>  " << speed->data << std::endl;
-	//double targetVelocity_RPM = 6000 * speed->data; 
-	//talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
 	talonFX->Set(ControlMode::PercentOutput, speed->data);
 	Speed = speed->data;
+}
+
+void userSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
+	double targetVelocity_RPM = 6000 * speed->data; 
+	talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
 }
 
 /** @brief Function to get the value of the specified parameter
@@ -208,6 +212,7 @@ int main(int argc,char** argv){
 	c_Phoenix_Diagnostics_Create1(portNumber);
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
+	std::string userTopic = getParameter<std::string>("user_topic", "unset");
 	bool invertMotor = getParameter<bool>("invert_motor", false);
 	double kP = getParameter<double>("kP", 1.0);
 	double kI = getParameter<double>("kI", 0.0);
@@ -262,6 +267,7 @@ int main(int argc,char** argv){
 	messages::msg::FalconOut falconOut;
 	auto falconOutPublisher=nodeHandle->create_publisher<messages::msg::FalconOut>(infoTopic.c_str(),1);
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
+	auto userSpeedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(userTopic.c_str(),1,userSpeedCallback);
 
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
@@ -293,8 +299,10 @@ int main(int argc,char** argv){
 				}
 			}
 			else{
-				if(motorOutputPercent != 0.0)
+				if(motorOutputPercent != 0.0){
+					error = false;
 					errorCounter = 0;
+				}
 			}
 			double temperature=talonFX->GetTemperature();
 			int sensorPosition0=talonFX->GetSelectedSensorPosition(0);
