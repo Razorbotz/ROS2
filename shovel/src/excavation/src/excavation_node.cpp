@@ -354,6 +354,11 @@ void setPotentiometerError(int potentData, LinearActuator *linear){
         linear->sensorless = true;
         RCLCPP_INFO(nodeHandle->get_logger(),"EXCAVATION ERROR: PotentiometerError");
     }
+    if(potentData > 110 || potentData < 100){
+        if(linear->error == PotentiometerError){
+            linear->error = None;
+        }
+    }
 }
 
 

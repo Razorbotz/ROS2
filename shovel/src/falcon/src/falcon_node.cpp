@@ -81,6 +81,7 @@ TalonFX* talonFX;
 bool TEMP_DISABLE = false;
 float Speed = 0.0;
 bool error = false;
+bool restarted = false;
 
 // Operating modes:
 // 0 - Normal
@@ -201,9 +202,9 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         return;
     }
 	if(keyState->key == 98 && keyState->state==1){
-		std_msgs::msg::String speed;
-		speed.data = resetString;
-		resetPublisher->publish(speed);
+		std_msgs::msg::String reset;
+		reset.data = resetString;
+		resetPublisher->publish(reset);
 	}
 	
 }
@@ -289,11 +290,18 @@ int main(int argc,char** argv){
 
 	rclcpp::Rate rate(20);
 	auto start = std::chrono::high_resolution_clock::now();
+	auto errorTimer = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
 	double busVoltage = 0.0;
 	while(rclcpp::ok()){
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
+
+		if(error){
+			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-errorTimer).count() > 1500){
+				restarted = true;
+			}
+		}
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
 			int deviceID=talonFX->GetDeviceID();
@@ -304,14 +312,19 @@ int main(int argc,char** argv){
 			double motorOutputPercent=talonFX->GetMotorOutputPercent();
 			if(Speed > 0.1 && motorOutputPercent == 0.0){
 				errorCounter++;
-				if(errorCounter > 5){
+				if(errorCounter > 5 && !error){
 					RCLCPP_INFO(nodeHandle->get_logger(), "Falcon %d ERROR", deviceID);
 					error = true;
+					errorTimer = std::chrono::high_resolution_clock::now();
+					std_msgs::msg::String reset;
+					reset.data = resetString;
+					resetPublisher->publish(reset);
 				}
 			}
 			else{
 				if(motorOutputPercent != 0.0){
 					error = false;
+					restarted = false;
 					errorCounter = 0;
 				}
 			}
@@ -335,6 +348,7 @@ int main(int argc,char** argv){
 			falconOut.error_derivative=errorDerivative0;
 			falconOut.temp_disable = TEMP_DISABLE;
 			falconOut.error = error;
+			falconOut.restarted = restarted;
 			if(outputCurrent > maxCurrent){
 				maxCurrent = outputCurrent;
 			}

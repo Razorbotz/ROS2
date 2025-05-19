@@ -89,6 +89,7 @@ float maxSpeed=0.8;
 bool automationGo=false;
 bool excavationGo = false;
 bool printData = false;
+bool zedInit = false;
 
 Automation* automation;
 
@@ -100,6 +101,7 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > bucketSpeedPublisher;
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > automationGoPublisher;
+std::chrono::time_point<std::chrono::high_resolution_clock> zedPrevious;
 
 
 /** @brief Function to initialize the motors to zero
@@ -444,6 +446,11 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     position.z_vel = zedPosition->z_vel;
     position.arucoInitialized = zedPosition->aruco_initialized;
 
+	zedPrevious = std::chrono::high_resolution_clock::now();
+
+    if(!zedInit)
+        zedInit = true;
+    
     automation->setPosition(position);
 }
 
@@ -601,8 +608,14 @@ int main(int argc, char **argv){
 
     rclcpp::Rate rate(30);
     while(rclcpp::ok()){
+		auto finish = std::chrono::high_resolution_clock::now();
         if(automationGo){
-            automation->automate();
+            if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-zedPrevious).count() < 100 && zedInit){
+                automation->automate();
+            }
+            else{
+                RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Zed hasn't updated in time.");
+            }
         }
         automation->publishAutomationOut();
         rclcpp::spin_some(nodeHandle);
