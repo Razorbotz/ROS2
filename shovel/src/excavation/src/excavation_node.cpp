@@ -59,6 +59,7 @@ enum Error {
     None
 };
 
+bool single_arm = false;
 
 std::map<Error, const char*> errorMap = {{ActuatorsSyncError, "ActuatorsSyncError"},
     {ActuatorNotMovingError, "ActuatorNotMovingError"},
@@ -534,8 +535,10 @@ void potentiometer1Callback(const messages::msg::TalonOut::SharedPtr msg){
 
         if(linear1.error != PotentiometerError){
             processPotentiometerData(msg->sensor_position, &linear1);
-            if(!linear1.sensorless && !linear2.sensorless){
-                setSyncErrors(&linear1, &linear2, currentArmSpeed);
+            if(!single_arm){
+                if(!linear1.sensorless && !linear2.sensorless){
+                    setSyncErrors(&linear1, &linear2, currentArmSpeed);
+                }
             }
         }
     }
@@ -584,8 +587,10 @@ void potentiometer3Callback(const messages::msg::TalonOut::SharedPtr msg){
 
         if(linear3.error != PotentiometerError){
             processPotentiometerData(msg->sensor_position, &linear3);
-            if(!linear3.sensorless && !linear4.sensorless){
-                setSyncErrors(&linear3, &linear4, currentBucketSpeed);
+            if(!single_arm){
+                if(!linear3.sensorless && !linear4.sensorless){
+                    setSyncErrors(&linear3, &linear4, currentBucketSpeed);
+                }
             }
         }
     }
@@ -628,7 +633,12 @@ void potentiometer4Callback(const messages::msg::TalonOut::SharedPtr msg){
 void armSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     currentArmSpeed = speed->data;
     RCLCPP_INFO(nodeHandle->get_logger(),"currentArmSpeed: %f", currentArmSpeed);
-    setSpeeds(&linear1, &linear2, currentArmSpeed);
+    if(!single_arm){
+        setSpeeds(&linear1, &linear2, currentArmSpeed);
+    }
+    else{
+        linear1.speed = speed->data;
+    }
     publishSpeeds();
     RCLCPP_INFO(nodeHandle->get_logger(),"Arm speeds: %f, %f", linear1.speed, linear2.speed);
 }
@@ -645,7 +655,12 @@ void armSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     currentBucketSpeed = speed->data;
     RCLCPP_INFO(nodeHandle->get_logger(),"currentSpeed: %f", currentBucketSpeed);
-    setSpeeds(&linear3, &linear4, currentBucketSpeed);
+    if(!single_arm){
+        setSpeeds(&linear3, &linear4, currentBucketSpeed);
+    }
+    else{
+        linear3.speed = speed->data;
+    }
     publishSpeeds2();
     RCLCPP_INFO(nodeHandle->get_logger(),"Bucket speeds: %f, %f", linear3.speed, linear4.speed);
 
@@ -735,9 +750,39 @@ void updateMotorPositions(int millis){
 }
 
 
+/** @brief Function to get the value of the specified parameter
+ * 
+ * Function that takes a string as a parameter containing the
+ * name of the parameter that is being parsed from the launch
+ * file and the initial value of the parameter as inputs, then
+ * gets the parameter, casts it as the desired type, displays 
+ * the value of the parameter on the command line and the log 
+ * file, then returns the parsed value of the parameter.
+ * @param parametername String of the name of the parameter
+ * @param initialValue Initial value of the parameter
+ * @return value Value of the parameter
+ * */
+template <typename T>
+T getParameter(std::string parameterName, T initialValue){
+	nodeHandle->declare_parameter<T>(parameterName, initialValue);
+	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
+	T value = param.template get_value<T>();
+	std::cout << parameterName << ": " << value << std::endl;
+	RCLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
+	return value;
+}
+
+template <typename T>
+T getParameter(const std::string& parameterName, const char* initialValue){
+	return getParameter<T>(parameterName, std::string(initialValue));
+}
+
+
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("excavation");
+
+    single_arm = getParameter<bool>("single_arm", false);
 
     auto automationGoSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>("automationGo",1,automationGoCallback);
     auto stopSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
@@ -777,14 +822,18 @@ int main(int argc, char **argv){
             getLinearOut(&linearOut1, &linear1);
             linearOut1Publisher->publish(linearOut1);
 
-            getLinearOut(&linearOut2, &linear2);
-            linearOut2Publisher->publish(linearOut2);
-
+            if(!single_arm){
+                getLinearOut(&linearOut2, &linear2);
+                linearOut2Publisher->publish(linearOut2);
+            }
+            
             getLinearOut(&linearOut3, &linear3);
             linearOut3Publisher->publish(linearOut3);
 
-            getLinearOut(&linearOut4, &linear4);
-            linearOut4Publisher->publish(linearOut4);
+            if(!single_arm){
+                getLinearOut(&linearOut4, &linear4);
+                linearOut4Publisher->publish(linearOut4);
+            }
             start = std::chrono::high_resolution_clock::now();
         }
         rate.sleep();

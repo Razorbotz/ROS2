@@ -572,7 +572,7 @@ T getParameter(const std::string& parameterName, const char* initialValue){
 
 bool checkTimes(){
     auto finish = std::chrono::high_resolution_clock::now();
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-zedPrevious).count() > 200 || !zedInit){
+    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-zedPrevious).count() > 1000 || !zedInit){
         RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Zed hasn't updated in time.");
         return false;
     }
@@ -580,16 +580,8 @@ bool checkTimes(){
         RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Talon1 hasn't updated in time.");
         return false;
     }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-talon2Previous).count() > 150){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Talon2 hasn't updated in time.");
-        return false;
-    }
     if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-talon3Previous).count() > 150){
         RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Talon3 hasn't updated in time.");
-        return false;
-    }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-talon4Previous).count() > 150){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Talon4 hasn't updated in time.");
         return false;
     }
     if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon1Previous).count() > 200){
