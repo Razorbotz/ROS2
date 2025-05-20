@@ -6,7 +6,12 @@ def generate_launch_description():
         Node(
             package='zed_tracking',
             name='zed_tracking',
-            executable='zed_tracking_node'
+            executable='zed_tracking_node',
+            parameters=[
+                {"xOffset": 1.25},
+                {"kill_key": 58},
+                {"resolution": "VGA"}
+            ]
         )
     ]
 )
