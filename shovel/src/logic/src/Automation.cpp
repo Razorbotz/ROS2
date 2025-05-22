@@ -480,9 +480,14 @@ The atan2 function assumes that the zero angle location is to the right,
 while the arena has the zero position to the bottom, which is why the 
 angle has 90 added to it.
 */
-bool Automation::checkAngle(){
+bool Automation::checkAngle(bool reverse){
     // 1) compute signed error in [–180, +180]
-    float error = normalizeAngle(this->destAngle - position.pitch);
+
+    float error = 0.0;
+    if(reverse)
+        error = normalizeAngle(this->destAngle - position.pitch + 180);
+    else
+        error = normalizeAngle(this->destAngle - position.pitch);
 
     // 2) magnitude
     float absErr = std::abs(error);
@@ -497,12 +502,14 @@ bool Automation::checkAngle(){
     // 4) if we’re still outside our dead-band, spin; otherwise we’re aligned
     if (absErr > angleThresh) {
         if (error < 0.0f) {
-            // negative error ⇒ need to turn “left”
-            changeSpeed(-speed, speed);
-        } else {
-            // positive error ⇒ turn “right”
-            changeSpeed(speed, -speed);
+        // negative error ⇒ need to turn “left”
+        changeSpeed(speed, -speed);
         }
+        else {
+            // positive error ⇒ turn “right”
+            changeSpeed(-speed, speed);
+        }
+        
         return false;
     }
 

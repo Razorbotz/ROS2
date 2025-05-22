@@ -158,7 +158,7 @@ void Automation1::automate(){
         if(position.arucoInitialized==true){
             changeSpeed(0,0);
             setStartPosition(position.x, position.z);
-            setDestPosition(3.5, 1.0);
+            setDestPosition(3.75, 1.0);
             this->search.printMap();
             float angle = getAngle();
             setDestAngle(angle);
@@ -174,13 +174,14 @@ void Automation1::automate(){
             setStartPosition(position.x, position.z);
             addPointToStack(position.x, position.z);
             addPointToStack(3.75, 1.0);
-            addPointToStack(3.75, 3.25);
+            addPointToStack(3.75, 3.6);
             aStarStack(false, true);
             getPosition();
             float angle = getAngle();
             RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
             setDestAngle(angle);
-            robotState = INITIAL_NAV;
+            setDestPosition(0.85, 3.6);
+            robotState = EXCAVATE;
         }
     }
 
@@ -226,7 +227,7 @@ void Automation1::automate(){
         RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
         setDestAngle(angle);
         if (checkAngle()){ 
-            int check = checkDistance(.10);
+            int check = checkDistance(.025);
             if(check == -1){
             }
             else if(check == 0){
@@ -235,8 +236,8 @@ void Automation1::automate(){
                     setDestAngle(getAngle());
                 }
                 else{
-                    setDestPosition(3.75+ ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20)), 1.25);
-                    robotState = DOCK;
+                    //setDestPosition(3.75+ ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20)), 1.25);
+                    robotState = DUMP;
                 }
             }
             else if(check == 1){
@@ -328,24 +329,24 @@ void Automation1::automate(){
         RCLCPP_INFO(this->node->get_logger(), "Angle: %f", angle);
         // TODO: This doesn't work atm, need to revise it
         setDestAngle(angle);
-        if(checkAngle()){ 
+        if(checkAngle(true)){ 
             int distance = checkDistance(.1);
             if(distance == -1){
                 setDestAngle(getAngle());
             }
             else if(distance == 0){
                 changeSpeed(0.0, 0.0);
-                setDestPosition(3.75 + ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20)), 2.0);
+                setDestPosition(3.75, 3.6);// + ((xCounter*BUCKET_WIDTH / 10) + (BUCKET_WIDTH/20)), 2.0);
                 robotState = EXCAVATE;
             }
             else if(distance == 1){
-                changeSpeed(0.1, 0.1);
+                changeSpeed(-0.1, -0.1);
             }
             else if(distance == 2){
-                changeSpeed(0.15, 0.15);
+                changeSpeed(-0.15, -0.15);
             }
             else{
-                changeSpeed(0.25, 0.25);
+                changeSpeed(-0.25, -0.25);
             }
         }
     }
@@ -492,5 +493,28 @@ void Automation1::setLevel(){
 void Automation1::stopLevel(){
     if(robotState == LEVEL){
         robotState = ROBOT_IDLE;
+    }
+}
+
+
+void Automation1::dumpMacro(){
+    if(dumpState == DUMP_IDLE){
+        setArmPosition(950);
+    
+        setBucketPosition(800\);
+        dumpState = DUMP_EXTEND;
+    }
+    if(dumpState == DUMP_EXTEND){
+        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+            setArmPosition(950);
+            setBucketPosition(50);
+            dumpState = DUMP_RETRACT;
+        }
+    }
+    if(dumpState == DUMP_RETRACT){
+        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1)	{				
+            robotState = ROBOT_IDLE;
+            dumpState = DUMP_IDLE;
+        }        
     }
 }

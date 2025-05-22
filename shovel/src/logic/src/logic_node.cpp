@@ -246,11 +246,7 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
         case 0:
             break;
         case 1: //toggles driving and digging
-            if(buttonState->state){
-                stopSpeed();
-            }
-            if(printData)
-                RCLCPP_INFO(nodeHandle->get_logger(), "Button 2");
+            automation->dumpMacro();
             break;
         case 2:
             if(buttonState->state){ 
