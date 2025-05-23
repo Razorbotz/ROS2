@@ -396,6 +396,9 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(keyState->key==100 && keyState->state==1){
         automation->setDiagnostics();
     }
+    if(keyState->key==101 && keyState->state==1){
+        automation->setExcavate();
+    }
     if(keyState->key==97 && keyState->state==1){
         automation->startAutonomy();
     }
@@ -649,9 +652,7 @@ int main(int argc, char **argv){
     while(rclcpp::ok()){
 		auto finish = std::chrono::high_resolution_clock::now();
         if(automationGo){
-            if(checkTimes()){
-                automation->automate();
-            }
+            automation->automate();
         }
         automation->publishAutomationOut();
         rclcpp::spin_some(nodeHandle);
