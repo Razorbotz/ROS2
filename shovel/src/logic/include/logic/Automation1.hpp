@@ -22,4 +22,6 @@ class Automation1 : public Automation{
     void setLevel();
 
     void stopLevel();
+
+    void dumpMacro();
 };

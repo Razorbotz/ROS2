@@ -28,6 +28,7 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <std_msgs/msg/empty.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <messages/msg/key_state.hpp>
 
 #define Phoenix_No_WPI // remove WPI dependencies
@@ -74,10 +75,12 @@ using namespace ctre::phoenix::motorcontrol::can;
 
 
 rclcpp::Node::SharedPtr nodeHandle;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String_<std::allocator<void> >, std::allocator<void> > > resetPublisher;
 bool GO=false;
 std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
 std::chrono::time_point<std::chrono::high_resolution_clock> logicPrevious;
 bool printData = false;
+std::string resetString = "";
 
 /** @brief STOP Callback
  * 
@@ -199,10 +202,11 @@ void checkTemperature(double temperature){
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(printData)
 		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
-    if(keyState->key==killKey && keyState->state==1){
-		exit(0);
-        return;
-    }
+	if(keyState->key == 98 && keyState->state==1){
+		std_msgs::msg::String reset;
+		reset.data = resetString;
+		resetPublisher->publish(reset);
+	}
 }
 
 
@@ -233,6 +237,7 @@ int main(int argc,char** argv){
 	op_mode = getParameter<int>("op_mode", 0);
 	printData = getParameter<bool>("print_data", false);
 	std::string can_interface = getParameter<std::string>("can_interface", "can0");
+	resetString = getParameter<std::string>("reset_topic", "1");
 
 	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
@@ -272,6 +277,7 @@ int main(int argc,char** argv){
 	auto potentiometerPublisher=nodeHandle->create_publisher<std_msgs::msg::Int32>(potentiometerTopic.c_str(),1);
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
 	auto positionSubscriber=nodeHandle->create_subscription<std_msgs::msg::Int32>(positionTopic.c_str(),1,positionCallback);
+	resetPublisher=nodeHandle->create_publisher<std_msgs::msg::String>("reset_topic",1);
 
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);

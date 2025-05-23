@@ -562,8 +562,10 @@ void potentiometer2Callback(const messages::msg::TalonOut::SharedPtr msg){
 
         if(linear2.error != PotentiometerError){
             processPotentiometerData(msg->sensor_position, &linear2);
-            if(!linear1.sensorless && !linear2.sensorless){
-                setSyncErrors(&linear1, &linear2, currentArmSpeed);
+            if(!single_arm){
+                if(!linear1.sensorless && !linear2.sensorless){
+                    setSyncErrors(&linear1, &linear2, currentArmSpeed);
+                }
             }
         }
     }
@@ -614,8 +616,10 @@ void potentiometer4Callback(const messages::msg::TalonOut::SharedPtr msg){
 
         if(linear4.error != PotentiometerError){
             processPotentiometerData(msg->sensor_position, &linear4);
-            if(!linear3.sensorless && !linear4.sensorless){
-                setSyncErrors(&linear3, &linear4, currentBucketSpeed);
+            if(!single_arm){
+                if(!linear3.sensorless && !linear4.sensorless){
+                    setSyncErrors(&linear3, &linear4, currentBucketSpeed);
+                }
             }
         }
     }
@@ -664,13 +668,6 @@ void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     publishSpeeds2();
     RCLCPP_INFO(nodeHandle->get_logger(),"Bucket speeds: %f, %f", linear3.speed, linear4.speed);
 
-}
-
-void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
-    std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
-    if(keyState->key == 60 && keyState->state==1){
-        return;
-    }
 }
 
 /** @brief Function to get the LinearOut values
@@ -790,7 +787,6 @@ int main(int argc, char **argv){
 
     auto armSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("arm_speed",1,armSpeedCallback);
     auto bucketSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("bucket_speed",1,bucketSpeedCallback);
-    auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
 
     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,potentiometer1Callback);
     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,potentiometer2Callback);

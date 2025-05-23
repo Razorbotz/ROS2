@@ -204,16 +204,11 @@ void checkTemperature(double temperature){
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(printData)
 		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
-    if(keyState->key==killKey && keyState->state==1){
-		exit(0);
-        return;
-    }
 	if(keyState->key == 98 && keyState->state==1){
 		std_msgs::msg::String reset;
 		reset.data = resetString;
 		resetPublisher->publish(reset);
 	}
-	
 }
 
 

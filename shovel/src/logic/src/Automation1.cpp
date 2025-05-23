@@ -501,7 +501,7 @@ void Automation1::dumpMacro(){
     if(dumpState == DUMP_IDLE){
         setArmPosition(950);
     
-        setBucketPosition(800\);
+        setBucketPosition(800);
         dumpState = DUMP_EXTEND;
     }
     if(dumpState == DUMP_EXTEND){

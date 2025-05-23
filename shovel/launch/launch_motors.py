@@ -39,30 +39,6 @@ def generate_launch_description():
         ,
         Node(
             package='talon',
-            name='arm_2',
-            executable='talon_node',
-            parameters=[
-                {"motor_number": 15},
-                {"diagnostics_port": 56714},
-                {"invert_motor": True},
-                {"speed_topic": "talon_15_speed"},
-                {"info_topic": "talon_15_info"},
-                {"position_topic": "talon_15_position"},
-                {"kP": 10.0},
-                {"kI": 0.000001},
-                {"kD": 0.000001},
-                {"kF": 0.0},
-                {"publishing_delay": 15},
-                {"kill_key": 51},
-                {"op_mode": 0},
-                {"print_data": False},
-                {"can_interface": "can0"}
-            ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
-        )
-        ,
-        Node(
-            package='talon',
             name='bucket_1',
             executable='talon_node',
             parameters=[
@@ -78,30 +54,6 @@ def generate_launch_description():
                 {"kF": 0.0},
                 {"publishing_delay": 15},
                 {"kill_key": 52},
-                {"op_mode": 0},
-                {"print_data": False},
-                {"can_interface": "can0"}
-            ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
-        )
-        ,
-        Node(
-            package='talon',
-            name='bucket_2',
-            executable='talon_node',
-            parameters=[
-                {"motor_number": 17},
-                {"diagnostics_port": 56712},
-                {"invert_motor": True},
-                {"speed_topic": "talon_17_speed"},
-                {"info_topic": "talon_17_info"},
-                {"position_topic": "talon_17_position"},
-                {"kP": 10.0},
-                {"kI": 0.000001},
-                {"kD": 0.000001},
-                {"kF": 0.0},
-                {"publishing_delay": 15},
-                {"kill_key": 53},
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"}

@@ -244,6 +244,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     virtual void setLevel() = 0;
 
     virtual void stopLevel() = 0;
+
+    virtual void dumpMacro() = 0;
     
     void setLinear1(const messages::msg::LinearOut::SharedPtr linearOut);
 
@@ -281,7 +283,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     float getAngleDiff();
 
-    bool checkAngle();
+    bool checkAngle(bool reverse = false);
 
     bool checkAngle2();
 

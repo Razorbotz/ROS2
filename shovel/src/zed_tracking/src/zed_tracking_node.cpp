@@ -206,15 +206,6 @@ void check_for_crash() {
 }
 
 
-void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
-    if(keyState->key==killKey && keyState->state==1){
-        RCLCPP_INFO(nodeHandle->get_logger(), "Kill key pressed");
-        exit(0);
-        return;
-    }
-}
-
-
 int main(int argc, char **argv) {
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("zed_tracking");
@@ -374,7 +365,6 @@ int main(int argc, char **argv) {
 
     int writeCounter = 1;
     int resetCounter = 0;
-	auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
 
     rclcpp::Rate rate(30);
     while (rclcpp::ok()) {
