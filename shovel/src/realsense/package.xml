@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>realsense</name>
+  <version>1.0.0</version>
+  <description>The talon package</description>
+  <maintainer email="andrewburroughs17@gmail.com">Andrew Burroughs</maintainer>
+  <author>Andrew Burroughs</author>
+  <license>none</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>geometry_msgs</depend>
+
+  <exec_depend>realsense2</exec_depend>
+  <exec_depend>opencv</exec_depend>
+  <exec_depend>pcl</exec_depend>
+
+  <export>
+	<build_type>ament_cmake</build_type>
+  </export>
+</package>
