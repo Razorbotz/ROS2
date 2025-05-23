@@ -52,7 +52,8 @@ enum ExcavationState{EXCAVATION_IDLE,
         LOWER_ARM,
         LOWER_BUCKET,
         SQUARE_UP,
-        EXCAVATION_ERROR_RECOVERY
+        EXCAVATION_ERROR_RECOVERY, 
+        RETURN
     };
 
 enum ErrorState {TALON_14_ERROR, 
@@ -124,7 +125,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         {LOWER_ARM, "Lower Arm"},
         {LOWER_BUCKET, "Lower Bucket"},
         {SQUARE_UP, "Square Up"},
-        {EXCAVATION_ERROR_RECOVERY, "Error Recovery"}
+        {EXCAVATION_ERROR_RECOVERY, "Error Recovery"}, 
+        {RETURN, "Return"}
     };
 
     std::map<ErrorState, const char*> errorStateMap = {
@@ -246,6 +248,12 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     virtual void stopLevel() = 0;
 
     virtual void dumpMacro() = 0;
+
+    virtual void excavateMacro() = 0;
+
+    virtual void setDump() = 0;
+
+    virtual void setExcavate() = 0;
     
     void setLinear1(const messages::msg::LinearOut::SharedPtr linearOut);
 

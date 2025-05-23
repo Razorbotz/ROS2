@@ -497,24 +497,87 @@ void Automation1::stopLevel(){
 }
 
 
+void Automation1::setDump(){
+    dump = true;
+    robotState = ROBOT_IDLE;
+}
+
+
 void Automation1::dumpMacro(){
-    if(dumpState == DUMP_IDLE){
-        setArmPosition(950);
-    
-        setBucketPosition(800);
-        dumpState = DUMP_EXTEND;
-    }
-    if(dumpState == DUMP_EXTEND){
-        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+    if(dump == true){
+        if(dumpState == DUMP_IDLE){
             setArmPosition(950);
-            setBucketPosition(50);
-            dumpState = DUMP_RETRACT;
+        
+            setBucketPosition(800);
+            dumpState = DUMP_EXTEND;
+        }
+        if(dumpState == DUMP_EXTEND){
+            if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+                setArmPosition(950);
+                setBucketPosition(50);
+                dumpState = DUMP_RETRACT;
+            }
+        }
+        if(dumpState == DUMP_RETRACT){
+            if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1)	{				
+                robotState = ROBOT_IDLE;
+                dumpState = DUMP_IDLE;
+                dump = false;
+            }        
         }
     }
-    if(dumpState == DUMP_RETRACT){
-        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1)	{				
-            robotState = ROBOT_IDLE;
-            dumpState = DUMP_IDLE;
-        }        
-    }
+
 }
+
+
+void Automation1::setExcavate(){
+    currentX = position.x;
+    currentZ = postion.z;
+    excavate = true;
+    excavationState = COLLECT;
+    setDestPosition(currentX, currentZ - 2.0);
+    setGo();
+}
+
+void Automation::excavateMacro(){
+    if(excavationState == COLLECT){
+        // set actuators
+         if(deltaX < falcon1.outputPercentage * 0.05 || deltaZ < falcon1.outputPercentage * 0.05){
+            RCLCPP_INFO(this->node->get_logger(), "ERROR: Robot not moving");
+        }
+    }
+    if(excavationState == DUMP){
+        dumpMacro();
+        if(!dump){
+            setDestPosition(currentX, currentZ);
+            excavationState = RETURN;
+        }
+    }
+
+    if(excavationState == RETURN){
+        f(checkAngle()){ 
+            int distance = checkDistance(.05);
+            if(distance == -1){
+                setDestAngle(getAngle());
+            }
+            else if(distance == 0){
+                changeSpeed(0.0, 0.0);
+                excavationState = COLLECT;
+                setDestPosition(currentX, currentZ - 2.0);
+            }
+            else if(distance == 1){
+                changeSpeed(0.1, 0.1);
+            }
+            else if(distance == 2){
+                changeSpeed(0.15, 0.15);
+            }
+            else{
+                changeSpeed(0.25, 0.25);
+            }
+        }
+    }
+
+    
+   
+}
+
