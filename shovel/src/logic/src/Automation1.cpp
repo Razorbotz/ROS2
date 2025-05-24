@@ -532,21 +532,21 @@ void Automation1::dumpMacro(){
 
 void Automation1::setExcavate(){
     currentX = position.x;
-    currentZ = postion.z;
+    currentZ = position.z;
     excavate = true;
     excavationState = COLLECT;
     setDestPosition(currentX, currentZ - 2.0);
     setGo();
 }
 
-void Automation::excavateMacro(){
+void Automation1::excavateMacro(){
     if(excavationState == COLLECT){
         // set actuators
          if(deltaX < falcon1.outputPercentage * 0.05 || deltaZ < falcon1.outputPercentage * 0.05){
             RCLCPP_INFO(this->node->get_logger(), "ERROR: Robot not moving");
         }
     }
-    if(excavationState == DUMP){
+    if(excavationState == DUMP_BUCKET){
         dumpMacro();
         if(!dump){
             setDestPosition(currentX, currentZ);
@@ -555,7 +555,7 @@ void Automation::excavateMacro(){
     }
 
     if(excavationState == RETURN){
-        f(checkAngle()){ 
+        if(checkAngle()){ 
             int distance = checkDistance(.05);
             if(distance == -1){
                 setDestAngle(getAngle());

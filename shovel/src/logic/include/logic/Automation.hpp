@@ -52,6 +52,7 @@ enum ExcavationState{EXCAVATION_IDLE,
         LOWER_ARM,
         LOWER_BUCKET,
         SQUARE_UP,
+        DUMP_BUCKET,
         EXCAVATION_ERROR_RECOVERY, 
         RETURN
     };
@@ -122,6 +123,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         {RAISE_ARM, "Raise Arm"},
         {RAISE_BUCKET, "Raise Bucket"},
         {COLLECT, "Collect"},
+        {DUMP_BUCKET, "Dump"},
         {LOWER_ARM, "Lower Arm"},
         {LOWER_BUCKET, "Lower Bucket"},
         {SQUARE_UP, "Square Up"},
@@ -216,6 +218,9 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     bool levelBucket = true;
     bool levelArms = true;
     bool centeringSecond = false;
+    float currentX = 0.0, currentZ = 0;
+    bool dump = true;
+    bool excavate = true;
 
     virtual void automate() = 0;
 
