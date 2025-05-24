@@ -91,6 +91,7 @@ bool automationGo=false;
 bool excavationGo = false;
 bool printData = false;
 bool zedInit = false;
+bool useSpeed = false;
 
 Automation* automation;
 
@@ -156,8 +157,15 @@ void updateSpeed(){
     if(printData)
         RCLCPP_INFO(nodeHandle->get_logger(),"speed left=%f right=%f  pitch=%f roll=%f", speedLeft.data,  speedRight.data, joystick1Pitch, joystick1Roll);
 
-    userLeftSpeedPublisher->publish(speedLeft);
-    userRightSpeedPublisher->publish(speedRight);
+    if(useSpeed){
+        driveLeftSpeedPublisher->publish(speedLeft);
+        driveRightSpeedPublisher->publish(speedRight);
+    }
+    else{
+        userLeftSpeedPublisher->publish(speedLeft);
+        userRightSpeedPublisher->publish(speedRight);
+    }
+    
 }
 
 /** @brief Function to stop drive train motors
@@ -418,6 +426,9 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     }
     if(keyState->key == 48 && keyState->state==1){
         return;
+    }
+    if(keyState->key==83 && keyState->state == 1){
+        useSpeed = true;
     }
 }
 

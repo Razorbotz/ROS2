@@ -26,7 +26,7 @@ void Automation1::automate(){
         auto start = std::chrono::high_resolution_clock::now();
         setStartTime(start);
         setGo();
-        setArmPosition(900);
+        setArmPosition(400);
         setBucketPosition(100);
         if(checkArmPosition(10)){
             robotState = LOCATE;
@@ -507,7 +507,6 @@ void Automation1::dumpMacro(){
     if(dump == true){
         if(dumpState == DUMP_IDLE){
             setArmPosition(950);
-        
             setBucketPosition(800);
             dumpState = DUMP_EXTEND;
         }
