@@ -92,6 +92,7 @@ bool excavationGo = false;
 bool printData = false;
 bool zedInit = false;
 bool useSpeed = false;
+bool useController = false;
 
 Automation* automation;
 
@@ -229,10 +230,20 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     }
     else if(axisState->axis==2){
         joystick1Yaw = transformJoystickInfo(axisState->state, deadZone);
+        if(useController){
+            std_msgs::msg::Float32 armSpeed;
+            armSpeed.data = axisState->state;
+            armSpeedPublisher->publish(armSpeed);
+        }
     }
     else if(axisState->axis==3){
         joystick1Throttle = axisState->state/2 + 0.5;
         joystick1Throttle = transformJoystickInfo(joystick1Throttle, deadZone);
+        if(useController){
+            std_msgs::msg::Float32 bucketSpeed;
+            bucketSpeed.data = axisState->state;
+            bucketSpeedPublisher->publish(bucketSpeed);
+        }
     }
 }
 
@@ -429,6 +440,9 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     }
     if(keyState->key==83 && keyState->state == 1){
         useSpeed = true;
+    }
+    if(keyState->key==2){
+        useController = true;
     }
 }
 

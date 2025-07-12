@@ -1133,6 +1133,9 @@ int main(int argc, char **argv){
                 keyState.key=((uint16_t)message[1])<<8 | ((uint16_t)message[2]);
                 keyState.state=message[3];
                 keyPublisher->publish(keyState);
+                if(keyState.key == 2){
+                    goPublisher->publish(empty);
+                }
                 if(keyState.key == 49 && keyState.state == 1){
                     return 0;
                 }
