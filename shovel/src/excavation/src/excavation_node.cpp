@@ -7,8 +7,8 @@
 #include <std_msgs/msg/empty.hpp>
 #include <messages/msg/key_state.hpp>
 
-#include "messages/msg/linear_out.hpp"
-#include "messages/msg/talon_out.hpp"
+#include "messages/msg/linear_status.hpp"
+#include "messages/msg/talon_status.hpp"
 
 rclcpp::Node::SharedPtr nodeHandle;
 
@@ -17,10 +17,10 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon16Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon17Publisher;
 
-messages::msg::LinearOut linearOut1;
-messages::msg::LinearOut linearOut2;
-messages::msg::LinearOut linearOut3;
-messages::msg::LinearOut linearOut4;
+messages::msg::LinearStatus linearStatus1;
+messages::msg::LinearStatus linearStatus2;
+messages::msg::LinearStatus linearStatus3;
+messages::msg::LinearStatus linearStatus4;
 
 /** @file
  * @brief Node to control excavation motors
@@ -44,10 +44,10 @@ messages::msg::LinearOut linearOut4;
  * \li \b talon_15_speed
  * \li \b talon_16_speed
  * \li \b talon_17_speed
- * \li \b linearOut1
- * \li \b linearOut2
- * \li \b linearOut3
- * \li \b linearOut4
+ * \li \b linearStatus1
+ * \li \b linearStatus2
+ * \li \b linearStatus3
+ * \li \b linearStatus4
  * 
  */
 
@@ -528,7 +528,7 @@ void setSyncErrors(LinearActuator *linear1, LinearActuator *linear2, float curre
  * @param msg - ROS2 message containing the value of the potentiomter
  * @return void
  * */
-void potentiometer1Callback(const messages::msg::TalonOut::SharedPtr msg){
+void potentiometer1Callback(const messages::msg::TalonStatus::SharedPtr msg){
     linear1.maxCurrent = msg->max_current;
     if(!linear1.sensorless){
         setPotentiometerError(msg->sensor_position, &linear1);
@@ -555,7 +555,7 @@ void potentiometer1Callback(const messages::msg::TalonOut::SharedPtr msg){
  * @param msg - ROS2 message containing the value of the potentiomter
  * @return void
  * */
-void potentiometer2Callback(const messages::msg::TalonOut::SharedPtr msg){
+void potentiometer2Callback(const messages::msg::TalonStatus::SharedPtr msg){
     linear2.maxCurrent = msg->max_current;
     if(!linear2.sensorless){
         setPotentiometerError(msg->sensor_position, &linear2);
@@ -582,7 +582,7 @@ void potentiometer2Callback(const messages::msg::TalonOut::SharedPtr msg){
  * @param msg - ROS2 message containing the value of the potentiomter
  * @return void
  * */
-void potentiometer3Callback(const messages::msg::TalonOut::SharedPtr msg){
+void potentiometer3Callback(const messages::msg::TalonStatus::SharedPtr msg){
     linear3.maxCurrent = msg->max_current;
     if(!linear3.sensorless){
         setPotentiometerError(msg->sensor_position, &linear3);
@@ -609,7 +609,7 @@ void potentiometer3Callback(const messages::msg::TalonOut::SharedPtr msg){
  * @param msg - ROS2 message containing the value of the potentiomter
  * @return void
  * */
-void potentiometer4Callback(const messages::msg::TalonOut::SharedPtr msg){
+void potentiometer4Callback(const messages::msg::TalonStatus::SharedPtr msg){
     linear4.maxCurrent = msg->max_current;
     if(!linear4.sensorless){
         setPotentiometerError(msg->sensor_position, &linear4);
@@ -670,29 +670,29 @@ void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 
 }
 
-/** @brief Function to get the LinearOut values
+/** @brief Function to get the LinearStatus values
  * 
- * This function sets the values of the LinearOut message
+ * This function sets the values of the LinearStatus message
  * with the values from the linear actuator. 
- * @param *linearOut - Pointer for the LinearOut object
+ * @param *linearStatus - Pointer for the LinearStatus object
  * @param *linear - Pointer for the linear actuator
  * @return void
  * */
-void getLinearOut(messages::msg::LinearOut *linearOut, LinearActuator *linear){
-    linearOut->motor_number = linear->motorNumber;
-    linearOut->speed = linear->speed;
-    linearOut->potentiometer = linear->potentiometer;
-    linearOut->time_without_change = linear->timeWithoutChange;
-    linearOut->max = linear->max;
-    linearOut->min = linear->min;
-    linearOut->error = errorMap.at(linear->error);
-    linearOut->at_min = linear->atMin;
-    linearOut->at_max = linear->atMax;
-    linearOut->distance = linear->distance;
-    linearOut->sensorless = linear->sensorless;
-    linearOut->stroke = linear->stroke;
-    linearOut->extension_speed = linear->extensionSpeed;
-    linearOut->time_to_extend = linear->timeToExtend;
+void getLinearStatus(messages::msg::LinearStatus *linearStatus, LinearActuator *linear){
+    linearStatus->motor_number = linear->motorNumber;
+    linearStatus->speed = linear->speed;
+    linearStatus->potentiometer = linear->potentiometer;
+    linearStatus->time_without_change = linear->timeWithoutChange;
+    linearStatus->max = linear->max;
+    linearStatus->min = linear->min;
+    linearStatus->error = errorMap.at(linear->error);
+    linearStatus->at_min = linear->atMin;
+    linearStatus->at_max = linear->atMax;
+    linearStatus->distance = linear->distance;
+    linearStatus->sensorless = linear->sensorless;
+    linearStatus->stroke = linear->stroke;
+    linearStatus->extension_speed = linear->extensionSpeed;
+    linearStatus->time_to_extend = linear->timeToExtend;
 }
 
 
@@ -788,25 +788,25 @@ int main(int argc, char **argv){
     auto armSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("arm_speed",1,armSpeedCallback);
     auto bucketSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("bucket_speed",1,bucketSpeedCallback);
 
-    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,potentiometer1Callback);
-    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,potentiometer2Callback);
-    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_16_info",1,potentiometer3Callback);
-    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_17_info",1,potentiometer4Callback);
+    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,potentiometer1Callback);
+    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_15_info",1,potentiometer2Callback);
+    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,potentiometer3Callback);
+    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,potentiometer4Callback);
 
     talon14Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_14_speed",1);
     talon15Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_15_speed",1);
     talon16Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_16_speed",1);
     talon17Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_17_speed",1);
     
-    messages::msg::LinearOut linearOut1;
-    messages::msg::LinearOut linearOut2;
-    messages::msg::LinearOut linearOut3;
-    messages::msg::LinearOut linearOut4;
+    messages::msg::LinearStatus linearStatus1;
+    messages::msg::LinearStatus linearStatus2;
+    messages::msg::LinearStatus linearStatus3;
+    messages::msg::LinearStatus linearStatus4;
 
-    auto linearOut1Publisher = nodeHandle->create_publisher<messages::msg::LinearOut>("linearOut1",1);
-    auto linearOut2Publisher = nodeHandle->create_publisher<messages::msg::LinearOut>("linearOut2",1);
-    auto linearOut3Publisher = nodeHandle->create_publisher<messages::msg::LinearOut>("linearOut3",1);
-    auto linearOut4Publisher = nodeHandle->create_publisher<messages::msg::LinearOut>("linearOut4",1);
+    auto linearStatus1Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus1",1);
+    auto linearStatus2Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus2",1);
+    auto linearStatus3Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus3",1);
+    auto linearStatus4Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus4",1);
 
     auto start = std::chrono::high_resolution_clock::now();
     auto finish = std::chrono::high_resolution_clock::now();
@@ -815,20 +815,20 @@ int main(int argc, char **argv){
         finish = std::chrono::high_resolution_clock::now();
         if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > 33){
             updateMotorPositions(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() );
-            getLinearOut(&linearOut1, &linear1);
-            linearOut1Publisher->publish(linearOut1);
+            getLinearStatus(&linearStatus1, &linear1);
+            linearStatus1Publisher->publish(linearStatus1);
 
             if(!single_arm){
-                getLinearOut(&linearOut2, &linear2);
-                linearOut2Publisher->publish(linearOut2);
+                getLinearStatus(&linearStatus2, &linear2);
+                linearStatus2Publisher->publish(linearStatus2);
             }
             
-            getLinearOut(&linearOut3, &linear3);
-            linearOut3Publisher->publish(linearOut3);
+            getLinearStatus(&linearStatus3, &linear3);
+            linearStatus3Publisher->publish(linearStatus3);
 
             if(!single_arm){
-                getLinearOut(&linearOut4, &linear4);
-                linearOut4Publisher->publish(linearOut4);
+                getLinearStatus(&linearStatus4, &linear4);
+                linearStatus4Publisher->publish(linearStatus4);
             }
             start = std::chrono::high_resolution_clock::now();
         }

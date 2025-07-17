@@ -38,7 +38,7 @@
 #include <ctre/phoenix/cci/Unmanaged_CCI.h>
 #include <ctre/phoenix/cci/Diagnostics_CCI.h>
 
-#include "messages/msg/talon_out.hpp"
+#include "messages/msg/talon_status.hpp"
 
 using namespace ctre::phoenix;
 using namespace ctre::phoenix::platform;
@@ -272,8 +272,8 @@ int main(int argc,char** argv){
 
 	TalonSRXConfiguration allConfigs;
 
-	messages::msg::TalonOut talonOut;
-	auto talonOutPublisher=nodeHandle->create_publisher<messages::msg::TalonOut>(infoTopic.c_str(),1);
+	messages::msg::TalonStatus talonStatus;
+	auto talonStatusPublisher=nodeHandle->create_publisher<messages::msg::TalonStatus>(infoTopic.c_str(),1);
 	auto potentiometerPublisher=nodeHandle->create_publisher<std_msgs::msg::Int32>(potentiometerTopic.c_str(),1);
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
 	auto positionSubscriber=nodeHandle->create_subscription<std_msgs::msg::Int32>(positionTopic.c_str(),1,positionCallback);
@@ -312,23 +312,23 @@ int main(int argc,char** argv){
 			double integralAccumulator0=talonSRX->GetIntegralAccumulator(0);
 			double errorDerivative0=talonSRX->GetErrorDerivative(0);
 		
-			talonOut.device_id=deviceID;	
-			talonOut.bus_voltage=busVoltage;
-			talonOut.output_current=outputCurrent;
-			talonOut.output_voltage=motorOutputVoltage;
-			talonOut.output_percent=motorOutputPercent;
-			talonOut.temperature=temperature;
-			talonOut.sensor_position=sensorPosition0;
-			talonOut.sensor_velocity=sensorVelocity0;
-			talonOut.closed_loop_error=closedLoopError0;
-			talonOut.integral_accumulator=integralAccumulator0;
-			talonOut.error_derivative=errorDerivative0;
-			talonOut.temp_disable = TEMP_DISABLE;
+			talonStatus.device_id=deviceID;	
+			talonStatus.bus_voltage=busVoltage;
+			talonStatus.output_current=outputCurrent;
+			talonStatus.output_voltage=motorOutputVoltage;
+			talonStatus.output_percent=motorOutputPercent;
+			talonStatus.temperature=temperature;
+			talonStatus.sensor_position=sensorPosition0;
+			talonStatus.sensor_velocity=sensorVelocity0;
+			talonStatus.closed_loop_error=closedLoopError0;
+			talonStatus.integral_accumulator=integralAccumulator0;
+			talonStatus.error_derivative=errorDerivative0;
+			talonStatus.temp_disable = TEMP_DISABLE;
 			if(outputCurrent > maxCurrent){
 				maxCurrent = outputCurrent;
 			}
-			talonOut.max_current = maxCurrent;
-			talonOutPublisher->publish(talonOut);
+			talonStatus.max_current = maxCurrent;
+			talonStatusPublisher->publish(talonStatus);
 			checkTemperature(temperature);
         	start = std::chrono::high_resolution_clock::now();
 		}

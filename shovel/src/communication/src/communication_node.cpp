@@ -27,11 +27,11 @@
 #include <messages/msg/hat_state.hpp>  
 #include <messages/msg/button_state.hpp>
 #include <messages/msg/axis_state.hpp>
-#include <messages/msg/talon_out.hpp>
+#include <messages/msg/talon_status.hpp>
 #include <messages/msg/zed_position.hpp>
-#include <messages/msg/linear_out.hpp>
-#include <messages/msg/autonomy_out.hpp>
-#include <messages/msg/falcon_out.hpp>
+#include <messages/msg/linear_status.hpp>
+#include <messages/msg/autonomy_status.hpp>
+#include <messages/msg/falcon_status.hpp>
 
 #include <BinaryMessage.hpp>
 
@@ -54,7 +54,7 @@
  * \li \b talon_16_info
  * \li \b talon_17_info
  * \li \b zed_position
- * \li \b autonomy_out
+ * \li \b autonomy_status
  * 
  * The topics that are being published are as follows:
  * \li \b joystick_axis
@@ -180,48 +180,48 @@ void send(BinaryMessage message){
 }
 
 
-void send(std::string messageLabel, const messages::msg::FalconOut::SharedPtr talonOut){
+void send(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr talonStatus){
     if(silentRunning)return;
     //RCLCPP_INFO(nodeHandle->get_logger(), "send talon");
     BinaryMessage message(messageLabel);
 
-    message.addElementUInt8("Device ID",(uint8_t)talonOut->device_id);
-    float volt = talonOut->bus_voltage *= 100.0;
+    message.addElementUInt8("Device ID",(uint8_t)talonStatus->device_id);
+    float volt = talonStatus->bus_voltage *= 100.0;
     uint16_t voltage = volt;
     message.addElementUInt16("Bus Voltage",voltage);
-    uint16_t current = talonOut->output_current *= 100.0;
+    uint16_t current = talonStatus->output_current *= 100.0;
     message.addElementUInt16("Output Current",current);
-    //message.addElementFloat32("Output Voltage",talonOut->output_voltage);
-    message.addElementFloat32("Output Percent",talonOut->output_percent);
-    message.addElementUInt8("Temperature",(uint8_t)talonOut->temperature);
-    message.addElementUInt16("Sensor Position",(uint8_t)talonOut->sensor_position);
-    message.addElementInt8("Sensor Velocity",(uint8_t)talonOut->sensor_velocity);
-    message.addElementFloat32("Max Current", talonOut->max_current);
-    message.addElementBoolean("Temp Disable", talonOut->temp_disable);
-    message.addElementBoolean("Error", talonOut->error);
+    //message.addElementFloat32("Output Voltage",talonStatus->output_voltage);
+    message.addElementFloat32("Output Percent",talonStatus->output_percent);
+    message.addElementUInt8("Temperature",(uint8_t)talonStatus->temperature);
+    message.addElementUInt16("Sensor Position",(uint8_t)talonStatus->sensor_position);
+    message.addElementInt8("Sensor Velocity",(uint8_t)talonStatus->sensor_velocity);
+    message.addElementFloat32("Max Current", talonStatus->max_current);
+    message.addElementBoolean("Temp Disable", talonStatus->temp_disable);
+    message.addElementBoolean("Error", talonStatus->error);
 
     send(message);
 }
 
 
-void send(std::string messageLabel, const messages::msg::TalonOut::SharedPtr talonOut){
+void send(std::string messageLabel, const messages::msg::TalonStatus::SharedPtr talonStatus){
     if(silentRunning)return;
     //RCLCPP_INFO(nodeHandle->get_logger(), "send talon");
     BinaryMessage message(messageLabel);
 
-    message.addElementInt8("Device ID",talonOut->device_id);
-    float volt = talonOut->bus_voltage *= 100.0;
+    message.addElementInt8("Device ID",talonStatus->device_id);
+    float volt = talonStatus->bus_voltage *= 100.0;
     uint16_t voltage = volt;
     message.addElementUInt16("Bus Voltage",voltage);
-    uint16_t current = talonOut->output_current *= 100.0;
+    uint16_t current = talonStatus->output_current *= 100.0;
     message.addElementUInt16("Output Current",current);
-    //message.addElementFloat32("Output Voltage",talonOut->output_voltage);
-    message.addElementFloat32("Output Percent",talonOut->output_percent);
-    message.addElementUInt8("Temperature",(uint8_t)talonOut->temperature);
-    message.addElementUInt16("Sensor Position",talonOut->sensor_position);
-    message.addElementInt8("Sensor Velocity",(int8_t)talonOut->sensor_velocity);
-    message.addElementFloat32("Max Current", talonOut->max_current);
-    message.addElementBoolean("Temp Disable", talonOut->temp_disable);
+    //message.addElementFloat32("Output Voltage",talonStatus->output_voltage);
+    message.addElementFloat32("Output Percent",talonStatus->output_percent);
+    message.addElementUInt8("Temperature",(uint8_t)talonStatus->temperature);
+    message.addElementUInt16("Sensor Position",talonStatus->sensor_position);
+    message.addElementInt8("Sensor Velocity",(int8_t)talonStatus->sensor_velocity);
+    message.addElementFloat32("Max Current", talonStatus->max_current);
+    message.addElementBoolean("Temp Disable", talonStatus->temp_disable);
     send(message);
 }
 
@@ -257,7 +257,7 @@ void send(std::string messageLabel, const messages::msg::Power::SharedPtr power)
 }
 
 
-void send(std::string messageLabel, const messages::msg::LinearOut::SharedPtr linear){
+void send(std::string messageLabel, const messages::msg::LinearStatus::SharedPtr linear){
     if(silentRunning)return;
 
     BinaryMessage message(messageLabel);
@@ -362,174 +362,174 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
 
 /** @brief Callback function for the Talon topic
  * 
- * This function receives the talonOut message published by the first 
+ * This function receives the talonStatus message published by the first 
  * Talon and uses the send function to send the data to the client side
  * GUI.
- * @param talonOut
+ * @param talonStatus
  * @return void
  * */
-void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+void talon1Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon1 callback");
     if(rssi < CRIT_THRESH)
-        send("Talon 1",talonOut);
+        send("Talon 1",talonStatus);
 }
 
 /** @brief Callback function for the Talon topic
  * 
- * This function receives the talonOut message published by the first 
+ * This function receives the talonStatus message published by the first 
  * Talon and uses the send function to send the data to the client side
  * GUI.
- * @param talonOut
+ * @param talonStatus
  * @return void
  * */
-void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+void talon2Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon2 callback");
     if(rssi < CRIT_THRESH)
-        send("Talon 2",talonOut);
+        send("Talon 2",talonStatus);
 }
 
 /** @brief Callback function for the Talon topic
  * 
- * This function receives the talonOut message published by the first 
+ * This function receives the talonStatus message published by the first 
  * Talon and uses the send function to send the data to the client side
  * GUI.
- * @param talonOut
+ * @param talonStatus
  * @return void
  * */
-void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+void talon3Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon3 callback");
     if(rssi < CRIT_THRESH)
-        send("Talon 3",talonOut);
+        send("Talon 3",talonStatus);
 }
 
 /** @brief Callback function for the Talon topic
  * 
- * This function receives the talonOut message published by the first 
+ * This function receives the talonStatus message published by the first 
  * Talon and uses the send function to send the data to the client side
  * GUI.
- * @param talonOut
+ * @param talonStatus
  * @return void
  * */
-void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
+void talon4Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
     if(rssi < CRIT_THRESH)
-        send("Talon 4",talonOut);
+        send("Talon 4",talonStatus);
 }
 
 
 /** @brief Callback function for the Talon topic
  * 
- * This function receives the talonOut message published by the first 
+ * This function receives the talonStatus message published by the first 
  * Talon and uses the send function to send the data to the client side
  * GUI.
- * @param talonOut
+ * @param talonStatus
  * @return void
  * */
-void falcon1Callback(const messages::msg::FalconOut::SharedPtr talonOut){
+void falcon1Callback(const messages::msg::FalconStatus::SharedPtr talonStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
     if(rssi < CRIT_THRESH)
-        send("Falcon 1",talonOut);
+        send("Falcon 1",talonStatus);
 }
 
 /** @brief Callback function for the Talon topic
  * 
- * This function receives the talonOut message published by the first 
+ * This function receives the talonStatus message published by the first 
  * Talon and uses the send function to send the data to the client side
  * GUI.
- * @param talonOut
+ * @param talonStatus
  * @return void
  * */
-void falcon2Callback(const messages::msg::FalconOut::SharedPtr talonOut){
+void falcon2Callback(const messages::msg::FalconStatus::SharedPtr talonStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon2 callback");
     if(rssi < CRIT_THRESH)
-        send("Falcon 2",talonOut);
+        send("Falcon 2",talonStatus);
 }
 
 /** @brief Callback function for the Talon topic
  * 
- * This function receives the talonOut message published by the first 
+ * This function receives the talonStatus message published by the first 
  * Talon and uses the send function to send the data to the client side
  * GUI.
- * @param talonOut
+ * @param talonStatus
  * @return void
  * */
-void falcon3Callback(const messages::msg::FalconOut::SharedPtr talonOut){
+void falcon3Callback(const messages::msg::FalconStatus::SharedPtr talonStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon3 callback");
     if(rssi < CRIT_THRESH)
-        send("Falcon 3",talonOut);
+        send("Falcon 3",talonStatus);
 }
 
 /** @brief Callback function for the Talon topic
  * 
- * This function receives the talonOut message published by the first 
+ * This function receives the talonStatus message published by the first 
  * Talon and uses the send function to send the data to the client side
  * GUI.
- * @param talonOut
+ * @param talonStatus
  * @return void
  * */
-void falcon4Callback(const messages::msg::FalconOut::SharedPtr talonOut){
+void falcon4Callback(const messages::msg::FalconStatus::SharedPtr talonStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon4 callback");
     if(rssi < CRIT_THRESH)
-        send("Falcon 4",talonOut);
+        send("Falcon 4",talonStatus);
 }
 
 
-/** @brief Callback function for the LinearOut topic
+/** @brief Callback function for the LinearStatus topic
  * 
- * This function receives the linearOut message published by the excavation
+ * This function receives the linearStatus message published by the excavation
  * node and uses the send data to send the data to the client side GUI.
- * @param linearOut 
+ * @param linearStatus 
  */
-void linearOut1Callback(const messages::msg::LinearOut::SharedPtr linearOut){
+void linearStatus1Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear1 callback");
     if(rssi < UPPER_THRESH)
-        send("Linear 1", linearOut);
+        send("Linear 1", linearStatus);
 }
 
 
-/** @brief Callback function for the LinearOut topic
+/** @brief Callback function for the LinearStatus topic
  * 
- * This function receives the linearOut message published by the excavation
+ * This function receives the linearStatus message published by the excavation
  * node and uses the send data to send the data to the client side GUI.
- * @param linearOut 
+ * @param linearStatus 
  */
-void linearOut2Callback(const messages::msg::LinearOut::SharedPtr linearOut){
+void linearStatus2Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear2 callback");
     if(rssi < UPPER_THRESH)
-        send("Linear 2", linearOut);
+        send("Linear 2", linearStatus);
 }
 
 
-/** @brief Callback function for the LinearOut topic
+/** @brief Callback function for the LinearStatus topic
  * 
- * This function receives the linearOut message published by the excavation
+ * This function receives the linearStatus message published by the excavation
  * node and uses the send data to send the data to the client side GUI.
- * @param linearOut 
+ * @param linearStatus 
  */
-void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
+void linearStatus3Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear3 callback");
     if(rssi < UPPER_THRESH)
-        send("Linear 3", linearOut);
+        send("Linear 3", linearStatus);
 }
 
 
-/** @brief Callback function for the LinearOut topic
+/** @brief Callback function for the LinearStatus topic
  * 
- * This function receives the linearOut message published by the excavation
+ * This function receives the linearStatus message published by the excavation
  * node and uses the send data to send the data to the client side GUI.
- * @param linearOut 
+ * @param linearStatus 
  */
-void linearOut4Callback(const messages::msg::LinearOut::SharedPtr linearOut){
+void linearStatus4Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "linear4 callback");
     if(rssi < UPPER_THRESH)
-        send("Linear 4", linearOut);
+        send("Linear 4", linearStatus);
 }
 
 
-void autonomyOutCallback(const messages::msg::AutonomyOut::SharedPtr autonomyOut){
+void autonomyStatusCallback(const messages::msg::AutonomyStatus::SharedPtr autonomyStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "autonomy callback");
     if(rssi < CRIT_THRESH)
-        send("Autonomy", autonomyOut);
+        send("Autonomy", autonomyStatus);
 }
 
 
@@ -806,20 +806,20 @@ void communicationInterval(){
 //     auto commHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat",1);
 
 //     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
-//     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,talon1Callback);
-//     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,talon2Callback);
-//     auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_16_info",1,talon3Callback);
-//     auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_17_info",1,talon4Callback);
-//     auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_10_info",1,falcon1Callback);
-//     auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_11_info",1,falcon2Callback);
-//     auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_12_info",1,falcon3Callback);
-//     auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_13_info",1,falcon4Callback);
-//     auto linearOut1Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut1",1,linearOut1Callback);
-//     auto linearOut2Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut2",1,linearOut2Callback);
-//     auto linearOut3Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut3",1,linearOut3Callback);
-//     auto linearOut4Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut4",1,linearOut4Callback);
+//     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,talon1Callback);
+//     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_15_info",1,talon2Callback);
+//     auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,talon3Callback);
+//     auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,talon4Callback);
+//     auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_10_info",1,falcon1Callback);
+//     auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_11_info",1,falcon2Callback);
+//     auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_12_info",1,falcon3Callback);
+//     auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_13_info",1,falcon4Callback);
+//     auto linearStatus1Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus1",1,linearStatus1Callback);
+//     auto linearStatus2Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus2",1,linearStatus2Callback);
+//     auto linearStatus3Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus3",1,linearStatus3Callback);
+//     auto linearStatus4Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus4",1,linearStatus4Callback);
 //     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
-//     auto autonomyOutSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyOut>("autonomy_out", 10, autonomyOutCallback);
+//     auto autonomyStatusSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyStatus>("autonomy_status", 10, autonomyStatusCallback);
 
 //     int server_fd, bytesRead; 
 //     struct sockaddr_in address; 
@@ -1031,20 +1031,20 @@ int main(int argc, char **argv){
     auto commHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat",1);
 
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
-    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,talon1Callback);
-    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,talon2Callback);
-    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_16_info",1,talon3Callback);
-    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_17_info",1,talon4Callback);
-    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_10_info",1,falcon1Callback);
-    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_11_info",1,falcon2Callback);
-    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_12_info",1,falcon3Callback);
-    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_13_info",1,falcon4Callback);
-    auto linearOut1Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut1",1,linearOut1Callback);
-    auto linearOut2Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut2",1,linearOut2Callback);
-    auto linearOut3Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut3",1,linearOut3Callback);
-    auto linearOut4Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut4",1,linearOut4Callback);
+    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,talon1Callback);
+    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_15_info",1,talon2Callback);
+    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,talon3Callback);
+    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,talon4Callback);
+    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_10_info",1,falcon1Callback);
+    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_11_info",1,falcon2Callback);
+    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_12_info",1,falcon3Callback);
+    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_13_info",1,falcon4Callback);
+    auto linearStatus1Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus1",1,linearStatus1Callback);
+    auto linearStatus2Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus2",1,linearStatus2Callback);
+    auto linearStatus3Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus3",1,linearStatus3Callback);
+    auto linearStatus4Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus4",1,linearStatus4Callback);
     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
-    auto autonomyOutSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyOut>("autonomy_out", 10, autonomyOutCallback);
+    auto autonomyStatusSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyStatus>("autonomy_status", 10, autonomyStatusCallback);
 
     int server_fd, bytesRead; 
     int opt = 1; 

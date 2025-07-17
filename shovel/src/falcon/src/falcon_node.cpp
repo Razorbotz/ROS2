@@ -38,7 +38,7 @@
 #include <ctre/phoenix/cci/Unmanaged_CCI.h>
 #include <ctre/phoenix/cci/Diagnostics_CCI.h>
 
-#include "messages/msg/falcon_out.hpp"
+#include "messages/msg/falcon_status.hpp"
 
 using namespace ctre::phoenix;
 using namespace ctre::phoenix::platform;
@@ -277,8 +277,8 @@ int main(int argc,char** argv){
     supplyLimitConfig.triggerThresholdTime = 0.1; 
 	talonFX->ConfigSupplyCurrentLimit(supplyLimitConfig, kTimeoutMs);
 
-	messages::msg::FalconOut falconOut;
-	auto falconOutPublisher=nodeHandle->create_publisher<messages::msg::FalconOut>(infoTopic.c_str(),1);
+	messages::msg::FalconStatus falconStatus;
+	auto falconStatusPublisher=nodeHandle->create_publisher<messages::msg::FalconStatus>(infoTopic.c_str(),1);
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
 	auto userSpeedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(userTopic.c_str(),1,userSpeedCallback);
 	resetPublisher=nodeHandle->create_publisher<std_msgs::msg::String>("reset_topic",1);
@@ -338,25 +338,25 @@ int main(int argc,char** argv){
 			double integralAccumulator0=talonFX->GetIntegralAccumulator(0);
 			double errorDerivative0=talonFX->GetErrorDerivative(0);
 		
-			falconOut.device_id=deviceID;	
-			falconOut.bus_voltage=busVoltage;
-			falconOut.output_current=outputCurrent;
-			falconOut.output_voltage=motorOutputVoltage;
-			falconOut.output_percent=motorOutputPercent;
-			falconOut.temperature=temperature;
-			falconOut.sensor_position=sensorPosition0;
-			falconOut.sensor_velocity=sensorVelocity0;
-			falconOut.closed_loop_error=closedLoopError0;
-			falconOut.integral_accumulator=integralAccumulator0;
-			falconOut.error_derivative=errorDerivative0;
-			falconOut.temp_disable = TEMP_DISABLE;
-			falconOut.error = error;
-			falconOut.restarted = restarted;
+			falconStatus.device_id=deviceID;	
+			falconStatus.bus_voltage=busVoltage;
+			falconStatus.output_current=outputCurrent;
+			falconStatus.output_voltage=motorOutputVoltage;
+			falconStatus.output_percent=motorOutputPercent;
+			falconStatus.temperature=temperature;
+			falconStatus.sensor_position=sensorPosition0;
+			falconStatus.sensor_velocity=sensorVelocity0;
+			falconStatus.closed_loop_error=closedLoopError0;
+			falconStatus.integral_accumulator=integralAccumulator0;
+			falconStatus.error_derivative=errorDerivative0;
+			falconStatus.temp_disable = TEMP_DISABLE;
+			falconStatus.error = error;
+			falconStatus.restarted = restarted;
 			if(outputCurrent > maxCurrent){
 				maxCurrent = outputCurrent;
 			}
-			falconOut.max_current = maxCurrent;
-			falconOutPublisher->publish(falconOut);
+			falconStatus.max_current = maxCurrent;
+			falconStatusPublisher->publish(falconStatus);
 			start = std::chrono::high_resolution_clock::now();
 			checkTemperature(temperature);
 		}

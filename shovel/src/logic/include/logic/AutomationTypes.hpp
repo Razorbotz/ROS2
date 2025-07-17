@@ -30,7 +30,7 @@ struct Linear {
     float maxCurrent = 0.0;
 };
 
-struct MotorOut{
+struct MotorStatus{
     float busVoltage;
     float outputCurrent;
     float outputVoltage;

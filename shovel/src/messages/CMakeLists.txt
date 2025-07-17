@@ -45,11 +45,11 @@ rosidl_generate_interfaces(messages
   "msg/ButtonState.msg"
   "msg/HatState.msg"
   "msg/KeyState.msg"
-  "msg/TalonOut.msg"
+  "msg/TalonStatus.msg"
   "msg/ZedPosition.msg"
-  "msg/LinearOut.msg"
-  "msg/AutonomyOut.msg"
-  "msg/FalconOut.msg"
+  "msg/LinearStatus.msg"
+  "msg/AutonomyStatus.msg"
+  "msg/FalconStatus.msg"
 
   DEPENDENCIES builtin_interfaces
 )

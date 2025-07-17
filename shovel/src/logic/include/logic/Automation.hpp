@@ -4,10 +4,10 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/empty.hpp>
-#include <messages/msg/linear_out.hpp>
-#include <messages/msg/talon_out.hpp>
-#include <messages/msg/falcon_out.hpp>
-#include <messages/msg/autonomy_out.hpp>
+#include <messages/msg/linear_status.hpp>
+#include <messages/msg/talon_status.hpp>
+#include <messages/msg/falcon_status.hpp>
+#include <messages/msg/autonomy_status.hpp>
 #include <std_msgs/msg/int32.hpp>
 
 #include "AutomationTypes.hpp"
@@ -179,7 +179,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > bucketSpeedPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Empty_<std::allocator<void> >, std::allocator<void> > > goPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Empty_<std::allocator<void> >, std::allocator<void> > > stopPublisher;
-    std::shared_ptr<rclcpp::Publisher<messages::msg::AutonomyOut_<std::allocator<void> >, std::allocator<void> > > autonomyOutPublisher;
+    std::shared_ptr<rclcpp::Publisher<messages::msg::AutonomyStatus_<std::allocator<void> >, std::allocator<void> > > autonomyStatusPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon14PositionPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon15PositionPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon16PositionPublisher;
@@ -192,7 +192,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     float currentLeftSpeed=0;
     float currentRightSpeed=0;
     Linear linear1, linear2, linear3, linear4;
-    MotorOut talon1, talon2, talon3, talon4, falcon1, falcon2, falcon3, falcon4;
+    MotorStatus talon1, talon2, talon3, talon4, falcon1, falcon2, falcon3, falcon4;
     // Height, width, excavation area, obstacle area, target Area
     Arena NASA{50, 69, 20, 39, {0, 0, 0, 0}};
     Arena UCF_1{82, 46, 1, 41, {0, 0, 0, 0}};
@@ -224,7 +224,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     virtual void automate() = 0;
 
-    virtual void publishAutomationOut() = 0;
+    virtual void publishAutomationStatus() = 0;
 
     void setNode(rclcpp::Node::SharedPtr node);
 
@@ -260,29 +260,29 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     virtual void setExcavate() = 0;
     
-    void setLinear1(const messages::msg::LinearOut::SharedPtr linearOut);
+    void setLinear1(const messages::msg::LinearStatus::SharedPtr linearStatus);
 
-    void setLinear2(const messages::msg::LinearOut::SharedPtr linearOut);
+    void setLinear2(const messages::msg::LinearStatus::SharedPtr linearStatus);
 
-    void setLinear3(const messages::msg::LinearOut::SharedPtr linearOut);
+    void setLinear3(const messages::msg::LinearStatus::SharedPtr linearStatus);
 
-    void setLinear4(const messages::msg::LinearOut::SharedPtr linearOut);
+    void setLinear4(const messages::msg::LinearStatus::SharedPtr linearStatus);
 
-    void setTalon1(const messages::msg::TalonOut::SharedPtr talonOut);
+    void setTalon1(const messages::msg::TalonStatus::SharedPtr talonStatus);
 
-    void setTalon2(const messages::msg::TalonOut::SharedPtr talonOut);
+    void setTalon2(const messages::msg::TalonStatus::SharedPtr talonStatus);
 
-    void setTalon3(const messages::msg::TalonOut::SharedPtr talonOut);
+    void setTalon3(const messages::msg::TalonStatus::SharedPtr talonStatus);
 
-    void setTalon4(const messages::msg::TalonOut::SharedPtr talonOut);
+    void setTalon4(const messages::msg::TalonStatus::SharedPtr talonStatus);
 
-    void setFalcon1(const messages::msg::FalconOut::SharedPtr falconOut);
+    void setFalcon1(const messages::msg::FalconStatus::SharedPtr falconStatus);
     
-    void setFalcon2(const messages::msg::FalconOut::SharedPtr falconOut);
+    void setFalcon2(const messages::msg::FalconStatus::SharedPtr falconStatus);
     
-    void setFalcon3(const messages::msg::FalconOut::SharedPtr falconOut);
+    void setFalcon3(const messages::msg::FalconStatus::SharedPtr falconStatus);
     
-    void setFalcon4(const messages::msg::FalconOut::SharedPtr falconOut);
+    void setFalcon4(const messages::msg::FalconStatus::SharedPtr falconStatus);
 
     bool checkErrors(Linear linear);
 
@@ -310,7 +310,7 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     bool getPosition();
 
-    void publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString, std::string tiltStateString, std::string dumpStateString, std::string bucketState, std::string armsState);
+    void publishAutonomyStatus(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString, std::string tiltStateString, std::string dumpStateString, std::string bucketState, std::string armsState);
 
     void setStartTime(std::chrono::time_point<std::chrono::high_resolution_clock> StartTime);
 

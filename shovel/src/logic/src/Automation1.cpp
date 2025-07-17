@@ -461,14 +461,14 @@ void Automation1::automate(){
 }
     
 
-void Automation1::publishAutomationOut(){
+void Automation1::publishAutomationStatus(){
     std::string robotStateString = robotStateMap.at(robotState);
     std::string excavationStateString = excavationStateMap.at(excavationState);
     std::string errorStateString = errorStateMap.at(errorState);
     std::string diagnosticsStateString = diagnosticsStateMap.at(diagnosticsState);
     std::string tiltStateString = tiltStateMap.at(tiltState);
     std::string dumpStateString = dumpStateMap.at(dumpState);
-    publishAutonomyOut(robotStateString, excavationStateString, errorStateString, diagnosticsStateString, tiltStateString, dumpStateString, std::to_string(levelBucket), std::to_string(levelArms));
+    publishAutomationStatus(robotStateString, excavationStateString, errorStateString, diagnosticsStateString, tiltStateString, dumpStateString, std::to_string(levelBucket), std::to_string(levelArms));
 }
 
 void Automation1::setDiagnostics(){

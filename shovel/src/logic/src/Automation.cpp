@@ -30,7 +30,7 @@ void Automation::setNode(rclcpp::Node::SharedPtr node){
     bucketSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("bucket_speed",1);
     goPublisher = this->node->create_publisher<std_msgs::msg::Empty>("GO", 1);
     stopPublisher = this->node->create_publisher<std_msgs::msg::Empty>("STOP",1);
-    autonomyOutPublisher = this->node->create_publisher<messages::msg::AutonomyOut>("autonomy_out",1);
+    autonomyStatusPublisher = this->node->create_publisher<messages::msg::AutonomyStatus>("autonomy_status",1);
     talon14PositionPublisher = this->node->create_publisher<std_msgs::msg::Int32>("talon_14_position",1);
     talon15PositionPublisher = this->node->create_publisher<std_msgs::msg::Int32>("talon_15_position",1);
     talon16PositionPublisher = this->node->create_publisher<std_msgs::msg::Int32>("talon_16_position",1);
@@ -163,172 +163,172 @@ void Automation::setIdle(){
 /*
 Function to set Linear1 to the received Linear motor values.
 */
-void Automation::setLinear1(const messages::msg::LinearOut::SharedPtr linearOut){
-    this->linear1.speed = linearOut->speed;
-    this->linear1.atMax = linearOut->at_max;
-    this->linear1.atMin = linearOut->at_min;
-    this->linear1.error = linearOut->error;
-    this->linear1.distance = linearOut->distance;
-    this->linear1.stroke = linearOut->stroke;
-    this->linear1.extensionSpeed = linearOut->extension_speed;
-    this->linear1.timeToExtend = linearOut->time_to_extend;
-    this->linear1.potentiometer = linearOut->potentiometer;
-    this->linear1.sensorless = linearOut->sensorless;
+void Automation::setLinear1(const messages::msg::LinearStatus::SharedPtr linearStatus){
+    this->linear1.speed = linearStatus->speed;
+    this->linear1.atMax = linearStatus->at_max;
+    this->linear1.atMin = linearStatus->at_min;
+    this->linear1.error = linearStatus->error;
+    this->linear1.distance = linearStatus->distance;
+    this->linear1.stroke = linearStatus->stroke;
+    this->linear1.extensionSpeed = linearStatus->extension_speed;
+    this->linear1.timeToExtend = linearStatus->time_to_extend;
+    this->linear1.potentiometer = linearStatus->potentiometer;
+    this->linear1.sensorless = linearStatus->sensorless;
 }
 
 
 /*
 Function to set Linear2 to the received Linear motor values.
 */
-void Automation::setLinear2(const messages::msg::LinearOut::SharedPtr linearOut){
-    this->linear2.speed = linearOut->speed;
-    this->linear2.atMax = linearOut->at_max;
-    this->linear2.atMin = linearOut->at_min;
-    this->linear2.error = linearOut->error;
-    this->linear2.distance = linearOut->distance;
-    this->linear2.stroke = linearOut->stroke;
-    this->linear2.extensionSpeed = linearOut->extension_speed;
-    this->linear2.timeToExtend = linearOut->time_to_extend;
-    this->linear2.potentiometer = linearOut->potentiometer;
-    this->linear2.sensorless = linearOut->sensorless;
+void Automation::setLinear2(const messages::msg::LinearStatus::SharedPtr linearStatus){
+    this->linear2.speed = linearStatus->speed;
+    this->linear2.atMax = linearStatus->at_max;
+    this->linear2.atMin = linearStatus->at_min;
+    this->linear2.error = linearStatus->error;
+    this->linear2.distance = linearStatus->distance;
+    this->linear2.stroke = linearStatus->stroke;
+    this->linear2.extensionSpeed = linearStatus->extension_speed;
+    this->linear2.timeToExtend = linearStatus->time_to_extend;
+    this->linear2.potentiometer = linearStatus->potentiometer;
+    this->linear2.sensorless = linearStatus->sensorless;
 }
 
 
 /*
 Function to set Linear3 to the received Linear motor values.
 */
-void Automation::setLinear3(const messages::msg::LinearOut::SharedPtr linearOut){
-    this->linear3.speed = linearOut->speed;
-    this->linear3.atMax = linearOut->at_max;
-    this->linear3.atMin = linearOut->at_min;
-    this->linear3.error = linearOut->error;
-    this->linear3.distance = linearOut->distance;
-    this->linear3.stroke = linearOut->stroke;
-    this->linear3.extensionSpeed = linearOut->extension_speed;
-    this->linear3.timeToExtend = linearOut->time_to_extend;
-    this->linear3.potentiometer = linearOut->potentiometer;
-    this->linear3.sensorless = linearOut->sensorless;
+void Automation::setLinear3(const messages::msg::LinearStatus::SharedPtr linearStatus){
+    this->linear3.speed = linearStatus->speed;
+    this->linear3.atMax = linearStatus->at_max;
+    this->linear3.atMin = linearStatus->at_min;
+    this->linear3.error = linearStatus->error;
+    this->linear3.distance = linearStatus->distance;
+    this->linear3.stroke = linearStatus->stroke;
+    this->linear3.extensionSpeed = linearStatus->extension_speed;
+    this->linear3.timeToExtend = linearStatus->time_to_extend;
+    this->linear3.potentiometer = linearStatus->potentiometer;
+    this->linear3.sensorless = linearStatus->sensorless;
 }
 
 
 /*
 Function to set Linear4 to the received Linear motor values.
 */
-void Automation::setLinear4(const messages::msg::LinearOut::SharedPtr linearOut){
-    this->linear4.speed = linearOut->speed;
-    this->linear4.atMax = linearOut->at_max;
-    this->linear4.atMin = linearOut->at_min;
-    this->linear4.error = linearOut->error;
-    this->linear4.distance = linearOut->distance;
-    this->linear4.stroke = linearOut->stroke;
-    this->linear4.extensionSpeed = linearOut->extension_speed;
-    this->linear4.timeToExtend = linearOut->time_to_extend;
-    this->linear4.potentiometer = linearOut->potentiometer;
-    this->linear4.sensorless = linearOut->sensorless;
+void Automation::setLinear4(const messages::msg::LinearStatus::SharedPtr linearStatus){
+    this->linear4.speed = linearStatus->speed;
+    this->linear4.atMax = linearStatus->at_max;
+    this->linear4.atMin = linearStatus->at_min;
+    this->linear4.error = linearStatus->error;
+    this->linear4.distance = linearStatus->distance;
+    this->linear4.stroke = linearStatus->stroke;
+    this->linear4.extensionSpeed = linearStatus->extension_speed;
+    this->linear4.timeToExtend = linearStatus->time_to_extend;
+    this->linear4.potentiometer = linearStatus->potentiometer;
+    this->linear4.sensorless = linearStatus->sensorless;
 }
 
 
 /*
 Function to set Talon1 to the received Talon motor values.
 */
-void Automation::setTalon1(const messages::msg::TalonOut::SharedPtr talonOut){
-    this->talon1.busVoltage = talonOut->bus_voltage;
-    this->talon1.outputCurrent = talonOut->output_current;
-    this->talon1.outputVoltage = talonOut->output_voltage;
-    this->talon1.outputPercentage = talonOut->output_percent;
-    if(talonOut->output_current > this->talon1.maxCurrent){
-        this->talon1.maxCurrent = talonOut->output_current;
+void Automation::setTalon1(const messages::msg::TalonStatus::SharedPtr talonStatus){
+    this->talon1.busVoltage = talonStatus->bus_voltage;
+    this->talon1.outputCurrent = talonStatus->output_current;
+    this->talon1.outputVoltage = talonStatus->output_voltage;
+    this->talon1.outputPercentage = talonStatus->output_percent;
+    if(talonStatus->output_current > this->talon1.maxCurrent){
+        this->talon1.maxCurrent = talonStatus->output_current;
     }
-    this->talon1.sensorValue = talonOut->sensor_position;
+    this->talon1.sensorValue = talonStatus->sensor_position;
 }
 
 
 /*
 Function to set Talon2 to the received Talon motor values.
 */
-void Automation::setTalon2(const messages::msg::TalonOut::SharedPtr talonOut){
-    this->talon2.busVoltage = talonOut->bus_voltage;
-    this->talon2.outputCurrent = talonOut->output_current;
-    this->talon2.outputVoltage = talonOut->output_voltage;
-    this->talon2.outputPercentage = talonOut->output_percent;
-    if(talonOut->output_current > this->talon2.maxCurrent){
-        this->talon2.maxCurrent = talonOut->output_current;
+void Automation::setTalon2(const messages::msg::TalonStatus::SharedPtr talonStatus){
+    this->talon2.busVoltage = talonStatus->bus_voltage;
+    this->talon2.outputCurrent = talonStatus->output_current;
+    this->talon2.outputVoltage = talonStatus->output_voltage;
+    this->talon2.outputPercentage = talonStatus->output_percent;
+    if(talonStatus->output_current > this->talon2.maxCurrent){
+        this->talon2.maxCurrent = talonStatus->output_current;
     }
-    this->talon2.sensorValue = talonOut->sensor_position;
+    this->talon2.sensorValue = talonStatus->sensor_position;
 }
 
 
 /*
 Function to set Talon3 to the received Talon motor values.
 */
-void Automation::setTalon3(const messages::msg::TalonOut::SharedPtr talonOut){
-    this->talon3.busVoltage = talonOut->bus_voltage;
-    this->talon3.outputCurrent = talonOut->output_current;
-    this->talon3.outputVoltage = talonOut->output_voltage;
-    this->talon3.outputPercentage = talonOut->output_percent;
-    if(talonOut->output_current > this->talon3.maxCurrent){
-        this->talon3.maxCurrent = talonOut->output_current;
+void Automation::setTalon3(const messages::msg::TalonStatus::SharedPtr talonStatus){
+    this->talon3.busVoltage = talonStatus->bus_voltage;
+    this->talon3.outputCurrent = talonStatus->output_current;
+    this->talon3.outputVoltage = talonStatus->output_voltage;
+    this->talon3.outputPercentage = talonStatus->output_percent;
+    if(talonStatus->output_current > this->talon3.maxCurrent){
+        this->talon3.maxCurrent = talonStatus->output_current;
     }
-    this->talon3.sensorValue = talonOut->sensor_position;
+    this->talon3.sensorValue = talonStatus->sensor_position;
 }
 
 
 /*
 Function to set Talon4 to the received Talon motor values.
 */
-void Automation::setTalon4(const messages::msg::TalonOut::SharedPtr talonOut){
-    this->talon4.busVoltage = talonOut->bus_voltage;
-    this->talon4.outputCurrent = talonOut->output_current;
-    this->talon4.outputVoltage = talonOut->output_voltage;
-    this->talon4.outputPercentage = talonOut->output_percent;
-    if(talonOut->output_current > this->talon4.maxCurrent){
-        this->talon4.maxCurrent = talonOut->output_current;
+void Automation::setTalon4(const messages::msg::TalonStatus::SharedPtr talonStatus){
+    this->talon4.busVoltage = talonStatus->bus_voltage;
+    this->talon4.outputCurrent = talonStatus->output_current;
+    this->talon4.outputVoltage = talonStatus->output_voltage;
+    this->talon4.outputPercentage = talonStatus->output_percent;
+    if(talonStatus->output_current > this->talon4.maxCurrent){
+        this->talon4.maxCurrent = talonStatus->output_current;
     }
-    this->talon4.sensorValue = talonOut->sensor_position;
+    this->talon4.sensorValue = talonStatus->sensor_position;
 }
 
 
 /*
 Function to set Falcon1 to the received Falcon motor values.
 */
-void Automation::setFalcon1(const messages::msg::FalconOut::SharedPtr falconOut){
-    this->falcon1.busVoltage = falconOut->bus_voltage;
-    this->falcon1.outputCurrent = falconOut->output_current;
-    this->falcon1.outputVoltage = falconOut->output_voltage;
-    this->falcon1.outputPercentage = falconOut->output_percent;
+void Automation::setFalcon1(const messages::msg::FalconStatus::SharedPtr falconStatus){
+    this->falcon1.busVoltage = falconStatus->bus_voltage;
+    this->falcon1.outputCurrent = falconStatus->output_current;
+    this->falcon1.outputVoltage = falconStatus->output_voltage;
+    this->falcon1.outputPercentage = falconStatus->output_percent;
 }
 
 
 /*
 Function to set Falcon2 to the received Falcon motor values.
 */
-void Automation::setFalcon2(const messages::msg::FalconOut::SharedPtr falconOut){
-    this->falcon2.busVoltage = falconOut->bus_voltage;
-    this->falcon2.outputCurrent = falconOut->output_current;
-    this->falcon2.outputVoltage = falconOut->output_voltage;
-    this->falcon2.outputPercentage = falconOut->output_percent;
+void Automation::setFalcon2(const messages::msg::FalconStatus::SharedPtr falconStatus){
+    this->falcon2.busVoltage = falconStatus->bus_voltage;
+    this->falcon2.outputCurrent = falconStatus->output_current;
+    this->falcon2.outputVoltage = falconStatus->output_voltage;
+    this->falcon2.outputPercentage = falconStatus->output_percent;
 }
 
 
 /*
 Function to set Falcon3 to the received Falcon motor values.
 */
-void Automation::setFalcon3(const messages::msg::FalconOut::SharedPtr falconOut){
-    this->falcon3.busVoltage = falconOut->bus_voltage;
-    this->falcon3.outputCurrent = falconOut->output_current;
-    this->falcon3.outputVoltage = falconOut->output_voltage;
-    this->falcon3.outputPercentage = falconOut->output_percent;
+void Automation::setFalcon3(const messages::msg::FalconStatus::SharedPtr falconStatus){
+    this->falcon3.busVoltage = falconStatus->bus_voltage;
+    this->falcon3.outputCurrent = falconStatus->output_current;
+    this->falcon3.outputVoltage = falconStatus->output_voltage;
+    this->falcon3.outputPercentage = falconStatus->output_percent;
 }
 
 
 /*
 Function to set Falcon4 to the received Falcon motor values.
 */
-void Automation::setFalcon4(const messages::msg::FalconOut::SharedPtr falconOut){
-    this->falcon4.busVoltage = falconOut->bus_voltage;
-    this->falcon4.outputCurrent = falconOut->output_current;
-    this->falcon4.outputVoltage = falconOut->output_voltage;
-    this->falcon4.outputPercentage = falconOut->output_percent;
+void Automation::setFalcon4(const messages::msg::FalconStatus::SharedPtr falconStatus){
+    this->falcon4.busVoltage = falconStatus->bus_voltage;
+    this->falcon4.outputCurrent = falconStatus->output_current;
+    this->falcon4.outputVoltage = falconStatus->output_voltage;
+    this->falcon4.outputPercentage = falconStatus->output_percent;
 }
 
 
@@ -693,19 +693,19 @@ void Automation::setDestZ(float meters){
 }
 
 
-void Automation::publishAutonomyOut(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString, std::string tiltStateString, std::string dumpStateString, std::string bucketState, std::string armsState){
-    messages::msg::AutonomyOut aOut;
-    aOut.robot_state = robotStateString;
-    aOut.excavation_state = excavationStateString;
-    aOut.error_state = errorStateString;
-    aOut.diagnostics_state = diagnosticsStateString;
-    aOut.tilt_state = tiltStateString;
-    aOut.dump_state = dumpStateString;
-    aOut.bucket_state = bucketState;
-    aOut.arms_state = armsState;
-    aOut.dest_x = this->destX;
-    aOut.dest_z = this->destZ;
-    autonomyOutPublisher->publish(aOut);
+void Automation::publishAutonomyStatus(std::string robotStateString, std::string excavationStateString, std::string errorStateString, std::string diagnosticsStateString, std::string tiltStateString, std::string dumpStateString, std::string bucketState, std::string armsState){
+    messages::msg::AutonomyStatus aStatus;
+    aStatus.robot_state = robotStateString;
+    aStatus.excavation_state = excavationStateString;
+    aStatus.error_state = errorStateString;
+    aStatus.diagnostics_state = diagnosticsStateString;
+    aStatus.tilt_state = tiltStateString;
+    aStatus.dump_state = dumpStateString;
+    aStatus.bucket_state = bucketState;
+    aStatus.arms_state = armsState;
+    aStatus.dest_x = this->destX;
+    aStatus.dest_z = this->destZ;
+    autonomyStatusPublisher->publish(aStatus);
 }
 
 
