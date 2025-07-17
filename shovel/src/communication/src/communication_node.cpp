@@ -368,52 +368,10 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
  * @param talonStatus
  * @return void
  * */
-void talon1Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
+void talonStatusCallback(const std::string& name, const messages::msg::TalonStatus::SharedPtr talonStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon1 callback");
     if(rssi < CRIT_THRESH)
-        send("Talon 1",talonStatus);
-}
-
-/** @brief Callback function for the Talon topic
- * 
- * This function receives the talonStatus message published by the first 
- * Talon and uses the send function to send the data to the client side
- * GUI.
- * @param talonStatus
- * @return void
- * */
-void talon2Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "talon2 callback");
-    if(rssi < CRIT_THRESH)
-        send("Talon 2",talonStatus);
-}
-
-/** @brief Callback function for the Talon topic
- * 
- * This function receives the talonStatus message published by the first 
- * Talon and uses the send function to send the data to the client side
- * GUI.
- * @param talonStatus
- * @return void
- * */
-void talon3Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "talon3 callback");
-    if(rssi < CRIT_THRESH)
-        send("Talon 3",talonStatus);
-}
-
-/** @brief Callback function for the Talon topic
- * 
- * This function receives the talonStatus message published by the first 
- * Talon and uses the send function to send the data to the client side
- * GUI.
- * @param talonStatus
- * @return void
- * */
-void talon4Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "talon4 callback");
-    if(rssi < CRIT_THRESH)
-        send("Talon 4",talonStatus);
+        send(name, talonStatus);
 }
 
 
@@ -425,52 +383,10 @@ void talon4Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
  * @param talonStatus
  * @return void
  * */
-void falcon1Callback(const messages::msg::FalconStatus::SharedPtr talonStatus){
+void falconStatusCallback(const std::string& name, const messages::msg::FalconStatus::SharedPtr talonStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
     if(rssi < CRIT_THRESH)
-        send("Falcon 1",talonStatus);
-}
-
-/** @brief Callback function for the Talon topic
- * 
- * This function receives the talonStatus message published by the first 
- * Talon and uses the send function to send the data to the client side
- * GUI.
- * @param talonStatus
- * @return void
- * */
-void falcon2Callback(const messages::msg::FalconStatus::SharedPtr talonStatus){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "falcon2 callback");
-    if(rssi < CRIT_THRESH)
-        send("Falcon 2",talonStatus);
-}
-
-/** @brief Callback function for the Talon topic
- * 
- * This function receives the talonStatus message published by the first 
- * Talon and uses the send function to send the data to the client side
- * GUI.
- * @param talonStatus
- * @return void
- * */
-void falcon3Callback(const messages::msg::FalconStatus::SharedPtr talonStatus){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "falcon3 callback");
-    if(rssi < CRIT_THRESH)
-        send("Falcon 3",talonStatus);
-}
-
-/** @brief Callback function for the Talon topic
- * 
- * This function receives the talonStatus message published by the first 
- * Talon and uses the send function to send the data to the client side
- * GUI.
- * @param talonStatus
- * @return void
- * */
-void falcon4Callback(const messages::msg::FalconStatus::SharedPtr talonStatus){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "falcon4 callback");
-    if(rssi < CRIT_THRESH)
-        send("Falcon 4",talonStatus);
+        send(name,talonStatus);
 }
 
 
@@ -478,51 +394,13 @@ void falcon4Callback(const messages::msg::FalconStatus::SharedPtr talonStatus){
  * 
  * This function receives the linearStatus message published by the excavation
  * node and uses the send data to send the data to the client side GUI.
+ * @param name
  * @param linearStatus 
  */
-void linearStatus1Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "linear1 callback");
+void linearStatusCallback(const std::string& name, const messages::msg::LinearStatus::SharedPtr linearStatus){
+    //RCLCPP_INFO(nodeHandle->get_logger(), "%s callback", name.c_str());
     if(rssi < UPPER_THRESH)
-        send("Linear 1", linearStatus);
-}
-
-
-/** @brief Callback function for the LinearStatus topic
- * 
- * This function receives the linearStatus message published by the excavation
- * node and uses the send data to send the data to the client side GUI.
- * @param linearStatus 
- */
-void linearStatus2Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "linear2 callback");
-    if(rssi < UPPER_THRESH)
-        send("Linear 2", linearStatus);
-}
-
-
-/** @brief Callback function for the LinearStatus topic
- * 
- * This function receives the linearStatus message published by the excavation
- * node and uses the send data to send the data to the client side GUI.
- * @param linearStatus 
- */
-void linearStatus3Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "linear3 callback");
-    if(rssi < UPPER_THRESH)
-        send("Linear 3", linearStatus);
-}
-
-
-/** @brief Callback function for the LinearStatus topic
- * 
- * This function receives the linearStatus message published by the excavation
- * node and uses the send data to send the data to the client side GUI.
- * @param linearStatus 
- */
-void linearStatus4Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "linear4 callback");
-    if(rssi < UPPER_THRESH)
-        send("Linear 4", linearStatus);
+        send(name, linearStatus);
 }
 
 
@@ -774,215 +652,6 @@ void communicationInterval(){
 }
 
 
-// int main(int argc, char **argv){
-//     rclcpp::init(argc,argv);
-
-//     nodeHandle = rclcpp::Node::make_shared("communication2");
-//     RCLCPP_INFO(nodeHandle->get_logger(),"Starting communication2 node");
-
-//     nodeHandle->declare_parameter<std::string>("robot_name","not named");
-//     rclcpp::Parameter robotNameParameter = nodeHandle->get_parameter("robot_name");
-//     robotName = robotNameParameter.as_string();
-//     RCLCPP_INFO(nodeHandle->get_logger(),"robotName: %s", robotName.c_str());
-
-//     FILE* pipe = popen("iw dev | awk '$1==\"Interface\"{print $2}'", "r");
-//     while(!feof(pipe)){
-//         if(fgets(buffer2, 128, pipe) != nullptr){
-//             result += buffer2;
-//         }
-//     }
-//     interfaceName = result.erase(result.find_last_not_of("\n\r") + 1);
-//     result = "";
-//     pclose(pipe);
-
-//     std::snprintf(wifiCommand, sizeof(wifiCommand), "iwconfig %s | grep -E -o '=-.{0,2}", interfaceName.c_str());
-
-//     auto joystickAxisPublisher = nodeHandle->create_publisher<messages::msg::AxisState>("joystick_axis", 1);
-//     auto joystickHatPublisher = nodeHandle->create_publisher<messages::msg::HatState>("joystick_hat",1);
-//     auto joystickButtonPublisher = nodeHandle->create_publisher<messages::msg::ButtonState>("joystick_button",1);
-//     auto keyPublisher = nodeHandle->create_publisher<messages::msg::KeyState>("key",1);
-//     auto stopPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("STOP",1);
-//     auto goPublisher=nodeHandle->create_publisher<std_msgs::msg::Empty>("GO",1);
-//     auto commHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat",1);
-
-//     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
-//     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,talon1Callback);
-//     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_15_info",1,talon2Callback);
-//     auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,talon3Callback);
-//     auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,talon4Callback);
-//     auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_10_info",1,falcon1Callback);
-//     auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_11_info",1,falcon2Callback);
-//     auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_12_info",1,falcon3Callback);
-//     auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_13_info",1,falcon4Callback);
-//     auto linearStatus1Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus1",1,linearStatus1Callback);
-//     auto linearStatus2Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus2",1,linearStatus2Callback);
-//     auto linearStatus3Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus3",1,linearStatus3Callback);
-//     auto linearStatus4Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus4",1,linearStatus4Callback);
-//     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
-//     auto autonomyStatusSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyStatus>("autonomy_status", 10, autonomyStatusCallback);
-
-//     int server_fd, bytesRead; 
-//     struct sockaddr_in address; 
-//     int opt = 1; 
-//     int addrlen = sizeof(address); 
-//     uint8_t buffer[1024] = {0}; 
-//     std::string hello("Hello from server");
-
-//     int counter = 0;
-
-//     // Creating socket file descriptor
-//     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
-//         perror("socket failed"); 
-//         exit(EXIT_FAILURE); 
-//     }
-//     std::thread broadcastThread(broadcastIP);
-
-//     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) { 
-//         perror("setsockopt"); 
-//         exit(EXIT_FAILURE); 
-//     } 
-//     address.sin_family = AF_INET; 
-//     address.sin_addr.s_addr = INADDR_ANY; 
-//     address.sin_port = htons( PORT ); 
-
-//     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address))<0) { 
-//         perror("bind failed"); 
-//         exit(EXIT_FAILURE); 
-//     } 
-//     if (listen(server_fd, 3) < 0) { 
-//         perror("listen"); 
-//         exit(EXIT_FAILURE); 
-//     } 
-//     if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
-//         perror("accept"); 
-//         exit(EXIT_FAILURE); 
-//     }
-
-//     broadcast=false;
-//     bytesRead = read(new_socket, buffer, 1024); 
-//     send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
-//     silentRunning=true;
-
-//     fcntl(new_socket, F_SETFL, O_NONBLOCK);
-    
-
-//     std::list<uint8_t> messageBytesList;
-//     uint8_t message[256];
-//     rclcpp::Rate rate(30);
-//     while(rclcpp::ok()){
-//         try{
-//             bytesRead = recv(new_socket, buffer, 1024, 0);
-//             for(int index=0;index<bytesRead;index++){
-//                 messageBytesList.push_back(buffer[index]);
-//             }
-
-//             if(bytesRead==0){
-//                 stopPublisher->publish(empty);
-//                 RCLCPP_INFO(nodeHandle->get_logger(),"Lost Connection");
-//                 broadcast=true;
-//                 //wait for reconnect
-//                 if (listen(server_fd, 3) < 0) { 
-//                     perror("listen"); 
-//                     exit(EXIT_FAILURE); 
-//                 } 
-//                 if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) { 
-//                     perror("accept"); 
-//                     exit(EXIT_FAILURE); 
-//                 }
-//                 broadcast=false;
-//                 bytesRead = read(new_socket, buffer, 1024); 
-//                 send(new_socket, hello.c_str(), strlen(hello.c_str()), 0); 
-//                 fcntl(new_socket, F_SETFL, O_NONBLOCK);
-        
-//                 silentRunning=true;
-//             }
-//         }
-//         catch(int x){
-//             RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to read data from client");
-//         }
-
-//         while(messageBytesList.size()>0 && messageBytesList.front()<=messageBytesList.size()){
-// 	    //RCLCPP_INFO(nodeHandle->get_logger(),"bytes read %d", bytesRead);
-//             int messageSize=messageBytesList.front();    
-//             messageBytesList.pop_front();
-//             messageSize--;
-//             for(int index=0;index<messageSize;index++){
-//                 message[index]=messageBytesList.front();
-//                 messageBytesList.pop_front();
-//             }
-//             //parse command
-//             // Command values:
-//             // 1: Joystick axis values
-//             // 2: Keystate values
-//             // 5: Joystick button values
-//             // 6: Joystick hat values
-//             // 7: GUI silent running button
-//             // 8: GUI reboot button
-//             uint8_t command=message[0];
-//             if(command==1){
-//                 messages::msg::AxisState axisState;
-//                 axisState.joystick=message[1];
-//                 axisState.axis=message[2];
-//                 axisState.state=parseFloat(&message[3]);
-// 		        joystickAxisPublisher->publish(axisState);
-// 		        //RCLCPP_INFO(nodeHandle->get_logger(),"axis %d %d %f ", axisState.joystick, axisState.axis , axisState.state);
-//             }
-//             if(command==2){
-//                 messages::msg::KeyState keyState;
-//                 keyState.key=((uint16_t)message[1])<<8 | ((uint16_t)message[2]);
-//                 keyState.state=message[3];
-//                 keyPublisher->publish(keyState);
-//                 if(keyState.key == 49 && keyState.state == 1){
-//                     return 0;
-//                 }
-// 		        //RCLCPP_INFO(nodeHandle->get_logger(),"key %d %d ", keyState.key , keyState.state);
-//             }
-//             if(command==5){
-//                 messages::msg::ButtonState buttonState;
-//                 buttonState.joystick=message[1];
-//                 buttonState.button=message[2];
-//                 buttonState.state=message[3];
-//                 if(buttonState.button==0 && buttonState.state==0){
-//                     std::cout << "publish stop" << std::endl;
-//                     stopPublisher->publish(empty);
-//                 }    
-//                 if(buttonState.button==0 && buttonState.state==1){
-//                     std::cout << "publish go" << std::endl;
-//                     goPublisher->publish(empty);
-//                 }    
-//                 joystickButtonPublisher->publish(buttonState);
-// 		        //RCLCPP_INFO(nodeHandle->get_logger(),"button %d %d %d", buttonState.joystick , buttonState.button , buttonState.state);
-//             }
-//             if(command==6){
-//                 messages::msg::HatState hatState;
-//                 hatState.joystick=message[1];
-//                 hatState.hat=message[2];
-//                 hatState.state=message[3];
-//                 joystickHatPublisher->publish(hatState);
-// 		        //RCLCPP_INFO(nodeHandle->get_logger(),"hat %d %d %d", hatState.joystick , hatState.hat , hatState.state);
-//             }
-//             if(command==7){
-//                 silentRunning=message[1];
-//                 std::cout << "silentRunning " << silentRunning << std::endl;
-//             }
-//             if(command==8){
-//                 reboot();
-//                 std::cout << "reboot " << silentRunning << std::endl;
-//             }
-//         }
-
-//         rclcpp::spin_some(nodeHandle);
-//         commHeartbeatPublisher->publish(heartbeat);
-//         if(counter % 30 == 0){
-//             communicationInterval();
-//         }
-//         counter++;
-//         rate.sleep();
-//     }
-
-//     broadcastThread.join();
-// }
-
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
 
@@ -1031,18 +700,18 @@ int main(int argc, char **argv){
     auto commHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat",1);
 
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
-    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,talon1Callback);
-    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_15_info",1,talon2Callback);
-    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,talon3Callback);
-    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,talon4Callback);
-    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_10_info",1,falcon1Callback);
-    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_11_info",1,falcon2Callback);
-    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_12_info",1,falcon3Callback);
-    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_13_info",1,falcon4Callback);
-    auto linearStatus1Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus1",1,linearStatus1Callback);
-    auto linearStatus2Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus2",1,linearStatus2Callback);
-    auto linearStatus3Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus3",1,linearStatus3Callback);
-    auto linearStatus4Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus4",1,linearStatus4Callback);
+    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,std::bind(talonStatusCallback, "Talon 1", _1));
+    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_15_info",1,std::bind(talonStatusCallback, "Talon 2", _1));
+    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,std::bind(talonStatusCallback, "Talon 3", _1));
+    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,std::bind(talonStatusCallback, "Talon 4", _1));
+    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_10_info",1,std::bind(falconStatusCallback, "Falcon 1", _1));
+    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_11_info",1,std::bind(falconStatusCallback, "Falcon 2", _1));
+    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_12_info",1,std::bind(falconStatusCallback, "Falcon 3", _1));
+    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_13_info",1,std::bind(falconStatusCallback, "Falcon 4", _1));
+    auto linearStatus1Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus1",1,std::bind(linearStatusCallback, "Linear 1", _1));
+    auto linearStatus2Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus2",1,std::bind(linearStatusCallback, "Linear 2", _1));
+    auto linearStatus3Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus3",1,std::bind(linearStatusCallback, "Linear 3", _1));
+    auto linearStatus4Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus4",1,std::bind(linearStatusCallback, "Linear 4", _1));
     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
     auto autonomyStatusSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyStatus>("autonomy_status", 10, autonomyStatusCallback);
 
