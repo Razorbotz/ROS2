@@ -50,6 +50,7 @@ rosidl_generate_interfaces(messages
   "msg/LinearStatus.msg"
   "msg/AutonomyStatus.msg"
   "msg/FalconStatus.msg"
+  "msg/SystemStatus.msg"
 
   DEPENDENCIES builtin_interfaces
 )

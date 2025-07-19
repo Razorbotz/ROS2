@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>status_monitor</name>
+  <version>1.0.0</version>
+  <description>The status_monitor package</description>
+  <maintainer email="andrewburroughs17@gmail.com">Andrew Burroughs</maintainer>
+  <author>Andrew Burroughs</author>
+  <license>none</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>messages</depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+
+  <export>
+  <build_type>ament_cmake</build_type>
+  </export>
+</package>
