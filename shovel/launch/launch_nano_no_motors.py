@@ -41,5 +41,11 @@ def generate_launch_description():
             name='excavation',
             executable='excavation_node'
         )
+        ,
+        Node(
+            package='drivetrain',
+            name='drivetrain',
+            executable='drivetrain_node'
+        )
     ]
 )

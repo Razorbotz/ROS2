@@ -37,6 +37,12 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(excav_launch_file)
         )
+        ,
+        Node(
+            package='drivetrain',
+            name='drivetrain',
+            executable='drivetrain_node'
+        )
         #,
         #ExecuteProcess(
         #   cmd=['ros2', 'bag', 'record', '-a'],
