@@ -54,6 +54,12 @@ def generate_launch_description():
             name='drivetrain',
             executable='drivetrain_node'
         )
+        ,
+        Node(
+            package='status_monitor',
+            name='StatusMonitor',
+            executable='status_monitor_node'
+        )
         #,
         #ExecuteProcess(
         #   cmd=['ros2', 'bag', 'record', '-a'],
