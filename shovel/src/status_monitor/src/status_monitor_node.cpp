@@ -19,6 +19,13 @@
 #include <rclcpp/rclcpp.hpp>
 #include <messages/msg/system_status.hpp>
 
+#include <net/if.h>
+#include <sys/ioctl.h>
+
+#include <linux/can.h>
+#include <linux/can/raw.h>
+#include <chrono>
+
 rclcpp::Node::SharedPtr nodeHandle;
 
 int rssi = 0;
@@ -26,7 +33,10 @@ std::string result = "";
 char buffer2[128];
 int previousTX = 0;
 int previousRX = 0;
+int previousRX2 = 0;
+int previousTX2 = 0;
 std::string canMessage = "";
+std::string canMessage2 = "";
 char wifiCommand[128];
 bool usingCAN1 = false;
 int downCounter = 0;
@@ -41,10 +51,43 @@ void publishStatus(){
     systemStatus.can_message = canMessage;
     systemStatus.rx_packets = previousRX;
     systemStatus.tx_packets = previousTX;
+    systemStatus.can2_message = canMessage2;
+    systemStatus.rx2_packets = previousRX2;
+    systemStatus.tx2_packets = previousTX2;
     systemStatus.using_can1 = usingCAN1;
 }
 
-void communicationInterval(){
+int extract_packet_count(const std::string& command, char* buffer2) {
+    FILE* pipe = popen(command.c_str(), "r");
+    if (!pipe) return -1;
+
+    std::string result;
+    while (!feof(pipe)) {
+        if (fgets(buffer2, 128, pipe) != nullptr) {
+            result += buffer2;
+        }
+    }
+    pclose(pipe);
+
+    int value = 0;
+    for(int i = 0; i < result.size(); i++){
+        if(result[i] == ' ')
+            break;
+        value = value * 10 + ((int) result[i] - 48);
+    }
+    return value;
+}
+
+void check_packet_status(const std::string& interface, const std::string& direction, int& previousValue, std::string& message, char* buffer, bool onlyIfUsingCAN1 = false, bool usingCAN1 = false) {
+    int value = extract_packet_count("ifconfig " + interface + " | grep -o -P '(?<=" + direction + " packets ).*(?= bytes)'", buffer);
+    if ((!onlyIfUsingCAN1 || usingCAN1) && value == previousValue) {
+        message = direction + " ERROR";
+    }
+    previousValue = value;
+}
+
+
+void statusCheck(){
     FILE* pipe = popen(wifiCommand, "r");
     result = "";
     while(!feof(pipe)){
@@ -55,6 +98,7 @@ void communicationInterval(){
     rssi = ((int)result[2] - 48 ) * 10 + ((int)result[3] - 48);
     pclose(pipe);
     result = "";
+    
     FILE* pipe2;
     if(!usingCAN1)
         pipe2 = popen("ip link show can0 | grep DOWN", "r");
@@ -102,62 +146,74 @@ void communicationInterval(){
     }
     result = "";
     pclose(pipe2);
-    FILE* pipe3;
-    if(!usingCAN1)
-        pipe3 = popen("ifconfig can0 | grep -o -P '(?<=RX packets ).*(?= bytes)'", "r");
-    else
-        pipe3 = popen("ifconfig can1 | grep -o -P '(?<=RX packets ).*(?= bytes)'", "r");
-    while(!feof(pipe3)){
-        if(fgets(buffer2, 128, pipe3) != nullptr){
-            result += buffer2;
-        }
-    }
-    int rx = 0;
-    for(int i = 0; i < result.size(); i++){
-        if(result[i] == ' ')
-            break;
-        rx = rx * 10 + ((int) result[i] - 48);
-    }
-    if(previousRX == rx){
-        canMessage = "RX ERROR";
-    }
-    previousRX = rx;
-    result = "";
-    pclose(pipe3);
-    FILE* pipe4;
-    if(!usingCAN1)
-        pipe4 = popen("ifconfig can0 | grep -o -P '(?<=TX packets ).*(?= bytes)'", "r");
-    else
-        pipe4 = popen("ifconfig can1 | grep -o -P '(?<=TX packets ).*(?= bytes)'", "r");
-    while(!feof(pipe4)){
-        if(fgets(buffer2, 128, pipe4) != nullptr){
-            result += buffer2;
-        }
-    }
-    int tx = 0;
-    for(int i = 0; i < result.size(); i++){
-        if(result[i] == ' ')
-            break;
-        tx = tx * 10 + ((int) result[i] - 48);
-    }
-    if(previousTX == tx){
-        canMessage = "TX ERROR";
-    }
-    previousTX = tx;
-    result = "";
-    pclose(pipe4);
+
+    check_packet_status("can0", "RX", previousRX, canMessage, buffer2);
+    check_packet_status("can1", "RX", previousRX2, canMessage2, buffer2);
+    check_packet_status("can0", "TX", previousTX, canMessage, buffer2);
+    check_packet_status("can1", "TX", previousTX2, canMessage2, buffer2, true, usingCAN1);
+
     publishStatus();
 }
 
 
-int main(int argc, char **argv){
-    rclcpp::init(argc,argv);
+// CAN ID is lower 6 bits
+unsigned int parseID(struct can_frame frame){
+    return frame.can_id & 0x0000002F;
+}
 
-    nodeHandle = rclcpp::Node::make_shared("communication");
-    RCLCPP_INFO(nodeHandle->get_logger(),"Starting communication node");
 
-    systemStatusPublisher = nodeHandle->create_publisher<messages::msg::SystemStatus>("system_status",1);
+std::mutex queue_mutex;
+std::atomic<bool> run_threads{true};
 
+void can_read_loop(const std::string &iface_name) {
+    int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+
+	const char *ifname = "CAN0";
+
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
+		perror(("Error opening socket on " + iface_name).c_str());
+		return -1;
+	}
+
+	strcpy(ifr.ifr_name, ifname);
+
+    if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
+        perror(("ioctl error on " + iface_name).c_str());
+        close(s);
+        return -1;
+    }
+
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+
+	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+        perror(("Bind error on " + iface_name).c_str());
+        close(s);
+        return -2;
+	}
+
+    int counter = 0;
+
+    while (run_threads) {
+        int nbytes = read(s, &frame, sizeof(frame));
+        if (nbytes > 0) {
+            std::lock_guard<std::mutex> lock(queue_mutex);
+            if(counter % 20 == 0){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Received frame with id: 0x%X", frame.can_id);
+            }
+        }
+    }
+    close(s);
+}
+
+
+void getInterfaceName(){
     FILE* pipe = popen("iw dev | awk '$1==\"Interface\"{print $2}'", "r");
     while(!feof(pipe)){
         if(fgets(buffer2, 128, pipe) != nullptr){
@@ -184,12 +240,34 @@ int main(int argc, char **argv){
     }
     result = "";
     pclose(pipe2);
+}
+
+
+int main(int argc, char **argv){
+    rclcpp::init(argc,argv);
+
+    nodeHandle = rclcpp::Node::make_shared("status_monitor");
+    RCLCPP_INFO(nodeHandle->get_logger(),"Starting communication node");
+
+    systemStatusPublisher = nodeHandle->create_publisher<messages::msg::SystemStatus>("system_status",1);
+
+    getInterfaceName();
+
+    std::thread can0_thread(can_read_loop, "can0");
+    std::thread can1_thread(can_read_loop, "can1");
 
     rclcpp::Rate rate(10);
     while(rclcpp::ok()){
 
         rclcpp::spin_some(nodeHandle);
-        communicationInterval();
+        statusCheck();
         rate.sleep();
     }
+
+    run_threads = false;
+    if (can0_thread.joinable()) can0_thread.join();
+    if (can1_thread.joinable()) can1_thread.join();
+
+    rclcpp::shutdown();
+    return 0;
 }
