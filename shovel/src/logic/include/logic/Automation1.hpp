@@ -13,7 +13,7 @@ class Automation1 : public Automation{
 
     void automate();
 
-    void publishAutomationOut();
+    void publishAutomationStatus();
 
     void setDiagnostics();
 

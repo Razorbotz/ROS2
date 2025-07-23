@@ -176,7 +176,7 @@ void can_read_loop(const std::string &iface_name) {
 
 	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
 		perror(("Error opening socket on " + iface_name).c_str());
-		return -1;
+		return;
 	}
 
 	strcpy(ifr.ifr_name, ifname);
@@ -184,7 +184,7 @@ void can_read_loop(const std::string &iface_name) {
     if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
         perror(("ioctl error on " + iface_name).c_str());
         close(s);
-        return -1;
+        return;
     }
 
 	addr.can_family  = AF_CAN;
@@ -195,7 +195,7 @@ void can_read_loop(const std::string &iface_name) {
 	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
         perror(("Bind error on " + iface_name).c_str());
         close(s);
-        return -2;
+        return;
 	}
 
     int counter = 0;

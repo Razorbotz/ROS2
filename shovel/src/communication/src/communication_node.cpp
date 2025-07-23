@@ -272,7 +272,7 @@ void send(std::string messageLabel, const messages::msg::LinearStatus::SharedPtr
 }
 
 
-void send(std::string messageLabel, const messages::msg::AutonomyOut::SharedPtr autonomy){
+void send(std::string messageLabel, const messages::msg::AutonomyStatus::SharedPtr autonomy){
     if(silentRunning)return;
 
     BinaryMessage message(messageLabel);
@@ -329,12 +329,12 @@ void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status){
         message.addElementString("Wi-Fi", "NON-FUNCIONAL");
     message.addElementString("CAN Bus", status->can_message);
     usingCAN1 = status->using_can1;
-    if(!usingCAN1)
-        message.addElementString("Interface", "can0");
-    else
-        message.addElementString("Interface", "can1");
-    message.addElementInt32("RX packets", status->previous_rx);
-    message.addElementInt32("TX packets", status->previous_tx);
+    message.addElementBoolean("Using CAN1", usingCAN1);
+    message.addElementInt32("RX packets", status->rx_packets);
+    message.addElementInt32("TX packets", status->tx_packets);
+    message.addElementString("CAN Bus", status->can2_message);
+    message.addElementInt32("RX2 packets", status->rx2_packets);
+    message.addElementInt32("TX2 packets", status->tx2_packets);
     send(message);
 }
 
@@ -562,18 +562,78 @@ int main(int argc, char **argv){
     auto commHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat",1);
 
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
-    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,std::bind(talonStatusCallback, "Talon 1", _1));
-    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_15_info",1,std::bind(talonStatusCallback, "Talon 2", _1));
-    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,std::bind(talonStatusCallback, "Talon 3", _1));
-    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,std::bind(talonStatusCallback, "Talon 4", _1));
-    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_10_info",1,std::bind(falconStatusCallback, "Falcon 1", _1));
-    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_11_info",1,std::bind(falconStatusCallback, "Falcon 2", _1));
-    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_12_info",1,std::bind(falconStatusCallback, "Falcon 3", _1));
-    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_13_info",1,std::bind(falconStatusCallback, "Falcon 4", _1));
-    auto linearStatus1Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus1",1,std::bind(linearStatusCallback, "Linear 1", _1));
-    auto linearStatus2Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus2",1,std::bind(linearStatusCallback, "Linear 2", _1));
-    auto linearStatus3Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus3",1,std::bind(linearStatusCallback, "Linear 3", _1));
-    auto linearStatus4Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus4",1,std::bind(linearStatusCallback, "Linear 4", _1));
+    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
+            "talon_14_info", 1,
+            [](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 1", msg);
+            });
+
+    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
+            "talon_15_info", 1,
+            [](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 2", msg);
+            });
+
+    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
+            "talon_16_info", 1,
+            [](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 3", msg);
+            });
+
+    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
+            "talon_17_info", 1,
+            [](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 4", msg);
+            });
+
+    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
+            "talon_10_info", 1,
+            [](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 1", msg);
+            });
+
+    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
+            "talon_11_info", 1,
+            [](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 2", msg);
+            });
+
+    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
+            "talon_12_info", 1,
+            [](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 3", msg);
+            });
+
+    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
+            "talon_13_info", 1,
+            [](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 4", msg);
+            });
+
+    auto linearStatus1Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
+            "linearStatus1", 1,
+            [](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 1", msg);
+            });
+
+    auto linearStatus2Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
+            "linearStatus2", 1,
+            [](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 2", msg);
+            });
+
+    auto linearStatus3Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
+            "linearStatus3", 1,
+            [](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 3", msg);
+            });
+
+    auto linearStatus4Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
+            "linearStatus4", 1,
+            [](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 4", msg);
+            });
+
     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
     auto autonomyStatusSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyStatus>("autonomy_status", 10, autonomyStatusCallback);
     auto systemStatusSubscriber = nodeHandle->create_subscription<messages::msg::SystemStatus>("system_status",10,systemStatusCallback);

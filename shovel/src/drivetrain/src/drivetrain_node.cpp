@@ -8,7 +8,7 @@
 #include <messages/msg/key_state.hpp>
 
 #include "messages/msg/linear_status.hpp"
-#include "messages/msg/talon_status.hpp"
+#include "messages/msg/falcon_status.hpp"
 
 rclcpp::Node::SharedPtr nodeHandle;
 
@@ -78,22 +78,22 @@ void userRightSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 }
 
 
-void falcon1Callback(const messages::msg::TalonStatus::SharedPtr speed){
+void falcon1Callback(const messages::msg::FalconStatus::SharedPtr speed){
 
 }
 
 
-void falcon2Callback(const messages::msg::TalonStatus::SharedPtr speed){
+void falcon2Callback(const messages::msg::FalconStatus::SharedPtr speed){
 
 }
 
 
-void falcon3Callback(const messages::msg::TalonStatus::SharedPtr speed){
+void falcon3Callback(const messages::msg::FalconStatus::SharedPtr speed){
 
 }
 
 
-void falcon4Callback(const messages::msg::TalonStatus::SharedPtr speed){
+void falcon4Callback(const messages::msg::FalconStatus::SharedPtr speed){
 
 }
 
@@ -135,10 +135,10 @@ int main(int argc, char **argv){
     auto userLeftSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("user_left_speed",1,userLeftSpeedCallback);
     auto userRightSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("user_right_speed",1,userRightSpeedCallback);
 
-    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_10_info",1,falcon1Callback);
-    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_11_info",1,falcon2Callback);
-    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_12_info",1,falcon3Callback);
-    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_13_info",1,falcon4Callback);
+    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_10_info",1,falcon1Callback);
+    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_11_info",1,falcon2Callback);
+    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_12_info",1,falcon3Callback);
+    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_13_info",1,falcon4Callback);
 
     falcon10Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_10_speed",1);
     falcon11Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_11_speed",1);

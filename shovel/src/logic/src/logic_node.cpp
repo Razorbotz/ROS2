@@ -490,77 +490,77 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
 
 /** @brief Callback function for the LinearOut topic
  * 
- * @param linearOut 
+ * @param LinearStatus 
  */
-void linearOut1Callback(const messages::msg::LinearOut::SharedPtr linearOut){
-    automation->setLinear1(linearOut);
+void linearStatus1Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
+    automation->setLinear1(linearStatus);
 }
 
 
-/** @brief Callback function for the LinearOut topic
+/** @brief Callback function for the linearStatus topic
  * 
- * @param linearOut 
+ * @param LinearStatus 
  */
-void linearOut2Callback(const messages::msg::LinearOut::SharedPtr linearOut){
-    automation->setLinear2(linearOut);
+void linearStatus2Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
+    automation->setLinear2(linearStatus);
 }
 
 
-/** @brief Callback function for the LinearOut topic
+/** @brief Callback function for the linearStatus topic
  * 
- * @param linearOut 
+ * @param LinearStatus 
  */
-void linearOut3Callback(const messages::msg::LinearOut::SharedPtr linearOut){
-    automation->setLinear3(linearOut);
+void linearStatus3Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
+    automation->setLinear3(linearStatus);
 }
 
 
-/** @brief Callback function for the LinearOut topic
+/** @brief Callback function for the linearStatus topic
  * 
- * @param linearOut 
+ * @param LinearStatus 
  */
-void linearOut4Callback(const messages::msg::LinearOut::SharedPtr linearOut){
-    automation->setLinear4(linearOut);
+void linearStatus4Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
+    automation->setLinear4(linearStatus);
 }
 
 
-void talon1Callback(const messages::msg::TalonOut::SharedPtr talonOut){
-    automation->setTalon1(talonOut);
+void talon1Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
+    automation->setTalon1(talonStatus);
     talon1Previous = std::chrono::high_resolution_clock::now();
 }
 
-void talon2Callback(const messages::msg::TalonOut::SharedPtr talonOut){
-    automation->setTalon2(talonOut);
+void talon2Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
+    automation->setTalon2(talonStatus);
     talon2Previous = std::chrono::high_resolution_clock::now();
 }
 
-void talon3Callback(const messages::msg::TalonOut::SharedPtr talonOut){
-    automation->setTalon3(talonOut);
+void talon3Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
+    automation->setTalon3(talonStatus);
     talon3Previous = std::chrono::high_resolution_clock::now();
 }
 
-void talon4Callback(const messages::msg::TalonOut::SharedPtr talonOut){
-    automation->setTalon4(talonOut);
+void talon4Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
+    automation->setTalon4(talonStatus);
     talon4Previous = std::chrono::high_resolution_clock::now();
 }
 
 
-void falcon1Callback(const messages::msg::FalconOut::SharedPtr falconOut){
+void falcon1Callback(const messages::msg::FalconStatus::SharedPtr falconOut){
     automation->setFalcon1(falconOut);
     falcon1Previous = std::chrono::high_resolution_clock::now();
 }
 
-void falcon2Callback(const messages::msg::FalconOut::SharedPtr falconOut){
+void falcon2Callback(const messages::msg::FalconStatus::SharedPtr falconOut){
     automation->setFalcon2(falconOut);
     falcon2Previous = std::chrono::high_resolution_clock::now();
 }
 
-void falcon3Callback(const messages::msg::FalconOut::SharedPtr falconOut){
+void falcon3Callback(const messages::msg::FalconStatus::SharedPtr falconOut){
     automation->setFalcon3(falconOut);
     falcon3Previous = std::chrono::high_resolution_clock::now();
 }
 
-void falcon4Callback(const messages::msg::FalconOut::SharedPtr falconOut){
+void falcon4Callback(const messages::msg::FalconStatus::SharedPtr falconOut){
     automation->setFalcon4(falconOut);
     falcon4Previous = std::chrono::high_resolution_clock::now();
 }
@@ -646,20 +646,20 @@ int main(int argc, char **argv){
     auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
     auto zedPositionSubscriber= nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
     
-    auto linearOut1Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut1",1,linearOut1Callback);
-    auto linearOut2Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut2",1,linearOut2Callback);
-    auto linearOut3Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut3",1,linearOut3Callback);
-    auto linearOut4Subscriber = nodeHandle->create_subscription<messages::msg::LinearOut>("linearOut4",1,linearOut4Callback);
+    auto linearStatus1Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus1",1,linearStatus1Callback);
+    auto linearStatus2Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus2",1,linearStatus2Callback);
+    auto linearStatus3Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus3",1,linearStatus3Callback);
+    auto linearStatus4Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus4",1,linearStatus4Callback);
     
-    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_14_info",1,talon1Callback);
-    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_15_info",1,talon2Callback);
-    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_16_info",1,talon3Callback);
-    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonOut>("talon_17_info",1,talon4Callback);
+    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,talon1Callback);
+    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_15_info",1,talon2Callback);
+    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,talon3Callback);
+    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,talon4Callback);
     
-    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_10_info",1,falcon1Callback);
-    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_11_info",1,falcon2Callback);
-    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_12_info",1,falcon3Callback);
-    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconOut>("talon_13_info",1,falcon4Callback);
+    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_10_info",1,falcon1Callback);
+    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_11_info",1,falcon2Callback);
+    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_12_info",1,falcon3Callback);
+    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_13_info",1,falcon4Callback);
 
     driveLeftSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
     driveRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
@@ -679,7 +679,7 @@ int main(int argc, char **argv){
         if(automationGo){
             automation->automate();
         }
-        automation->publishAutomationOut();
+        automation->publishAutomationStatus();
         rclcpp::spin_some(nodeHandle);
         logicHeartbeatPublisher->publish(heartbeat);
         rate.sleep();
