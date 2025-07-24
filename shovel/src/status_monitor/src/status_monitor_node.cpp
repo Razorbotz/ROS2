@@ -26,6 +26,8 @@
 #include <linux/can/raw.h>
 #include <chrono>
 
+// NOTE: Need to investigate whether the system will randomly decide which interface is CAN0 vs CAN1. The paths are 
+// hardcoded around knowing which interface is where. Will look into location agnostic code or setting interface by ID
 rclcpp::Node::SharedPtr nodeHandle;
 
 int rssi = 0;
@@ -41,6 +43,15 @@ char wifiCommand[128];
 bool usingCAN1 = false;
 int downCounter = 0;
 std::string interfaceName = "wlan0";
+
+constexpr size_t NUM_MOTORS = 6;
+
+int motors0[NUM_MOTORS] = {0, 0, 0, 0, 0, 0};
+int motors1[NUM_MOTORS] = {0, 0, 0, 0, 0, 0};
+int copy0[NUM_MOTORS] = {0};
+int copy1[NUM_MOTORS] = {0};
+
+const std::array<uint32_t, NUM_MOTORS> MOTOR_IDS = {0xB, 0XA, 0xC, 0xD, 0xE, 0x10};
 
 std::shared_ptr<rclcpp::Publisher<messages::msg::SystemStatus_<std::allocator<void> >, std::allocator<void> > > systemStatusPublisher;
 
@@ -84,6 +95,149 @@ void check_packet_status(const std::string& interface, const std::string& direct
         message = direction + " ERROR";
     }
     previousValue = value;
+}
+
+
+// CAN ID is lower 6 bits
+unsigned int parseID(struct can_frame frame){
+    return frame.can_id & 0x0000003F;
+}
+
+// Lookup map: CAN ID to motor index
+std::unordered_map<uint32_t, size_t> motor_id_to_index;
+
+// Convert CAN ID to motor index
+bool get_motor_index(uint32_t can_id, size_t &index) {
+    auto it = motor_id_to_index.find(can_id);
+    if (it != motor_id_to_index.end()) {
+        index = it->second;
+        return true;
+    }
+    return false;
+}
+
+std::mutex mutex0, mutex1;
+std::atomic<bool> run_threads{true};
+
+void can_read_loop(const std::string &iface_name, int (&motors)[NUM_MOTORS], std::mutex &mutex) {
+    int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
+		perror(("Error opening socket on " + iface_name).c_str());
+		return;
+	}
+
+	strcpy(ifr.ifr_name, iface_name.c_str());
+
+    if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
+        perror(("ioctl error on " + iface_name).c_str());
+        close(s);
+        return;
+    }
+
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+
+	printf("%s at index %d\n", iface_name.c_str(), ifr.ifr_ifindex);
+
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+        perror(("Bind error on " + iface_name).c_str());
+        close(s);
+        return;
+	}
+
+    int counter = 0;
+
+    while (run_threads) {
+        int nbytes = read(s, &frame, sizeof(frame));
+        if (nbytes > 0) {
+            size_t motor_index;
+            if (get_motor_index(frame.can_id & 0x0000003F, motor_index)) {
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    motors[motor_index] = 1;
+                }
+            }
+        }
+    }
+    close(s);
+}
+
+void checkInterfaceStatus(){
+    {
+        std::lock_guard<std::mutex> lock(mutex0);
+        for (int i = 0; i < NUM_MOTORS; ++i) {
+            copy0[i] = motors0[i];
+            motors0[i] = 0;
+        }
+    }
+    {
+        std::lock_guard<std::mutex> lock(mutex1);
+        for (int i = 0; i < NUM_MOTORS; ++i) {
+            copy1[i] = motors1[i];
+            motors1[i] = 0;
+        }
+    }
+    int numMotors0 = 0;
+    int numMotors1 = 0;
+    for(int i = 0; i < NUM_MOTORS; i++){
+        if(copy0[i] == 1){
+            //RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0: Motor %d heard.", i);
+            numMotors0 += 1;
+        }
+        else{
+            RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0: Motor %d not heard.", i);
+        }
+    }
+    for(int i = 0; i < NUM_MOTORS; i++){
+        if(copy1[i] == 1){
+            //RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1: Motor %d heard.", i);
+            numMotors1 += 1;
+        }
+        else{
+            RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1: Motor %d not heard.", i);
+        }
+    }
+
+    if(numMotors0 == NUM_MOTORS && numMotors1 == NUM_MOTORS){
+        RCLCPP_INFO(nodeHandle->get_logger(), "CAN0 and CAN1 reading all motors correctly");
+    }
+    else{
+        if(numMotors0 == NUM_MOTORS){
+            RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0 reading all motors correctly");
+        }
+        if(numMotors1 == NUM_MOTORS){
+            RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1 reading all motors correctly");
+        }
+        if(numMotors0 == 0){
+            if(numMotors1 == 0){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Power failure");
+            }
+            else{
+                RCLCPP_INFO(nodeHandle->get_logger(), "CAN wires pulled out of CAN interface, break in line just outside"
+                "of box, or CAN wires have been swapped before first motor");
+                return;
+            }
+        }
+        if(numMotors0 + numMotors1 == NUM_MOTORS){
+            RCLCPP_INFO(nodeHandle->get_logger(), "Single break in line");
+            RCLCPP_INFO(nodeHandle->get_logger(), "numMotors0: %d, numMotors1: %d", numMotors0, numMotors1);
+            
+            // Identify where the break is
+            RCLCPP_INFO(nodeHandle->get_logger(), "Break between motors %d and %d", MOTOR_IDS[numMotors0], MOTOR_IDS[numMotors0+1]);
+        }
+        else if(numMotors0 + numMotors1 < NUM_MOTORS){
+            RCLCPP_INFO(nodeHandle->get_logger(), "Multiple breaks in line");
+            RCLCPP_INFO(nodeHandle->get_logger(), "Breaks between motors %d and %d", MOTOR_IDS[numMotors0], MOTOR_IDS[NUM_MOTORS-numMotors1]);
+        }
+        else{
+            RCLCPP_INFO(nodeHandle->get_logger(), "Odd things are happening");
+        }
+    }
 }
 
 
@@ -152,64 +306,9 @@ void statusCheck(){
     check_packet_status("can0", "TX", previousTX, canMessage, buffer2);
     check_packet_status("can1", "TX", previousTX2, canMessage2, buffer2, true, usingCAN1);
 
+    checkInterfaceStatus();
+
     publishStatus();
-}
-
-
-// CAN ID is lower 6 bits
-unsigned int parseID(struct can_frame frame){
-    return frame.can_id & 0x0000002F;
-}
-
-
-std::mutex queue_mutex;
-std::atomic<bool> run_threads{true};
-
-void can_read_loop(const std::string &iface_name) {
-    int s;
-	int nbytes;
-	struct sockaddr_can addr;
-	struct can_frame frame;
-	struct ifreq ifr;
-
-	const char *ifname = "CAN0";
-
-	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
-		perror(("Error opening socket on " + iface_name).c_str());
-		return;
-	}
-
-	strcpy(ifr.ifr_name, ifname);
-
-    if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
-        perror(("ioctl error on " + iface_name).c_str());
-        close(s);
-        return;
-    }
-
-	addr.can_family  = AF_CAN;
-	addr.can_ifindex = ifr.ifr_ifindex;
-
-	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
-
-	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        perror(("Bind error on " + iface_name).c_str());
-        close(s);
-        return;
-	}
-
-    int counter = 0;
-
-    while (run_threads) {
-        int nbytes = read(s, &frame, sizeof(frame));
-        if (nbytes > 0) {
-            std::lock_guard<std::mutex> lock(queue_mutex);
-            if(counter % 20 == 0){
-                RCLCPP_INFO(nodeHandle->get_logger(), "Received frame with id: 0x%X", frame.can_id);
-            }
-        }
-    }
-    close(s);
 }
 
 
@@ -253,8 +352,12 @@ int main(int argc, char **argv){
 
     getInterfaceName();
 
-    std::thread can0_thread(can_read_loop, "can0");
-    std::thread can1_thread(can_read_loop, "can1");
+    for (size_t i = 0; i < MOTOR_IDS.size(); ++i){
+        motor_id_to_index[MOTOR_IDS[i]] = i;
+    }
+
+    std::thread can0_thread(can_read_loop, "can0", std::ref(motors0), std::ref(mutex0));
+    std::thread can1_thread(can_read_loop, "can1", std::ref(motors1), std::ref(mutex1));
 
     rclcpp::Rate rate(10);
     while(rclcpp::ok()){
