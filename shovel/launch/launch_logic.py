@@ -9,7 +9,8 @@ def generate_launch_description():
             executable='logic_node',
             parameters=[
                 {"map": "NASA"},
-                {"turnLeft": True}
+                {"turnLeft": True},
+                {"print_data": True}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )

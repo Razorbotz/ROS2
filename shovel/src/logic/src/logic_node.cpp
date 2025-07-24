@@ -85,7 +85,7 @@ float joystick1Pitch=0;
 float joystick1Yaw=0;
 float joystick1Throttle=0;
 
-float maxSpeed=0.8;
+float maxSpeed=0.4;
 
 bool automationGo=false;
 bool excavationGo = false;
@@ -219,7 +219,7 @@ float transformJoystickInfo(float info, float deadZone){
 void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     //RCLCPP_INFO(nodeHandle->get_logger(),"Axis %d %d %f", axisState->joystick, axisState->axis, axisState->state);
     //RCLCPP_INFO(nodeHandle->get_logger(),"Axis %d %f %f %f %f", axisState->joystick, axisState->state0, axisState->state1, axisState->state2, axisState->state3);
-    float deadZone = 0.1;
+    float deadZone = 0.01;
     if(axisState->axis==0){
         joystick1Roll = transformJoystickInfo(-axisState->state, deadZone);
         updateSpeed();
@@ -422,10 +422,10 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         automation->startAutonomy();
     }
     if(keyState->key==43 && keyState->state==1){
-        updateMaxSpeed(0.1);
+        updateMaxSpeed(0.2);
     }
     if(keyState->key==45 && keyState->state==1){
-        updateMaxSpeed(-0.1);
+        updateMaxSpeed(-0.2);
     }
     if(keyState->key == 107 && keyState->state == 1){
         automationGo = false;
