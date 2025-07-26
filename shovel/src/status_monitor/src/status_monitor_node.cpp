@@ -69,6 +69,7 @@ void publishStatus(){
     systemStatus.tx2_packets = previousTX2;
     systemStatus.using_can1 = usingCAN1;
     systemStatus.status = status;
+    systemStatusPublisher->publish(systemStatus);
 }
 
 int extract_packet_count(const std::string& command, char* buffer2) {

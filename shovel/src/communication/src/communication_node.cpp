@@ -332,7 +332,7 @@ void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status){
     message.addElementBoolean("Using CAN1", usingCAN1);
     message.addElementInt32("RX packets", status->rx_packets);
     message.addElementInt32("TX packets", status->tx_packets);
-    message.addElementString("CAN Bus", status->can2_message);
+    message.addElementString("CAN Bus2", status->can2_message);
     message.addElementInt32("RX2 packets", status->rx2_packets);
     message.addElementInt32("TX2 packets", status->tx2_packets);
     message.addElementString("Status", status->status);
