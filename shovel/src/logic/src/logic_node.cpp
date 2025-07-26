@@ -232,8 +232,15 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
         joystick1Yaw = transformJoystickInfo(axisState->state, deadZone);
         if(useController){
             std_msgs::msg::Float32 armSpeed;
-            armSpeed.data = axisState->state;
+            armSpeed.data = joystick1Yaw;
             armSpeedPublisher->publish(armSpeed);
+            automation->stopArmsLevel();
+        }
+        else{
+            std_msgs::msg::Float32 bucketSpeed;
+            bucketSpeed.data = joystick1Yaw;
+            bucketSpeedPublisher->publish(bucketSpeed);
+            automation->stopBucketLevel();
         }
     }
     else if(axisState->axis==3){
@@ -243,6 +250,7 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
             std_msgs::msg::Float32 bucketSpeed;
             bucketSpeed.data = axisState->state;
             bucketSpeedPublisher->publish(bucketSpeed);
+            automation->stopBucketLevel();
         }
     }
 }
@@ -280,14 +288,6 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
             break;
         case 3:
-            if(buttonState->state){
-                bucketSpeed.data = -1.0;
-            }
-            else{
-                bucketSpeed.data = 0.0;
-            }
-            bucketSpeedPublisher->publish(bucketSpeed);
-            automation->stopBucketLevel();
             if(printData)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
             break;
@@ -304,14 +304,6 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 5");
             break;
         case 5:
-            if(buttonState->state){
-                bucketSpeed.data = 1.0;
-            }
-            else{
-                bucketSpeed.data = 0.0;
-            }
-            bucketSpeedPublisher->publish(bucketSpeed);
-            automation->stopBucketLevel();
             if(printData)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 6");
             break;
