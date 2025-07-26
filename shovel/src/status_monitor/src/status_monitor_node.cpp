@@ -55,6 +55,7 @@ const std::array<uint32_t, NUM_MOTORS> MOTOR_IDS = {0xA, 0XB, 0xD, 0xC, 0x10, 0x
 
 std::shared_ptr<rclcpp::Publisher<messages::msg::SystemStatus_<std::allocator<void> >, std::allocator<void> > > systemStatusPublisher;
 bool printData = false;
+std::string status = "";
 
 
 void publishStatus(){
@@ -67,6 +68,7 @@ void publishStatus(){
     systemStatus.rx2_packets = previousRX2;
     systemStatus.tx2_packets = previousTX2;
     systemStatus.using_can1 = usingCAN1;
+    systemStatus.status = status;
 }
 
 int extract_packet_count(const std::string& command, char* buffer2) {
@@ -209,6 +211,7 @@ void checkInterfaceStatus(){
     if(numMotors0 == NUM_MOTORS && numMotors1 == NUM_MOTORS){
         if(printData)
             RCLCPP_INFO(nodeHandle->get_logger(), "CAN0 and CAN1 reading all motors correctly");
+        status = "CAN0 and CAN1 reading all motors correctly";
     }
     else{
         if(numMotors0 == NUM_MOTORS){
@@ -223,11 +226,14 @@ void checkInterfaceStatus(){
             if(numMotors1 == 0){
                 if(printData)
                     RCLCPP_INFO(nodeHandle->get_logger(), "Power failure");
+                status = "Power failure";
             }
             else{
                 if(printData){
-                    RCLCPP_INFO(nodeHandle->get_logger(), "CAN wires pulled out of CAN interface, break in line just outside"
+                    RCLCPP_INFO(nodeHandle->get_logger(), "CAN wires pulled out of CAN0 interface, break in line just outside"
                     "of box, or CAN wires have been swapped before first motor");
+                    status = "CAN wires pulled out of CAN0 interface, break in line just outside"
+                    "of box, or CAN wires have been swapped before first motor";
                 }
                 return;
             }
@@ -240,6 +246,7 @@ void checkInterfaceStatus(){
             // Identify where the break is
             if(numMotors0 > 0)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Break between motors %d and %d", MOTOR_IDS[numMotors0-1], MOTOR_IDS[numMotors0]);
+                status = "Break between motors %d and %d", MOTOR_IDS[numMotors0-1], MOTOR_IDS[numMotors0];
             }
         }
         else if(numMotors0 + numMotors1 < NUM_MOTORS){
@@ -247,6 +254,7 @@ void checkInterfaceStatus(){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Multiple breaks in line");
                 RCLCPP_INFO(nodeHandle->get_logger(), "Breaks between motors %d and %d", MOTOR_IDS[numMotors0], MOTOR_IDS[NUM_MOTORS-numMotors1]);
             }
+            status = "Multiple breaks in line";
         }
         else{
             if(printData)

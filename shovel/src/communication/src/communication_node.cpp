@@ -335,6 +335,7 @@ void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status){
     message.addElementString("CAN Bus", status->can2_message);
     message.addElementInt32("RX2 packets", status->rx2_packets);
     message.addElementInt32("TX2 packets", status->tx2_packets);
+    message.addElementString("Status", status->status);
     send(message);
 }
 
