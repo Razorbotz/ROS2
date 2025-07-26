@@ -51,9 +51,10 @@ int motors1[NUM_MOTORS] = {0, 0, 0, 0, 0, 0};
 int copy0[NUM_MOTORS] = {0};
 int copy1[NUM_MOTORS] = {0};
 
-const std::array<uint32_t, NUM_MOTORS> MOTOR_IDS = {0xB, 0XA, 0xC, 0xD, 0xE, 0x10};
+const std::array<uint32_t, NUM_MOTORS> MOTOR_IDS = {0xA, 0XB, 0xD, 0xC, 0x10, 0xE};
 
 std::shared_ptr<rclcpp::Publisher<messages::msg::SystemStatus_<std::allocator<void> >, std::allocator<void> > > systemStatusPublisher;
+bool printData = false;
 
 
 void publishStatus(){
@@ -190,7 +191,8 @@ void checkInterfaceStatus(){
             numMotors0 += 1;
         }
         else{
-            RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0: Motor %d not heard.", i);
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0: Motor %d not heard.", i);
         }
     }
     for(int i = 0; i < NUM_MOTORS; i++){
@@ -199,43 +201,56 @@ void checkInterfaceStatus(){
             numMotors1 += 1;
         }
         else{
-            RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1: Motor %d not heard.", i);
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1: Motor %d not heard.", i);
         }
     }
 
     if(numMotors0 == NUM_MOTORS && numMotors1 == NUM_MOTORS){
-        RCLCPP_INFO(nodeHandle->get_logger(), "CAN0 and CAN1 reading all motors correctly");
+        if(printData)
+            RCLCPP_INFO(nodeHandle->get_logger(), "CAN0 and CAN1 reading all motors correctly");
     }
     else{
         if(numMotors0 == NUM_MOTORS){
-            RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0 reading all motors correctly");
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0 reading all motors correctly");
         }
         if(numMotors1 == NUM_MOTORS){
-            RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1 reading all motors correctly");
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1 reading all motors correctly");
         }
         if(numMotors0 == 0){
             if(numMotors1 == 0){
-                RCLCPP_INFO(nodeHandle->get_logger(), "Power failure");
+                if(printData)
+                    RCLCPP_INFO(nodeHandle->get_logger(), "Power failure");
             }
             else{
-                RCLCPP_INFO(nodeHandle->get_logger(), "CAN wires pulled out of CAN interface, break in line just outside"
-                "of box, or CAN wires have been swapped before first motor");
+                if(printData){
+                    RCLCPP_INFO(nodeHandle->get_logger(), "CAN wires pulled out of CAN interface, break in line just outside"
+                    "of box, or CAN wires have been swapped before first motor");
+                }
                 return;
             }
         }
         if(numMotors0 + numMotors1 == NUM_MOTORS){
-            RCLCPP_INFO(nodeHandle->get_logger(), "Single break in line");
+            if(printData){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Single break in line");
             RCLCPP_INFO(nodeHandle->get_logger(), "numMotors0: %d, numMotors1: %d", numMotors0, numMotors1);
             
             // Identify where the break is
-            RCLCPP_INFO(nodeHandle->get_logger(), "Break between motors %d and %d", MOTOR_IDS[numMotors0], MOTOR_IDS[numMotors0+1]);
+            if(numMotors0 > 0)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Break between motors %d and %d", MOTOR_IDS[numMotors0-1], MOTOR_IDS[numMotors0]);
+            }
         }
         else if(numMotors0 + numMotors1 < NUM_MOTORS){
-            RCLCPP_INFO(nodeHandle->get_logger(), "Multiple breaks in line");
-            RCLCPP_INFO(nodeHandle->get_logger(), "Breaks between motors %d and %d", MOTOR_IDS[numMotors0], MOTOR_IDS[NUM_MOTORS-numMotors1]);
+            if(printData){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Multiple breaks in line");
+                RCLCPP_INFO(nodeHandle->get_logger(), "Breaks between motors %d and %d", MOTOR_IDS[numMotors0], MOTOR_IDS[NUM_MOTORS-numMotors1]);
+            }
         }
         else{
-            RCLCPP_INFO(nodeHandle->get_logger(), "Odd things are happening");
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Odd things are happening");
         }
     }
 }
@@ -342,6 +357,35 @@ void getInterfaceName(){
 }
 
 
+
+/** @brief Function to get the value of the specified parameter
+ * 
+ * Function that takes a string as a parameter containing the
+ * name of the parameter that is being parsed from the launch
+ * file and the initial value of the parameter as inputs, then
+ * gets the parameter, casts it as the desired type, displays 
+ * the value of the parameter on the command line and the log 
+ * file, then returns the parsed value of the parameter.
+ * @param parametername String of the name of the parameter
+ * @param initialValue Initial value of the parameter
+ * @return value Value of the parameter
+ * */
+template <typename T>
+T getParameter(std::string parameterName, T initialValue){
+	nodeHandle->declare_parameter<T>(parameterName, initialValue);
+	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
+	T value = param.template get_value<T>();
+	std::cout << parameterName << ": " << value << std::endl;
+	RCLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
+	return value;
+}
+
+template <typename T>
+T getParameter(const std::string& parameterName, const char* initialValue){
+	return getParameter<T>(parameterName, std::string(initialValue));
+}
+
+
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
 
@@ -349,6 +393,7 @@ int main(int argc, char **argv){
     RCLCPP_INFO(nodeHandle->get_logger(),"Starting communication node");
 
     systemStatusPublisher = nodeHandle->create_publisher<messages::msg::SystemStatus>("system_status",1);
+    printData = getParameter<bool>("print_data", false);
 
     getInterfaceName();
 

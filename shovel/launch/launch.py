@@ -20,7 +20,10 @@ def generate_launch_description():
     comm_launch_file = os.path.join(launch_dir, 'launch', 'launch_comm.py')
     excav_launch_file = os.path.join(launch_dir, 'launch', 'launch_excav.py')
     cam_launch_file = os.path.join(launch_dir, 'launch', 'launch_cam.py')
-    
+    drivetrain_launch_file = os.path.join(launch_dir, 'launch', 'launch_drivetrain.py')
+    status_monitor_launch_file = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
+    reset_launch_file = os.path.join(launch_dir, 'launch', 'launch_reset.py')
+
     return LaunchDescription([
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(motors_launch_file)
@@ -42,23 +45,16 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(cam_launch_file)
         )
         ,
-        Node(
-            package='reset',
-            executable='reset_node',
-            name='reset_node',
-            output='screen'
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(reset_launch_file)
         )
         ,
-        Node(
-            package='drivetrain',
-            name='drivetrain',
-            executable='drivetrain_node'
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(drivetrain_launch_file)
         )
         ,
-        Node(
-            package='status_monitor',
-            name='StatusMonitor',
-            executable='status_monitor_node'
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(status_monitor_launch_file)
         )
         #,
         #ExecuteProcess(
