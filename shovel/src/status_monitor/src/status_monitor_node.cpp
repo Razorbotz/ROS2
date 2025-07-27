@@ -67,10 +67,14 @@ int firstMotor = -1;
 int secondMotor = -1;
 int numBreaks = 0;
 
+bool switched = false;
 int numMotors0 = 0;
 int numMotors1 = 0;
 
-bool switched = false;
+const uint32_t STATUS_01 = 0x041400;
+const uint32_t STATUS_02 = 0x041440;
+const uint32_t STATUS_03 = 0x041480;
+const uint32_t STATUS_04 = 0x0414C0;
 
 
 void publishStatus(){
@@ -151,7 +155,6 @@ void can_read_loop(const std::string &iface_name, int (&motors)[NUM_MOTORS], std
 		perror(("Error opening socket on " + iface_name).c_str());
 		return;
 	}
-
 	strcpy(ifr.ifr_name, iface_name.c_str());
 
     if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
@@ -177,22 +180,48 @@ void can_read_loop(const std::string &iface_name, int (&motors)[NUM_MOTORS], std
         int nbytes = read(s, &frame, sizeof(frame));
         if (nbytes > 0) {
             size_t motor_index;
-            if (get_motor_index(frame.can_id & 0x0000003F, motor_index)) {
-                {
-                    std::lock_guard<std::mutex> lock(mutex);
-                    motors[motor_index] = 1;
+            uint32_t status = frame.can_id & 0x000FFFC0;
+            if(status == STATUS_01 || status == STATUS_02 || status == STATUS_04){
+                if (get_motor_index(frame.can_id & 0x0000003F, motor_index)) {
+                    {
+                        std::lock_guard<std::mutex> lock(mutex);
+                        motors[motor_index] = 1;
+                    }
                 }
             }
+            
         }
     }
     close(s);
 }
 
 void switchInterfaces(){
-    for(int i = NUM_MOTORS; i > numMotors0; i--){
+    for(int i = NUM_MOTORS; i >= numMotors0; i--){
         if(interfaces[i] == 0){
             interfaces[i] = 1;
             RCLCPP_INFO(nodeHandle->get_logger(), "Killing motor %d", MOTOR_IDS[i]);
+            std::string killCommand = "";
+            std::string startCommand = "./launch/launch_node/can1/launch_";
+            if(i > 3){
+                killCommand = "pkill -f Talon" + std::to_string(MOTOR_IDS[i]);
+                startCommand += "talon_" + std::to_string(MOTOR_IDS[i]) + ".sh";
+            }
+            else{
+                killCommand = "pkill -f Falcon" + std::to_string(MOTOR_IDS[i]);
+                startCommand += "falcon_" + std::to_string(MOTOR_IDS[i]) + ".sh";
+            }
+            RCLCPP_INFO(nodeHandle->get_logger(), "killCommand: %s", killCommand.c_str());
+            RCLCPP_INFO(nodeHandle->get_logger(), "startCommand: %s", startCommand.c_str());
+            int result = 0;
+            result = std::system(killCommand.c_str());
+            if (result == 0) {
+                RCLCPP_INFO(nodeHandle->get_logger(), "Killed process with kill command");
+            }
+            result = std::system(startCommand.c_str());
+            if(result == 0){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Started process with start command");
+            }
+
         }
     }
 }
@@ -213,52 +242,65 @@ void checkInterfaceStatus(){
             motors1[i] = 0;
         }
     }
+    numMotors0 = 0;
+    numMotors1 = 0;
     for(int i = 0; i < NUM_MOTORS; i++){
         if(copy0[i] == 1){
-            //RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0: Motor %d heard.", i);
+            if(printData){
+                RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0: Motor %d heard.", i);
+            }
             numMotors0 += 1;
         }
         else{
-            if(printData)
+            if(printData){
                 RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0: Motor %d not heard.", i);
+            }
         }
     }
     for(int i = 0; i < NUM_MOTORS; i++){
         if(copy1[i] == 1){
-            //RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1: Motor %d heard.", i);
+            if(printData){
+                RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1: Motor %d heard.", i);
+            }
             numMotors1 += 1;
         }
         else{
-            if(printData)
+            if(printData){
                 RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1: Motor %d not heard.", i);
+            }
         }
     }
 
     if(numMotors0 == NUM_MOTORS && numMotors1 == NUM_MOTORS){
-        if(printData)
+        if(printData){
             RCLCPP_INFO(nodeHandle->get_logger(), "CAN0 and CAN1 reading all motors correctly");
+        }
         status = "CAN0 and CAN1 reading all motors correctly";
     }
     else{
         if(numMotors0 == NUM_MOTORS){
-            if(printData)
+            if(printData){
                 RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0 reading all motors correctly");
+            }
         }
         if(numMotors1 == NUM_MOTORS){
-            if(printData)
-                RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1 reading all motors correctly");
+            if(printData){
+                RCLCPP_INFO(nodeHandle->get_logger(), "CAN 1 reading all motors correctly");                
+            }
         }
         if(numMotors0 == 0){
             if(numMotors1 == 0){
-                if(printData)
+                if(printData){
                     RCLCPP_INFO(nodeHandle->get_logger(), "Power failure");
+                }
                 status = "Power failure";
             }
             else{
                 switchInterfaces();
-                if(printData){
+                if(printData){{
                     RCLCPP_INFO(nodeHandle->get_logger(), "CAN wires pulled out of CAN0 interface, break in line just outside"
                     "of box, or CAN wires have been swapped before first motor");
+                }
                     status = "CAN wires pulled out of CAN0 interface, break in line just outside"
                     "of box, or CAN wires have been swapped before first motor";
                 }
@@ -269,11 +311,13 @@ void checkInterfaceStatus(){
             switchInterfaces();
             if(printData){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Single break in line");
-            RCLCPP_INFO(nodeHandle->get_logger(), "numMotors0: %d, numMotors1: %d", numMotors0, numMotors1);
-            
+                RCLCPP_INFO(nodeHandle->get_logger(), "numMotors0: %d, numMotors1: %d", numMotors0, numMotors1);
+            }
             // Identify where the break is
-            if(numMotors0 > 0)
-                RCLCPP_INFO(nodeHandle->get_logger(), "Break between motors %d and %d", MOTOR_IDS[numMotors0-1], MOTOR_IDS[numMotors0]);
+            if(numMotors0 > 0){
+                if(printData){
+                    RCLCPP_INFO(nodeHandle->get_logger(), "Break between motors %d and %d", MOTOR_IDS[numMotors0-1], MOTOR_IDS[numMotors0]);
+                }
                 status = "Break between motors %d and %d", MOTOR_IDS[numMotors0-1], MOTOR_IDS[numMotors0];
             }
         }
@@ -285,8 +329,9 @@ void checkInterfaceStatus(){
             status = "Multiple breaks in line";
         }
         else{
-            if(printData)
-                RCLCPP_INFO(nodeHandle->get_logger(), "Odd things are happening");
+            if(printData){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Odd things are happening. NumMotors0: %d, NumMotors1: %d", numMotors0, numMotors1);
+            }
         }
     }
 }
