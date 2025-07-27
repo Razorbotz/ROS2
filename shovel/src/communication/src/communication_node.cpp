@@ -335,7 +335,9 @@ void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status){
     message.addElementString("CAN Bus2", status->can2_message);
     message.addElementInt32("RX2 packets", status->rx2_packets);
     message.addElementInt32("TX2 packets", status->tx2_packets);
-    message.addElementString("Status", status->status);
+    message.addElementInt32("First Motor", status->first_motor);
+    message.addElementInt32("Second Motor", status->second_motor);
+    message.addElementInt32("Num Breaks", status->num_breaks);
     send(message);
 }
 

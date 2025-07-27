@@ -26,6 +26,12 @@
 #include <linux/can/raw.h>
 #include <chrono>
 
+// TODO: Check if the interface is up
+// If down, restart interface
+// Check behavior when the wires are flipped
+// Check behavior in total power loss, individual power loss
+// Check behavior with multiple breaks in lines
+
 // NOTE: Need to investigate whether the system will randomly decide which interface is CAN0 vs CAN1. The paths are 
 // hardcoded around knowing which interface is where. Will look into location agnostic code or setting interface by ID
 rclcpp::Node::SharedPtr nodeHandle;
@@ -50,12 +56,21 @@ int motors0[NUM_MOTORS] = {0, 0, 0, 0, 0, 0};
 int motors1[NUM_MOTORS] = {0, 0, 0, 0, 0, 0};
 int copy0[NUM_MOTORS] = {0};
 int copy1[NUM_MOTORS] = {0};
+int interfaces[NUM_MOTORS] = {0, 0, 0, 0, 0, 0};
 
 const std::array<uint32_t, NUM_MOTORS> MOTOR_IDS = {0xA, 0XB, 0xD, 0xC, 0x10, 0xE};
 
 std::shared_ptr<rclcpp::Publisher<messages::msg::SystemStatus_<std::allocator<void> >, std::allocator<void> > > systemStatusPublisher;
 bool printData = false;
 std::string status = "";
+int firstMotor = -1;
+int secondMotor = -1;
+int numBreaks = 0;
+
+int numMotors0 = 0;
+int numMotors1 = 0;
+
+bool switched = false;
 
 
 void publishStatus(){
@@ -68,7 +83,9 @@ void publishStatus(){
     systemStatus.rx2_packets = previousRX2;
     systemStatus.tx2_packets = previousTX2;
     systemStatus.using_can1 = usingCAN1;
-    systemStatus.status = status;
+    systemStatus.first_motor = firstMotor;
+    systemStatus.second_motor = secondMotor;
+    systemStatus.num_breaks = numBreaks;
     systemStatusPublisher->publish(systemStatus);
 }
 
@@ -171,6 +188,16 @@ void can_read_loop(const std::string &iface_name, int (&motors)[NUM_MOTORS], std
     close(s);
 }
 
+void switchInterfaces(){
+    for(int i = NUM_MOTORS; i > numMotors0; i--){
+        if(interfaces[i] == 0){
+            interfaces[i] = 1;
+            RCLCPP_INFO(nodeHandle->get_logger(), "Killing motor %d", MOTOR_IDS[i]);
+        }
+    }
+}
+
+
 void checkInterfaceStatus(){
     {
         std::lock_guard<std::mutex> lock(mutex0);
@@ -186,8 +213,6 @@ void checkInterfaceStatus(){
             motors1[i] = 0;
         }
     }
-    int numMotors0 = 0;
-    int numMotors1 = 0;
     for(int i = 0; i < NUM_MOTORS; i++){
         if(copy0[i] == 1){
             //RCLCPP_INFO(nodeHandle->get_logger(), "CAN 0: Motor %d heard.", i);
@@ -230,6 +255,7 @@ void checkInterfaceStatus(){
                 status = "Power failure";
             }
             else{
+                switchInterfaces();
                 if(printData){
                     RCLCPP_INFO(nodeHandle->get_logger(), "CAN wires pulled out of CAN0 interface, break in line just outside"
                     "of box, or CAN wires have been swapped before first motor");
@@ -240,6 +266,7 @@ void checkInterfaceStatus(){
             }
         }
         if(numMotors0 + numMotors1 == NUM_MOTORS){
+            switchInterfaces();
             if(printData){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Single break in line");
             RCLCPP_INFO(nodeHandle->get_logger(), "numMotors0: %d, numMotors1: %d", numMotors0, numMotors1);
@@ -277,6 +304,9 @@ void statusCheck(){
     pclose(pipe);
     result = "";
     
+    // This was originally intended to catch if the interface crashed, then
+    // switch to CAN1. Because we're using CAN1 already, this isn't needed
+    /*
     FILE* pipe2;
     if(!usingCAN1)
         pipe2 = popen("ip link show can0 | grep DOWN", "r");
@@ -324,6 +354,7 @@ void statusCheck(){
     }
     result = "";
     pclose(pipe2);
+    */
 
     check_packet_status("can0", "RX", previousRX, canMessage, buffer2);
     check_packet_status("can1", "RX", previousRX2, canMessage2, buffer2);
