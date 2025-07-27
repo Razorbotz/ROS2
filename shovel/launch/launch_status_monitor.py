@@ -8,7 +8,7 @@ def generate_launch_description():
             name='status_monitor',
             executable='status_monitor_node',
             parameters=[
-                {"print_data": False}
+                {"print_data": True}
             ],
         )
     ]

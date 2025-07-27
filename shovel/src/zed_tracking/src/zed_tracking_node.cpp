@@ -24,6 +24,7 @@ rclcpp::Node::SharedPtr nodeHandle;
 sl::Camera zed;
 
 int killKey = 0;
+bool printData = false;
 //using namespace sl;
 //using namespace std;
 
@@ -216,6 +217,7 @@ int main(int argc, char **argv) {
     std::string resolution = getParameter<std::string>("resolution", "VGA");
     double xOffset = getParameter<double>("xOffset", 0.0);
 	killKey = getParameter<int>("kill_key", 0);
+    printData = getParameter<bool>("print_Data", false);
 
     messages::msg::ZedPosition zedPosition;
     auto zedPositionPublisher=nodeHandle->create_publisher<messages::msg::ZedPosition>("zed_position",1);
@@ -461,12 +463,14 @@ int main(int argc, char **argv) {
                 zedPosition.z_vel = z_vel;
                 zedPosition.aruco_initialized = initialized;
                 zedPositionPublisher->publish(zedPosition);
-                RCLCPP_INFO(nodeHandle->get_logger(), "%s", position_txt.c_str());
+                if(printData)
+                    RCLCPP_INFO(nodeHandle->get_logger(), "%s", position_txt.c_str());
 
                 // Saves the position values to a file
                 try{
                     if(writeCounter % 10 == 0){
-                        RCLCPP_INFO(nodeHandle->get_logger(), "Before writing to file");
+                        if(printData)
+                            RCLCPP_INFO(nodeHandle->get_logger(), "Before writing to file");
                         std::ostringstream oss;
                         oss << zedPose.pose_data.tx << "," << zedPose.pose_data.ty << "," << zedPose.pose_data.tz << ",";
                         oss << zedPose.pose_data.getEulerAngles(false).x << "," 

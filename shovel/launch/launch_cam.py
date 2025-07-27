@@ -10,7 +10,8 @@ def generate_launch_description():
             parameters=[
                 {"xOffset": 1.25},
                 {"kill_key": 58},
-                {"resolution": "VGA"}
+                {"resolution": "VGA"},
+                {"print_data": False}
             ]
         )
         ,

@@ -45,10 +45,10 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(cam_launch_file)
         )
         ,
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(reset_launch_file)
-        )
-        ,
+        #IncludeLaunchDescription(
+        #    PythonLaunchDescriptionSource(reset_launch_file)
+        #)
+        #,
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(drivetrain_launch_file)
         )
