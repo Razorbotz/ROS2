@@ -213,11 +213,11 @@ void switchInterfaces(){
             RCLCPP_INFO(nodeHandle->get_logger(), "killCommand: %s", killCommand.c_str());
             RCLCPP_INFO(nodeHandle->get_logger(), "startCommand: %s", startCommand.c_str());
             int result = 0;
-            result = std::system(killCommand.c_str());
+            //result = std::system(killCommand.c_str());
             if (result == 0) {
                 RCLCPP_INFO(nodeHandle->get_logger(), "Killed process with kill command");
             }
-            result = std::system(startCommand.c_str());
+            //result = std::system(startCommand.c_str());
             if(result == 0){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Started process with start command");
             }
@@ -475,7 +475,7 @@ int main(int argc, char **argv){
     rclcpp::init(argc,argv);
 
     nodeHandle = rclcpp::Node::make_shared("status_monitor");
-    RCLCPP_INFO(nodeHandle->get_logger(),"Starting communication node");
+    RCLCPP_INFO(nodeHandle->get_logger(),"Starting status monitor node");
 
     systemStatusPublisher = nodeHandle->create_publisher<messages::msg::SystemStatus>("system_status",1);
     printData = getParameter<bool>("print_data", false);

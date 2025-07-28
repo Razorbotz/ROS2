@@ -16,6 +16,7 @@ def generate_launch_description():
 
     # Define the path to the included launch files
     motors_launch_file = os.path.join(launch_dir, 'launch', 'launch_motors.py')
+    autonomy_launch_file = os.path.join(launch_dir, 'launch', 'launch_autonomy.py')
     logic_launch_file = os.path.join(launch_dir, 'launch', 'launch_logic.py')
     comm_launch_file = os.path.join(launch_dir, 'launch', 'launch_comm.py')
     excav_launch_file = os.path.join(launch_dir, 'launch', 'launch_excav.py')
@@ -27,6 +28,10 @@ def generate_launch_description():
     return LaunchDescription([
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(motors_launch_file)
+        )
+        ,
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(autonomy_launch_file)
         )
         ,
         IncludeLaunchDescription(

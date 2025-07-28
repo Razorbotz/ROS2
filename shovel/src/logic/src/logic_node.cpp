@@ -19,9 +19,6 @@
 #include <messages/msg/falcon_out.hpp>
 #include <messages/msg/linear_out.hpp>
 
-#include "logic/Automation1.hpp"
-#include "logic/AutomationTypes.hpp"
-
 
 /*
 Added subscribers to excavation, logic, falcon, and talon nodes
@@ -87,14 +84,11 @@ float joystick1Throttle=0;
 
 float maxSpeed=0.4;
 
-bool automationGo=false;
 bool excavationGo = false;
 bool printData = false;
 bool zedInit = false;
 bool useSpeed = false;
 bool useController = false;
-
-Automation* automation;
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
@@ -102,18 +96,6 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > userRightSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > armSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > bucketSpeedPublisher;
-
-std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > automationGoPublisher;
-std::chrono::time_point<std::chrono::high_resolution_clock> zedPrevious;
-std::chrono::time_point<std::chrono::high_resolution_clock> falcon1Previous;
-std::chrono::time_point<std::chrono::high_resolution_clock> falcon2Previous;
-std::chrono::time_point<std::chrono::high_resolution_clock> falcon3Previous;
-std::chrono::time_point<std::chrono::high_resolution_clock> falcon4Previous;
-
-std::chrono::time_point<std::chrono::high_resolution_clock> talon1Previous;
-std::chrono::time_point<std::chrono::high_resolution_clock> talon2Previous;
-std::chrono::time_point<std::chrono::high_resolution_clock> talon3Previous;
-std::chrono::time_point<std::chrono::high_resolution_clock> talon4Previous;
 
 
 /** @brief Function to initialize the motors to zero
@@ -234,13 +216,11 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
             std_msgs::msg::Float32 armSpeed;
             armSpeed.data = joystick1Yaw;
             armSpeedPublisher->publish(armSpeed);
-            automation->stopArmsLevel();
         }
         else{
             std_msgs::msg::Float32 bucketSpeed;
             bucketSpeed.data = joystick1Yaw;
             bucketSpeedPublisher->publish(bucketSpeed);
-            automation->stopBucketLevel();
         }
     }
     else if(axisState->axis==3){
@@ -250,7 +230,6 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
             std_msgs::msg::Float32 bucketSpeed;
             bucketSpeed.data = axisState->state;
             bucketSpeedPublisher->publish(bucketSpeed);
-            automation->stopBucketLevel();
         }
     }
 }
@@ -273,7 +252,6 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
         case 0:
             break;
         case 1: //toggles driving and digging
-            automation->dumpMacro();
             break;
         case 2:
             if(buttonState->state){ 
@@ -283,7 +261,6 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
                 armSpeed.data = 0.0;
             }
             armSpeedPublisher->publish(armSpeed);
-            automation->stopArmsLevel();
             if(printData)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
             break;
@@ -299,7 +276,6 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
                 armSpeed.data = 0.0;
             }
             armSpeedPublisher->publish(armSpeed);
-            automation->stopArmsLevel();
             if(printData)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 5");
             break;
@@ -308,12 +284,10 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 6");
             break;
         case 6:
-            automation->startArmsLevel();
             if(printData)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 7");
             break;
         case 7:
-            automation->startBucketLevel();
             if(printData)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 8");
             break;
@@ -380,8 +354,7 @@ void updateMaxSpeed(float deltaSpeed){
  * 
  * This function is called when the node receives a
  * topic with the name key_state.  It currently prints
- * the key pressed to the screen and inverts  
- * @arg automationGo if the key is 's'.  This function
+ * the key pressed to the screen. This function
  * also increases the max speed multiplier when the '+'
  * key is pressed and decreases it when the '-' key is 
  * pressed.
@@ -390,42 +363,11 @@ void updateMaxSpeed(float deltaSpeed){
  * */
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
-
-    if(keyState->key==115 && keyState->state==1){
-        automationGo= !automationGo;
-        std_msgs::msg::Bool msg;
-        msg.data = automationGo;
-        automationGoPublisher->publish(msg);
-        if(automationGo){
-            automation->setGo();
-        }
-        else{
-            automation->setStop();
-        }
-        RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
-    }
-    if(keyState->key==100 && keyState->state==1){
-        automation->setDiagnostics();
-    }
-    if(keyState->key==101 && keyState->state==1){
-        automation->setExcavate();
-    }
-    if(keyState->key==97 && keyState->state==1){
-        automation->startAutonomy();
-    }
     if(keyState->key==43 && keyState->state==1){
         updateMaxSpeed(0.2);
     }
     if(keyState->key==45 && keyState->state==1){
         updateMaxSpeed(-0.2);
-    }
-    if(keyState->key == 107 && keyState->state == 1){
-        automationGo = false;
-        automation->setStop();
-        automation->setIdle();
-    }
-    if(keyState->key == 108 && keyState->state == 1){
-        automation->setLevel();
     }
     if(keyState->key == 48 && keyState->state==1){
         return;
@@ -436,125 +378,6 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(keyState->key==2){
         useController = true;
     }
-}
-
-/** @brief Callback function for the zedPosition
- * 
- * This function is called when the node receives a
- * topic with the name zed_position.  This function
- * extracts the information and calls the setPosition
- * function from the automation problem.  
- * \see .Automation.cpp
- * @param zedPosition \see ZedPosition.msg
- * @return void
- * */
-void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
-    Position position;
-    position.x=zedPosition->x;	
-    position.y=zedPosition->y;	
-    position.z=zedPosition->z;	
-    position.ox=zedPosition->ox;	
-    position.oy=zedPosition->oy;	
-    position.oz=zedPosition->oz;	
-    position.ow=zedPosition->ow;	
-    position.roll=zedPosition->roll;
-    position.pitch=zedPosition->pitch;
-    position.yaw=zedPosition->yaw;
-    position.aruco_roll=zedPosition->aruco_roll;
-    position.aruco_pitch=zedPosition->aruco_pitch;
-    position.aruco_yaw=zedPosition->aruco_yaw;
-    position.arucoVisible=zedPosition->aruco_visible;
-    position.x_acc = zedPosition->x_acc;
-    position.y_acc = zedPosition->y_acc;
-    position.z_acc = zedPosition->z_acc;
-    position.x_vel = zedPosition->x_vel;
-    position.y_vel = zedPosition->y_vel;
-    position.z_vel = zedPosition->z_vel;
-    position.arucoInitialized = zedPosition->aruco_initialized;
-
-    if(!zedInit)
-        zedInit = true;
-    
-    automation->setPosition(position);
-	zedPrevious = std::chrono::high_resolution_clock::now();
-}
-
-
-/** @brief Callback function for the LinearOut topic
- * 
- * @param LinearStatus 
- */
-void linearStatus1Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
-    automation->setLinear1(linearStatus);
-}
-
-
-/** @brief Callback function for the linearStatus topic
- * 
- * @param LinearStatus 
- */
-void linearStatus2Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
-    automation->setLinear2(linearStatus);
-}
-
-
-/** @brief Callback function for the linearStatus topic
- * 
- * @param LinearStatus 
- */
-void linearStatus3Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
-    automation->setLinear3(linearStatus);
-}
-
-
-/** @brief Callback function for the linearStatus topic
- * 
- * @param LinearStatus 
- */
-void linearStatus4Callback(const messages::msg::LinearStatus::SharedPtr linearStatus){
-    automation->setLinear4(linearStatus);
-}
-
-
-void talon1Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
-    automation->setTalon1(talonStatus);
-    talon1Previous = std::chrono::high_resolution_clock::now();
-}
-
-void talon2Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
-    automation->setTalon2(talonStatus);
-    talon2Previous = std::chrono::high_resolution_clock::now();
-}
-
-void talon3Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
-    automation->setTalon3(talonStatus);
-    talon3Previous = std::chrono::high_resolution_clock::now();
-}
-
-void talon4Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
-    automation->setTalon4(talonStatus);
-    talon4Previous = std::chrono::high_resolution_clock::now();
-}
-
-
-void falcon1Callback(const messages::msg::FalconStatus::SharedPtr falconOut){
-    automation->setFalcon1(falconOut);
-    falcon1Previous = std::chrono::high_resolution_clock::now();
-}
-
-void falcon2Callback(const messages::msg::FalconStatus::SharedPtr falconOut){
-    automation->setFalcon2(falconOut);
-    falcon2Previous = std::chrono::high_resolution_clock::now();
-}
-
-void falcon3Callback(const messages::msg::FalconStatus::SharedPtr falconOut){
-    automation->setFalcon3(falconOut);
-    falcon3Previous = std::chrono::high_resolution_clock::now();
-}
-
-void falcon4Callback(const messages::msg::FalconStatus::SharedPtr falconOut){
-    automation->setFalcon4(falconOut);
-    falcon4Previous = std::chrono::high_resolution_clock::now();
 }
 
 
@@ -585,79 +408,21 @@ T getParameter(const std::string& parameterName, const char* initialValue){
 	return getParameter<T>(parameterName, std::string(initialValue));
 }
 
-
-bool checkTimes(){
-    auto finish = std::chrono::high_resolution_clock::now();
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-zedPrevious).count() > 1000 || !zedInit){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Zed hasn't updated in time.");
-        return false;
-    }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-talon1Previous).count() > 150){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Talon1 hasn't updated in time.");
-        return false;
-    }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-talon3Previous).count() > 150){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Talon3 hasn't updated in time.");
-        return false;
-    }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon1Previous).count() > 200){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon1 hasn't updated in time.");
-        return false;
-    }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon2Previous).count() > 200){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon2 hasn't updated in time.");
-        return false;
-    }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon3Previous).count() > 200){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon3 hasn't updated in time.");
-        return false;
-    }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon4Previous).count() > 200){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon4 hasn't updated in time.");
-        return false;
-    }
-    return true;
-}
-
-
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("logic");
 
-    std::string mapUsed = getParameter<std::string>("map", "NASA");
-    bool turnLeft = getParameter<bool>("turnLeft", false);
     printData = getParameter<bool>("print_data", false);
-    automation = new Automation1();
-    automation->setMap(mapUsed);
-    automation->setTurnLeft(turnLeft);
-    automation->setNode(nodeHandle);
 
     auto joystickAxisSubscriber= nodeHandle->create_subscription<messages::msg::AxisState>("joystick_axis",1,joystickAxisCallback);
     auto joystickButtonSubscriber= nodeHandle->create_subscription<messages::msg::ButtonState>("joystick_button",1,joystickButtonCallback);
     auto joystickHatSubscriber= nodeHandle->create_subscription<messages::msg::HatState>("joystick_hat",1,joystickHatCallback);
     auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
-    auto zedPositionSubscriber= nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
     
-    auto linearStatus1Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus1",1,linearStatus1Callback);
-    auto linearStatus2Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus2",1,linearStatus2Callback);
-    auto linearStatus3Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus3",1,linearStatus3Callback);
-    auto linearStatus4Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus4",1,linearStatus4Callback);
-    
-    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,talon1Callback);
-    auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_15_info",1,talon2Callback);
-    auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,talon3Callback);
-    auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,talon4Callback);
-    
-    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_10_info",1,falcon1Callback);
-    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_11_info",1,falcon2Callback);
-    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_12_info",1,falcon3Callback);
-    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_13_info",1,falcon4Callback);
-
     driveLeftSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_left_speed",1);
     driveRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
     armSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("arm_speed",1);
     bucketSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("bucket_speed",1);
-    automationGoPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
     userLeftSpeedPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("user_left_speed",1);
     userRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("user_right_speed",1);
 
@@ -668,10 +433,6 @@ int main(int argc, char **argv){
     rclcpp::Rate rate(30);
     while(rclcpp::ok()){
 		auto finish = std::chrono::high_resolution_clock::now();
-        if(automationGo){
-            automation->automate();
-        }
-        automation->publishAutomationStatus();
         rclcpp::spin_some(nodeHandle);
         logicHeartbeatPublisher->publish(heartbeat);
         rate.sleep();
