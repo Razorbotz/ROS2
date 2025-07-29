@@ -222,6 +222,8 @@ int main(int argc,char** argv){
 	int motorNumber = getParameter<int>("motor_number", 1);
 	int portNumber = getParameter<int>("diagnostics_port", 1);
 	c_Phoenix_Diagnostics_Create1(portNumber);
+	std::this_thread::sleep_for(std::chrono::milliseconds(15000));
+
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
 	std::string userTopic = getParameter<std::string>("user_topic", "unset");

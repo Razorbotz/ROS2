@@ -221,7 +221,8 @@ int main(int argc,char** argv){
 	int portNumber = getParameter<int>("diagnostics_port", 1);
 	//c_SetPhoenixDiagnosticsStartTime(-1); //Disables the Phoenix Diagnostics server, but does not allow the Talons to run
 	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
-	
+	std::this_thread::sleep_for(std::chrono::milliseconds(15000));
+
 	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
 	std::string potentiometerTopic = getParameter<std::string>("potentiometer_topic", "unset");
 	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
