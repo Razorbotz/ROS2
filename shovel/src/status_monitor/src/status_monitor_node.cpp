@@ -213,15 +213,14 @@ void switchInterfaces(){
             RCLCPP_INFO(nodeHandle->get_logger(), "killCommand: %s", killCommand.c_str());
             RCLCPP_INFO(nodeHandle->get_logger(), "startCommand: %s", startCommand.c_str());
             int result = 0;
-            //result = std::system(killCommand.c_str());
+            result = std::system(killCommand.c_str());
             if (result == 0) {
                 RCLCPP_INFO(nodeHandle->get_logger(), "Killed process with kill command");
             }
-            //result = std::system(startCommand.c_str());
-            if(result == 0){
-                RCLCPP_INFO(nodeHandle->get_logger(), "Started process with start command");
-            }
-
+            std::thread([startCommand]() {
+                std::system(startCommand.c_str());
+            }).detach();
+            RCLCPP_INFO(nodeHandle->get_logger(), "Started process with start command");
         }
     }
 }
