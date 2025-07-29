@@ -15,7 +15,7 @@ def generate_launch_description():
         ,
         Node(
             package='talon',
-            name='arm_1',
+            name='Talon14',
             executable='talon_node',
             parameters=[
                 {"motor_number": 14},
@@ -39,7 +39,7 @@ def generate_launch_description():
         ,
         Node(
             package='talon',
-            name='bucket_1',
+            name='Talon16',
             executable='talon_node',
             parameters=[
                 {"motor_number": 16},
