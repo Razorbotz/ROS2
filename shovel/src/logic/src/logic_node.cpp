@@ -82,6 +82,11 @@ float joystick1Pitch=0;
 float joystick1Yaw=0;
 float joystick1Throttle=0;
 
+float joystick2Roll=0;
+float joystick2Pitch=0;
+float joystick2Yaw=0;
+float joystick2Throttle=0;
+
 float maxSpeed=0.4;
 
 bool excavationGo = false;
@@ -202,36 +207,60 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     //RCLCPP_INFO(nodeHandle->get_logger(),"Axis %d %d %f", axisState->joystick, axisState->axis, axisState->state);
     //RCLCPP_INFO(nodeHandle->get_logger(),"Axis %d %f %f %f %f", axisState->joystick, axisState->state0, axisState->state1, axisState->state2, axisState->state3);
     float deadZone = 0.1;
-    if(axisState->axis==0){
-        joystick1Roll = transformJoystickInfo(-axisState->state, deadZone);
-        updateSpeed();
+    if(axisState->joystick == 0){
+        if(axisState->axis==0){
+            joystick1Roll = transformJoystickInfo(-axisState->state, deadZone);
+            updateSpeed();
+        }
+        else if(axisState->axis==1){
+            joystick1Pitch = transformJoystickInfo(axisState->state, deadZone);
+            updateSpeed();
+        }
+        else if(axisState->axis==2){
+            joystick1Yaw = transformJoystickInfo(axisState->state, deadZone);
+            if(useController){
+                std_msgs::msg::Float32 armSpeed;
+                armSpeed.data = joystick1Yaw;
+                armSpeedPublisher->publish(armSpeed);
+            }
+            else{
+                std_msgs::msg::Float32 bucketSpeed;
+                bucketSpeed.data = joystick1Yaw;
+                bucketSpeedPublisher->publish(bucketSpeed);
+            }
+        }
+        else if(axisState->axis==3){
+            joystick1Throttle = axisState->state/2 + 0.5;
+            joystick1Throttle = transformJoystickInfo(joystick1Throttle, deadZone);
+            if(useController){
+                std_msgs::msg::Float32 bucketSpeed;
+                bucketSpeed.data = axisState->state;
+                bucketSpeedPublisher->publish(bucketSpeed);
+            }
+        }
     }
-    else if(axisState->axis==1){
-        joystick1Pitch = transformJoystickInfo(axisState->state, deadZone);
-        updateSpeed();
-    }
-    else if(axisState->axis==2){
-        joystick1Yaw = transformJoystickInfo(axisState->state, deadZone);
-        if(useController){
+    else if(axisState->joystick == 1){
+        if(axisState->axis==0){
+            joystick2Roll = transformJoystickInfo(-axisState->state, deadZone);
             std_msgs::msg::Float32 armSpeed;
-            armSpeed.data = joystick1Yaw;
+            armSpeed.data = joystick2Roll;
             armSpeedPublisher->publish(armSpeed);
         }
-        else{
+        else if(axisState->axis==1){
+            joystick2Pitch = transformJoystickInfo(axisState->state, deadZone);
             std_msgs::msg::Float32 bucketSpeed;
             bucketSpeed.data = joystick1Yaw;
             bucketSpeedPublisher->publish(bucketSpeed);
         }
-    }
-    else if(axisState->axis==3){
-        joystick1Throttle = axisState->state/2 + 0.5;
-        joystick1Throttle = transformJoystickInfo(joystick1Throttle, deadZone);
-        if(useController){
-            std_msgs::msg::Float32 bucketSpeed;
-            bucketSpeed.data = axisState->state;
-            bucketSpeedPublisher->publish(bucketSpeed);
+        else if(axisState->axis==2){
+            joystick2Yaw = transformJoystickInfo(axisState->state, deadZone);
+        }
+        else if(axisState->axis==3){
+            joystick2Throttle = axisState->state/2 + 0.5;
+            joystick2Throttle = transformJoystickInfo(joystick2Throttle, deadZone);
         }
     }
+    
 }
 
 /** @brief Callback function for joystick buttons
@@ -251,16 +280,9 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
 
         case 0:
             break;
-        case 1: //toggles driving and digging
+        case 1:
             break;
         case 2:
-            if(buttonState->state){ 
-                armSpeed.data = -1.0; 
-            }
-            else{
-                armSpeed.data = 0.0;
-            }
-            armSpeedPublisher->publish(armSpeed);
             if(printData)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
             break;
@@ -269,13 +291,6 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
             break;
         case 4:
-            if(buttonState->state){
-                armSpeed.data = 1.0;
-            }
-            else{
-                armSpeed.data = 0.0;
-            }
-            armSpeedPublisher->publish(armSpeed);
             if(printData)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 5");
             break;
