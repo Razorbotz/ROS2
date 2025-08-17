@@ -94,6 +94,7 @@ bool printData = false;
 bool zedInit = false;
 bool useSpeed = false;
 bool useController = false;
+bool twoControllers = false;
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
@@ -224,9 +225,11 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
                 armSpeedPublisher->publish(armSpeed);
             }
             else{
-                std_msgs::msg::Float32 bucketSpeed;
-                bucketSpeed.data = joystick1Yaw;
-                bucketSpeedPublisher->publish(bucketSpeed);
+                if(!twoControllers){
+                    std_msgs::msg::Float32 bucketSpeed;
+                    bucketSpeed.data = joystick1Yaw;
+                    bucketSpeedPublisher->publish(bucketSpeed);
+                }
             }
         }
         else if(axisState->axis==3){
@@ -240,17 +243,20 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
         }
     }
     else if(axisState->joystick == 1){
+        if(!twoControllers){
+            twoControllers = true;
+        }
         if(axisState->axis==0){
             joystick2Roll = transformJoystickInfo(-axisState->state, deadZone);
-            std_msgs::msg::Float32 armSpeed;
-            armSpeed.data = joystick2Roll;
-            armSpeedPublisher->publish(armSpeed);
+            std_msgs::msg::Float32 bucketSpeed;
+            bucketSpeed.data = joystick2Roll;
+            bucketSpeedPublisher->publish(bucketSpeed);
         }
         else if(axisState->axis==1){
             joystick2Pitch = transformJoystickInfo(axisState->state, deadZone);
-            std_msgs::msg::Float32 bucketSpeed;
-            bucketSpeed.data = joystick1Yaw;
-            bucketSpeedPublisher->publish(bucketSpeed);
+            std_msgs::msg::Float32 armSpeed;
+            armSpeed.data = joystick2Pitch;
+            armSpeedPublisher->publish(armSpeed);
         }
         else if(axisState->axis==2){
             joystick2Yaw = transformJoystickInfo(axisState->state, deadZone);

@@ -681,7 +681,7 @@ int main(int argc, char **argv){
 
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
-    rclcpp::Rate rate(30);
+    rclcpp::Rate rate(90);
     while(rclcpp::ok()){
         try{
             bytesRead = recvfrom(server_fd, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen);
