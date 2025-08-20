@@ -24,6 +24,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(messages REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(utils REQUIRED)
 
 find_package(ZED 4 REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -64,4 +65,5 @@ ament_target_dependencies(${PROJECT_NAME}_node
         messages
 	cv_bridge
 	image_transport
+    utils
 )

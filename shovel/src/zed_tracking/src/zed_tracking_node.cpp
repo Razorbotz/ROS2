@@ -16,6 +16,7 @@
 #include <unistd.h> 
 #include <fcntl.h>
 #include <cstdlib>
+#include "utils/utils.hpp"
 
 #define ROW_COUNT 10
 rclcpp::Node::SharedPtr nodeHandle;
@@ -57,34 +58,6 @@ bool printData = false;
  * 
  * 
  * */
-
-
- /** @brief Function to get the value of the specified parameter
- * 
- * Function that takes a string as a parameter containing the
- * name of the parameter that is being parsed from the launch
- * file and the initial value of the parameter as inputs, then
- * gets the parameter, casts it as the desired type, displays 
- * the value of the parameter on the command line and the log 
- * file, then returns the parsed value of the parameter.
- * @param parametername String of the name of the parameter
- * @param initialValue Initial value of the parameter
- * @return value Value of the parameter
- * */
-template <typename T>
-T getParameter(std::string parameterName, T initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value = param.template get_value<T>();
-	std::cout << parameterName << ": " << value << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
-	return value;
-}
-
-template <typename T>
-T getParameter(const std::string& parameterName, const char* initialValue){
-	return getParameter<T>(parameterName, std::string(initialValue));
-}
 
 
 bool isTagValidForReset(const std::vector<cv::Point2f> &corners, const cv::Size &image_size, float ratio = 0.05) {
@@ -214,10 +187,10 @@ int main(int argc, char **argv) {
 
     RCLCPP_INFO(nodeHandle->get_logger(),"Starting zed_tracking");
 
-    std::string resolution = getParameter<std::string>("resolution", "VGA");
-    double xOffset = getParameter<double>("xOffset", 0.0);
-	killKey = getParameter<int>("kill_key", 0);
-    printData = getParameter<bool>("print_Data", false);
+    std::string resolution = utils::getParameter<std::string>(nodeHandle, "resolution", "VGA");
+    double xOffset = utils::getParameter<double>(nodeHandle, "xOffset", 0.0);
+	killKey = utils::getParameter<int>(nodeHandle, "kill_key", 0);
+    printData = utils::getParameter<bool>(nodeHandle, "print_Data", false);
 
     messages::msg::ZedPosition zedPosition;
     auto zedPositionPublisher=nodeHandle->create_publisher<messages::msg::ZedPosition>("zed_position",1);

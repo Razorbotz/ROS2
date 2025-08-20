@@ -17,6 +17,7 @@
 
 #include "power_distribution_panel/PowerDistributionPanel.hpp"
 #include "messages/msg/power.hpp"
+#include "utils/utils.hpp"
 
 rclcpp::Node::SharedPtr nodeHandle;
 
@@ -33,38 +34,12 @@ rclcpp::Node::SharedPtr nodeHandle;
  * 
  * */
 
- /** @brief Function to get the value of the specified parameter
- * 
- * Function that takes a string as a parameter containing the
- * name of the parameter that is being parsed from the launch
- * file and the initial value of the parameter as inputs, then
- * gets the parameter, casts it as the desired type, displays 
- * the value of the parameter on the command line and the log 
- * file, then returns the parsed value of the parameter.
- * @param parametername String of the name of the parameter
- * @param initialValue Initial value of the parameter
- * @return value Value of the parameter
- * */
-template <typename T>
-T getParameter(std::string parameterName, T initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value = param.template get_value<T>();
-	std::cout << parameterName << ": " << value << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
-	return value;
-}
-
-template <typename T>
-T getParameter(const std::string& parameterName, const char* initialValue){
-	return getParameter<T>(parameterName, std::string(initialValue));
-}
 
 int main(int argc, char **argv){
 
 	rclcpp::init(argc,argv);
 	nodeHandle = rclcpp::Node::make_shared("power_distribution_panel");
-	std::string can_interface = getParameter<std::string>("can_interface", "can0");
+	std::string can_interface = utils::getParameter<std::string>(nodeHandle, "can_interface", "can0");
 
 	auto publisher = nodeHandle->create_publisher<messages::msg::Power>("power", 1);
 	messages::msg::Power power;

@@ -39,6 +39,7 @@
 #include <ctre/phoenix/cci/Diagnostics_CCI.h>
 
 #include "messages/msg/talon_status.hpp"
+#include "utils/utils.hpp"
 
 using namespace ctre::phoenix;
 using namespace ctre::phoenix::platform;
@@ -155,35 +156,6 @@ void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
 }
 
 
-
-/** @brief Function to get the value of the specified parameter
- * 
- * Function that takes a string as a parameter containing the
- * name of the parameter that is being parsed from the launch
- * file and the initial value of the parameter as inputs, then
- * gets the parameter, casts it as the desired type, displays 
- * the value of the parameter on the command line and the log 
- * file, then returns the parsed value of the parameter.
- * @param parametername String of the name of the parameter
- * @param initialValue Initial value of the parameter
- * @return value Value of the parameter
- * */
-template <typename T>
-T getParameter(std::string parameterName, T initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value = param.template get_value<T>();
-	std::cout << parameterName << ": " << value << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
-	return value;
-}
-
-template <typename T>
-T getParameter(const std::string& parameterName, const char* initialValue){
-	return getParameter<T>(parameterName, std::string(initialValue));
-}
-
-
 void checkTemperature(double temperature){
 	switch(op_mode){
 		case 0:
@@ -217,28 +189,28 @@ int main(int argc,char** argv){
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting talon");
 	//int success;
 
-	int motorNumber = getParameter<int>("motor_number", 1);
-	int portNumber = getParameter<int>("diagnostics_port", 1);
+	int motorNumber = utils::getParameter<int>(nodeHandle, "motor_number", 1);
+	int portNumber = utils::getParameter<int>(nodeHandle, "diagnostics_port", 1);
 	//c_SetPhoenixDiagnosticsStartTime(-1); //Disables the Phoenix Diagnostics server, but does not allow the Talons to run
 	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
 	std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 
-	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
-	std::string potentiometerTopic = getParameter<std::string>("potentiometer_topic", "unset");
-	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
-	std::string positionTopic = getParameter<std::string>("position_topic", "unset");
+	std::string infoTopic = utils::getParameter<std::string>(nodeHandle, "info_topic", "unset");
+	std::string potentiometerTopic = utils::getParameter<std::string>(nodeHandle, "potentiometer_topic", "unset");
+	std::string speedTopic = utils::getParameter<std::string>(nodeHandle, "speed_topic", "unset");
+	std::string positionTopic = utils::getParameter<std::string>(nodeHandle, "position_topic", "unset");
 
-	bool invertMotor = getParameter<bool>("invert_motor", false);
-	double kP = getParameter<double>("kP", 1.0);
-	double kI = getParameter<double>("kI", 0.0);
-	double kD = getParameter<double>("kD", 0.0);
-	double kF = getParameter<double>("kF", 0.0);
-	int publishingDelay = getParameter<int>("publishing_delay", 0);
-	killKey = getParameter<int>("kill_key", 0);
-	op_mode = getParameter<int>("op_mode", 0);
-	printData = getParameter<bool>("print_data", false);
-	std::string can_interface = getParameter<std::string>("can_interface", "can0");
-	resetString = getParameter<std::string>("reset_topic", "1");
+	bool invertMotor = utils::getParameter<bool>(nodeHandle, "invert_motor", false);
+	double kP = utils::getParameter<double>(nodeHandle, "kP", 1.0);
+	double kI = utils::getParameter<double>(nodeHandle, "kI", 0.0);
+	double kD = utils::getParameter<double>(nodeHandle, "kD", 0.0);
+	double kF = utils::getParameter<double>(nodeHandle, "kF", 0.0);
+	int publishingDelay = utils::getParameter<int>(nodeHandle, "publishing_delay", 0);
+	killKey = utils::getParameter<int>(nodeHandle, "kill_key", 0);
+	op_mode = utils::getParameter<int>(nodeHandle, "op_mode", 0);
+	printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
+	std::string can_interface = utils::getParameter<std::string>(nodeHandle, "can_interface", "can0");
+	resetString = utils::getParameter<std::string>(nodeHandle, "reset_topic", "1");
 
 	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
@@ -337,6 +309,12 @@ int main(int argc,char** argv){
 		||	std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100 ){
 			if(TEMP_DISABLE){
 				RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
+			}
+			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
+				RCLCPP_INFO(nodeHandle->get_logger(),"comm disable");
+			}
+			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100){
+				RCLCPP_INFO(nodeHandle->get_logger(),"logic disable");
 			}
 			talonSRX->Set(ControlMode::PercentOutput, 0.0);
 			GO = false;

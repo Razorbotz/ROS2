@@ -18,6 +18,7 @@
 #include <messages/msg/talon_out.hpp>
 #include <messages/msg/falcon_out.hpp>
 #include <messages/msg/linear_out.hpp>
+#include "utils/utils.hpp"
 
 
 /*
@@ -249,13 +250,13 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
                 twoControllers = true;
             }
             if(axisState->axis==0){
-                joystick2Roll = transformJoystickInfo(-axisState->state, deadZone);
+                joystick2Roll = transformJoystickInfo(axisState->state, deadZone);
                 std_msgs::msg::Float32 bucketSpeed;
                 bucketSpeed.data = joystick2Roll;
                 bucketSpeedPublisher->publish(bucketSpeed);
             }
             else if(axisState->axis==1){
-                joystick2Pitch = transformJoystickInfo(axisState->state, deadZone);
+                joystick2Pitch = transformJoystickInfo(-axisState->state, deadZone);
                 std_msgs::msg::Float32 armSpeed;
                 armSpeed.data = joystick2Pitch;
                 armSpeedPublisher->publish(armSpeed);
@@ -467,39 +468,11 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     }
 }
 
-
-/** @brief Function to get the value of the specified parameter
- * 
- * Function that takes a string as a parameter containing the
- * name of the parameter that is being parsed from the launch
- * file and the initial value of the parameter as inputs, then
- * gets the parameter, casts it as the desired type, displays 
- * the value of the parameter on the command line and the log 
- * file, then returns the parsed value of the parameter.
- * @param parametername String of the name of the parameter
- * @param initialValue Initial value of the parameter
- * @return value Value of the parameter
- * */
-template <typename T>
-T getParameter(std::string parameterName, T initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value = param.template get_value<T>();
-	std::cout << parameterName << ": " << value << std::endl;
-	RCLCPP_INFO(nodeHandle->get_logger(), param.value_to_string().c_str());
-	return value;
-}
-
-template <typename T>
-T getParameter(const std::string& parameterName, const char* initialValue){
-	return getParameter<T>(parameterName, std::string(initialValue));
-}
-
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("logic");
 
-    printData = getParameter<bool>("print_data", false);
+    printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
 
     auto joystickAxisSubscriber= nodeHandle->create_subscription<messages::msg::AxisState>("joystick_axis",1,joystickAxisCallback);
     auto joystickButtonSubscriber= nodeHandle->create_subscription<messages::msg::ButtonState>("joystick_button",1,joystickButtonCallback);
