@@ -40,6 +40,7 @@
 
 #include "messages/msg/talon_status.hpp"
 #include "utils/utils.hpp"
+#include <cmath>
 
 using namespace ctre::phoenix;
 using namespace ctre::phoenix::platform;
@@ -147,8 +148,10 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
 	if(speed->data != Speed){
-		talonSRX->Set(ControlMode::PercentOutput, speed->data);
-		Speed = speed->data;
+		if(std::abs(speed->data - Speed) > 0.05){
+			talonSRX->Set(ControlMode::PercentOutput, speed->data);
+			Speed = speed->data;
+		}
 	}
 }
 
