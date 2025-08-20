@@ -293,6 +293,7 @@ void publishSpeeds(){
     speed2.data = linear2.speed;
     talon15Publisher->publish(speed2);
     linear2.previousSpeed = linear2.speed;
+    RCLCPP_INFO(nodeHandle->get_logger(), "Arm Speeds: %f, %f", linear1.speed, linear2.speed);
 }
 
 
@@ -312,6 +313,7 @@ void publishSpeeds2(){
     speed2.data = linear4.speed;
     talon17Publisher->publish(speed2);
     linear4.previousSpeed = linear4.speed;
+    RCLCPP_INFO(nodeHandle->get_logger(), "Bucket Speeds: %f, %f", linear3.speed, linear4.speed);
 }
 
 
