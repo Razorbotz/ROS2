@@ -149,15 +149,20 @@ void logicHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
-	talonFX->Set(ControlMode::PercentOutput, speed->data);
-	Speed = speed->data;
+	if(speed->data != Speed){
+		talonFX->Set(ControlMode::PercentOutput, speed->data);
+		Speed = speed->data;
+	}
 }
 
 void userSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
-	double targetVelocity_RPM = 6000 * speed->data; 
-	talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
+	if(speed->data != Speed){
+		double targetVelocity_RPM = 6000 * speed->data; 
+		talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
+		Speed = speed->data;
+	}
 }
 
 

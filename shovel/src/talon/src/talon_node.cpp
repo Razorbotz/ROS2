@@ -82,6 +82,7 @@ std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
 std::chrono::time_point<std::chrono::high_resolution_clock> logicPrevious;
 bool printData = false;
 std::string resetString = "";
+double Speed = 0.0;
 
 /** @brief STOP Callback
  * 
@@ -145,7 +146,10 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
-	talonSRX->Set(ControlMode::PercentOutput, speed->data);
+	if(speed->data != Speed){
+		talonSRX->Set(ControlMode::PercentOutput, speed->data);
+		Speed = speed->data;
+	}
 }
 
 void positionCallback(const std_msgs::msg::Int32::SharedPtr position){

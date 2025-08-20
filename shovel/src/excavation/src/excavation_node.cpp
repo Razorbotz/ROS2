@@ -637,7 +637,6 @@ void potentiometer4Callback(const messages::msg::TalonStatus::SharedPtr msg){
  * */
 void armSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     currentArmSpeed = speed->data;
-    RCLCPP_INFO(nodeHandle->get_logger(),"currentArmSpeed: %f", currentArmSpeed);
     if(!single_arm){
         setSpeeds(&linear1, &linear2, currentArmSpeed);
     }
@@ -645,7 +644,6 @@ void armSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
         linear1.speed = speed->data;
     }
     publishSpeeds();
-    RCLCPP_INFO(nodeHandle->get_logger(),"Arm speeds: %f, %f", linear1.speed, linear2.speed);
 }
 
 
@@ -659,7 +657,6 @@ void armSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
  * */
 void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     currentBucketSpeed = speed->data;
-    RCLCPP_INFO(nodeHandle->get_logger(),"currentSpeed: %f", currentBucketSpeed);
     if(!single_arm){
         setSpeeds(&linear3, &linear4, currentBucketSpeed);
     }
@@ -667,7 +664,6 @@ void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
         linear3.speed = speed->data;
     }
     publishSpeeds2();
-    RCLCPP_INFO(nodeHandle->get_logger(),"Bucket speeds: %f, %f", linear3.speed, linear4.speed);
 
 }
 
