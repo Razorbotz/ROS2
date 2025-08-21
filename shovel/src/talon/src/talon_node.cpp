@@ -83,7 +83,6 @@ std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
 std::chrono::time_point<std::chrono::high_resolution_clock> logicPrevious;
 bool printData = false;
 std::string resetString = "";
-double Speed = 0.0;
 
 /** @brief STOP Callback
  * 
@@ -125,7 +124,6 @@ void logicHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
 
 TalonSRX* talonSRX;
 bool TEMP_DISABLE = false;
-auto previousTime = std::chrono::high_resolution_clock::now();
 
 // Operating modes:
 // 0 - Normal
@@ -147,15 +145,9 @@ int killKey = 0;
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
-	auto now = std::chrono::high_resolution_clock::now();
+	RCLCPP_INFO(nodeHandle->get_logger(), "Talon Speed: %f", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
-	if(speed->data != Speed && std::chrono::duration_cast<std::chrono::milliseconds>(previousTime-now).count() > 50){
-		if(std::abs(speed->data - Speed) > 0.05){
-			talonSRX->Set(ControlMode::PercentOutput, speed->data);
-			Speed = speed->data;
-			previousTime = now;
-		}
-	}
+	talonSRX->Set(ControlMode::PercentOutput, speed->data);
 }
 
 void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
