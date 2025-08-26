@@ -1,6 +1,15 @@
 #pragma once
 #include <string>
 #include <rclcpp/rclcpp.hpp>
+#include <iostream>
+#include <cstring>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <linux/can.h>
+#include <linux/can/raw.h>
 
 namespace utils {
 
@@ -31,4 +40,5 @@ namespace utils {
 		return getParameter<T>(nodeHandle, parameterName, std::string(initialValue));
 	}
 
+	void set_speed_frame(struct can_frame* frame, int motorNumber, float speed);
 }

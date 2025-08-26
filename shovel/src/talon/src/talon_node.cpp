@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <typeinfo>
 
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -41,6 +40,12 @@
 #include "messages/msg/talon_status.hpp"
 #include "utils/utils.hpp"
 #include <cmath>
+
+#include <cstring>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <linux/can.h>
+#include <linux/can/raw.h>
 
 using namespace ctre::phoenix;
 using namespace ctre::phoenix::platform;
@@ -83,6 +88,10 @@ std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
 std::chrono::time_point<std::chrono::high_resolution_clock> logicPrevious;
 bool printData = false;
 std::string resetString = "";
+int motorNumber = 0;
+
+struct can_frame enable_frame;
+struct can_frame speed_frame;
 
 /** @brief STOP Callback
  * 
@@ -147,7 +156,8 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	RCLCPP_INFO(nodeHandle->get_logger(), "Talon Speed: %f", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
-	talonSRX->Set(ControlMode::PercentOutput, speed->data);
+	//talonSRX->Set(ControlMode::PercentOutput, speed->data);
+	utils::set_speed_frame(&speed_frame, motorNumber, speed->data);
 }
 
 void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
@@ -191,7 +201,7 @@ int main(int argc,char** argv){
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting talon");
 	//int success;
 
-	int motorNumber = utils::getParameter<int>(nodeHandle, "motor_number", 1);
+	motorNumber = utils::getParameter<int>(nodeHandle, "motor_number", 1);
 	int portNumber = utils::getParameter<int>(nodeHandle, "diagnostics_port", 1);
 	//c_SetPhoenixDiagnosticsStartTime(-1); //Disables the Phoenix Diagnostics server, but does not allow the Talons to run
 	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
@@ -216,6 +226,45 @@ int main(int argc,char** argv){
 
 	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
+
+	int s;
+    struct sockaddr_can addr;
+    struct ifreq ifr;
+
+	enable_frame.can_id  = 0x000401BF;
+	enable_frame.can_id |= CAN_EFF_FLAG;
+    enable_frame.can_dlc = 8;
+    enable_frame.data[0] = 0x01;
+    enable_frame.data[1] = 0x00;
+    enable_frame.data[2] = 0x00;
+    enable_frame.data[3] = 0x00;
+    enable_frame.data[4] = 0x00;
+    enable_frame.data[5] = 0x00;
+    enable_frame.data[6] = 0x00;
+    enable_frame.data[7] = 0x00;
+
+    // Open a socket
+    s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    if (s < 0) {
+        perror("Error while opening socket");
+        return 1;
+    }
+
+    // Specify the CAN interface
+    strcpy(ifr.ifr_name, "can0");
+    if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
+        perror("Error getting interface index");
+        return 1;
+    }
+
+    addr.can_family = AF_CAN;
+    addr.can_ifindex = ifr.ifr_ifindex;
+
+    // Bind the socket to the CAN interface
+    if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+        perror("Error in socket bind");
+        return 1;
+    }
 
 	int kTimeoutMs=30;
 	int kPIDLoopIdx=0;
@@ -262,13 +311,19 @@ int main(int argc,char** argv){
 	
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
-	rclcpp::Rate rate(30);
+	rclcpp::Rate rate(50);
 	auto start2 = std::chrono::high_resolution_clock::now();
 	auto start = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
 	double busVoltage = 0.0;
 
 	while(rclcpp::ok()){
+		if(GO){
+			if (write(s, &speed_frame, sizeof(speed_frame)) != sizeof(speed_frame)) {
+				perror("Speed write error");
+			}
+		}
+		
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
 
