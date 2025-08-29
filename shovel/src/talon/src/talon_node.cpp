@@ -91,6 +91,7 @@ std::string resetString = "";
 int motorNumber = 0;
 float curr_speed = 0.0;
 int numSleep = 0;
+int N = 0;
 
 /** @brief STOP Callback
  * 
@@ -157,7 +158,7 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	//std::cout << "---------->>>  " << speed->data << std::endl;
 	if(speed->data < 0){
 		talonSRX->Set(ControlMode::PercentOutput, -1.0);
-		numSleep = 10 - (int)(speed->data * 10);
+		numSleep = 10 + (int)(speed->data * 10);
 		curr_speed = -1.0;
 	}
 	else if(speed->data > 0){
@@ -167,9 +168,10 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	}
 	else{
 		talonSRX->Set(ControlMode::PercentOutput, 0.0);
-		numSleep = 10;
+		numSleep = 10;  
 		curr_speed = 0.0;
 	}
+	N = (int)(speed->data * 10);
 }
 
 void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
@@ -293,13 +295,16 @@ int main(int argc,char** argv){
 	int counter = 0;
 
 	while(rclcpp::ok()){
-		if(counter % 10 > numSleep){
-			talonSRX->Set(ControlMode::PercentOutput, 0.0);
-		}
-		else{
+		if ((counter * N) % 10 < N) {
 			talonSRX->Set(ControlMode::PercentOutput, curr_speed);
 		}
-		counter += 1;
+		else {
+			talonSRX->Set(ControlMode::PercentOutput, 0.0);
+		}
+
+		counter++;
+		if (counter >= 10)
+			counter = 0;
 		
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
