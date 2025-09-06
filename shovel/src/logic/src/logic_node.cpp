@@ -213,133 +213,42 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     //RCLCPP_INFO(nodeHandle->get_logger(),"Axis %d %d %f", axisState->joystick, axisState->axis, axisState->state);
     //RCLCPP_INFO(nodeHandle->get_logger(),"Axis %d %f %f %f %f", axisState->joystick, axisState->state0, axisState->state1, axisState->state2, axisState->state3);
     float deadZone = 0.1;
-    if(!useAltJoystick){
-        if(axisState->joystick == 0){
-            if(axisState->axis==0){
-                joystick1Roll = transformJoystickInfo(-axisState->state, deadZone);
-                updateSpeed();
-            }
-            else if(axisState->axis==1){
-                joystick1Pitch = transformJoystickInfo(axisState->state, deadZone);
-                updateSpeed();
-            }
-            else if(axisState->axis==2){
-                joystick1Yaw = transformJoystickInfo(axisState->state, deadZone);
-                if(useController){
-                    std_msgs::msg::Float32 armSpeed;
-                    armSpeed.data = joystick1Yaw;
-                    armSpeedPublisher->publish(armSpeed);
-                }
-                else{
-                    if(!twoControllers){
-                        std_msgs::msg::Float32 bucketSpeed;
-                        bucketSpeed.data = joystick1Yaw;
-                        bucketSpeedPublisher->publish(bucketSpeed);
-                    }
-                }
-            }
-            else if(axisState->axis==3){
-                joystick1Throttle = axisState->state/2 + 0.5;
-                joystick1Throttle = transformJoystickInfo(joystick1Throttle, deadZone);
-                if(useController){
-                    std_msgs::msg::Float32 bucketSpeed;
-                    bucketSpeed.data = axisState->state;
-                    bucketSpeedPublisher->publish(bucketSpeed);
-                }
-            }
+    if(axisState->joystick == 0){
+        if(axisState->axis==0){
+            joystick1Roll = transformJoystickInfo(-axisState->state, deadZone);
+            updateSpeed();
         }
-        else if(axisState->joystick == 1){
-            if(!twoControllers){
-                twoControllers = true;
-            }
-            if(axisState->axis==0){
-                joystick2Roll = transformJoystickInfo(axisState->state, deadZone);
-                if(std::abs(joystick2Roll - previousBucketSpeed) > 0.05){
-                    RCLCPP_INFO(nodeHandle->get_logger(), "Logic Bucket Speed: %f", joystick2Roll);
-                    std_msgs::msg::Float32 bucketSpeed;
-                    bucketSpeed.data = joystick2Roll;
-                    bucketSpeedPublisher->publish(bucketSpeed);
-                    previousBucketSpeed = joystick2Roll;
-                }
-            }
-            else if(axisState->axis==1){
-                joystick2Pitch = transformJoystickInfo(-axisState->state, deadZone);
-                if(std::abs(joystick2Pitch - previousArmSpeed) > 0.05){
-                    RCLCPP_INFO(nodeHandle->get_logger(), "Logic Arm Speed: %f", joystick2Pitch);
-                    std_msgs::msg::Float32 armSpeed;
-                    armSpeed.data = joystick2Pitch;
-                    armSpeedPublisher->publish(armSpeed);
-                    previousArmSpeed = joystick2Pitch;
-                }
-                
-            }
-            else if(axisState->axis==2){
-                joystick2Yaw = transformJoystickInfo(axisState->state, deadZone);
-            }
-            else if(axisState->axis==3){
-                joystick2Throttle = axisState->state/2 + 0.5;
-                joystick2Throttle = transformJoystickInfo(joystick2Throttle, deadZone);
-            }
+        else if(axisState->axis==1){
+            joystick1Pitch = transformJoystickInfo(axisState->state, deadZone);
+            updateSpeed();
+        }
+        else if(axisState->axis==2){
+            joystick1Yaw = transformJoystickInfo(axisState->state, deadZone);
+        }
+        else if(axisState->axis==3){
+            joystick1Throttle = axisState->state/2 + 0.5;
+            joystick1Throttle = transformJoystickInfo(joystick1Throttle, deadZone);
         }
     }
-    else{
-        if(axisState->joystick == 0){
-            if(axisState->axis==0){
-                joystick1Roll = transformJoystickInfo(-axisState->state, deadZone);
-                std_msgs::msg::Float32 speedLeft;
-                speedLeft.data = joystick1Roll;
-                speedLeft.data  = speedLeft.data * maxSpeed;
-                if(useSpeed){
-                    driveLeftSpeedPublisher->publish(speedLeft);
-                }
-                else{
-                    userLeftSpeedPublisher->publish(speedLeft);
-                }
-            }
-            else if(axisState->axis==1){
-                joystick1Pitch = transformJoystickInfo(axisState->state, deadZone);
-                std_msgs::msg::Float32 armSpeed;
-                armSpeed.data = joystick1Pitch;
-                armSpeedPublisher->publish(armSpeed);
-            }
-            else if(axisState->axis==2){
-                joystick1Yaw = transformJoystickInfo(axisState->state, deadZone);
-                
-            }
-            else if(axisState->axis==3){
-                joystick1Throttle = axisState->state/2 + 0.5;
-                joystick1Throttle = transformJoystickInfo(joystick1Throttle, deadZone);
-            }
+    else if(axisState->joystick == 1){
+        if(axisState->axis==0){
+            joystick2Roll = transformJoystickInfo(axisState->state, deadZone);
+            std_msgs::msg::Float32 bucketSpeed;
+            bucketSpeed.data = joystick2Roll;
+            bucketSpeedPublisher->publish(bucketSpeed);
         }
-        else if(axisState->joystick == 1){
-            if(!twoControllers){
-                twoControllers = true;
-            }
-            if(axisState->axis==0){
-                joystick2Roll = transformJoystickInfo(-axisState->state, deadZone);
-                std_msgs::msg::Float32 speedRight;
-                speedRight.data = joystick1Roll;
-                speedRight.data  = speedRight.data * maxSpeed;
-                if(useSpeed){
-                    driveRightSpeedPublisher->publish(speedRight);
-                }
-                else{
-                    userRightSpeedPublisher->publish(speedRight);
-                }
-            }
-            else if(axisState->axis==1){
-                joystick2Pitch = transformJoystickInfo(axisState->state, deadZone);
-                std_msgs::msg::Float32 bucketSpeed;
-                bucketSpeed.data = joystick2Roll;
-                bucketSpeedPublisher->publish(bucketSpeed);
-            }
-            else if(axisState->axis==2){
-                joystick2Yaw = transformJoystickInfo(axisState->state, deadZone);
-            }
-            else if(axisState->axis==3){
-                joystick2Throttle = axisState->state/2 + 0.5;
-                joystick2Throttle = transformJoystickInfo(joystick2Throttle, deadZone);
-            }
+        else if(axisState->axis==1){
+            joystick2Pitch = transformJoystickInfo(-axisState->state, deadZone);
+            std_msgs::msg::Float32 armSpeed;
+            armSpeed.data = joystick2Pitch;
+            armSpeedPublisher->publish(armSpeed);
+        }
+        else if(axisState->axis==2){
+            joystick2Yaw = transformJoystickInfo(axisState->state, deadZone);
+        }
+        else if(axisState->axis==3){
+            joystick2Throttle = axisState->state/2 + 0.5;
+            joystick2Throttle = transformJoystickInfo(joystick2Throttle, deadZone);
         }
     }
     
@@ -471,12 +380,6 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     }
     if(keyState->key==83 && keyState->state == 1){
         useSpeed = true;
-    }
-    if(keyState->key==2){
-        useController = true;
-    }
-    if(keyState->key==3){
-        useAltJoystick = true;
     }
 }
 
