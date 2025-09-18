@@ -17,6 +17,9 @@
 
 #include "power_distribution_panel/PowerDistributionPanel.hpp"
 #include "messages/msg/power.hpp"
+#include "utils/utils.hpp"
+
+rclcpp::Node::SharedPtr nodeHandle;
 
 /** @file
  * @brief Node publishing Power Distribution Panel info
@@ -31,10 +34,12 @@
  * 
  * */
 
+
 int main(int argc, char **argv){
 
 	rclcpp::init(argc,argv);
-	rclcpp::Node::SharedPtr nodeHandle = rclcpp::Node::make_shared("power_distribution_panel");
+	nodeHandle = rclcpp::Node::make_shared("power_distribution_panel");
+	std::string can_interface = utils::getParameter<std::string>(nodeHandle, "can_interface", "can0");
 
 	auto publisher = nodeHandle->create_publisher<messages::msg::Power>("power", 1);
 	messages::msg::Power power;
@@ -45,11 +50,11 @@ int main(int argc, char **argv){
 	struct can_frame frame;
 	struct ifreq ifr;
 
-	const char *ifname = "can0";
+	const char *ifname = can_interface.c_str();
 
 	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
-			perror("Error while opening socket");
-			return -1;
+		perror("Error while opening socket");
+		return -1;
 	}
 
 	strcpy(ifr.ifr_name, ifname);
@@ -69,14 +74,15 @@ int main(int argc, char **argv){
 	PowerDistributionPanel pdp = PowerDistributionPanel(1);
 
 	auto start = std::chrono::high_resolution_clock::now();
+	rclcpp::Rate rate(10);
 	while(rclcpp::ok()){
 		nbytes = read(s, &frame, sizeof(struct can_frame));
-                if(nbytes==-1) continue;
+		if(nbytes==-1) continue;
 
-                pdp.parseFrame(frame);
-//std::cout << pdp.getVoltage() << "   "  << pdp.getCurrentC(0)<< std::endl;
+		pdp.parseFrame(frame);
 		auto finish = std::chrono::high_resolution_clock::now();
-		if(std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count() > 250000000){
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > 100){
+			//std::cout << pdp.getVoltage() << "   "  << pdp.getCurrent(0)<< std::endl;
 			power.voltage=pdp.getVoltage();
 			power.temperature=pdp.getTemperature();
 			power.current0=pdp.getCurrent(0);
@@ -95,10 +101,12 @@ int main(int argc, char **argv){
 			power.current13=pdp.getCurrent(13);
 			power.current14=pdp.getCurrent(14);
 			power.current15=pdp.getCurrent(15);
-//std::cout << "sending " << power.voltage << std::endl;
+			//std::cout << "sending " << power.voltage << std::endl;
 			publisher->publish(power);
 			start = std::chrono::high_resolution_clock::now();
 		}
 		rclcpp::spin_some(nodeHandle);
+		rate.sleep();
 	}
+	rclcpp::shutdown();
 }

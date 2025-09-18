@@ -20,6 +20,7 @@
 #include <chrono>
 #include <linux/reboot.h>
 #include <sys/reboot.h>
+#include <cstdlib>
 
 
 #include <rclcpp/rclcpp.hpp>
@@ -27,6 +28,8 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <std_msgs/msg/empty.hpp>
+#include <messages/msg/key_state.hpp>
+#include <std_msgs/msg/string.hpp>
 
 #define Phoenix_No_WPI // remove WPI dependencies
 #include <ctre/Phoenix.h>
@@ -35,7 +38,8 @@
 #include <ctre/phoenix/cci/Unmanaged_CCI.h>
 #include <ctre/phoenix/cci/Diagnostics_CCI.h>
 
-#include "messages/msg/falcon_out.hpp"
+#include "messages/msg/falcon_status.hpp"
+#include "utils/utils.hpp"
 
 using namespace ctre::phoenix;
 using namespace ctre::phoenix::platform;
@@ -72,18 +76,25 @@ using namespace ctre::phoenix::motorcontrol::can;
 
 
 rclcpp::Node::SharedPtr nodeHandle;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String_<std::allocator<void> >, std::allocator<void> > > resetPublisher;
 bool GO=false;
 std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
+std::chrono::time_point<std::chrono::high_resolution_clock> logicPrevious;
 TalonFX* talonFX;
-bool useVelocity=false;
 bool TEMP_DISABLE = false;
-bool VOLT_DISABLE = false;
+float Speed = 0.0;
+bool error = false;
+bool restarted = false;
 
 // Operating modes:
 // 0 - Normal
 // 1 - Critical
 // 2 - Emergency 
 int op_mode = 0;
+int killKey = 0;
+bool printData = false;
+int errorCounter = 0;
+std::string resetString = "";
 
 /** @brief STOP Callback
  * 
@@ -95,14 +106,11 @@ int op_mode = 0;
  * @return void
  * */
 void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
-	RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
 	GO=false;
-	if(useVelocity){
-		talonFX->Set(ControlMode::Velocity, 0);
-	}
-	else{
-		talonFX->Set(ControlMode::PercentOutput, 0.0);
-	}
+	talonFX->Set(ControlMode::PercentOutput, 0.0);
+	Speed = 0.0;
 } 
 
 /** @brief GO Callback
@@ -115,7 +123,8 @@ void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
  * @return void
  * */
 void goCallback(std_msgs::msg::Empty::SharedPtr empty){
-	RCLCPP_INFO(nodeHandle->get_logger(),"GO");
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"GO");
 	GO=true;
 }
 
@@ -123,8 +132,9 @@ void commHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
 	commPrevious = std::chrono::high_resolution_clock::now();
 }
 
-int velocityMultiplier=0;
-int testSpeed=0;
+void logicHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
+	logicPrevious = std::chrono::high_resolution_clock::now();
+}
 
 /** @brief Speed Callback Function
  * 
@@ -137,67 +147,22 @@ int testSpeed=0;
  * @return void
  * */
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
-	RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
-	//std::cout << "---------->>>  " << speed->data << std::endl;
-
-	if(useVelocity){
-		talonFX->Set(ControlMode::Velocity, int(speed->data*velocityMultiplier));
-	}
-	else{
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
+	if(speed->data != Speed){
 		talonFX->Set(ControlMode::PercentOutput, speed->data);
+		Speed = speed->data;
 	}
 }
 
-/** @brief String parameter function
- * 
- * Function that takes a string as a parameter containing the
- * name of the parameter that is being parsed from the launch
- * file and the initial value of the parameter as inputs, then
- * gets the parameter, casts it as a string, displays the value
- * of the parameter on the command line and the log file, then
- * returns the parsed value of the parameter.
- * @param parametername String of the name of the parameter
- * @param initialValue Initial value of the parameter
- * @return value Value of the parameter
- * */
-template <typename T>
-T getParameter(std::string parameterName, std::string initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value = param.as_string();
-	std::cout << parameterName << ": " << value << std::endl;
-	std::string output = parameterName + ": " + value;
-	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
-	return value;
-}
-
-/** @brief Function to get the value of the specified parameter
- * 
- * Function that takes a string as a parameter containing the
- * name of the parameter that is being parsed from the launch
- * file and the initial value of the parameter as inputs, then
- * gets the parameter, casts it as the desired type, displays 
- * the value of the parameter on the command line and the log 
- * file, then returns the parsed value of the parameter.
- * @param parametername String of the name of the parameter
- * @param initialValue Initial value of the parameter
- * @return value Value of the parameter
- * */
-template <typename T>
-T getParameter(std::string parameterName, int initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value;
-	if(typeid(value).name() == typeid(int).name())
-		value = param.as_int();
-	if(typeid(value).name() == typeid(double).name())
-		value = param.as_double();
-	if(typeid(value).name() == typeid(bool).name())
-		value = param.as_bool();
-	std::cout << parameterName << ": " << value << std::endl;
-	std::string output = parameterName + ": " + std::to_string(value);
-	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
-	return value;
+void userSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
+	if(speed->data != Speed){
+		double targetVelocity_RPM = 6000 * speed->data; 
+		talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
+		Speed = speed->data;
+	}
 }
 
 
@@ -215,33 +180,13 @@ void checkTemperature(double temperature){
 	}
 }
 
-
-void checkVoltage(double voltage, double speed){
-	if(speed > 0){
-		switch(op_mode){
-			case 0:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 14.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 13 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
-	}
-	else{
-		switch(op_mode){
-			case 0:
-				voltage < 15.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
+void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
+    if(printData)
+		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
+	if(keyState->key == 98 && keyState->state==1){
+		std_msgs::msg::String reset;
+		reset.data = resetString;
+		resetPublisher->publish(reset);
 	}
 }
 
@@ -253,22 +198,27 @@ int main(int argc,char** argv){
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting talon");
 	//int success;
 
-	int motorNumber = getParameter<int>("motor_number", 1);
-	int portNumber = getParameter<int>("diagnostics_port", 1);
+	int motorNumber = utils::getParameter<int>(nodeHandle, "motor_number", 1);
+	int portNumber = utils::getParameter<int>(nodeHandle, "diagnostics_port", 1);
 	c_Phoenix_Diagnostics_Create1(portNumber);
-	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
-	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
-	bool invertMotor = getParameter<bool>("invert_motor", 0);
-	useVelocity = getParameter<bool>("use_velocity", 0);
-	velocityMultiplier = getParameter<int>("velocity_multiplier", 0);
-	testSpeed = getParameter<int>("test_speed", 0);
-	double kP = getParameter<double>("kP", 1);
-	double kI = getParameter<double>("kI", 0);
-	double kD = getParameter<double>("kD", 0);
-	double kF = getParameter<double>("kF", 0);
-	int publishingDelay = getParameter<int>("publishing_delay", 0);
+	std::this_thread::sleep_for(std::chrono::milliseconds(8000));
 
-	ctre::phoenix::platform::can::SetCANInterface("can0");
+	std::string infoTopic = utils::getParameter<std::string>(nodeHandle, "info_topic", "unset");
+	std::string speedTopic = utils::getParameter<std::string>(nodeHandle, "speed_topic", "unset");
+	std::string userTopic = utils::getParameter<std::string>(nodeHandle, "user_topic", "unset");
+	resetString = utils::getParameter<std::string>(nodeHandle, "reset_topic", "1");
+	bool invertMotor = utils::getParameter<bool>(nodeHandle, "invert_motor", false);
+	double kP = utils::getParameter<double>(nodeHandle, "kP", 1.0);
+	double kI = utils::getParameter<double>(nodeHandle, "kI", 0.0);
+	double kD = utils::getParameter<double>(nodeHandle, "kD", 0.0);
+	double kF = utils::getParameter<double>(nodeHandle, "kF", 0.0);
+	int publishingDelay = utils::getParameter<int>(nodeHandle, "publishing_delay", 0);
+	killKey = utils::getParameter<int>(nodeHandle, "kill_key", 0);
+	op_mode = utils::getParameter<int>(nodeHandle, "op_mode", 0);
+	printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
+	std::string can_interface = utils::getParameter<std::string>(nodeHandle, "can_interface", "can0");
+
+	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
 
 	int kTimeoutMs=30;
@@ -282,10 +232,8 @@ int main(int argc,char** argv){
 	else{
 		talonFX->SetInverted(TalonFXInvertType::Clockwise);
 	}
-	RCLCPP_INFO(nodeHandle->get_logger(),"here 1");
-
 	talonFX->SelectProfileSlot(0,0);
-	talonFX->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, kTimeoutMs);
+	talonFX->ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, kTimeoutMs);
 	talonFX->ConfigClosedloopRamp(2);
 	talonFX->ConfigNominalOutputForward(0, kTimeoutMs);
 	talonFX->ConfigNominalOutputReverse(0, kTimeoutMs);
@@ -298,36 +246,72 @@ int main(int argc,char** argv){
 	talonFX->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
 
 	talonFX->Set(ControlMode::PercentOutput, 0);
-	talonFX->Set(ControlMode::Velocity, 0);
 
-	RCLCPP_INFO(nodeHandle->get_logger(),"configured talon");
+	RCLCPP_INFO(nodeHandle->get_logger(),"configured falcon");
 
 	TalonFXConfiguration allConfigs;
 
-	messages::msg::FalconOut falconOut;
-	auto falconOutPublisher=nodeHandle->create_publisher<messages::msg::FalconOut>(infoTopic.c_str(),1);
+	ctre::phoenix::motorcontrol::SupplyCurrentLimitConfiguration supplyLimitConfig;
+    supplyLimitConfig.enable = true;
+    supplyLimitConfig.currentLimit = 70.0;
+    supplyLimitConfig.triggerThresholdCurrent = 75.0;
+    supplyLimitConfig.triggerThresholdTime = 0.1; 
+	talonFX->ConfigSupplyCurrentLimit(supplyLimitConfig, kTimeoutMs);
+
+	messages::msg::FalconStatus falconStatus;
+	auto falconStatusPublisher=nodeHandle->create_publisher<messages::msg::FalconStatus>(infoTopic.c_str(),1);
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
+	auto userSpeedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(userTopic.c_str(),1,userSpeedCallback);
+	resetPublisher=nodeHandle->create_publisher<std_msgs::msg::String>("reset_topic",1);
 
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
 	auto commHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("comm_heartbeat",1,commHeartbeatCallback);
-	
+	auto logicHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("logic_heartbeat",1,logicHeartbeatCallback);
+	auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
+
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
 	rclcpp::Rate rate(20);
 	auto start = std::chrono::high_resolution_clock::now();
+	auto errorTimer = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
+	double busVoltage = 0.0;
 	while(rclcpp::ok()){
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
 
+		if(error){
+			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-errorTimer).count() > 1500){
+				restarted = true;
+			}
+		}
+
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
 			int deviceID=talonFX->GetDeviceID();
-			double busVoltage=talonFX->GetBusVoltage();
+			busVoltage=talonFX->GetBusVoltage();
 			double outputCurrent=talonFX->GetOutputCurrent();
 			bool isInverted=talonFX->GetInverted();
 			double motorOutputVoltage=talonFX->GetMotorOutputVoltage();
 			double motorOutputPercent=talonFX->GetMotorOutputPercent();
+			if(Speed > 0.1 && motorOutputPercent == 0.0){
+				errorCounter++;
+				if(errorCounter > 5 && !error){
+					RCLCPP_INFO(nodeHandle->get_logger(), "Falcon %d ERROR", deviceID);
+					error = true;
+					errorTimer = std::chrono::high_resolution_clock::now();
+					std_msgs::msg::String reset;
+					reset.data = resetString;
+					resetPublisher->publish(reset);
+				}
+			}
+			else{
+				if(motorOutputPercent != 0.0){
+					error = false;
+					restarted = false;
+					errorCounter = 0;
+				}
+			}
 			double temperature=talonFX->GetTemperature();
 			int sensorPosition0=talonFX->GetSelectedSensorPosition(0);
 			int sensorVelocity0=talonFX->GetSelectedSensorVelocity(0);
@@ -335,30 +319,40 @@ int main(int argc,char** argv){
 			double integralAccumulator0=talonFX->GetIntegralAccumulator(0);
 			double errorDerivative0=talonFX->GetErrorDerivative(0);
 		
-			falconOut.device_id=deviceID;	
-			falconOut.bus_voltage=busVoltage;
-			falconOut.output_current=outputCurrent;
-			falconOut.output_voltage=motorOutputVoltage;
-			falconOut.output_percent=motorOutputPercent;
-			falconOut.temperature=temperature;
-			falconOut.sensor_position=sensorPosition0;
-			falconOut.sensor_velocity=sensorVelocity0;
-			falconOut.closed_loop_error=closedLoopError0;
-			falconOut.integral_accumulator=integralAccumulator0;
-			falconOut.error_derivative=errorDerivative0;
-			falconOut.temp_disable = TEMP_DISABLE;
-			falconOut.volt_disable = VOLT_DISABLE;
+			falconStatus.device_id=deviceID;	
+			falconStatus.bus_voltage=busVoltage;
+			falconStatus.output_current=outputCurrent;
+			falconStatus.output_voltage=motorOutputVoltage;
+			falconStatus.output_percent=motorOutputPercent;
+			falconStatus.temperature=temperature;
+			falconStatus.sensor_position=sensorPosition0;
+			falconStatus.sensor_velocity=sensorVelocity0;
+			falconStatus.closed_loop_error=closedLoopError0;
+			falconStatus.integral_accumulator=integralAccumulator0;
+			falconStatus.error_derivative=errorDerivative0;
+			falconStatus.temp_disable = TEMP_DISABLE;
+			falconStatus.error = error;
+			falconStatus.restarted = restarted;
 			if(outputCurrent > maxCurrent){
 				maxCurrent = outputCurrent;
 			}
-			falconOut.max_current = maxCurrent;
-			falconOutPublisher->publish(falconOut);
+			falconStatus.max_current = maxCurrent;
+			falconStatusPublisher->publish(falconStatus);
 			start = std::chrono::high_resolution_clock::now();
 			checkTemperature(temperature);
-			checkVoltage(busVoltage, motorOutputPercent);
 		}
 
-		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 ||  TEMP_DISABLE
+		||	std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100 ){
+			if(TEMP_DISABLE){
+				RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
+			}
+			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
+				RCLCPP_INFO(nodeHandle->get_logger(),"comm disable");
+			}
+			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100){
+				RCLCPP_INFO(nodeHandle->get_logger(),"logic disable");
+			}
 			talonFX->Set(ControlMode::PercentOutput, 0.0);
 			GO = false;
 		}

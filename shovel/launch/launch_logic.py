@@ -5,10 +5,11 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='logic',
-#            namespace='',
             name='logic',
-            executable='logic_node'
-#            node_executable='logic_node',
+            executable='logic_node',
+            parameters=[
+                {"print_data": True}
+            ],
             output={'stderr': 'screen', 'stdout': 'screen'}
         )
     ]

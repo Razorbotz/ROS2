@@ -5,12 +5,12 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='communication',
-            namespace='',
             name='communication',
             executable='communication_node',
             parameters=[
                 {"robot_name": "Shovel"}
-            ]
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'}
         )
     ]
 )

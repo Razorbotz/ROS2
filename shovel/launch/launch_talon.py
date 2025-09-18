@@ -15,8 +15,6 @@ def generate_launch_description():
                 {"invert_motor": True},
                 {"speed_topic": "drive_left_speed"},
                 {"info_topic": "talon_10_info"},
-                {"use_velocity": False},
-                {"velocity_multiplier": 3000},
                 {"test_speed": 100},
                 {"kP": 0.20},
                 {"kI": 0.000001},

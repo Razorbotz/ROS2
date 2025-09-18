@@ -1,4 +1,0 @@
-string robot_state
-string excavation_state
-string error_state
-string diagnostics_state

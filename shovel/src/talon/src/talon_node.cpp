@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <typeinfo>
 
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -20,7 +19,7 @@
 #include <chrono>
 #include <linux/reboot.h>
 #include <sys/reboot.h>
-
+#include <cstdlib>
 
 #include <rclcpp/rclcpp.hpp>
 //#include <rclcpp/console.h>
@@ -28,6 +27,8 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <std_msgs/msg/empty.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <messages/msg/key_state.hpp>
 
 #define Phoenix_No_WPI // remove WPI dependencies
 #include <ctre/Phoenix.h>
@@ -36,7 +37,15 @@
 #include <ctre/phoenix/cci/Unmanaged_CCI.h>
 #include <ctre/phoenix/cci/Diagnostics_CCI.h>
 
-#include "messages/msg/talon_out.hpp"
+#include "messages/msg/talon_status.hpp"
+#include "utils/utils.hpp"
+#include <cmath>
+
+#include <cstring>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <linux/can.h>
+#include <linux/can/raw.h>
 
 using namespace ctre::phoenix;
 using namespace ctre::phoenix::platform;
@@ -73,8 +82,16 @@ using namespace ctre::phoenix::motorcontrol::can;
 
 
 rclcpp::Node::SharedPtr nodeHandle;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String_<std::allocator<void> >, std::allocator<void> > > resetPublisher;
 bool GO=false;
 std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
+std::chrono::time_point<std::chrono::high_resolution_clock> logicPrevious;
+bool printData = false;
+std::string resetString = "";
+int motorNumber = 0;
+float curr_speed = 0.0;
+int numSleep = 0;
+int N = 0;
 
 /** @brief STOP Callback
  * 
@@ -86,7 +103,8 @@ std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
  * @return void
  * */
 void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
-	RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
 	GO=false;
 } 
 
@@ -100,7 +118,8 @@ void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
  * @return void
  * */
 void goCallback(std_msgs::msg::Empty::SharedPtr empty){
-	RCLCPP_INFO(nodeHandle->get_logger(),"GO");
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"GO");
 	GO=true;
 }
 
@@ -108,18 +127,19 @@ void commHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
 	commPrevious = std::chrono::high_resolution_clock::now();
 }
 
-bool useVelocity=false;
-int velocityMultiplier=0;
-int testSpeed=0;
+void logicHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
+	logicPrevious = std::chrono::high_resolution_clock::now();
+}
+
 TalonSRX* talonSRX;
 bool TEMP_DISABLE = false;
-bool VOLT_DISABLE = false;
 
 // Operating modes:
 // 0 - Normal
 // 1 - Critical
 // 2 - Emergency 
 int op_mode = 0;
+int killKey = 0;
 
 /** @brief Speed Callback Function
  * 
@@ -132,68 +152,33 @@ int op_mode = 0;
  * @return void
  * */
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
-	RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
+	RCLCPP_INFO(nodeHandle->get_logger(), "Talon Speed: %f", speed->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
-
-	if(useVelocity){
-		talonSRX->Set(ControlMode::Velocity, int(speed->data*velocityMultiplier));
-		//talonSRX->Set(ControlMode::Velocity, testSpeed);
+	if(speed->data < 0){
+		talonSRX->Set(ControlMode::PercentOutput, -1.0);
+		numSleep = 10 + (int)(speed->data * 10);
+		curr_speed = -1.0;
+	}
+	else if(speed->data > 0){
+		talonSRX->Set(ControlMode::PercentOutput, 1.0);
+		numSleep = 10 - (int)(speed->data * 10);
+		curr_speed = 1.0;
 	}
 	else{
-		talonSRX->Set(ControlMode::PercentOutput, speed->data);
+		talonSRX->Set(ControlMode::PercentOutput, 0.0);
+		numSleep = 10;  
+		curr_speed = 0.0;
 	}
+	N = (int)(speed->data * 10);
 }
 
-/** @brief String parameter function
- * 
- * Function that takes a string as a parameter containing the
- * name of the parameter that is being parsed from the launch
- * file and the initial value of the parameter as inputs, then
- * gets the parameter, casts it as a string, displays the value
- * of the parameter on the command line and the log file, then
- * returns the parsed value of the parameter.
- * @param parametername String of the name of the parameter
- * @param initialValue Initial value of the parameter
- * @return value Value of the parameter
- * */
-template <typename T>
-T getParameter(std::string parameterName, std::string initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value = param.as_string();
-	std::cout << parameterName << ": " << value << std::endl;
-	std::string output = parameterName + ": " + value;
-	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
-	return value;
-}
-
-/** @brief Function to get the value of the specified parameter
- * 
- * Function that takes a string as a parameter containing the
- * name of the parameter that is being parsed from the launch
- * file and the initial value of the parameter as inputs, then
- * gets the parameter, casts it as the desired type, displays 
- * the value of the parameter on the command line and the log 
- * file, then returns the parsed value of the parameter.
- * @param parametername String of the name of the parameter
- * @param initialValue Initial value of the parameter
- * @return value Value of the parameter
- * */
-template <typename T>
-T getParameter(std::string parameterName, int initialValue){
-	nodeHandle->declare_parameter<T>(parameterName, initialValue);
-	rclcpp::Parameter param = nodeHandle->get_parameter(parameterName);
-	T value;
-	if(typeid(value).name() == typeid(int).name())
-		value = param.as_int();
-	if(typeid(value).name() == typeid(double).name())
-		value = param.as_double();
-	if(typeid(value).name() == typeid(bool).name())
-		value = param.as_bool();
-	std::cout << parameterName << ": " << value << std::endl;
-	std::string output = parameterName + ": " + std::to_string(value);
-	RCLCPP_INFO(nodeHandle->get_logger(), output.c_str());
-	return value;
+void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
+	if(printData)
+		RCLCPP_INFO(nodeHandle->get_logger(),"Position---------->>> %d ", position->data);
+	//std::cout << "---------->>>  " << speed->data << std::endl;
+	talonSRX->Set(ControlMode::Position, position->data);
 }
 
 
@@ -212,32 +197,13 @@ void checkTemperature(double temperature){
 }
 
 
-void checkVoltage(double voltage, double speed){
-	if(speed > 0){
-		switch(op_mode){
-			case 0:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 14.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 13 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
-	}
-	else{
-		switch(op_mode){
-			case 0:
-				voltage < 15.4 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 1:
-				voltage < 15 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-			case 2:
-				voltage < 14 ? VOLT_DISABLE = true : VOLT_DISABLE = false;
-				break;
-		}
+void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
+    if(printData)
+		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
+	if(keyState->key == 98 && keyState->state==1){
+		std_msgs::msg::String reset;
+		reset.data = resetString;
+		resetPublisher->publish(reset);
 	}
 }
 
@@ -249,26 +215,30 @@ int main(int argc,char** argv){
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting talon");
 	//int success;
 
-	int motorNumber = getParameter<int>("motor_number", 1);
-	int portNumber = getParameter<int>("diagnostics_port", 1);
+	motorNumber = utils::getParameter<int>(nodeHandle, "motor_number", 1);
+	int portNumber = utils::getParameter<int>(nodeHandle, "diagnostics_port", 1);
 	//c_SetPhoenixDiagnosticsStartTime(-1); //Disables the Phoenix Diagnostics server, but does not allow the Talons to run
 	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
-	
-	std::string infoTopic = getParameter<std::string>("info_topic", "unset");
-	std::string potentiometerTopic = getParameter<std::string>("potentiometer_topic", "unset");
-	std::string speedTopic = getParameter<std::string>("speed_topic", "unset");
+	std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 
-	bool invertMotor = getParameter<bool>("invert_motor", 0);
-	useVelocity = getParameter<bool>("use_velocity", 0);
-	velocityMultiplier = getParameter<int>("velocity_multiplier", 0);
-	testSpeed = getParameter<int>("test_speed", 0);
-	double kP = getParameter<double>("kP", 1);
-	double kI = getParameter<double>("kI", 0);
-	double kD = getParameter<double>("kD", 0);
-	double kF = getParameter<double>("kF", 0);
-	int publishingDelay = getParameter<int>("publishing_delay", 0);
+	std::string infoTopic = utils::getParameter<std::string>(nodeHandle, "info_topic", "unset");
+	std::string potentiometerTopic = utils::getParameter<std::string>(nodeHandle, "potentiometer_topic", "unset");
+	std::string speedTopic = utils::getParameter<std::string>(nodeHandle, "speed_topic", "unset");
+	std::string positionTopic = utils::getParameter<std::string>(nodeHandle, "position_topic", "unset");
 
-	ctre::phoenix::platform::can::SetCANInterface("can0");
+	bool invertMotor = utils::getParameter<bool>(nodeHandle, "invert_motor", false);
+	double kP = utils::getParameter<double>(nodeHandle, "kP", 1.0);
+	double kI = utils::getParameter<double>(nodeHandle, "kI", 0.0);
+	double kD = utils::getParameter<double>(nodeHandle, "kD", 0.0);
+	double kF = utils::getParameter<double>(nodeHandle, "kF", 0.0);
+	int publishingDelay = utils::getParameter<int>(nodeHandle, "publishing_delay", 0);
+	killKey = utils::getParameter<int>(nodeHandle, "kill_key", 0);
+	op_mode = utils::getParameter<int>(nodeHandle, "op_mode", 0);
+	printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
+	std::string can_interface = utils::getParameter<std::string>(nodeHandle, "can_interface", "can0");
+	resetString = utils::getParameter<std::string>(nodeHandle, "reset_topic", "1");
+
+	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
 
 	int kTimeoutMs=30;
@@ -278,8 +248,6 @@ int main(int argc,char** argv){
 	RCLCPP_INFO(nodeHandle->get_logger(),"created talon instance");
 
 	talonSRX->SetInverted(invertMotor);
-	RCLCPP_INFO(nodeHandle->get_logger(),"here 1");
-
 	talonSRX->SelectProfileSlot(0,0);
 	talonSRX->ConfigSelectedFeedbackSensor(FeedbackDevice::Analog, 0, kTimeoutMs);
 	talonSRX->SetSensorPhase(true);
@@ -295,70 +263,98 @@ int main(int argc,char** argv){
 	talonSRX->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
 
 	talonSRX->Set(ControlMode::PercentOutput, 0);
-	talonSRX->Set(ControlMode::Velocity, 0);
+	talonSRX->Set(ControlMode::Position, 500);
 	//talonSRX->SetFeedbackDevice(FeedbackDevice.AnalogPotentiometer);
+	talonSRX->SetStatusFramePeriod(StatusFrame::Status_2_Feedback0_, 10, 10);
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"configured talon");
 
 	TalonSRXConfiguration allConfigs;
 
-	messages::msg::TalonOut talonOut;
-	auto talonOutPublisher=nodeHandle->create_publisher<messages::msg::TalonOut>(infoTopic.c_str(),1);
+	messages::msg::TalonStatus talonStatus;
+	auto talonStatusPublisher=nodeHandle->create_publisher<messages::msg::TalonStatus>(infoTopic.c_str(),1);
 	auto potentiometerPublisher=nodeHandle->create_publisher<std_msgs::msg::Int32>(potentiometerTopic.c_str(),1);
 	auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
+	auto positionSubscriber=nodeHandle->create_subscription<std_msgs::msg::Int32>(positionTopic.c_str(),1,positionCallback);
+	resetPublisher=nodeHandle->create_publisher<std_msgs::msg::String>("reset_topic",1);
 
 	auto stopSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
 	auto commHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("comm_heartbeat",1,commHeartbeatCallback);
+	auto logicHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("logic_heartbeat",1,logicHeartbeatCallback);
+	auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
 	
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
-	rclcpp::Rate rate(20);
+	rclcpp::Rate rate(100);
 	auto start2 = std::chrono::high_resolution_clock::now();
 	auto start = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
+	double busVoltage = 0.0;
+
+	int counter = 0;
+
 	while(rclcpp::ok()){
+		if ((counter * N) % 10 < N) {
+			talonSRX->Set(ControlMode::PercentOutput, curr_speed);
+		}
+		else {
+			talonSRX->Set(ControlMode::PercentOutput, 0.0);
+		}
+
+		counter++;
+		if (counter >= 10)
+			counter = 0;
+		
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
+
 			int deviceID=talonSRX->GetDeviceID();
-			double busVoltage=talonSRX->GetBusVoltage();
+			busVoltage=talonSRX->GetBusVoltage();
 			double outputCurrent=talonSRX->GetOutputCurrent();
 			bool isInverted=talonSRX->GetInverted();
 			double motorOutputVoltage=talonSRX->GetMotorOutputVoltage();
 			double motorOutputPercent=talonSRX->GetMotorOutputPercent();
-			double temperature=talonSRX->GetTemperature();
+			double temperature=talonSRX->GetTemperature();				
 			int sensorPosition0=talonSRX->GetSelectedSensorPosition(0);
 			int sensorVelocity0=talonSRX->GetSelectedSensorVelocity(0);
 			int closedLoopError0=talonSRX->GetClosedLoopError(0);
 			double integralAccumulator0=talonSRX->GetIntegralAccumulator(0);
 			double errorDerivative0=talonSRX->GetErrorDerivative(0);
 		
-			talonOut.device_id=deviceID;	
-			talonOut.bus_voltage=busVoltage;
-			talonOut.output_current=outputCurrent;
-			talonOut.output_voltage=motorOutputVoltage;
-			talonOut.output_percent=motorOutputPercent;
-			talonOut.temperature=temperature;
-			talonOut.sensor_position=sensorPosition0;
-			talonOut.sensor_velocity=sensorVelocity0;
-			talonOut.closed_loop_error=closedLoopError0;
-			talonOut.integral_accumulator=integralAccumulator0;
-			talonOut.error_derivative=errorDerivative0;
-			talonOut.temp_disable = TEMP_DISABLE;
-			talonOut.volt_disable = VOLT_DISABLE;
+			talonStatus.device_id=deviceID;	
+			talonStatus.bus_voltage=busVoltage;
+			talonStatus.output_current=outputCurrent;
+			talonStatus.output_voltage=motorOutputVoltage;
+			talonStatus.output_percent=motorOutputPercent;
+			talonStatus.temperature=temperature;
+			talonStatus.sensor_position=sensorPosition0;
+			talonStatus.sensor_velocity=sensorVelocity0;
+			talonStatus.closed_loop_error=closedLoopError0;
+			talonStatus.integral_accumulator=integralAccumulator0;
+			talonStatus.error_derivative=errorDerivative0;
+			talonStatus.temp_disable = TEMP_DISABLE;
 			if(outputCurrent > maxCurrent){
 				maxCurrent = outputCurrent;
 			}
-			talonOut.max_current = maxCurrent;
-			talonOutPublisher->publish(talonOut);
+			talonStatus.max_current = maxCurrent;
+			talonStatusPublisher->publish(talonStatus);
 			checkTemperature(temperature);
-			checkVoltage(busVoltage, motorOutputPercent);
-			//RCLCPP_INFO(nodeHandle->get_logger(), "Talon %d Max Current: %f", deviceID, maxCurrent);
         	start = std::chrono::high_resolution_clock::now();
 		}
-		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 || TEMP_DISABLE
+		||	std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100 ){
+			if(TEMP_DISABLE){
+				RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
+			}
+			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
+				RCLCPP_INFO(nodeHandle->get_logger(),"comm disable");
+			}
+			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100){
+				RCLCPP_INFO(nodeHandle->get_logger(),"logic disable");
+			}
 			talonSRX->Set(ControlMode::PercentOutput, 0.0);
 			GO = false;
 		}

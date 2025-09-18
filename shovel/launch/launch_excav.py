@@ -6,7 +6,10 @@ def generate_launch_description():
        Node(
             package='excavation',
             name='excavation',
-            executable='excavation_node'
+            executable='excavation_node',
+            parameters=[
+                {"single_arm": True}
+            ],
         )
     ]
 )

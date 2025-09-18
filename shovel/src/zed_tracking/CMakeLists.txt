@@ -1,9 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 PROJECT(zed_tracking)
 
-if(NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 14)
-endif()
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(LINK_SHARED_ZED "Link with the ZED SDK shared executable" ON)
 
@@ -25,8 +24,9 @@ find_package(sensor_msgs REQUIRED)
 find_package(messages REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(utils REQUIRED)
 
-find_package(ZED 3 REQUIRED)
+find_package(ZED 4 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(CUDA ${ZED_CUDA_VERSION} EXACT REQUIRED)
 
@@ -65,4 +65,5 @@ ament_target_dependencies(${PROJECT_NAME}_node
         messages
 	cv_bridge
 	image_transport
+    utils
 )
