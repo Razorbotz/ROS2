@@ -682,6 +682,9 @@ int main(int argc, char **argv){
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
     rclcpp::Rate rate(90);
+    bool isClientConnected = true;
+    auto previousHeartbeat = std::chrono::high_resolution_clock::now();
+    
     while(rclcpp::ok()){
         try{
             bytesRead = recvfrom(server_fd, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen);
@@ -695,6 +698,26 @@ int main(int argc, char **argv){
             RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to read data from client");
         }
 
+        if(bytesRead > 0){
+            if (!isClientConnected) {
+                RCLCPP_INFO(nodeHandle->get_logger(), "New client connected. Sending greeting.");
+                isClientConnected = true;
+                previousHeartbeat = std::chrono::high_resolution_clock::now();
+                std::string hello("Hello from server");
+                sendto(server_fd, hello.c_str(), hello.length(), 0, (struct sockaddr *)&address, addrlen);
+            }
+        }
+        if (isClientConnected) {
+            auto now = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = now - previousHeartbeat;
+
+            if (elapsed.count() > 10.0) {
+                isClientConnected = false;
+                RCLCPP_INFO(nodeHandle->get_logger(), "Client disconnected");
+                silentRunning = true;
+            }
+        }
+
         while(messageBytesList.size()>0 && messageBytesList.front()<=messageBytesList.size()){
 	    //RCLCPP_INFO(nodeHandle->get_logger(),"bytes read %d", bytesRead);
             int messageSize=messageBytesList.front();    
@@ -706,6 +729,7 @@ int main(int argc, char **argv){
             }
             //parse command
             // Command values:
+            // 0: Heartbeat value
             // 1: Joystick axis values
             // 2: Keystate values
             // 5: Joystick button values
@@ -713,6 +737,9 @@ int main(int argc, char **argv){
             // 7: GUI silent running button
             // 8: GUI reboot button
             uint8_t command=message[0];
+            if(command==0){
+                previousHeartbeat = std::chrono::high_resolution_clock::now();
+            }
             if(command==1){
                 messages::msg::AxisState axisState;
                 axisState.joystick=message[1];

@@ -171,7 +171,6 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 		numSleep = 10;  
 		curr_speed = 0.0;
 	}
-	N = (int)(speed->data * 10);
 }
 
 void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
@@ -295,7 +294,7 @@ int main(int argc,char** argv){
 	int counter = 0;
 
 	while(rclcpp::ok()){
-		if ((counter * N) % 10 < N) {
+		if (counter % 10 >= numSleep) {
 			talonSRX->Set(ControlMode::PercentOutput, curr_speed);
 		}
 		else {
