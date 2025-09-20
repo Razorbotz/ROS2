@@ -711,7 +711,7 @@ int main(int argc, char **argv){
             auto now = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = now - previousHeartbeat;
 
-            if (elapsed.count() > 10.0) {
+            if (elapsed.count() > 5.0) {
                 isClientConnected = false;
                 RCLCPP_INFO(nodeHandle->get_logger(), "Client disconnected");
                 silentRunning = true;
@@ -739,6 +739,7 @@ int main(int argc, char **argv){
             uint8_t command=message[0];
             if(command==0){
                 previousHeartbeat = std::chrono::high_resolution_clock::now();
+                RCLCPP_INFO(nodeHandle->get_logger(), "Received Heartbeat");
             }
             if(command==1){
                 messages::msg::AxisState axisState;

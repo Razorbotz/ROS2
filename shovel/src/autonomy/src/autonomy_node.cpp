@@ -14,10 +14,10 @@
 #include <messages/msg/axis_state.hpp>
 #include <messages/msg/key_state.hpp>
 #include <messages/msg/zed_position.hpp>
-#include <messages/msg/autonomy_out.hpp>
-#include <messages/msg/talon_out.hpp>
-#include <messages/msg/falcon_out.hpp>
-#include <messages/msg/linear_out.hpp>
+#include <messages/msg/autonomy_status.hpp>
+#include <messages/msg/talon_status.hpp>
+#include <messages/msg/falcon_status.hpp>
+#include <messages/msg/linear_status.hpp>
 
 #include "logic/Automation1.hpp"
 #include "logic/AutomationTypes.hpp"
