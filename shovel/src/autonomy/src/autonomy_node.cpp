@@ -19,8 +19,8 @@
 #include <messages/msg/falcon_status.hpp>
 #include <messages/msg/linear_status.hpp>
 
-#include "logic/Automation1.hpp"
-#include "logic/AutomationTypes.hpp"
+#include "autonomy/Automation1.hpp"
+#include "autonomy/AutomationTypes.hpp"
 #include "utils/utils.hpp"
 
 
