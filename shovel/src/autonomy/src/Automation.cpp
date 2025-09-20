@@ -5,8 +5,8 @@
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/empty.hpp>
 
-#include "logic/Automation.hpp"
-#include "logic/AutomationTypes.hpp"
+#include "autonomy/Automation.hpp"
+#include "autonomy/AutomationTypes.hpp"
 
 /** @file
  *

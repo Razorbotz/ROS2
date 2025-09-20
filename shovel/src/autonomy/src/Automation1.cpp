@@ -1,8 +1,8 @@
 #include <cmath>
 #include <ctime>
 
-#include "logic/Automation.hpp"
-#include "logic/Automation1.hpp"
+#include "autonomy/Automation.hpp"
+#include "autonomy/Automation1.hpp"
 
 /** @file
  *
@@ -500,20 +500,21 @@ void Automation1::stopLevel(){
 void Automation1::setDump(){
     dump = true;
     robotState = ROBOT_IDLE;
+    setGo();
 }
 
 
 void Automation1::dumpMacro(){
     if(dump == true){
         if(dumpState == DUMP_IDLE){
-            setArmPosition(950);
-            setBucketPosition(800);
+            setArmPosition(700);
+            setBucketPosition(40);
             dumpState = DUMP_EXTEND;
         }
         if(dumpState == DUMP_EXTEND){
             if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
-                setArmPosition(950);
-                setBucketPosition(50);
+                setArmPosition(250);
+                setBucketPosition(850);
                 dumpState = DUMP_RETRACT;
             }
         }

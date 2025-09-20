@@ -19,8 +19,8 @@
 #include <messages/msg/falcon_status.hpp>
 #include <messages/msg/linear_status.hpp>
 
-#include "logic/Automation1.hpp"
-#include "logic/AutomationTypes.hpp"
+#include "autonomy/Automation1.hpp"
+#include "autonomy/AutomationTypes.hpp"
 #include "utils/utils.hpp"
 
 
@@ -155,7 +155,7 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         automation->startAutonomy();
     }
     if(keyState->key==68 && keyState->state==1){
-        automation->startAutonomy();
+        automation->dumpMacro();
     }
     if(keyState->key == 107 && keyState->state == 1){
         automationGo = false;
@@ -360,6 +360,7 @@ int main(int argc, char **argv){
     driveRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
     armSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("arm_speed",1);
     bucketSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("bucket_speed",1);
+    automationGoPublisher= nodeHandle->create_publisher<std_msgs::msg::Bool>("automationGo",1);
 
     rclcpp::Rate rate(30);
     while(rclcpp::ok()){
