@@ -24,8 +24,6 @@ class Automation1 : public Automation{
     void stopLevel();
 
     void setDump();
-
-    void dumpMacro();
     
     void setExcavate();
 

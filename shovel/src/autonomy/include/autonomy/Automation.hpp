@@ -42,7 +42,9 @@ class Automation{
         DUMP,
         OBSTACLE,
         LEVEL,
-        ROBOT_IDLE
+        ROBOT_IDLE,
+        DUMP_MACRO,
+        EXCAVATE_MACRO
     };
 
 enum ExcavationState{EXCAVATION_IDLE,
@@ -115,7 +117,9 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         {DUMP, "Dump"},
         {OBSTACLE, "Obstacle"},
         {LEVEL, "Level"},
-        {ROBOT_IDLE,  "Idle"}
+        {ROBOT_IDLE,  "Idle"},
+        {DUMP_MACRO,  "Dump Macro"},
+        {EXCAVATE_MACRO,  "Excavate Macro"}
     };
 
     std::map<ExcavationState, const char*> excavationStateMap = {
@@ -251,8 +255,6 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
     virtual void setLevel() = 0;
 
     virtual void stopLevel() = 0;
-
-    virtual void dumpMacro() = 0;
 
     virtual void excavateMacro() = 0;
 

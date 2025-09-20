@@ -92,6 +92,7 @@ int motorNumber = 0;
 float curr_speed = 0.0;
 int numSleep = 0;
 int N = 0;
+bool usePosition = false;
 
 /** @brief STOP Callback
  * 
@@ -171,6 +172,7 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 		numSleep = 10;  
 		curr_speed = 0.0;
 	}
+	usePosition = false;
 }
 
 void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
@@ -178,6 +180,7 @@ void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
 		RCLCPP_INFO(nodeHandle->get_logger(),"Position---------->>> %d ", position->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
 	talonSRX->Set(ControlMode::Position, position->data);
+	usePosition = true;
 }
 
 
@@ -294,16 +297,18 @@ int main(int argc,char** argv){
 	int counter = 0;
 
 	while(rclcpp::ok()){
-		if (counter % 10 >= numSleep) {
-			talonSRX->Set(ControlMode::PercentOutput, curr_speed);
-		}
-		else {
-			talonSRX->Set(ControlMode::PercentOutput, 0.0);
-		}
+		if(!usePosition){
+			if (counter % 10 >= numSleep) {
+				talonSRX->Set(ControlMode::PercentOutput, curr_speed);
+			}
+			else {
+				talonSRX->Set(ControlMode::PercentOutput, 0.0);
+			}
 
-		counter++;
-		if (counter >= 10)
-			counter = 0;
+			counter++;
+			if (counter >= 10)
+				counter = 0;
+		}
 		
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();

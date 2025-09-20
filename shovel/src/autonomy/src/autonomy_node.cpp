@@ -155,7 +155,7 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         automation->startAutonomy();
     }
     if(keyState->key==68 && keyState->state==1){
-        automation->dumpMacro();
+        automation->setDump();
     }
     if(keyState->key == 107 && keyState->state == 1){
         automationGo = false;

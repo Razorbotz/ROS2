@@ -413,6 +413,27 @@ void Automation1::automate(){
         }
         
     }
+
+    if(robotState==DUMP_MACRO){
+        if(dumpState == DUMP_IDLE){
+            setArmPosition(700);
+            setBucketPosition(40);
+            dumpState = DUMP_EXTEND;
+        }
+        if(dumpState == DUMP_EXTEND){
+            if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+                setArmPosition(250);
+                setBucketPosition(850);
+                dumpState = DUMP_RETRACT;
+            }
+        }
+        if(dumpState == DUMP_RETRACT){
+            if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1)	{				
+                robotState = ROBOT_IDLE;
+                dumpState = DUMP_IDLE;
+            }        
+        }
+    }
     /*
     // Dump the collected rocks in the dump bin
     if(robotState==DUMP){
@@ -498,35 +519,8 @@ void Automation1::stopLevel(){
 
 
 void Automation1::setDump(){
-    dump = true;
-    robotState = ROBOT_IDLE;
+    robotState = DUMP_MACRO;
     setGo();
-}
-
-
-void Automation1::dumpMacro(){
-    if(dump == true){
-        if(dumpState == DUMP_IDLE){
-            setArmPosition(700);
-            setBucketPosition(40);
-            dumpState = DUMP_EXTEND;
-        }
-        if(dumpState == DUMP_EXTEND){
-            if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
-                setArmPosition(250);
-                setBucketPosition(850);
-                dumpState = DUMP_RETRACT;
-            }
-        }
-        if(dumpState == DUMP_RETRACT){
-            if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1)	{				
-                robotState = ROBOT_IDLE;
-                dumpState = DUMP_IDLE;
-                dump = false;
-            }        
-        }
-    }
-
 }
 
 
@@ -547,7 +541,6 @@ void Automation1::excavateMacro(){
         }
     }
     if(excavationState == DUMP_BUCKET){
-        dumpMacro();
         if(!dump){
             setDestPosition(currentX, currentZ);
             excavationState = RETURN;
@@ -576,8 +569,4 @@ void Automation1::excavateMacro(){
             }
         }
     }
-
-    
-   
 }
-
