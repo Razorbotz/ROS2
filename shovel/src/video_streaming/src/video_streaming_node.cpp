@@ -38,6 +38,7 @@ bool broadcast = true;
 // cv::Mat img;
 cv::Mat gray;
 bool isGray = true;
+int counter = 0;
 
 /**
  * @brief Sends all data specified in the buffer over the socket.
@@ -90,6 +91,10 @@ bool send_all(int sock, const void* data, size_t len) {
  */
 void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage) {
     if(videoStreaming && new_socket >= 0) {
+        counter++;
+        if(counter % 3 != 0){
+            return;
+        }
         cv::Mat frame_to_send;
         try {
             cv::Mat img_color = cv_bridge::toCvCopy(inputImage, "rgb8")->image;

@@ -155,23 +155,7 @@ int killKey = 0;
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
-	RCLCPP_INFO(nodeHandle->get_logger(), "Talon Speed: %f", speed->data);
-	//std::cout << "---------->>>  " << speed->data << std::endl;
-	if(speed->data < 0){
-		talonSRX->Set(ControlMode::PercentOutput, -1.0);
-		numSleep = 10 + (int)(speed->data * 10);
-		curr_speed = -1.0;
-	}
-	else if(speed->data > 0){
-		talonSRX->Set(ControlMode::PercentOutput, 1.0);
-		numSleep = 10 - (int)(speed->data * 10);
-		curr_speed = 1.0;
-	}
-	else{
-		talonSRX->Set(ControlMode::PercentOutput, 0.0);
-		numSleep = 10;  
-		curr_speed = 0.0;
-	}
+	talonSRX->Set(ControlMode::PercentOutput, speed->data);
 	usePosition = false;
 }
 
@@ -297,19 +281,6 @@ int main(int argc,char** argv){
 	int counter = 0;
 
 	while(rclcpp::ok()){
-		if(!usePosition){
-			if (counter % 10 >= numSleep) {
-				talonSRX->Set(ControlMode::PercentOutput, curr_speed);
-			}
-			else {
-				talonSRX->Set(ControlMode::PercentOutput, 0.0);
-			}
-
-			counter++;
-			if (counter >= 10)
-				counter = 0;
-		}
-		
 		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
 
@@ -351,13 +322,16 @@ int main(int argc,char** argv){
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 || TEMP_DISABLE
 		||	std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100 ){
 			if(TEMP_DISABLE){
-				RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
+				if(printData)
+					RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
 			}
 			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
-				RCLCPP_INFO(nodeHandle->get_logger(),"comm disable");
+				if(printData)
+					RCLCPP_INFO(nodeHandle->get_logger(),"comm disable");
 			}
 			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100){
-				RCLCPP_INFO(nodeHandle->get_logger(),"logic disable");
+				if(printData)
+					RCLCPP_INFO(nodeHandle->get_logger(),"logic disable");
 			}
 			talonSRX->Set(ControlMode::PercentOutput, 0.0);
 			GO = false;
