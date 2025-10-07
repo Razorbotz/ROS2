@@ -345,13 +345,16 @@ int main(int argc,char** argv){
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 ||  TEMP_DISABLE
 		||	std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100 ){
 			if(TEMP_DISABLE){
-				RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
+				if(printData)
+					RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
 			}
 			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
-				RCLCPP_INFO(nodeHandle->get_logger(),"comm disable");
+				if(printData)
+					RCLCPP_INFO(nodeHandle->get_logger(),"comm disable");
 			}
 			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100){
-				RCLCPP_INFO(nodeHandle->get_logger(),"logic disable");
+				if(printData)
+					RCLCPP_INFO(nodeHandle->get_logger(),"logic disable");
 			}
 			talonFX->Set(ControlMode::PercentOutput, 0.0);
 			GO = false;

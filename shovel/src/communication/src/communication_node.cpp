@@ -643,6 +643,8 @@ int main(int argc, char **argv){
     int opt = 1; 
     uint8_t buffer[1024] = {0}; 
     std::string hello("Hello from server");
+    std::thread broadcastThread(broadcastIP); //hopefully don't need this anymore
+    broadcastThread.detach();
 
     // Creating socket file descriptor, handling errors
     if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0) { 
@@ -650,7 +652,6 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE); 
     }
     new_socket = server_fd; //This is the socket that will be used by the other functions above
-    std::thread broadcastThread(broadcastIP); //hopefully don't need this anymore
 
     // Setting options for socket, handling errors
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) { 
@@ -703,6 +704,7 @@ int main(int argc, char **argv){
                 previousHeartbeat = std::chrono::high_resolution_clock::now();
                 std::string hello("Hello from server");
                 sendto(server_fd, hello.c_str(), hello.length(), 0, (struct sockaddr *)&address, addrlen);
+                broadcast = false;
             }
         }
         if (isClientConnected) {
@@ -713,6 +715,7 @@ int main(int argc, char **argv){
                 isClientConnected = false;
                 RCLCPP_INFO(nodeHandle->get_logger(), "Client disconnected");
                 silentRunning = true;
+                broadcast = true;
             }
         }
 
@@ -737,7 +740,6 @@ int main(int argc, char **argv){
             uint8_t command=message[0];
             if(command==0){
                 previousHeartbeat = std::chrono::high_resolution_clock::now();
-                RCLCPP_INFO(nodeHandle->get_logger(), "Received Heartbeat");
             }
             if(command==1){
                 messages::msg::AxisState axisState;
@@ -799,5 +801,5 @@ int main(int argc, char **argv){
         rate.sleep();
     }
 
-    // broadcastThread.join(); hopefully don't need this anymore
+    broadcastThread.join(); //hopefully don't need this anymore
 }
