@@ -110,8 +110,18 @@ void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage
                 return;
             }
 
+            cv::Mat resized_frame;
+            // cv::INTER_AREA is recommended for shrinking images.
+            cv::resize(frame_to_send, resized_frame, cv::Size(320, 200), 0, 0, cv::INTER_AREA);
+
+            std::vector<int> compression_params;
+            compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
+            compression_params.push_back(80); // Quality 0-100. 80 is a good balance.
+
+
             std::vector<uchar> encoded_frame;
-            cv::imencode(".jpg", frame_to_send, encoded_frame);
+            cv::imencode(".jpg", resized_frame, encoded_frame, compression_params);
+
             size_t encoded_size = encoded_frame.size();
             uint32_t network_frame_size = htonl(encoded_size);
 
@@ -122,6 +132,7 @@ void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage
                 return;
             }
 
+            // Send frame data
             if (!send_all(new_socket, encoded_frame.data(), encoded_size)) {
                 //RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send frame data. Stopping stream.");
                 videoStreaming = false;
