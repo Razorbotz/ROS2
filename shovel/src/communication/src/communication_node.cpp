@@ -35,6 +35,7 @@
 #include <messages/msg/system_status.hpp>
 
 #include <BinaryMessage.hpp>
+#include "utils/utils.hpp"
 
 #define PORT 31337
 
@@ -82,6 +83,7 @@ int total = 0;
 
 int rssi = 0;
 bool usingCAN1 = false;
+bool debug = false;
 
 #define LOWER_THRESH 67
 #define UPPER_THRESH 80
@@ -538,7 +540,7 @@ void broadcastIP(){
             }
             close(socketDescriptor);
         }
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
 
@@ -549,10 +551,8 @@ int main(int argc, char **argv){
     nodeHandle = rclcpp::Node::make_shared("communication");
     RCLCPP_INFO(nodeHandle->get_logger(),"Starting communication node");
 
-    nodeHandle->declare_parameter<std::string>("robot_name","not named");
-    rclcpp::Parameter robotNameParameter = nodeHandle->get_parameter("robot_name");
-    robotName = robotNameParameter.as_string();
-    RCLCPP_INFO(nodeHandle->get_logger(),"robotName: %s", robotName.c_str());
+    robotName = utils::getParameter<std::string>(nodeHandle, "robot_name", "not named");
+    debug = utils::getParameter<bool>(nodeHandle, "debug", false);
 
     auto joystickAxisPublisher = nodeHandle->create_publisher<messages::msg::AxisState>("joystick_axis", 1);
     auto joystickHatPublisher = nodeHandle->create_publisher<messages::msg::HatState>("joystick_hat",1);
@@ -670,10 +670,10 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE); 
     } 
 
-    broadcast=false;
     bytesRead = recvfrom(server_fd, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen); 
     sendto(server_fd, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
     silentRunning=true;
+    broadcast=false;
 
     fcntl(server_fd, F_SETFL, O_NONBLOCK);
     
@@ -691,7 +691,11 @@ int main(int argc, char **argv){
             for(int index=0;index<bytesRead;index++){
                 messageBytesList.push_back(buffer[index]);
             }
-        
+            if(debug){
+                if(bytesRead != -1){
+                    RCLCPP_INFO(nodeHandle->get_logger(), "Bytes Read: %d", bytesRead);
+                }
+            }        
         }
         catch(int x){
             RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to read data from client");
@@ -705,6 +709,7 @@ int main(int argc, char **argv){
                 std::string hello("Hello from server");
                 sendto(server_fd, hello.c_str(), hello.length(), 0, (struct sockaddr *)&address, addrlen);
                 broadcast = false;
+                messageBytesList.clear();
             }
         }
         if (isClientConnected) {
@@ -716,6 +721,7 @@ int main(int argc, char **argv){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Client disconnected");
                 silentRunning = true;
                 broadcast = true;
+                std::cout << "silentRunning " << silentRunning << std::endl;
             }
         }
 
@@ -738,8 +744,14 @@ int main(int argc, char **argv){
             // 7: GUI silent running button
             // 8: GUI reboot button
             uint8_t command=message[0];
+            if(debug){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Message size: %d, Command: %d", messageSize, command);
+            }
             if(command==0){
                 previousHeartbeat = std::chrono::high_resolution_clock::now();
+                if(debug){
+                    RCLCPP_INFO(nodeHandle->get_logger(), "Received heartbeat");
+                }
             }
             if(command==1){
                 messages::msg::AxisState axisState;
