@@ -92,7 +92,7 @@ bool send_all(int sock, const void* data, size_t len) {
 void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage) {
     if(videoStreaming && new_socket >= 0) {
         counter++;
-        if(counter % 3 != 0){
+        if(counter % 2 != 0){
             return;
         }
         cv::Mat frame_to_send;
