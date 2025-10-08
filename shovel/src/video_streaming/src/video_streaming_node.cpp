@@ -29,6 +29,19 @@
 #include "image_transport/image_transport.hpp"
 #include <cv_bridge/cv_bridge.h>
 
+extern "C" {
+#include <libavcodec/avcodec.h>
+#include <libavutil/opt.h>
+#include <libavutil/imgutils.h>
+#include <libswscale/swscale.h>
+}
+
+AVCodecContext* h265_encoder_ctx = nullptr;
+AVFrame* video_frame = nullptr;
+AVPacket* video_packet = nullptr;
+SwsContext* sws_ctx = nullptr;
+int64_t frame_pts = 0;
+
 #define PORT 31338
 
 bool videoStreaming = false;
@@ -39,6 +52,86 @@ bool broadcast = true;
 cv::Mat gray;
 bool isGray = true;
 int counter = 0;
+
+
+/**
+ * @brief Initializes the H.265 encoder. Call this when video streaming begins.
+ * @param width The width of the video frames to be encoded.
+ * @param height The height of the video frames to be encoded.
+ * @return True on success, false on failure.
+ */
+bool initialize_h265_encoder(int width, int height) {
+    const AVCodec* codec = avcodec_find_encoder_by_name("libx265");
+    if (!codec) {
+        // Fallback to default HEVC encoder if libx265 is not available
+        codec = avcodec_find_encoder(AV_CODEC_ID_HEVC);
+        if (!codec) {
+            //RCLCPP_ERROR(nodeHandle->get_logger(), "H.265 encoder (libx265/HEVC) not found.");
+            return false;
+        }
+    }
+
+    h265_encoder_ctx = avcodec_alloc_context3(codec);
+    if (!h265_encoder_ctx) {
+        //RCLCPP_ERROR(nodeHandle->get_logger(), "Could not allocate video codec context.");
+        return false;
+    }
+
+    // --- Set Encoder Parameters ---
+    h265_encoder_ctx->width = width;
+    h265_encoder_ctx->height = height;
+    h265_encoder_ctx->pix_fmt = AV_PIX_FMT_YUV420P; // Standard for H.265
+    h265_encoder_ctx->time_base = {1, 30}; // 30 FPS
+    h265_encoder_ctx->framerate = {30, 1};
+
+    // Set encoding options for low latency streaming
+    av_opt_set(h265_encoder_ctx->priv_data, "preset", "ultrafast", 0);
+    av_opt_set(h265_encoder_ctx->priv_data, "tune", "zerolatency", 0);
+
+    if (avcodec_open2(h265_encoder_ctx, codec, nullptr) < 0) {
+        //RCLCPP_ERROR(nodeHandle->get_logger(), "Could not open H.265 codec.");
+        return false;
+    }
+
+    video_frame = av_frame_alloc();
+    video_frame->format = h265_encoder_ctx->pix_fmt;
+    video_frame->width = width;
+    video_frame->height = height;
+    if (av_frame_get_buffer(video_frame, 0) < 0) {
+        //RCLCPP_ERROR(nodeHandle->get_logger(), "Could not allocate video frame data.");
+        return false;
+    }
+
+    video_packet = av_packet_alloc();
+    frame_pts = 0;
+
+    //RCLCPP_INFO(nodeHandle->get_logger(), "H.265 encoder initialized successfully.");
+    return true;
+}
+
+/**
+ * @brief Cleans up and frees all H.265 encoder resources.
+ */
+void cleanup_h265_encoder() {
+    if (h265_encoder_ctx) {
+        avcodec_free_context(&h265_encoder_ctx);
+        h265_encoder_ctx = nullptr;
+    }
+    if (video_frame) {
+        av_frame_free(&video_frame);
+        video_frame = nullptr;
+    }
+    if (video_packet) {
+        av_packet_free(&video_packet);
+        video_packet = nullptr;
+    }
+    if (sws_ctx) {
+        sws_freeContext(sws_ctx);
+        sws_ctx = nullptr;
+    }
+    //RCLCPP_INFO(nodeHandle->get_logger(), "H.265 encoder cleaned up.");
+}
+
 
 /**
  * @brief Sends all data specified in the buffer over the socket.
@@ -90,60 +183,80 @@ bool send_all(int sock, const void* data, size_t len) {
  * @param inputImage The ROS image message.
  */
 void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage) {
-    if(videoStreaming && new_socket >= 0) {
-        counter++;
-        if(counter % 2 != 0){
-            return;
+    // If we aren't streaming or the socket is invalid, do nothing.
+    // Ensure the encoder is cleaned up if it was previously active.
+    if (!videoStreaming || new_socket < 0) {
+        if (h265_encoder_ctx) {
+            cleanup_h265_encoder();
         }
-        cv::Mat frame_to_send;
-        try {
-            cv::Mat img_color = cv_bridge::toCvCopy(inputImage, "rgb8")->image;
-            if(isGray) {
-                cv::cvtColor(img_color, gray, cv::COLOR_RGB2GRAY);
-                frame_to_send = gray;
-            } else {
-                frame_to_send = img_color;
-            }
-
-            if (frame_to_send.empty()) {
-                //RCLCPP_WARN(nodeHandle->get_logger(), "Frame to send is empty after conversion.");
-                return;
-            }
-
-            cv::Mat resized_frame;
-            // cv::INTER_AREA is recommended for shrinking images.
-            cv::resize(frame_to_send, resized_frame, cv::Size(320, 200), 0, 0, cv::INTER_AREA);
-
-            std::vector<int> compression_params;
-            compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
-            compression_params.push_back(80); // Quality 0-100. 80 is a good balance.
-
-
-            std::vector<uchar> encoded_frame;
-            cv::imencode(".jpg", resized_frame, encoded_frame, compression_params);
-
-            size_t encoded_size = encoded_frame.size();
-            uint32_t network_frame_size = htonl(encoded_size);
-
-            // Send frame size
-            if (!send_all(new_socket, &network_frame_size, sizeof(network_frame_size))) {
-                //RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send frame size header. Stopping stream.");
-                videoStreaming = false;
-                return;
-            }
-
-            // Send frame data
-            if (!send_all(new_socket, encoded_frame.data(), encoded_size)) {
-                //RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send frame data. Stopping stream.");
-                videoStreaming = false;
-                return;
-            }
-
-        } catch (const std::exception& e) {
-            //RCLCPP_ERROR(nodeHandle->get_logger(), "Exception in zedImageCallback: %s", e.what());
+        return;
+    }
+    
+    // Lazily initialize the encoder on the first valid frame when streaming starts.
+    // This ensures we initialize with the correct frame dimensions.
+    if (!h265_encoder_ctx) {
+        if (!initialize_h265_encoder(320, 200)) {
+            //RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to initialize H265 encoder. Halting stream.");
             videoStreaming = false;
             return;
         }
+    }
+
+    try {
+        // 1. Convert ROS message to OpenCV Mat (BGR format)
+        cv::Mat img_bgr = cv_bridge::toCvCopy(inputImage, "bgr8")->image;
+        if (img_bgr.empty()) {
+            return;
+        }
+
+        // 2. Resize the frame to match the encoder's settings
+        cv::Mat resized_frame;
+        cv::resize(img_bgr, resized_frame, cv::Size(320, 200), 0, 0, cv::INTER_AREA);
+
+        // 3. Convert the resized BGR frame to YUV420P for the encoder
+        // Initialize the SWS context if it's the first time
+        if (!sws_ctx) {
+            sws_ctx = sws_getContext(resized_frame.cols, resized_frame.rows, AV_PIX_FMT_BGR24,
+                                     h265_encoder_ctx->width, h265_encoder_ctx->height, h265_encoder_ctx->pix_fmt,
+                                     SWS_BILINEAR, nullptr, nullptr, nullptr);
+        }
+
+        const int stride[] = { static_cast<int>(resized_frame.step[0]) };
+        sws_scale(sws_ctx, &resized_frame.data, stride, 0, resized_frame.rows,
+                  video_frame->data, video_frame->linesize);
+
+        video_frame->pts = frame_pts++;
+
+        // 4. Send the raw frame to the encoder
+        if (avcodec_send_frame(h265_encoder_ctx, video_frame) < 0) {
+            //RCLCPP_WARN(nodeHandle->get_logger(), "Error sending a frame to the H.265 encoder.");
+            return;
+        }
+
+        // 5. Receive any encoded packets and send them over the network
+        while (avcodec_receive_packet(h265_encoder_ctx, video_packet) == 0) {
+            size_t encoded_size = video_packet->size;
+            uint32_t network_frame_size = htonl(encoded_size);
+
+            // Send 4-byte size header
+            if (!send_all(new_socket, &network_frame_size, sizeof(network_frame_size))) {
+                videoStreaming = false;
+                return;
+            }
+
+            // Send H.265 packet data
+            if (!send_all(new_socket, video_packet->data, encoded_size)) {
+                videoStreaming = false;
+                return;
+            }
+            av_packet_unref(video_packet);
+        }
+
+    }
+    catch (const std::exception& e) {
+        //RCLCPP_ERROR(nodeHandle->get_logger(), "Exception in zedImageCallback: %s", e.what());
+        videoStreaming = false;
+        return;
     }
 }
 
