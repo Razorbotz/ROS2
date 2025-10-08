@@ -183,8 +183,11 @@ bool send_all(int sock, const void* data, size_t len) {
  * @param inputImage The ROS image message.
  */
 void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage) {
-    // If we aren't streaming or the socket is invalid, do nothing.
-    // Ensure the encoder is cleaned up if it was previously active.
+    // --- Define resolution in one place ---
+    const int STREAM_WIDTH = 640;
+    const int STREAM_HEIGHT = 400;
+
+    // If we aren't streaming, ensure everything is cleaned up and exit.
     if (!videoStreaming || new_socket < 0) {
         if (h265_encoder_ctx) {
             cleanup_h265_encoder();
@@ -192,69 +195,77 @@ void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage
         return;
     }
     
-    // Lazily initialize the encoder on the first valid frame when streaming starts.
-    // This ensures we initialize with the correct frame dimensions.
-    if (!h265_encoder_ctx) {
-        if (!initialize_h265_encoder(320, 200)) {
-            //RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to initialize H265 encoder. Halting stream.");
-            videoStreaming = false;
-            return;
-        }
-    }
-
     try {
-        // 1. Convert ROS message to OpenCV Mat (BGR format)
         cv::Mat img_bgr = cv_bridge::toCvCopy(inputImage, "bgr8")->image;
         if (img_bgr.empty()) {
+            RCLCPP_WARN(nodeHandle->get_logger(), "Received empty image frame.");
             return;
         }
 
-        // 2. Resize the frame to match the encoder's settings
-        cv::Mat resized_frame;
-        cv::resize(img_bgr, resized_frame, cv::Size(320, 200), 0, 0, cv::INTER_AREA);
+        // --- Synchronized Initialization Block ---
+        // If the main encoder context doesn't exist, we need to set up the entire pipeline.
+        if (!h265_encoder_ctx) {
+            RCLCPP_INFO(nodeHandle->get_logger(), "Initializing H.265 pipeline for %dx%d.", STREAM_WIDTH, STREAM_HEIGHT);
+            
+            // 1. Initialize the encoder
+            if (!initialize_h265_encoder(STREAM_WIDTH, STREAM_HEIGHT)) {
+                RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to initialize H.265 encoder. Halting stream.");
+                videoStreaming = false;
+                cleanup_h265_encoder(); // Ensure partial initializations are cleaned
+                return;
+            }
 
-        // 3. Convert the resized BGR frame to YUV420P for the encoder
-        // Initialize the SWS context if it's the first time
-        if (!sws_ctx) {
-            sws_ctx = sws_getContext(resized_frame.cols, resized_frame.rows, AV_PIX_FMT_BGR24,
-                                     h265_encoder_ctx->width, h265_encoder_ctx->height, h265_encoder_ctx->pix_fmt,
+            // 2. Initialize the color converter context right after, using the same dimensions.
+            sws_ctx = sws_getContext(STREAM_WIDTH, STREAM_HEIGHT, AV_PIX_FMT_BGR24,
+                                     STREAM_WIDTH, STREAM_HEIGHT, h265_encoder_ctx->pix_fmt,
                                      SWS_BILINEAR, nullptr, nullptr, nullptr);
+            if (!sws_ctx) {
+                RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to create SWS context. Halting stream.");
+                videoStreaming = false;
+                cleanup_h265_encoder(); // sws_ctx is also cleaned up here
+                return;
+            }
         }
+        // --- End of Initialization Block ---
 
+        cv::Mat resized_frame;
+        cv::resize(img_bgr, resized_frame, cv::Size(STREAM_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
+
+        // Convert the resized BGR frame to YUV420P for the encoder
         const int stride[] = { static_cast<int>(resized_frame.step[0]) };
         sws_scale(sws_ctx, &resized_frame.data, stride, 0, resized_frame.rows,
                   video_frame->data, video_frame->linesize);
 
         video_frame->pts = frame_pts++;
 
-        // 4. Send the raw frame to the encoder
+        // Send the raw frame to the encoder
         if (avcodec_send_frame(h265_encoder_ctx, video_frame) < 0) {
-            //RCLCPP_WARN(nodeHandle->get_logger(), "Error sending a frame to the H.265 encoder.");
+            RCLCPP_WARN(nodeHandle->get_logger(), "Error sending a frame to the H.265 encoder.");
             return;
         }
 
-        // 5. Receive any encoded packets and send them over the network
+        // Receive any encoded packets and send them over the network
         while (avcodec_receive_packet(h265_encoder_ctx, video_packet) == 0) {
             size_t encoded_size = video_packet->size;
+            if (encoded_size == 0) continue; // Skip empty packets
+
             uint32_t network_frame_size = htonl(encoded_size);
 
-            // Send 4-byte size header
-            if (!send_all(new_socket, &network_frame_size, sizeof(network_frame_size))) {
+            if (!send_all(new_socket, &network_frame_size, sizeof(network_frame_size)) || 
+                !send_all(new_socket, video_packet->data, encoded_size)) 
+            {
+                RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send packet, client disconnected.");
                 videoStreaming = false;
-                return;
-            }
-
-            // Send H.265 packet data
-            if (!send_all(new_socket, video_packet->data, encoded_size)) {
-                videoStreaming = false;
-                return;
+                close(new_socket);
+                new_socket = -1;
+                av_packet_unref(video_packet);
+                return; // Exit callback on send failure
             }
             av_packet_unref(video_packet);
         }
 
-    }
-    catch (const std::exception& e) {
-        //RCLCPP_ERROR(nodeHandle->get_logger(), "Exception in zedImageCallback: %s", e.what());
+    } catch (const std::exception& e) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Exception in zedImageCallback: %s", e.what());
         videoStreaming = false;
         return;
     }
