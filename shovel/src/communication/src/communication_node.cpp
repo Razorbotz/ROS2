@@ -293,6 +293,8 @@ void send(std::string messageLabel, const messages::msg::AutonomyStatus::SharedP
 }
 
 
+// 30 Hz
+int zedCounter = 0;
 /** @brief Callback function that publishes position data to the client
  * 
  * This function is called when the node receives position data from the
@@ -303,6 +305,9 @@ void send(std::string messageLabel, const messages::msg::AutonomyStatus::SharedP
 void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
     if(silentRunning)return;
     if(rssi > UPPER_THRESH)
+        return;
+    zedCounter++;
+    if(zedCounter % 15 != 0)
         return;
     BinaryMessage message("Zed");
     message.addElementFloat32("X", zedPosition->x);
@@ -315,9 +320,13 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     send(message);
 }
 
-
+// 10 Hz
+int systemCounter = 0;
 void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status){
     if(silentRunning)return;
+    systemCounter++;
+    if(systemCounter % 5 != 0)
+        return;
     BinaryMessage message("Communication");
     rssi = status->rssi;
     message.addElementInt32("RSSI", rssi);
@@ -344,6 +353,8 @@ void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status){
 }
 
 
+// 10 Hz
+int powerCounter = 0;
 /** @brief Callback function for the power topic.
  * 
  * This function is called when the node receives a
@@ -357,10 +368,14 @@ void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status){
  * */
 void powerCallback(const messages::msg::Power::SharedPtr power){
     //RCLCPP_INFO(nodeHandle->get_logger(), "power callback");
-    if(rssi < UPPER_THRESH)
-        send("Power",power);
+    powerCounter++;
+    if(powerCounter % 5 == 0)
+        if(rssi < UPPER_THRESH)
+            send("Power",power);
 }
 
+
+// 100 Hz
 /** @brief Callback function for the Talon topic
  * 
  * This function receives the talonStatus message published by the first 
@@ -369,13 +384,16 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
  * @param talonStatus
  * @return void
  * */
-void talonStatusCallback(const std::string& name, const messages::msg::TalonStatus::SharedPtr talonStatus){
+void talonStatusCallback(const std::string& name, const messages::msg::TalonStatus::SharedPtr talonStatus, int& counter){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon1 callback");
-    if(rssi < CRIT_THRESH)
-        send(name, talonStatus);
+    counter++;
+    if(counter % 50 == 0)
+        if(rssi < CRIT_THRESH)
+            send(name, talonStatus);
 }
 
 
+// 20 Hz
 /** @brief Callback function for the Talon topic
  * 
  * This function receives the talonStatus message published by the first 
@@ -384,13 +402,16 @@ void talonStatusCallback(const std::string& name, const messages::msg::TalonStat
  * @param talonStatus
  * @return void
  * */
-void falconStatusCallback(const std::string& name, const messages::msg::FalconStatus::SharedPtr talonStatus){
+void falconStatusCallback(const std::string& name, const messages::msg::FalconStatus::SharedPtr talonStatus, int& counter){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
-    if(rssi < CRIT_THRESH)
-        send(name,talonStatus);
+    counter++;
+    if(counter % 10 == 0)
+        if(rssi < CRIT_THRESH)
+            send(name,talonStatus);
 }
 
 
+// 60 Hz
 /** @brief Callback function for the LinearStatus topic
  * 
  * This function receives the linearStatus message published by the excavation
@@ -398,17 +419,23 @@ void falconStatusCallback(const std::string& name, const messages::msg::FalconSt
  * @param name
  * @param linearStatus 
  */
-void linearStatusCallback(const std::string& name, const messages::msg::LinearStatus::SharedPtr linearStatus){
+void linearStatusCallback(const std::string& name, const messages::msg::LinearStatus::SharedPtr linearStatus, int& counter){
     //RCLCPP_INFO(nodeHandle->get_logger(), "%s callback", name.c_str());
-    if(rssi < UPPER_THRESH)
-        send(name, linearStatus);
+    counter++;
+    if(counter % 30 == 0)
+        if(rssi < UPPER_THRESH)
+            send(name, linearStatus);
 }
 
 
+// 30 Hz
+int autonomyCounter = 0;
 void autonomyStatusCallback(const messages::msg::AutonomyStatus::SharedPtr autonomyStatus){
     //RCLCPP_INFO(nodeHandle->get_logger(), "autonomy callback");
-    if(rssi < CRIT_THRESH)
-        send("Autonomy", autonomyStatus);
+    autonomyCounter++;
+    if(autonomyCounter % 15 == 0)
+        if(rssi < CRIT_THRESH)
+            send("Autonomy", autonomyStatus);
 }
 
 
@@ -563,76 +590,79 @@ int main(int argc, char **argv){
     auto commHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat",1);
 
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
+    int talon1Counter = 0, talon2Counter = 0, talon3Counter = 0, talon4Counter = 0;
     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
             "talon_14_info", 1,
-            [](const messages::msg::TalonStatus::SharedPtr msg) {
-                talonStatusCallback("Talon 1", msg);
+            [&talon1Counter](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 1", msg, talon1Counter);
             });
 
     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
             "talon_15_info", 1,
-            [](const messages::msg::TalonStatus::SharedPtr msg) {
-                talonStatusCallback("Talon 2", msg);
+            [&talon2Counter](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 2", msg, talon2Counter);
             });
 
     auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
             "talon_16_info", 1,
-            [](const messages::msg::TalonStatus::SharedPtr msg) {
-                talonStatusCallback("Talon 3", msg);
+            [&talon3Counter](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 3", msg, talon3Counter);
             });
 
     auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
             "talon_17_info", 1,
-            [](const messages::msg::TalonStatus::SharedPtr msg) {
-                talonStatusCallback("Talon 4", msg);
+            [&talon4Counter](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 4", msg, talon4Counter);
             });
 
+    int falcon1Counter = 0, falcon2Counter = 0, falcon3Counter = 0, falcon4Counter = 0;
     auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_10_info", 1,
-            [](const messages::msg::FalconStatus::SharedPtr msg) {
-                falconStatusCallback("Falcon 1", msg);
+            [&falcon1Counter](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 1", msg, falcon1Counter);
             });
 
     auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_11_info", 1,
-            [](const messages::msg::FalconStatus::SharedPtr msg) {
-                falconStatusCallback("Falcon 2", msg);
+            [&falcon2Counter](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 2", msg, falcon2Counter);
             });
 
     auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_12_info", 1,
-            [](const messages::msg::FalconStatus::SharedPtr msg) {
-                falconStatusCallback("Falcon 3", msg);
+            [&falcon3Counter](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 3", msg, falcon3Counter);
             });
 
     auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_13_info", 1,
-            [](const messages::msg::FalconStatus::SharedPtr msg) {
-                falconStatusCallback("Falcon 4", msg);
+            [&falcon4Counter](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 4", msg, falcon4Counter);
             });
 
+    int linear1Counter = 0, linear2Counter = 0, linear3Counter = 0, linear4Counter = 0;
     auto linearStatus1Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
             "linearStatus1", 1,
-            [](const messages::msg::LinearStatus::SharedPtr msg) {
-                linearStatusCallback("Linear 1", msg);
+            [&linear1Counter](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 1", msg, linear1Counter);
             });
 
     auto linearStatus2Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
             "linearStatus2", 1,
-            [](const messages::msg::LinearStatus::SharedPtr msg) {
-                linearStatusCallback("Linear 2", msg);
+            [&linear2Counter](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 2", msg, linear2Counter);
             });
 
     auto linearStatus3Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
             "linearStatus3", 1,
-            [](const messages::msg::LinearStatus::SharedPtr msg) {
-                linearStatusCallback("Linear 3", msg);
+            [&linear3Counter](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 3", msg, linear3Counter);
             });
 
     auto linearStatus4Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
             "linearStatus4", 1,
-            [](const messages::msg::LinearStatus::SharedPtr msg) {
-                linearStatusCallback("Linear 4", msg);
+            [&linear4Counter](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 4", msg, linear4Counter);
             });
 
     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
