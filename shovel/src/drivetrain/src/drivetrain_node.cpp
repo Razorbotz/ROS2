@@ -28,6 +28,8 @@ std::shared_ptr<rclcpp::Publisher<messages::msg::DrivetrainStatus_<std::allocato
 double wheelCircum = .2 * M_PI;
 bool printData = false;
 double gearReduction = 100.0;
+const double SENSOR_UNITS_PER_ROTATION = 2048.0;
+const double CONVERT_TO_SEC = 600.0;
 
 double falcon1RawVelocity, falcon2RawVelocity, falcon3RawVelocity, falcon4RawVelocity;
 double falcon1RPM, falcon2RPM, falcon3RPM, falcon4RPM;
@@ -92,11 +94,12 @@ void userRightSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 
 // Testing code to translate velocity into rpm
 // Falcon encoder has 2048 ticks / rev and reads every 100ms
+// To translate from vel / 100 ms to rpm, multiply by 600
 // Also going to try to estimate ground speed
 void falcon1Callback(const messages::msg::FalconStatus::SharedPtr speed){
-    double falcon1RawVelocity = speed->sensor_velocity;
-    double falcon1RPM = falcon1RawVelocity * 60.0 / (2048.0 * gearReduction);
-    double falcon1GroundSpeed = falcon1RPM / 60.0 * wheelCircum;
+    falcon1RawVelocity = speed->sensor_velocity;
+    falcon1RPM = falcon1RawVelocity * CONVERT_TO_SEC / (SENSOR_UNITS_PER_ROTATION * gearReduction);
+    falcon1GroundSpeed = falcon1RPM / 60.0 * wheelCircum;
 
     if(printData){
         RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 1 raw velocity: %f", falcon1RawVelocity);
@@ -107,9 +110,9 @@ void falcon1Callback(const messages::msg::FalconStatus::SharedPtr speed){
 
 
 void falcon2Callback(const messages::msg::FalconStatus::SharedPtr speed){
-    double falcon2RawVelocity = speed->sensor_velocity;
-    double falcon2RPM = falcon2RawVelocity * 60.0 / (2048.0 * gearReduction);
-    double falcon2GroundSpeed = falcon2RPM / 60.0 * wheelCircum;
+    falcon2RawVelocity = speed->sensor_velocity;
+    falcon2RPM = falcon2RawVelocity * CONVERT_TO_SEC / (SENSOR_UNITS_PER_ROTATION * gearReduction);
+    falcon2GroundSpeed = falcon2RPM / 60.0 * wheelCircum;
 
     if(printData){
         RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 2 raw velocity: %f", falcon2RawVelocity);
@@ -120,9 +123,9 @@ void falcon2Callback(const messages::msg::FalconStatus::SharedPtr speed){
 
 
 void falcon3Callback(const messages::msg::FalconStatus::SharedPtr speed){
-    double falcon3RawVelocity = speed->sensor_velocity;
-    double falcon3RPM = falcon3RawVelocity * 60.0 / (2048.0 * gearReduction);
-    double falcon3GroundSpeed = falcon3RPM / 60.0 * wheelCircum;
+    falcon3RawVelocity = speed->sensor_velocity;
+    falcon3RPM = falcon3RawVelocity * CONVERT_TO_SEC / (SENSOR_UNITS_PER_ROTATION * gearReduction);
+    falcon3GroundSpeed = falcon3RPM / 60.0 * wheelCircum;
 
     if(printData){
         RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 3 raw velocity: %f", falcon3RawVelocity);
@@ -133,9 +136,9 @@ void falcon3Callback(const messages::msg::FalconStatus::SharedPtr speed){
 
 
 void falcon4Callback(const messages::msg::FalconStatus::SharedPtr speed){
-    double falcon4RawVelocity = speed->sensor_velocity;
-    double falcon4RPM = falcon4RawVelocity * 60.0 / (2048.0 * gearReduction);
-    double falcon4GroundSpeed = falcon4RPM / 60.0 * wheelCircum;
+    falcon4RawVelocity = speed->sensor_velocity;
+    falcon4RPM = falcon4RawVelocity * CONVERT_TO_SEC / (SENSOR_UNITS_PER_ROTATION * gearReduction);
+    falcon4GroundSpeed = falcon4RPM / 60.0 * wheelCircum;
 
     if(printData){
         RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 4 raw velocity: %f", falcon4RawVelocity);
