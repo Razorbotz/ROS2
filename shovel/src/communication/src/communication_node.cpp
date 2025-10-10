@@ -274,23 +274,87 @@ void send(std::string messageLabel, const messages::msg::LinearStatus::SharedPtr
     send(message);
 }
 
+std::string robotState = "";
+std::string excavationState = "";
+std::string errorState = "";
+std::string diagnosticsState = "";
+std::string tiltState = "";
+std::string dumpState = "";
+std::string bucketState = "";
+std::string armsState = "";
+float destX = 0.0;
+float destZ = 0.0;
+
 
 void send(std::string messageLabel, const messages::msg::AutonomyStatus::SharedPtr autonomy){
     if(silentRunning)return;
 
+    bool sendMessage = false;
     BinaryMessage message(messageLabel);
-    message.addElementString("Robot State", autonomy->robot_state);
-    message.addElementString("Excavation State", autonomy->excavation_state);
-    message.addElementString("Error State", autonomy->error_state);
-    message.addElementString("Diagnostics State", autonomy->diagnostics_state);
-    message.addElementString("Tilt State", autonomy->tilt_state);
-    message.addElementString("Dump State", autonomy->dump_state);
-    message.addElementString("Level Bucket", autonomy->bucket_state);
-    message.addElementString("Level Arms", autonomy->arms_state);
-    message.addElementFloat32("Dest X", autonomy->dest_x);
-    message.addElementFloat32("Dest Z", autonomy->dest_z);
-
-    send(message);
+    if(robotState != autonomy->robot_state){
+        message.addElementString("Robot State", autonomy->robot_state);
+        robotState = autonomy->robot_state;
+        sendMessage = true;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added Robot state");
+    }
+    if(excavationState != autonomy->excavation_state){
+        message.addElementString("Excavation State", autonomy->excavation_state);
+        excavationState = autonomy->excavation_state;
+        sendMessage = true;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added Excavation state");
+    }
+    if(errorState != autonomy->error_state){
+        message.addElementString("Error State", autonomy->error_state);
+        errorState = autonomy->error_state;
+        sendMessage = true;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added Error state");
+    }
+    if(diagnosticsState != autonomy->diagnostics_state){
+        message.addElementString("Diagnostics State", autonomy->diagnostics_state);
+        diagnosticsState = autonomy->diagnostics_state;
+        sendMessage = true;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added Diagnostics state");
+    }
+    if(tiltState != autonomy->tilt_state){
+        message.addElementString("Tilt State", autonomy->tilt_state);
+        tiltState = autonomy->tilt_state;
+        sendMessage = true;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added Tilt state");
+    }
+    if(dumpState != autonomy->dump_state){
+        message.addElementString("Dump State", autonomy->dump_state);
+        dumpState = autonomy->dump_state;
+        sendMessage = true;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added Dump state");
+    }
+    if(bucketState != autonomy->bucket_state){
+        message.addElementString("Level Bucket", autonomy->bucket_state);
+        bucketState = autonomy->bucket_state;
+        sendMessage = true;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added Level bucket");
+    }
+    if(armsState != autonomy->arms_state){
+        message.addElementString("Level Arms", autonomy->arms_state);
+        armsState = autonomy->arms_state;
+        sendMessage = true;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added Level Arms");
+    }
+    if(destX != autonomy->dest_x){
+        message.addElementFloat32("Dest X", autonomy->dest_x);
+        destX = autonomy->dest_x;
+        sendMessage = true;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added Dest X");
+    }
+    if(destZ != autonomy->dest_z){
+        message.addElementFloat32("Dest Z", autonomy->dest_z);
+        destZ = autonomy->dest_z;
+        sendMessage = true;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added Dest Z");
+    }
+    if(sendMessage){
+        RCLCPP_INFO(nodeHandle->get_logger(), "Sending message");
+        send(message);
+    }
 }
 
 
@@ -439,11 +503,13 @@ void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus:
 void falconStatusCallback(const std::string& name, const messages::msg::FalconStatus::SharedPtr talonStatus, int& counter){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
     counter++;
-    if(counter % 20 == 0)
+    if(counter % 20 == 0){
         if(rssi < CRIT_THRESH)
             send(name,talonStatus);
+    }
     else{
-        sendFalconCrit(name, talonStatus);
+        if(rssi < CRIT_THRESH)
+            sendFalconCrit(name, talonStatus);
     }
 }
 
