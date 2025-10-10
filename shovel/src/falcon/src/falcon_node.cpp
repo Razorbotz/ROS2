@@ -272,7 +272,7 @@ int main(int argc,char** argv){
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
-	rclcpp::Rate rate(20);
+	rclcpp::Rate rate(50);
 	auto start = std::chrono::high_resolution_clock::now();
 	auto errorTimer = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
@@ -313,7 +313,7 @@ int main(int argc,char** argv){
 				}
 			}
 			double temperature=talonFX->GetTemperature();
-			int sensorPosition0=talonFX->GetSelectedSensorPosition(0);
+			double sensorPosition0=talonFX->GetSelectedSensorPosition(0);
 			double sensorVelocity0=talonFX->GetSelectedSensorVelocity(0);
 			int closedLoopError0=talonFX->GetClosedLoopError(0);
 			double integralAccumulator0=talonFX->GetIntegralAccumulator(0);

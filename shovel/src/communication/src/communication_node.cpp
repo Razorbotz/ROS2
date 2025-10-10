@@ -190,8 +190,8 @@ void send(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr
     //message.addElementFloat32("Output Voltage",talonStatus->output_voltage);
     message.addElementFloat32("Output Percent",talonStatus->output_percent);
     message.addElementUInt8("Temperature",(uint8_t)talonStatus->temperature);
-    message.addElementUInt16("Sensor Position",(uint8_t)talonStatus->sensor_position);
-    message.addElementFloat32("Sensor Velocity",(uint8_t)talonStatus->sensor_velocity);
+    message.addElementFloat32("Sensor Position",talonStatus->sensor_position);
+    message.addElementFloat32("Sensor Velocity",talonStatus->sensor_velocity);
     message.addElementFloat32("Max Current", talonStatus->max_current);
     message.addElementBoolean("Temp Disable", talonStatus->temp_disable);
     message.addElementBoolean("Error", talonStatus->error);
