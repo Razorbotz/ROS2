@@ -314,7 +314,7 @@ int main(int argc,char** argv){
 			}
 			double temperature=talonFX->GetTemperature();
 			int sensorPosition0=talonFX->GetSelectedSensorPosition(0);
-			int sensorVelocity0=talonFX->GetSelectedSensorVelocity(0);
+			double sensorVelocity0=talonFX->GetSelectedSensorVelocity(0);
 			int closedLoopError0=talonFX->GetClosedLoopError(0);
 			double integralAccumulator0=talonFX->GetIntegralAccumulator(0);
 			double errorDerivative0=talonFX->GetErrorDerivative(0);

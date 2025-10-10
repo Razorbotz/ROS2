@@ -5,7 +5,7 @@ float32 output_voltage
 float32 output_percent
 float32 temperature
 int32 sensor_position
-int32 sensor_velocity
+float32 sensor_velocity
 int32 closed_loop_error 
 int32 integral_accumulator
 int32 error_derivative

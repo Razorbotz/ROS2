@@ -294,7 +294,7 @@ int main(int argc,char** argv){
 			double motorOutputPercent=talonSRX->GetMotorOutputPercent();
 			double temperature=talonSRX->GetTemperature();				
 			int sensorPosition0=talonSRX->GetSelectedSensorPosition(0);
-			int sensorVelocity0=talonSRX->GetSelectedSensorVelocity(0);
+			double sensorVelocity0=talonSRX->GetSelectedSensorVelocity(0);
 			int closedLoopError0=talonSRX->GetClosedLoopError(0);
 			double integralAccumulator0=talonSRX->GetIntegralAccumulator(0);
 			double errorDerivative0=talonSRX->GetErrorDerivative(0);

@@ -191,7 +191,7 @@ void send(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr
     message.addElementFloat32("Output Percent",talonStatus->output_percent);
     message.addElementUInt8("Temperature",(uint8_t)talonStatus->temperature);
     message.addElementUInt16("Sensor Position",(uint8_t)talonStatus->sensor_position);
-    message.addElementInt8("Sensor Velocity",(uint8_t)talonStatus->sensor_velocity);
+    message.addElementFloat32("Sensor Velocity",(uint8_t)talonStatus->sensor_velocity);
     message.addElementFloat32("Max Current", talonStatus->max_current);
     message.addElementBoolean("Temp Disable", talonStatus->temp_disable);
     message.addElementBoolean("Error", talonStatus->error);
@@ -215,7 +215,7 @@ void send(std::string messageLabel, const messages::msg::TalonStatus::SharedPtr 
     message.addElementFloat32("Output Percent",talonStatus->output_percent);
     message.addElementUInt8("Temperature",(uint8_t)talonStatus->temperature);
     message.addElementUInt16("Sensor Position",talonStatus->sensor_position);
-    message.addElementInt8("Sensor Velocity",(int8_t)talonStatus->sensor_velocity);
+    message.addElementFloat32("Sensor Velocity",(int8_t)talonStatus->sensor_velocity);
     message.addElementFloat32("Max Current", talonStatus->max_current);
     message.addElementBoolean("Temp Disable", talonStatus->temp_disable);
     send(message);
@@ -387,7 +387,7 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
 void talonStatusCallback(const std::string& name, const messages::msg::TalonStatus::SharedPtr talonStatus, int& counter){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon1 callback");
     counter++;
-    if(counter % 50 == 0)
+    if(counter % 20 == 0)
         if(rssi < CRIT_THRESH)
             send(name, talonStatus);
 }
@@ -405,7 +405,7 @@ void talonStatusCallback(const std::string& name, const messages::msg::TalonStat
 void falconStatusCallback(const std::string& name, const messages::msg::FalconStatus::SharedPtr talonStatus, int& counter){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
     counter++;
-    if(counter % 10 == 0)
+    if(counter % 2 == 0)
         if(rssi < CRIT_THRESH)
             send(name,talonStatus);
 }
