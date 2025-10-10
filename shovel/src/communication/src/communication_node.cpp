@@ -33,6 +33,7 @@
 #include <messages/msg/autonomy_status.hpp>
 #include <messages/msg/falcon_status.hpp>
 #include <messages/msg/system_status.hpp>
+#include <messages/msg/drivetrain_status.hpp>
 
 #include <BinaryMessage.hpp>
 #include "utils/utils.hpp"
@@ -353,6 +354,29 @@ void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status){
 }
 
 
+// 30 Hz
+int drivetrainCounter = 0;
+void drivetrainStatusCallback(const messages::msg::DrivetrainStatus::SharedPtr status){
+    if(silentRunning)return;
+    drivetrainCounter++;
+    BinaryMessage message("Drivetrain");
+    message.addElementFloat32("F1 Vel", status->falcon1_velocity);
+    message.addElementFloat32("F1 RPM", status->falcon1_rpm);
+    message.addElementFloat32("F1 Speed", status->falcon1_ground_speed);
+    message.addElementFloat32("F2 Vel", status->falcon2_velocity);
+    message.addElementFloat32("F2 RPM", status->falcon2_rpm);
+    message.addElementFloat32("F2 Speed", status->falcon2_ground_speed);
+    message.addElementFloat32("F3 Vel", status->falcon3_velocity);
+    message.addElementFloat32("F3 RPM", status->falcon3_rpm);
+    message.addElementFloat32("F3 Speed", status->falcon3_ground_speed);
+    message.addElementFloat32("F4 Vel", status->falcon4_velocity);
+    message.addElementFloat32("F4 RPM", status->falcon4_rpm);
+    message.addElementFloat32("F4 Speed", status->falcon4_ground_speed);
+    send(message);
+}
+
+
+
 // 10 Hz
 int powerCounter = 0;
 /** @brief Callback function for the power topic.
@@ -668,6 +692,7 @@ int main(int argc, char **argv){
     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
     auto autonomyStatusSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyStatus>("autonomy_status", 10, autonomyStatusCallback);
     auto systemStatusSubscriber = nodeHandle->create_subscription<messages::msg::SystemStatus>("system_status",10,systemStatusCallback);
+    auto drivetrainStatusSubscriber = nodeHandle->create_subscription<messages::msg::DrivetrainStatus>("drivetrain_status",10,drivetrainStatusCallback);
 
     int server_fd, bytesRead; 
     int opt = 1; 

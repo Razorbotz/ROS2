@@ -1,0 +1,12 @@
+float32 falcon1_velocity
+float32 falcon1_rpm
+float32 falcon1_ground_speed
+float32 falcon2_velocity
+float32 falcon2_rpm
+float32 falcon2_ground_speed
+float32 falcon3_velocity
+float32 falcon3_rpm
+float32 falcon3_ground_speed
+float32 falcon4_velocity
+float32 falcon4_rpm
+float32 falcon4_ground_speed

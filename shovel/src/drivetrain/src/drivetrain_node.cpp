@@ -9,6 +9,8 @@
 
 #include "messages/msg/linear_status.hpp"
 #include "messages/msg/falcon_status.hpp"
+#include "messages/msg/drivetrain_status.hpp"
+#include "utils/utils.hpp"
 
 rclcpp::Node::SharedPtr nodeHandle;
 
@@ -21,8 +23,16 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > falcon11UserPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > falcon12UserPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > falcon13UserPublisher;
+std::shared_ptr<rclcpp::Publisher<messages::msg::DrivetrainStatus_<std::allocator<void> >, std::allocator<void> > > drivetrainStatusPublisher;
 
 double wheelCircum = .2 * M_PI;
+bool printData = false;
+double gearReduction = 100.0;
+
+double falcon1RawVelocity, falcon2RawVelocity, falcon3RawVelocity, falcon4RawVelocity;
+double falcon1RPM, falcon2RPM, falcon3RPM, falcon4RPM;
+double falcon1GroundSpeed, falcon2GroundSpeed, falcon3GroundSpeed, falcon4GroundSpeed;
+
 
 /** @file
  * @brief Node to control drive train motors
@@ -84,52 +94,79 @@ void userRightSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 // Falcon encoder has 2048 ticks / rev and reads every 100ms
 // Also going to try to estimate ground speed
 void falcon1Callback(const messages::msg::FalconStatus::SharedPtr speed){
-    double rawVelocity = speed->sensor_velocity;
-    double rpm = rawVelocity * 60.0 / 2048.0;
-    double groundSpeed = rpm / 60.0 * wheelCircum;
+    double falcon1RawVelocity = speed->sensor_velocity;
+    double falcon1RPM = falcon1RawVelocity * 60.0 / (2048.0 * gearReduction);
+    double falcon1GroundSpeed = falcon1RPM / 60.0 * wheelCircum;
 
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 1 raw velocity: %f", rawVelocity);
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 1 rpm: %f", rpm);
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 1 groundSpeed: %f", groundSpeed);
+    if(printData){
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 1 raw velocity: %f", falcon1RawVelocity);
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 1 rpm: %f", falcon1RPM);
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 1 groundSpeed: %f", falcon1GroundSpeed);
+    }
 }
 
 
 void falcon2Callback(const messages::msg::FalconStatus::SharedPtr speed){
-    double rawVelocity = speed->sensor_velocity;
-    double rpm = rawVelocity * 60.0 / 2048.0;
-    double groundSpeed = rpm / 60.0 * wheelCircum;
+    double falcon2RawVelocity = speed->sensor_velocity;
+    double falcon2RPM = falcon2RawVelocity * 60.0 / (2048.0 * gearReduction);
+    double falcon2GroundSpeed = falcon2RPM / 60.0 * wheelCircum;
 
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 2 raw velocity: %f", rawVelocity);
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 2 rpm: %f", rpm);
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 2 groundSpeed: %f", groundSpeed);
+    if(printData){
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 2 raw velocity: %f", falcon2RawVelocity);
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 2 rpm: %f", falcon2RPM);
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 2 groundSpeed: %f", falcon2GroundSpeed);
+    }
 }
 
 
 void falcon3Callback(const messages::msg::FalconStatus::SharedPtr speed){
-    double rawVelocity = speed->sensor_velocity;
-    double rpm = rawVelocity * 60.0 / 2048.0;
-    double groundSpeed = rpm / 60.0 * wheelCircum;
+    double falcon3RawVelocity = speed->sensor_velocity;
+    double falcon3RPM = falcon3RawVelocity * 60.0 / (2048.0 * gearReduction);
+    double falcon3GroundSpeed = falcon3RPM / 60.0 * wheelCircum;
 
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 3 raw velocity: %f", rawVelocity);
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 3 rpm: %f", rpm);
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 3 groundSpeed: %f", groundSpeed);
+    if(printData){
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 3 raw velocity: %f", falcon3RawVelocity);
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 3 rpm: %f", falcon3RPM);
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 3 groundSpeed: %f", falcon3GroundSpeed);
+    }
 }
 
 
 void falcon4Callback(const messages::msg::FalconStatus::SharedPtr speed){
-    double rawVelocity = speed->sensor_velocity;
-    double rpm = rawVelocity * 60.0 / 2048.0;
-    double groundSpeed = rpm / 60.0 * wheelCircum;
+    double falcon4RawVelocity = speed->sensor_velocity;
+    double falcon4RPM = falcon4RawVelocity * 60.0 / (2048.0 * gearReduction);
+    double falcon4GroundSpeed = falcon4RPM / 60.0 * wheelCircum;
 
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 4 raw velocity: %f", rawVelocity);
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 4 rpm: %f", rpm);
-    RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 4 groundSpeed: %f", groundSpeed);
+    if(printData){
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 4 raw velocity: %f", falcon4RawVelocity);
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 4 rpm: %f", falcon4RPM);
+        RCLCPP_INFO(nodeHandle->get_logger(), "Falcon 4 groundSpeed: %f", falcon4GroundSpeed);
+    }
+}
+
+
+void publishStatus(){
+    messages::msg::DrivetrainStatus drivetrainStatus;
+    drivetrainStatus.falcon1_velocity = falcon1RawVelocity;
+    drivetrainStatus.falcon1_rpm = falcon1RPM;
+    drivetrainStatus.falcon1_ground_speed = falcon1GroundSpeed;
+    drivetrainStatus.falcon2_velocity = falcon2RawVelocity;
+    drivetrainStatus.falcon2_rpm = falcon2RPM;
+    drivetrainStatus.falcon2_ground_speed = falcon2GroundSpeed;
+    drivetrainStatus.falcon3_velocity = falcon3RawVelocity;
+    drivetrainStatus.falcon3_rpm = falcon3RPM;
+    drivetrainStatus.falcon3_ground_speed = falcon3GroundSpeed;
+    drivetrainStatus.falcon4_velocity = falcon4RawVelocity;
+    drivetrainStatus.falcon4_rpm = falcon4RPM;
+    drivetrainStatus.falcon4_ground_speed = falcon4GroundSpeed;
+    drivetrainStatusPublisher->publish(drivetrainStatus);
 }
 
 
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("drivetrain");
+    printData  = utils::getParameter<bool>(nodeHandle, "print_data", false);
 
     auto driveLeftSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("drive_left_speed",1,driveLeftSpeedCallback);
     auto driveRightSpeedSubscriber = nodeHandle->create_subscription<std_msgs::msg::Float32>("drive_right_speed",1,driveRightSpeedCallback);
@@ -151,14 +188,18 @@ int main(int argc, char **argv){
     falcon12UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_12_user_speed",1);
     falcon13UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_13_user_speed",1);
 
+    drivetrainStatusPublisher = nodeHandle->create_publisher<messages::msg::DrivetrainStatus>("drivetrain_status",1);
+
     auto start = std::chrono::high_resolution_clock::now();
     auto finish = std::chrono::high_resolution_clock::now();
+    int counter = 0;
     rclcpp::Rate rate(30);
     while(rclcpp::ok()){
         finish = std::chrono::high_resolution_clock::now();
         if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > 33){
             start = std::chrono::high_resolution_clock::now();
         }
+        publishStatus();
         rate.sleep();
         rclcpp:spin_some(nodeHandle);
     }
