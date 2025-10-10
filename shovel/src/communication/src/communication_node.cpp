@@ -417,6 +417,16 @@ void talonStatusCallback(const std::string& name, const messages::msg::TalonStat
 }
 
 
+void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr talonStatus){
+    if(silentRunning)return;
+    //RCLCPP_INFO(nodeHandle->get_logger(), "send talon");
+    BinaryMessage message(messageLabel);
+    message.addElementFloat32("Output Percent",talonStatus->output_percent);
+    send(message);
+}
+
+
+
 // 20 Hz
 /** @brief Callback function for the Talon topic
  * 
@@ -429,9 +439,12 @@ void talonStatusCallback(const std::string& name, const messages::msg::TalonStat
 void falconStatusCallback(const std::string& name, const messages::msg::FalconStatus::SharedPtr talonStatus, int& counter){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
     counter++;
-    if(counter % 2 == 0)
+    if(counter % 20 == 0)
         if(rssi < CRIT_THRESH)
             send(name,talonStatus);
+    else{
+        sendFalconCrit(name, talonStatus);
+    }
 }
 
 
