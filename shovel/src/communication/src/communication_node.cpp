@@ -21,6 +21,7 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/empty.hpp>
+#include <cstdint>
 
 #include <messages/msg/power.hpp>
 #include <messages/msg/key_state.hpp>
@@ -90,7 +91,113 @@ bool debug = false;
 #define UPPER_THRESH 80
 #define CRIT_THRESH 90
 
+struct Falcon {
+    uint8_t device_id;
+    uint16_t voltage;
+    uint16_t current;
+    float output_percent;
+    uint8_t temperature;
+    float sensor_position;
+    float sensor_velocity;
+    float max_current;
+    bool temp_disable;
+    bool error;
+};
 
+Falcon falcon1, falcon2, falcon3, falcon4;
+
+struct Talon {
+    uint8_t device_id;
+    uint16_t voltage;
+    uint16_t current;
+    float output_percent;
+    uint8_t temperature;
+    float sensor_position;
+    float sensor_velocity;
+    float max_current;
+    bool temp_disable;
+};
+
+Talon talon1, talon2, talon3, talon4;
+
+struct Linear {
+    uint8_t motor_number;
+    float speed;
+    uint16_t potentiometer;
+    uint8_t time_without_change;
+    uint16_t max;
+    uint16_t min;
+    std::string error;
+    bool at_min;
+    bool at_max;
+    float distance;
+    bool sensorless;
+};
+
+Linear linear1, linear2, linear3, linear4;
+
+
+struct AutonomyState {
+    std::string robot_state;
+    std::string excavation_state;
+    std::string error_state;
+    std::string diagnostics_state;
+    std::string tilt_state;
+    std::string dump_state;
+    std::string bucket_state;
+    std::string arms_state;
+    float dest_x = 0.0f;
+    float dest_z = 0.0f;
+};
+
+AutonomyState autonomyState;
+
+
+struct ZedState {
+    float x;
+    float y;
+    float z;
+    float roll;
+    float pitch;
+    float yaw;
+    bool aruco;
+};
+
+ZedState zedState;
+
+struct DrivetrainState {
+    float f1_vel;
+    float f1_rpm;
+    float f1_speed;
+    float f2_vel;
+    float f2_rpm;
+    float f2_speed;
+    float f3_vel;
+    float f3_rpm;
+    float f3_speed;
+    float f4_vel;
+    float f4_rpm;
+    float f4_speed;
+};
+
+DrivetrainState drivetrainState;
+
+struct SystemState {
+    int32_t  rssi;
+    std::string wifi;
+    std::string can_bus;
+    bool using_can1;
+    int32_t  rx_packets;
+    int32_t  tx_packets;
+    std::string can_bus2;
+    int32_t  rx_packets2;
+    int32_t  tx_packets2;
+    int32_t  first_motor;
+    int32_t  second_motor;
+    int32_t  num_breaks;
+};
+
+SystemState systemState;
 
 /** @brief Parse a byte represenation into a float.
  * 
@@ -176,182 +283,203 @@ void send(BinaryMessage message){
 
 }
 
+void update_if_changed(BinaryMessage& msg, bool& changed, uint8_t& old_val, uint8_t new_val, const std::string& label) {
+    if (old_val != new_val) {
+        changed = true;
+        msg.addElementUInt8(label, new_val);
+        old_val = new_val;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
+    }
+}
 
-void send(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr talonStatus){
-    if(silentRunning)return;
-    //RCLCPP_INFO(nodeHandle->get_logger(), "send talon");
-    BinaryMessage message(messageLabel);
+void update_if_changed(BinaryMessage& msg, bool& changed, std::string& old_val, const std::string& new_val, const std::string& label) {
+    if (old_val != new_val) {
+        changed = true;
+        msg.addElementString(label, new_val);
+        old_val = new_val;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
+    }
+}
 
-    message.addElementUInt8("Device ID",(uint8_t)talonStatus->device_id);
-    float volt = talonStatus->bus_voltage *= 100.0;
-    uint16_t voltage = volt;
-    message.addElementUInt16("Bus Voltage",voltage);
-    uint16_t current = talonStatus->output_current *= 100.0;
-    message.addElementUInt16("Output Current",current);
-    //message.addElementFloat32("Output Voltage",talonStatus->output_voltage);
-    message.addElementFloat32("Output Percent",talonStatus->output_percent);
-    message.addElementUInt8("Temperature",(uint8_t)talonStatus->temperature);
-    message.addElementFloat32("Sensor Position",talonStatus->sensor_position);
-    message.addElementFloat32("Sensor Velocity",talonStatus->sensor_velocity);
-    message.addElementFloat32("Max Current", talonStatus->max_current);
-    message.addElementBoolean("Temp Disable", talonStatus->temp_disable);
-    message.addElementBoolean("Error", talonStatus->error);
+void update_if_changed(BinaryMessage& msg, bool& changed, uint16_t& old_val, uint16_t new_val, const std::string& label) {
+    if (old_val != new_val) {
+        changed = true;
+        msg.addElementUInt16(label, new_val);
+        old_val = new_val;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
+    }
+}
 
-    send(message);
+void update_if_changed(BinaryMessage& msg, bool& changed, float& old_val, float new_val, const std::string& label) {
+    if (old_val != new_val) {
+        changed = true;
+        msg.addElementFloat32(label, new_val);
+        old_val = new_val;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
+    }
+}
+
+void update_if_changed(BinaryMessage& msg, bool& changed, bool& old_val, bool new_val, const std::string& label) {
+    if (old_val != new_val) {
+        changed = true;
+        msg.addElementBoolean(label, new_val);
+        old_val = new_val;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
+    }
+}
+
+void update_if_changed(BinaryMessage& msg, bool& changed, int& old_val, int new_val, const std::string& label) {
+    if (old_val != new_val) {
+        changed = true;
+        msg.addElementInt32(label, new_val);
+        old_val = new_val;
+        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
+    }
 }
 
 
-void send(std::string messageLabel, const messages::msg::TalonStatus::SharedPtr talonStatus){
-    if(silentRunning)return;
-    //RCLCPP_INFO(nodeHandle->get_logger(), "send talon");
+void send(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr falconStatus, Falcon& falcon) {
+    if (silentRunning) return;
+
+    bool message_changed = false;
     BinaryMessage message(messageLabel);
 
-    message.addElementInt8("Device ID",talonStatus->device_id);
-    float volt = talonStatus->bus_voltage *= 100.0;
-    uint16_t voltage = volt;
-    message.addElementUInt16("Bus Voltage",voltage);
-    uint16_t current = talonStatus->output_current *= 100.0;
-    message.addElementUInt16("Output Current",current);
-    //message.addElementFloat32("Output Voltage",talonStatus->output_voltage);
-    message.addElementFloat32("Output Percent",talonStatus->output_percent);
-    message.addElementUInt8("Temperature",(uint8_t)talonStatus->temperature);
-    message.addElementUInt16("Sensor Position",talonStatus->sensor_position);
-    message.addElementFloat32("Sensor Velocity",talonStatus->sensor_velocity);
-    message.addElementFloat32("Max Current", talonStatus->max_current);
-    message.addElementBoolean("Temp Disable", talonStatus->temp_disable);
-    send(message);
+    uint16_t new_voltage = falconStatus->bus_voltage * 100.0;
+    uint16_t new_current = falconStatus->output_current * 100.0;
+    uint8_t new_temperature = (uint8_t)falconStatus->temperature;
+    uint8_t new_device_id = (uint8_t)falconStatus->device_id;
+
+    update_if_changed(message, message_changed, falcon.device_id,      new_device_id,                 "Device ID");
+    update_if_changed(message, message_changed, falcon.voltage,         new_voltage,                   "Bus Voltage");
+    update_if_changed(message, message_changed, falcon.current,         new_current,                   "Output Current");
+    update_if_changed(message, message_changed, falcon.output_percent,  falconStatus->output_percent,  "Output Percent");
+    update_if_changed(message, message_changed, falcon.temperature,     new_temperature,               "Temperature");
+    update_if_changed(message, message_changed, falcon.sensor_position, falconStatus->sensor_position, "Sensor Position");
+    update_if_changed(message, message_changed, falcon.sensor_velocity, falconStatus->sensor_velocity, "Sensor Velocity");
+    update_if_changed(message, message_changed, falcon.max_current,     falconStatus->max_current,     "Max Current");
+    update_if_changed(message, message_changed, falcon.temp_disable,    falconStatus->temp_disable,    "Temp Disable");
+    update_if_changed(message, message_changed, falcon.error,           falconStatus->error,           "Error");
+
+    if (message_changed) {
+        send(message);
+    }
 }
 
 
-void send(std::string messageLabel, const messages::msg::Power::SharedPtr power){
-    if(silentRunning)return;
-    //RCLCPP_INFO(nodeHandle->get_logger(), "send power");
+void send(std::string messageLabel, const messages::msg::TalonStatus::SharedPtr talonStatus, Talon& talon) {
+    if (silentRunning) return;
+
+    bool message_changed = false;
     BinaryMessage message(messageLabel);
 
-    message.addElementFloat32("Voltage",power->voltage);
-    message.addElementFloat32("Temp",power->temperature);
-    message.addElementFloat32("Current 0",power->current0);
-    message.addElementFloat32("Current 1",power->current1);
-    message.addElementFloat32("Current 2",power->current2);
-    message.addElementFloat32("Current 3",power->current3);
-    message.addElementFloat32("Current 4",power->current4);
-    message.addElementFloat32("Current 5",power->current5);
-    message.addElementFloat32("Current 6",power->current6);
-    
+    uint16_t new_voltage = talonStatus->bus_voltage * 100.0;
+    uint16_t new_current = talonStatus->output_current * 100.0;
+    float new_sensor_pos = talonStatus->sensor_position; 
+
+    update_if_changed(message, message_changed, talon.voltage,        new_voltage,                  "Bus Voltage");
+    update_if_changed(message, message_changed, talon.current,        new_current,                  "Output Current");
+    update_if_changed(message, message_changed, talon.output_percent, talonStatus->output_percent,  "Output Percent");
+    update_if_changed(message, message_changed, talon.temperature,    (uint8_t)talonStatus->temperature, "Temperature");
+    update_if_changed(message, message_changed, talon.sensor_position,new_sensor_pos,               "Sensor Position");
+    update_if_changed(message, message_changed, talon.sensor_velocity,talonStatus->sensor_velocity, "Sensor Velocity");
+    update_if_changed(message, message_changed, talon.max_current,    talonStatus->max_current,     "Max Current");
+    update_if_changed(message, message_changed, talon.temp_disable,   talonStatus->temp_disable,    "Temp Disable");
+
+    if (message_changed) {
+        send(message);
+    }
+}
+
+
+float voltage = 0.0f;
+float temperature = 0.0f;
+std::array<float, 16> currents{};
+
+void send(std::string messageLabel, const messages::msg::Power::SharedPtr power) {
+    if (silentRunning) return;
+
+    const std::array<float, 16> power_currents = {
+        power->current0,  power->current1,  power->current2,  power->current3,
+        power->current4,  power->current5,  power->current6,  power->current7,
+        power->current8,  power->current9,  power->current10, power->current11,
+        power->current12, power->current13, power->current14, power->current15
+    };
+
+    bool message1_changed = false;
+    BinaryMessage message1(messageLabel);
+
+    update_if_changed(message1, message1_changed, voltage, power->voltage, "Voltage");
+    update_if_changed(message1, message1_changed, temperature, power->temperature, "Temp");
+
+    for (int i = 0; i <= 6; ++i) {
+        update_if_changed(message1, message1_changed, currents[i], power_currents[i], "Current " + std::to_string(i));
+    }
+
+    if (message1_changed) {
+        send(message1);
+    }
+
+    bool message2_changed = false;
     BinaryMessage message2("Power2");
-    message2.addElementFloat32("Current 7",power->current7);
-    message2.addElementFloat32("Current 8",power->current8);
-    message2.addElementFloat32("Current 9",power->current9);
-    message2.addElementFloat32("Current 10",power->current10);
-    message2.addElementFloat32("Current 11",power->current11);
-    message2.addElementFloat32("Current 12",power->current12);
-    message2.addElementFloat32("Current 13",power->current13);
-    message2.addElementFloat32("Current 14",power->current14);
-    message2.addElementFloat32("Current 15",power->current15);
 
-    send(message);
-    send(message2);
+    for (int i = 7; i <= 15; ++i) {
+        update_if_changed(message2, message2_changed, currents[i], power_currents[i], "Current " + std::to_string(i));
+    }
+
+    if (message2_changed) {
+        send(message2);
+    }
 }
 
 
-void send(std::string messageLabel, const messages::msg::LinearStatus::SharedPtr linear){
-    if(silentRunning)return;
+void send(std::string messageLabel, const messages::msg::LinearStatus::SharedPtr linearStatus, Linear& linear) {
+    if (silentRunning) return;
 
+    bool message_changed = false;
     BinaryMessage message(messageLabel);
 
-    message.addElementUInt8("Motor Number", (uint8_t)linear->motor_number);
-    message.addElementFloat32("Speed", linear->speed);
-    message.addElementUInt16("Potentiometer", (uint16_t)linear->potentiometer);
-    message.addElementUInt8("Time Without Change", (uint8_t)linear->time_without_change);
-    message.addElementUInt16("Max", (uint16_t)linear->max);
-    message.addElementUInt16("Min", (uint16_t)linear->min);
-    message.addElementString("Error", linear->error);
-    message.addElementBoolean("At Min", linear->at_min);
-    message.addElementBoolean("At Max", linear->at_max);
-    message.addElementFloat32("Distance", linear->distance);
-    message.addElementBoolean("Sensorless", linear->sensorless);
+    uint8_t new_motor_number = (uint8_t)linearStatus->motor_number;
+    uint16_t new_potentiometer = (uint16_t)linearStatus->potentiometer;
+    uint8_t new_time_without_change = (uint8_t)linearStatus->time_without_change;
+    uint16_t new_max = (uint16_t)linearStatus->max;
+    uint16_t new_min = (uint16_t)linearStatus->min;
 
-    send(message);
+    update_if_changed(message, message_changed, linear.motor_number,       new_motor_number,            "Motor Number");
+    update_if_changed(message, message_changed, linear.speed,              linearStatus->speed,         "Speed");
+    update_if_changed(message, message_changed, linear.potentiometer,      new_potentiometer,           "Potentiometer");
+    update_if_changed(message, message_changed, linear.time_without_change,new_time_without_change,     "Time Without Change");
+    update_if_changed(message, message_changed, linear.max,                new_max,                     "Max");
+    update_if_changed(message, message_changed, linear.min,                new_min,                     "Min");
+    update_if_changed(message, message_changed, linear.error,              linearStatus->error,         "Error");
+    update_if_changed(message, message_changed, linear.at_min,             linearStatus->at_min,        "At Min");
+    update_if_changed(message, message_changed, linear.at_max,             linearStatus->at_max,        "At Max");
+    update_if_changed(message, message_changed, linear.distance,           linearStatus->distance,      "Distance");
+    update_if_changed(message, message_changed, linear.sensorless,         linearStatus->sensorless,    "Sensorless");
+
+    if (message_changed) {
+        send(message);
+    }
 }
 
-std::string robotState = "";
-std::string excavationState = "";
-std::string errorState = "";
-std::string diagnosticsState = "";
-std::string tiltState = "";
-std::string dumpState = "";
-std::string bucketState = "";
-std::string armsState = "";
-float destX = 0.0;
-float destZ = 0.0;
 
+void send(std::string messageLabel, const messages::msg::AutonomyStatus::SharedPtr autonomy) {
+    if (silentRunning) return;
 
-void send(std::string messageLabel, const messages::msg::AutonomyStatus::SharedPtr autonomy){
-    if(silentRunning)return;
-
-    bool sendMessage = false;
+    bool message_changed = false;
     BinaryMessage message(messageLabel);
-    if(robotState != autonomy->robot_state){
-        message.addElementString("Robot State", autonomy->robot_state);
-        robotState = autonomy->robot_state;
-        sendMessage = true;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added Robot state");
-    }
-    if(excavationState != autonomy->excavation_state){
-        message.addElementString("Excavation State", autonomy->excavation_state);
-        excavationState = autonomy->excavation_state;
-        sendMessage = true;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added Excavation state");
-    }
-    if(errorState != autonomy->error_state){
-        message.addElementString("Error State", autonomy->error_state);
-        errorState = autonomy->error_state;
-        sendMessage = true;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added Error state");
-    }
-    if(diagnosticsState != autonomy->diagnostics_state){
-        message.addElementString("Diagnostics State", autonomy->diagnostics_state);
-        diagnosticsState = autonomy->diagnostics_state;
-        sendMessage = true;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added Diagnostics state");
-    }
-    if(tiltState != autonomy->tilt_state){
-        message.addElementString("Tilt State", autonomy->tilt_state);
-        tiltState = autonomy->tilt_state;
-        sendMessage = true;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added Tilt state");
-    }
-    if(dumpState != autonomy->dump_state){
-        message.addElementString("Dump State", autonomy->dump_state);
-        dumpState = autonomy->dump_state;
-        sendMessage = true;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added Dump state");
-    }
-    if(bucketState != autonomy->bucket_state){
-        message.addElementString("Level Bucket", autonomy->bucket_state);
-        bucketState = autonomy->bucket_state;
-        sendMessage = true;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added Level bucket");
-    }
-    if(armsState != autonomy->arms_state){
-        message.addElementString("Level Arms", autonomy->arms_state);
-        armsState = autonomy->arms_state;
-        sendMessage = true;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added Level Arms");
-    }
-    if(destX != autonomy->dest_x){
-        message.addElementFloat32("Dest X", autonomy->dest_x);
-        destX = autonomy->dest_x;
-        sendMessage = true;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added Dest X");
-    }
-    if(destZ != autonomy->dest_z){
-        message.addElementFloat32("Dest Z", autonomy->dest_z);
-        destZ = autonomy->dest_z;
-        sendMessage = true;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added Dest Z");
-    }
-    if(sendMessage){
+
+    update_if_changed(message, message_changed, autonomyState.robot_state,      autonomy->robot_state,      "Robot State");
+    update_if_changed(message, message_changed, autonomyState.excavation_state, autonomy->excavation_state, "Excavation State");
+    update_if_changed(message, message_changed, autonomyState.error_state,      autonomy->error_state,      "Error State");
+    update_if_changed(message, message_changed, autonomyState.diagnostics_state,autonomy->diagnostics_state,"Diagnostics State");
+    update_if_changed(message, message_changed, autonomyState.tilt_state,       autonomy->tilt_state,       "Tilt State");
+    update_if_changed(message, message_changed, autonomyState.dump_state,       autonomy->dump_state,       "Dump State");
+    update_if_changed(message, message_changed, autonomyState.bucket_state,     autonomy->bucket_state,     "Level Bucket");
+    update_if_changed(message, message_changed, autonomyState.arms_state,       autonomy->arms_state,       "Level Arms");
+    update_if_changed(message, message_changed, autonomyState.dest_x,           autonomy->dest_x,           "Dest X");
+    update_if_changed(message, message_changed, autonomyState.dest_z,           autonomy->dest_z,           "Dest Z");
+
+    if (message_changed) {
         RCLCPP_INFO(nodeHandle->get_logger(), "Sending message");
         send(message);
     }
@@ -374,47 +502,64 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     zedCounter++;
     if(zedCounter % 15 != 0)
         return;
+
+    bool message_changed = false;
     BinaryMessage message("Zed");
-    message.addElementFloat32("X", zedPosition->x);
-    message.addElementFloat32("Y", zedPosition->y);
-    message.addElementFloat32("Z", zedPosition->z);
-    message.addElementFloat32("roll", zedPosition->roll);
-    message.addElementFloat32("pitch", zedPosition->pitch);
-    message.addElementFloat32("yaw", zedPosition->yaw);
-    message.addElementBoolean("aruco", zedPosition->aruco_visible);
-    send(message);
+
+    update_if_changed(message, message_changed, zedState.x,     zedPosition->x,             "X");
+    update_if_changed(message, message_changed, zedState.y,     zedPosition->y,             "Y");
+    update_if_changed(message, message_changed, zedState.z,     zedPosition->z,             "Z");
+    update_if_changed(message, message_changed, zedState.roll,  zedPosition->roll,          "roll");
+    update_if_changed(message, message_changed, zedState.pitch, zedPosition->pitch,         "pitch");
+    update_if_changed(message, message_changed, zedState.yaw,   zedPosition->yaw,           "yaw");
+    update_if_changed(message, message_changed, zedState.aruco, zedPosition->aruco_visible, "aruco");
+
+    if(message_changed){
+        send(message);
+    }
 }
 
 // 10 Hz
 int systemCounter = 0;
-void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status){
-    if(silentRunning)return;
+void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status) {
+    if (silentRunning) return;
+
     systemCounter++;
-    if(systemCounter % 5 != 0)
-        return;
+    if (systemCounter % 5 != 0) return;
+
+    bool message_changed = false;
     BinaryMessage message("Communication");
-    rssi = status->rssi;
-    message.addElementInt32("RSSI", rssi);
-    if(rssi < LOWER_THRESH)
-        message.addElementString("Wi-Fi", "NORMAL");
-    else if(rssi >= LOWER_THRESH && rssi < UPPER_THRESH)
-        message.addElementString("Wi-Fi", "DEGRADED");
-    else if(rssi >= UPPER_THRESH && rssi < CRIT_THRESH)
-        message.addElementString("Wi-Fi", "INTERFERENCE");
-    else
-        message.addElementString("Wi-Fi", "NON-FUNCIONAL");
-    message.addElementString("CAN Bus", status->can_message);
-    usingCAN1 = status->using_can1;
-    message.addElementBoolean("Using CAN1", usingCAN1);
-    message.addElementInt32("RX packets", status->rx_packets);
-    message.addElementInt32("TX packets", status->tx_packets);
-    message.addElementString("CAN Bus2", status->can2_message);
-    message.addElementInt32("RX2 packets", status->rx2_packets);
-    message.addElementInt32("TX2 packets", status->tx2_packets);
-    message.addElementInt32("First Motor", status->first_motor);
-    message.addElementInt32("Second Motor", status->second_motor);
-    message.addElementInt32("Num Breaks", status->num_breaks);
-    send(message);
+
+    std::string new_wifi_status;
+    if (status->rssi < LOWER_THRESH) {
+        new_wifi_status = "NORMAL";
+    }
+    else if (status->rssi < UPPER_THRESH) {
+        new_wifi_status = "DEGRADED";
+    }
+    else if (status->rssi < CRIT_THRESH) {
+        new_wifi_status = "INTERFERENCE";
+    }
+    else {
+        new_wifi_status = "NON-FUNCTIONAL";
+    }
+
+    update_if_changed(message, message_changed, systemState.rssi,         status->rssi,          "RSSI");
+    update_if_changed(message, message_changed, systemState.wifi,         new_wifi_status,       "Wi-Fi");
+    update_if_changed(message, message_changed, systemState.can_bus,      status->can_message,   "CAN Bus");
+    update_if_changed(message, message_changed, systemState.using_can1,   status->using_can1,    "Using CAN1");
+    update_if_changed(message, message_changed, systemState.rx_packets,   status->rx_packets,    "RX packets");
+    update_if_changed(message, message_changed, systemState.tx_packets,   status->tx_packets,    "TX packets");
+    update_if_changed(message, message_changed, systemState.can_bus2,     status->can2_message,  "CAN Bus2");
+    update_if_changed(message, message_changed, systemState.rx_packets2,  status->rx2_packets,   "RX2 packets");
+    update_if_changed(message, message_changed, systemState.tx_packets2,  status->tx2_packets,   "TX2 packets");
+    update_if_changed(message, message_changed, systemState.first_motor,  status->first_motor,   "First Motor");
+    update_if_changed(message, message_changed, systemState.second_motor, status->second_motor,  "Second Motor");
+    update_if_changed(message, message_changed, systemState.num_breaks,   status->num_breaks,    "Num Breaks");
+
+    if (message_changed) {
+        send(message);
+    }
 }
 
 
@@ -423,20 +568,25 @@ int drivetrainCounter = 0;
 void drivetrainStatusCallback(const messages::msg::DrivetrainStatus::SharedPtr status){
     if(silentRunning)return;
     drivetrainCounter++;
+    bool message_changed = false;
     BinaryMessage message("Drivetrain");
-    message.addElementFloat32("F1 Vel", status->falcon1_velocity);
-    message.addElementFloat32("F1 RPM", status->falcon1_rpm);
-    message.addElementFloat32("F1 Speed", status->falcon1_ground_speed);
-    message.addElementFloat32("F2 Vel", status->falcon2_velocity);
-    message.addElementFloat32("F2 RPM", status->falcon2_rpm);
-    message.addElementFloat32("F2 Speed", status->falcon2_ground_speed);
-    message.addElementFloat32("F3 Vel", status->falcon3_velocity);
-    message.addElementFloat32("F3 RPM", status->falcon3_rpm);
-    message.addElementFloat32("F3 Speed", status->falcon3_ground_speed);
-    message.addElementFloat32("F4 Vel", status->falcon4_velocity);
-    message.addElementFloat32("F4 RPM", status->falcon4_rpm);
-    message.addElementFloat32("F4 Speed", status->falcon4_ground_speed);
-    send(message);
+
+    update_if_changed(message, message_changed, drivetrainState.f1_vel,   status->falcon1_velocity,      "F1 Vel");
+    update_if_changed(message, message_changed, drivetrainState.f1_rpm,   status->falcon1_rpm,           "F1 RPM");
+    update_if_changed(message, message_changed, drivetrainState.f1_speed, status->falcon1_ground_speed,  "F1 Speed");
+    update_if_changed(message, message_changed, drivetrainState.f2_vel,   status->falcon2_velocity,      "F2 Vel");
+    update_if_changed(message, message_changed, drivetrainState.f2_rpm,   status->falcon2_rpm,           "F2 RPM");
+    update_if_changed(message, message_changed, drivetrainState.f2_speed, status->falcon2_ground_speed,  "F2 Speed");
+    update_if_changed(message, message_changed, drivetrainState.f3_vel,   status->falcon3_velocity,      "F3 Vel");
+    update_if_changed(message, message_changed, drivetrainState.f3_rpm,   status->falcon3_rpm,           "F3 RPM");
+    update_if_changed(message, message_changed, drivetrainState.f3_speed, status->falcon3_ground_speed,  "F3 Speed");
+    update_if_changed(message, message_changed, drivetrainState.f4_vel,   status->falcon4_velocity,      "F4 Vel");
+    update_if_changed(message, message_changed, drivetrainState.f4_rpm,   status->falcon4_rpm,           "F4 RPM");
+    update_if_changed(message, message_changed, drivetrainState.f4_speed, status->falcon4_ground_speed,  "F4 Speed");
+    
+    if (message_changed) {
+        send(message);
+    }
 }
 
 
@@ -472,18 +622,21 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
  * @param talonStatus
  * @return void
  * */
-void talonStatusCallback(const std::string& name, const messages::msg::TalonStatus::SharedPtr talonStatus, int& counter){
+void talonStatusCallback(const std::string& name, const messages::msg::TalonStatus::SharedPtr talonStatus, int& counter, Talon& talon){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon1 callback");
     counter++;
     if(counter % 20 == 0)
         if(rssi < CRIT_THRESH)
-            send(name, talonStatus);
+            send(name, talonStatus, talon);
 }
 
 
-void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr talonStatus){
+void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr talonStatus, Falcon& falcon){
     if(silentRunning)return;
     //RCLCPP_INFO(nodeHandle->get_logger(), "send talon");
+    if(talonStatus->output_percent == falcon.output_percent)
+        return;
+
     BinaryMessage message(messageLabel);
     message.addElementFloat32("Output Percent",talonStatus->output_percent);
     send(message);
@@ -500,16 +653,16 @@ void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus:
  * @param talonStatus
  * @return void
  * */
-void falconStatusCallback(const std::string& name, const messages::msg::FalconStatus::SharedPtr talonStatus, int& counter){
+void falconStatusCallback(const std::string& name, const messages::msg::FalconStatus::SharedPtr talonStatus, int& counter, Falcon& falcon){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
     counter++;
     if(counter % 20 == 0){
         if(rssi < CRIT_THRESH)
-            send(name,talonStatus);
+            send(name,talonStatus, falcon);
     }
     else{
         if(rssi < CRIT_THRESH)
-            sendFalconCrit(name, talonStatus);
+            sendFalconCrit(name, talonStatus, falcon);
     }
 }
 
@@ -522,12 +675,12 @@ void falconStatusCallback(const std::string& name, const messages::msg::FalconSt
  * @param name
  * @param linearStatus 
  */
-void linearStatusCallback(const std::string& name, const messages::msg::LinearStatus::SharedPtr linearStatus, int& counter){
+void linearStatusCallback(const std::string& name, const messages::msg::LinearStatus::SharedPtr linearStatus, int& counter, Linear& linear){
     //RCLCPP_INFO(nodeHandle->get_logger(), "%s callback", name.c_str());
     counter++;
     if(counter % 30 == 0)
         if(rssi < UPPER_THRESH)
-            send(name, linearStatus);
+            send(name, linearStatus, linear);
 }
 
 
@@ -696,76 +849,76 @@ int main(int argc, char **argv){
     int talon1Counter = 0, talon2Counter = 0, talon3Counter = 0, talon4Counter = 0;
     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
             "talon_14_info", 1,
-            [&talon1Counter](const messages::msg::TalonStatus::SharedPtr msg) {
-                talonStatusCallback("Talon 1", msg, talon1Counter);
+            [&](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 1", msg, talon1Counter, talon1);
             });
 
     auto talon2Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
             "talon_15_info", 1,
-            [&talon2Counter](const messages::msg::TalonStatus::SharedPtr msg) {
-                talonStatusCallback("Talon 2", msg, talon2Counter);
+            [&](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 2", msg, talon2Counter, talon2);
             });
 
     auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
             "talon_16_info", 1,
-            [&talon3Counter](const messages::msg::TalonStatus::SharedPtr msg) {
-                talonStatusCallback("Talon 3", msg, talon3Counter);
+            [&](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 3", msg, talon3Counter, talon3);
             });
 
     auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>(
             "talon_17_info", 1,
-            [&talon4Counter](const messages::msg::TalonStatus::SharedPtr msg) {
-                talonStatusCallback("Talon 4", msg, talon4Counter);
+            [&](const messages::msg::TalonStatus::SharedPtr msg) {
+                talonStatusCallback("Talon 4", msg, talon4Counter, talon4);
             });
 
     int falcon1Counter = 0, falcon2Counter = 0, falcon3Counter = 0, falcon4Counter = 0;
     auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_10_info", 1,
-            [&falcon1Counter](const messages::msg::FalconStatus::SharedPtr msg) {
-                falconStatusCallback("Falcon 1", msg, falcon1Counter);
+            [&](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 1", msg, falcon1Counter, falcon1);
             });
 
     auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_11_info", 1,
-            [&falcon2Counter](const messages::msg::FalconStatus::SharedPtr msg) {
-                falconStatusCallback("Falcon 2", msg, falcon2Counter);
+            [&](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 2", msg, falcon2Counter, falcon2);
             });
 
     auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_12_info", 1,
-            [&falcon3Counter](const messages::msg::FalconStatus::SharedPtr msg) {
-                falconStatusCallback("Falcon 3", msg, falcon3Counter);
+            [&](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 3", msg, falcon3Counter, falcon3);
             });
 
     auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_13_info", 1,
-            [&falcon4Counter](const messages::msg::FalconStatus::SharedPtr msg) {
-                falconStatusCallback("Falcon 4", msg, falcon4Counter);
+            [&](const messages::msg::FalconStatus::SharedPtr msg) {
+                falconStatusCallback("Falcon 4", msg, falcon4Counter, falcon4);
             });
 
     int linear1Counter = 0, linear2Counter = 0, linear3Counter = 0, linear4Counter = 0;
     auto linearStatus1Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
             "linearStatus1", 1,
-            [&linear1Counter](const messages::msg::LinearStatus::SharedPtr msg) {
-                linearStatusCallback("Linear 1", msg, linear1Counter);
+            [&](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 1", msg, linear1Counter, linear1);
             });
 
     auto linearStatus2Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
             "linearStatus2", 1,
-            [&linear2Counter](const messages::msg::LinearStatus::SharedPtr msg) {
-                linearStatusCallback("Linear 2", msg, linear2Counter);
+            [&](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 2", msg, linear2Counter, linear2);
             });
 
     auto linearStatus3Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
             "linearStatus3", 1,
-            [&linear3Counter](const messages::msg::LinearStatus::SharedPtr msg) {
-                linearStatusCallback("Linear 3", msg, linear3Counter);
+            [&](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 3", msg, linear3Counter, linear3);
             });
 
     auto linearStatus4Subscriber = nodeHandle->create_subscription<messages::msg::LinearStatus>(
             "linearStatus4", 1,
-            [&linear4Counter](const messages::msg::LinearStatus::SharedPtr msg) {
-                linearStatusCallback("Linear 4", msg, linear4Counter);
+            [&](const messages::msg::LinearStatus::SharedPtr msg) {
+                linearStatusCallback("Linear 4", msg, linear4Counter, linear4);
             });
 
     auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
