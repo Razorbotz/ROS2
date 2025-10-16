@@ -14,6 +14,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(messages REQUIRED)
 find_package(utils REQUIRED)
+find_package(ZLIB REQUIRED)
 
 include_directories(
         include
@@ -27,6 +28,7 @@ add_executable(${PROJECT_NAME}_node
 install(TARGETS ${PROJECT_NAME}_node
         DESTINATION lib/${PROJECT_NAME}
 )
+TARGET_LINK_LIBRARIES(${PROJECT_NAME}_node ${ZLIB_LIBRARIES})
 
 ament_package()
 ament_target_dependencies(${PROJECT_NAME}_node 
@@ -34,5 +36,6 @@ ament_target_dependencies(${PROJECT_NAME}_node
 	std_msgs 
 	messages
         utils
+        
 )
 

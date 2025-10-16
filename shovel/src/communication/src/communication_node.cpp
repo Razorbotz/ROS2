@@ -22,6 +22,7 @@
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/empty.hpp>
 #include <cstdint>
+#include <zlib.h>
 
 #include <messages/msg/power.hpp>
 #include <messages/msg/key_state.hpp>
@@ -251,36 +252,83 @@ void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
 }
 
  
+/**
+ * @brief Serializes, checksums, compresses, and sends a BinaryMessage.
+ * * This function takes a BinaryMessage object, converts it to a byte stream,
+ * and applies a checksum. It then uses zlib's DEFLATE algorithm for lossless
+ * compression. To allow the client to decompress the data, the final payload 
+ * is structured as:
+ * * [ 4 bytes: Original Uncompressed Size ] [ N bytes: Compressed Data ]
+ * * This payload is then sent to the client via a UDP socket.
+ * * @param message The BinaryMessage object to be sent.
+ */
 void send(BinaryMessage message){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "send message");
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     checksum_encode(byteList);    
 
-    std::vector<uint8_t> bytes(byteList->size());
-    int index = 0;
-    for(auto byteIterator = byteList->begin(); byteIterator != byteList->end(); byteIterator++, index++){
-        bytes.at(index) = *byteIterator;
-    }
-    //if(byteList->size() != 242)
-    //    return;
-    try{
-        total += byteList->size();
-        int bytesSent = 0, byteTotal = 0;
-        //RCLCPP_INFO(nodeHandle->get_logger(), "sending %s   bytes = %ld", message.getLabel().c_str(), byteList->size());
-        while(byteTotal < byteList->size()){
-            if((bytesSent = sendto(new_socket, bytes.data(), byteList->size(), 0, (struct sockaddr *)&address, addrlen))== -1){
-                RCLCPP_INFO(nodeHandle->get_logger(), "Failed to send message.");   
-                break;
-            }
-            else{
-                byteTotal += bytesSent;
-            }
-        }
-    }
-    catch(int x){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to send data to client");
+    std::vector<uint8_t> uncompressed_bytes(byteList->begin(), byteList->end());
+    uLong uncompressed_size = uncompressed_bytes.size();
+
+    // Prevent sending empty messages
+    if (uncompressed_size == 0) {
+        return;
     }
 
+    uLong compressed_buffer_size = compressBound(uncompressed_size);
+    std::vector<uint8_t> compressed_bytes(compressed_buffer_size);
+
+    // Perform compression.
+    // Z_DEFAULT_COMPRESSION is a good balance between speed and compression ratio.
+    int compression_result = compress2(
+        compressed_bytes.data(),        // Destination buffer
+        &compressed_buffer_size,        // In: buffer size, Out: actual compressed size
+        uncompressed_bytes.data(),      // Source buffer
+        uncompressed_size,              // Source size
+        Z_DEFAULT_COMPRESSION           // Compression level
+    );
+
+    if (compression_result != Z_OK) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "zlib compression failed with error code: %d", compression_result);
+        return;
+    }
+
+    // Create the final network payload.
+    std::vector<uint8_t> payload;
+    payload.reserve(4 + compressed_buffer_size);
+
+    // Add the 4-byte uncompressed size header (in network byte order - big-endian)
+    payload.push_back((uncompressed_size >> 24) & 0xFF);
+    payload.push_back((uncompressed_size >> 16) & 0xFF);
+    payload.push_back((uncompressed_size >> 8) & 0xFF);
+    payload.push_back(uncompressed_size & 0xFF);
+    
+    // Add the compressed data
+    payload.insert(payload.end(), compressed_bytes.begin(), compressed_bytes.begin() + compressed_buffer_size);
+
+    if (debug) {
+        RCLCPP_INFO(nodeHandle->get_logger(), "Sending '%s': Original size: %lu, Compressed size: %lu, Ratio: %.2f%%", 
+            message.getLabel().c_str(), 
+            uncompressed_size, 
+            compressed_buffer_size,
+            (1.0 - (double)compressed_buffer_size / uncompressed_size) * 100.0
+        );
+    }
+    
+    try {
+        total += payload.size();
+        int bytesSent = 0, byteTotal = 0;
+        while(byteTotal < payload.size()){
+            bytesSent = sendto(new_socket, payload.data() + byteTotal, payload.size() - byteTotal, 0, (struct sockaddr *)&address, addrlen);
+            if (bytesSent == -1){
+                RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send message: %s", strerror(errno));   
+                break;
+            }
+            byteTotal += bytesSent;
+        }
+    }
+    catch(...){
+        RCLCPP_ERROR(nodeHandle->get_logger(), "ERROR: Exception when trying to send data to client");
+    }
 }
 
 void update_if_changed(BinaryMessage& msg, bool& changed, uint8_t& old_val, uint8_t new_val, const std::string& label) {
