@@ -65,7 +65,7 @@ bool client_connected = false;
  * @return True on success, false on failure.
  */
 bool initialize_h265_encoder(int width, int height) {
-    const AVCodec* codec = avcodec_find_encoder_by_name("libx265");
+    const AVCodec* codec = avcodec_find_encoder_by_name("h265_nvenc");
     if (!codec) {
         // Fallback to default HEVC encoder if libx265 is not available
         codec = avcodec_find_encoder(AV_CODEC_ID_HEVC);
@@ -137,27 +137,35 @@ void cleanup_h265_encoder() {
 }
 
 
-/**
- * @brief Sends a single data packet over a UDP socket.
- * @param sock The UDP socket descriptor.
- * @param data Pointer to the data buffer.
- * @param len The number of bytes to send.
- * @param dest_addr The destination address structure for the client.
- * @return true if the packet was sent successfully, false otherwise.
- */
-bool send_udp_packet(int sock, const void* data, size_t len, const struct sockaddr* dest_addr, socklen_t addrlen) {
-    ssize_t bytes_sent = sendto(sock, data, len, 0, dest_addr, addrlen);
+bool send_udp_frame_chunked(int sock, const uint8_t* data, size_t len, const struct sockaddr* dest_addr, socklen_t addrlen, uint16_t frame_id) {
+    const size_t CHUNK_SIZE = 1300; // fits in MTU
+    uint16_t chunk_index = 0;
+    uint16_t total_chunks = (len + CHUNK_SIZE - 1) / CHUNK_SIZE;
 
-    if (bytes_sent < 0) {
-        // Log error but don't close socket, as UDP is connectionless
-        // RCLCPP_ERROR(nodeHandle->get_logger(), "sendto failed: %s", strerror(errno));
-        return false;
+    size_t offset = 0;
+    while (offset < len) {
+        size_t bytes_to_send = std::min(len - offset, CHUNK_SIZE);
+
+        struct FrameHeader {
+            uint16_t frame_id;
+            uint16_t chunk_index;
+            uint16_t total_chunks;
+        } header;
+
+        header.frame_id = htons(frame_id);
+        header.chunk_index = htons(chunk_index);
+        header.total_chunks = htons(total_chunks);
+
+        uint8_t packet[sizeof(header) + CHUNK_SIZE];
+        memcpy(packet, &header, sizeof(header));
+        memcpy(packet + sizeof(header), data + offset, bytes_to_send);
+
+        sendto(sock, packet, sizeof(header) + bytes_to_send, 0, dest_addr, addrlen);
+
+        offset += bytes_to_send;
+        chunk_index++;
     }
-    if ((size_t)bytes_sent != len) {
-        // This is less common with UDP but could happen if len is too large
-        // RCLCPP_WARN(nodeHandle->get_logger(), "sendto sent partial packet: %ld of %zu bytes", bytes_sent, len);
-        return false;
-    }
+
     return true;
 }
 
@@ -236,9 +244,9 @@ void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage
             size_t encoded_size = video_packet->size;
             if (encoded_size == 0) continue;
 
-            if (!send_udp_packet(server_fd, video_packet->data, encoded_size, (struct sockaddr*)&client_addr, client_addr_len)) {
-            }
-            
+            uint16_t frame_id = frame_pts & 0xFFFF;
+            send_udp_frame_chunked(server_fd, video_packet->data, encoded_size, (struct sockaddr*)&client_addr, client_addr_len, frame_id);
+
             av_packet_unref(video_packet);
         }
 
@@ -285,31 +293,39 @@ std::string getAddressString(int family, std::string interfaceName){
 
 
 std::string robotName="shovel";
-void broadcastIP(){
-    int socketDescriptor=socket(AF_INET, SOCK_DGRAM, 0);
-    while(true){
-        if(broadcast){
-            std::string addressString=getAddressString(AF_INET,"wlan0");
+void broadcastIP() {
+    int socketDescriptor = socket(AF_INET, SOCK_DGRAM, 0);
+    if (socketDescriptor < 0) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Broadcast socket creation failed.");
+        return;
+    }
 
-            std::string message(robotName+"@"+addressString);
-            std::cout << message << std::endl << std::flush;
+    while (rclcpp::ok()) {
+        if (broadcast) {
+            std::string addressString = getAddressString(AF_INET, "wlan0");
+            if (addressString.empty()) {
+                RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 5000, "Could not get IP for wlan0 to broadcast.");
+                std::this_thread::sleep_for(std::chrono::seconds(5));
+                continue;
+            }
 
-            //if(socket>=0){
-            if(socketDescriptor>=0){
-                struct sockaddr_in socketAddress;
-                socketAddress.sin_family=AF_INET;
-                socketAddress.sin_addr.s_addr = inet_addr("226.1.1.1");
-                socketAddress.sin_port = htons(4322);
+            std::string message(robotName + "@" + addressString);
+            
+            struct sockaddr_in socketAddress;
+            socketAddress.sin_family = AF_INET;
+            socketAddress.sin_addr.s_addr = inet_addr("226.1.1.1");
+            socketAddress.sin_port = htons(4322);
 
-                struct in_addr localInterface;
-                localInterface.s_addr = inet_addr(addressString.c_str());
-                if(setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_IF, (char*)&localInterface, sizeof(localInterface))>=0){
-                    sendto(socketDescriptor,message.c_str(),message.length(),0,(struct sockaddr*)&socketAddress, sizeof(socketAddress));
-                }
+            struct in_addr localInterface;
+            localInterface.s_addr = inet_addr(addressString.c_str());
+            
+            if (setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_IF, (char *)&localInterface, sizeof(localInterface)) >= 0) {
+                sendto(socketDescriptor, message.c_str(), message.length(), 0, (struct sockaddr *)&socketAddress, sizeof(socketAddress));
             }
         }
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }
+    
     close(socketDescriptor);
 }
 
@@ -323,7 +339,6 @@ int main(int argc, char **argv){
     image_transport::ImageTransport it(nodeHandle);
     image_transport::Subscriber sub = it.subscribe("zed_image", 1, zedImageCallback);
 
-    int server_fd = -1;
     ssize_t bytesRead;
     struct sockaddr_in address;
     int opt = 1;
@@ -359,34 +374,42 @@ int main(int argc, char **argv){
     uint8_t message[256];
     rclcpp::Rate rate(20);
 
+    int flags = fcntl(server_fd, F_GETFL, 0);
+    fcntl(server_fd, F_SETFL, flags | O_NONBLOCK);
+
     auto last_message_time = std::chrono::steady_clock::now();
     while(rclcpp::ok()){
         bytesRead = recvfrom(server_fd, buffer, sizeof(buffer), 0, (struct sockaddr *)&client_addr, &client_addr_len);
 
         if (bytesRead > 0) {
             last_message_time = std::chrono::steady_clock::now();
-            if (!client_connected) {
-                char client_ip[INET_ADDRSTRLEN];
-                inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
-                RCLCPP_INFO(nodeHandle->get_logger(), "Received first packet from client at %s", client_ip);
-                client_connected = true;
-                broadcast = false;
+            
+            std::string received_str(reinterpret_cast<char*>(buffer), bytesRead);
+            if (received_str == "Hello Robot") {
+                if (!client_connected) {
+                    char client_ip[INET_ADDRSTRLEN];
+                    inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
+                    RCLCPP_INFO(nodeHandle->get_logger(), "Received 'Hello Robot' from client at %s", client_ip);
+                    client_connected = true;
+                    broadcast = false;
+                }
             }
             else {
-                auto now = std::chrono::steady_clock::now();
-                //if (client_connected && std::chrono::duration_cast<std::chrono::seconds>(now - last_message_time).count() > 5) {
-                //    RCLCPP_WARN(nodeHandle->get_logger(), "Client timed out. Resuming broadcast.");
-                //    client_connected = false;
-                //    videoStreaming = false;
-                //    broadcast = true;      // Start broadcasting again to find a new client
-                //}
-            }
-            for(ssize_t i = 0; i < bytesRead; i++) {
-                messageBytesList.push_back(buffer[i]);
+                for(ssize_t i = 0; i < bytesRead; i++) {
+                    messageBytesList.push_back(buffer[i]);
+                }
             }
         }
         else if (bytesRead < 0 && (errno != EAGAIN && errno != EWOULDBLOCK)) {
             RCLCPP_ERROR(nodeHandle->get_logger(), "recvfrom failed: %s", strerror(errno));
+        }
+
+        auto now = std::chrono::steady_clock::now();
+        if (client_connected && std::chrono::duration_cast<std::chrono::seconds>(now - last_message_time).count() > 5) {
+           RCLCPP_WARN(nodeHandle->get_logger(), "Client timed out. Resuming broadcast.");
+           client_connected = false;
+           videoStreaming = false;
+           broadcast = true;
         }
 
         while(messageBytesList.size()>0 && messageBytesList.front()<=messageBytesList.size()){
@@ -404,12 +427,7 @@ int main(int argc, char **argv){
                 }
                 if(command==2){
                     uint8_t value = message[1];
-                    if(value % 2 == 0){
-                        isGray = true;
-                    }
-                    else{
-                        isGray = false;
-                    }
+                    isGray = (value % 2 == 0);
                 }
             }
 
