@@ -45,13 +45,17 @@ int64_t frame_pts = 0;
 #define PORT 31338
 
 bool videoStreaming = false;
-int new_socket = -1;
+int server_fd = -1;
 rclcpp::Node::SharedPtr nodeHandle;
 bool broadcast = true;
 // cv::Mat img;
 cv::Mat gray;
 bool isGray = true;
 int counter = 0;
+
+struct sockaddr_in client_addr;
+socklen_t client_addr_len = sizeof(client_addr);
+bool client_connected = false;
 
 
 /**
@@ -134,42 +138,25 @@ void cleanup_h265_encoder() {
 
 
 /**
- * @brief Sends all data specified in the buffer over the socket.
- * Handles partial sends and retries on EINTR. Assumes blocking socket.
- * Uses MSG_NOSIGNAL to prevent SIGPIPE from crashing the server.
- * @param sock The socket descriptor.
+ * @brief Sends a single data packet over a UDP socket.
+ * @param sock The UDP socket descriptor.
  * @param data Pointer to the data buffer.
  * @param len The number of bytes to send.
- * @return true if all data was sent successfully, false on error or disconnect.
+ * @param dest_addr The destination address structure for the client.
+ * @return true if the packet was sent successfully, false otherwise.
  */
-bool send_all(int sock, const void* data, size_t len) {
-    const char* ptr = static_cast<const char*>(data);
-    size_t total_sent = 0;
-    while (total_sent < len) {
-        ssize_t bytes_sent = send(sock, ptr + total_sent, len - total_sent, MSG_NOSIGNAL);
+bool send_udp_packet(int sock, const void* data, size_t len, const struct sockaddr* dest_addr, socklen_t addrlen) {
+    ssize_t bytes_sent = sendto(sock, data, len, 0, dest_addr, addrlen);
 
-        if (bytes_sent > 0) {
-            total_sent += bytes_sent;
-        }
-        else if (bytes_sent == 0) {
-            RCLCPP_ERROR(nodeHandle->get_logger(), "send returned 0 unexpectedly.");
-            return false;
-        }
-        else {
-            if (errno == EINTR) {
-                //RCLCPP_INFO(nodeHandle->get_logger(), "send interrupted by EINTR, retrying.");
-                continue;
-            }
-            else if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                //RCLCPP_INFO(nodeHandle->get_logger(), "send temporarily unavailable, retrying.");
-                std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Add a small delay before retrying
-                continue;
-            }
-            else {
-                //RCLCPP_ERROR(nodeHandle->get_logger(), "send failed: %s", strerror(errno));
-                return false;
-            }
-        }
+    if (bytes_sent < 0) {
+        // Log error but don't close socket, as UDP is connectionless
+        // RCLCPP_ERROR(nodeHandle->get_logger(), "sendto failed: %s", strerror(errno));
+        return false;
+    }
+    if ((size_t)bytes_sent != len) {
+        // This is less common with UDP but could happen if len is too large
+        // RCLCPP_WARN(nodeHandle->get_logger(), "sendto sent partial packet: %ld of %zu bytes", bytes_sent, len);
+        return false;
     }
     return true;
 }
@@ -188,7 +175,7 @@ void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage
     const int STREAM_HEIGHT = 400;
 
     // If we aren't streaming, ensure everything is cleaned up and exit.
-    if (!videoStreaming || new_socket < 0) {
+    if (!videoStreaming || server_fd < 0) {
         if (h265_encoder_ctx) {
             cleanup_h265_encoder();
         }
@@ -247,20 +234,11 @@ void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage
         // Receive any encoded packets and send them over the network
         while (avcodec_receive_packet(h265_encoder_ctx, video_packet) == 0) {
             size_t encoded_size = video_packet->size;
-            if (encoded_size == 0) continue; // Skip empty packets
+            if (encoded_size == 0) continue;
 
-            uint32_t network_frame_size = htonl(encoded_size);
-
-            if (!send_all(new_socket, &network_frame_size, sizeof(network_frame_size)) || 
-                !send_all(new_socket, video_packet->data, encoded_size)) 
-            {
-                RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send packet, client disconnected.");
-                videoStreaming = false;
-                close(new_socket);
-                new_socket = -1;
-                av_packet_unref(video_packet);
-                return; // Exit callback on send failure
+            if (!send_udp_packet(server_fd, video_packet->data, encoded_size, (struct sockaddr*)&client_addr, client_addr_len)) {
             }
+            
             av_packet_unref(video_packet);
         }
 
@@ -308,14 +286,13 @@ std::string getAddressString(int family, std::string interfaceName){
 
 std::string robotName="shovel";
 void broadcastIP(){
+    int socketDescriptor=socket(AF_INET, SOCK_DGRAM, 0);
     while(true){
         if(broadcast){
             std::string addressString=getAddressString(AF_INET,"wlan0");
 
             std::string message(robotName+"@"+addressString);
             std::cout << message << std::endl << std::flush;
-
-            int socketDescriptor=socket(AF_INET, SOCK_DGRAM, 0);
 
             //if(socket>=0){
             if(socketDescriptor>=0){
@@ -330,10 +307,10 @@ void broadcastIP(){
                     sendto(socketDescriptor,message.c_str(),message.length(),0,(struct sockaddr*)&socketAddress, sizeof(socketAddress));
                 }
             }
-            close(socketDescriptor);
         }
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }
+    close(socketDescriptor);
 }
 
 
@@ -354,27 +331,23 @@ int main(int argc, char **argv){
     uint8_t buffer[2048] = {0};
     std::string hello("Hello from server");
 
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        RCLCPP_FATAL(nodeHandle->get_logger(), "Socket creation failed: %s", strerror(errno));
+    if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+        RCLCPP_FATAL(nodeHandle->get_logger(), "UDP Socket creation failed: %s", strerror(errno));
         return EXIT_FAILURE;
     }
 
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))) {
         RCLCPP_ERROR(nodeHandle->get_logger(), "setsockopt failed: %s", strerror(errno));
         close(server_fd);
         return EXIT_FAILURE;
     }
+
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons( PORT );
+    address.sin_port = htons(PORT);
 
-    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address))<0) {
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
         RCLCPP_FATAL(nodeHandle->get_logger(), "Bind failed: %s", strerror(errno));
-        close(server_fd);
-        return EXIT_FAILURE;
-    }
-    if (listen(server_fd, 3) < 0) {
-        RCLCPP_FATAL(nodeHandle->get_logger(), "Listen failed: %s", strerror(errno));
         close(server_fd);
         return EXIT_FAILURE;
     }
@@ -385,110 +358,68 @@ int main(int argc, char **argv){
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
     rclcpp::Rate rate(20);
+
+    auto last_message_time = std::chrono::steady_clock::now();
     while(rclcpp::ok()){
-        if (new_socket < 0) {
-            RCLCPP_INFO(nodeHandle->get_logger(), "Waiting for client connection...");
-            videoStreaming = false;
-            broadcast = true;
-            new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
+        bytesRead = recvfrom(server_fd, buffer, sizeof(buffer), 0, (struct sockaddr *)&client_addr, &client_addr_len);
 
-            if (new_socket < 0) {
-                RCLCPP_ERROR(nodeHandle->get_logger(), "Accept failed: %s", strerror(errno));
-                if (errno == EBADF || errno == EINVAL) {
-                    RCLCPP_FATAL(nodeHandle->get_logger(), "Server socket invalid state, exiting.");
-                    break;
-                }
-                rate.sleep();
-                continue;
-            }
-
-            char client_ip[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, &address.sin_addr, client_ip, INET_ADDRSTRLEN);
-            RCLCPP_INFO(nodeHandle->get_logger(), "Client connected from %s", client_ip);
-            broadcast = false;
-            bytesRead = read(new_socket, buffer, 2048); 
-
-            if (!send_all(new_socket, hello.c_str(), hello.length())) {
-                RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send hello to client.");
-                close(new_socket);
-                new_socket = -1;
-                continue;
-            }
-
-            int flags = fcntl(new_socket, F_GETFL, 0);
-            if (flags == -1 || fcntl(new_socket, F_SETFL, flags | O_NONBLOCK) == -1) {
-                RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to set client socket non-blocking: %s", strerror(errno));
-                close(new_socket);
-                new_socket = -1;
-                continue;
-            }
-        }
-
-        try{
-            bytesRead = recv(new_socket, buffer, sizeof(buffer), 0);
-
-            if (bytesRead > 0) {
-                for(int index = 0; index < bytesRead; index++) {
-                    messageBytesList.push_back(buffer[index]);
-                }
-            } 
-            else if (bytesRead == 0) {
-                RCLCPP_INFO(nodeHandle->get_logger(), "Client disconnected gracefully.");
-                close(new_socket);
-                new_socket = -1;
-                videoStreaming = false;
-                messageBytesList.clear();
-                continue;
+        if (bytesRead > 0) {
+            last_message_time = std::chrono::steady_clock::now();
+            if (!client_connected) {
+                char client_ip[INET_ADDRSTRLEN];
+                inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
+                RCLCPP_INFO(nodeHandle->get_logger(), "Received first packet from client at %s", client_ip);
+                client_connected = true;
+                broadcast = false;
             }
             else {
-                if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                }
-                else {
-                    RCLCPP_ERROR(nodeHandle->get_logger(), "recv failed: %s", strerror(errno));
-                    close(new_socket);
-                    new_socket = -1;
-                    videoStreaming = false;
-                    messageBytesList.clear();
-                    continue;
-                }
+                auto now = std::chrono::steady_clock::now();
+                //if (client_connected && std::chrono::duration_cast<std::chrono::seconds>(now - last_message_time).count() > 5) {
+                //    RCLCPP_WARN(nodeHandle->get_logger(), "Client timed out. Resuming broadcast.");
+                //    client_connected = false;
+                //    videoStreaming = false;
+                //    broadcast = true;      // Start broadcasting again to find a new client
+                //}
             }
-        
+            for(ssize_t i = 0; i < bytesRead; i++) {
+                messageBytesList.push_back(buffer[i]);
+            }
         }
-        catch(int x){
-            RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Exception when trying to read data from client");
+        else if (bytesRead < 0 && (errno != EAGAIN && errno != EWOULDBLOCK)) {
+            RCLCPP_ERROR(nodeHandle->get_logger(), "recvfrom failed: %s", strerror(errno));
         }
-        
+
         while(messageBytesList.size()>0 && messageBytesList.front()<=messageBytesList.size()){
-            int messageSize=messageBytesList.front();    
-            messageBytesList.pop_front();
-            messageSize--;
-            for(int index=0;index<messageSize;index++){
-                message[index]=messageBytesList.front();
+                int messageSize=messageBytesList.front();    
                 messageBytesList.pop_front();
-            }
-            uint8_t command=message[0];
-            if(command==1){
-                videoStreaming=message[1];
-                std::cout << "videoStreaming " << videoStreaming << std::endl;
-            }
-            if(command==2){
-                uint8_t value = message[1];
-                if(value % 2 == 0){
-                    isGray = true;
+                messageSize--;
+                for(int index=0;index<messageSize;index++){
+                    message[index]=messageBytesList.front();
+                    messageBytesList.pop_front();
                 }
-                else{
-                    isGray = false;
+                uint8_t command=message[0];
+                if(command==1){
+                    videoStreaming=message[1];
+                    std::cout << "videoStreaming " << videoStreaming << std::endl;
+                }
+                if(command==2){
+                    uint8_t value = message[1];
+                    if(value % 2 == 0){
+                        isGray = true;
+                    }
+                    else{
+                        isGray = false;
+                    }
                 }
             }
-        }
 
         rclcpp::spin_some(nodeHandle);
         rate.sleep();
     }
 
     RCLCPP_INFO(nodeHandle->get_logger(), "Shutting down video streaming server node.");
-    if (new_socket >= 0) {
-        close(new_socket);
+    if (server_fd >= 0) {
+        close(server_fd);
     }
     if (server_fd >= 0) {
         close(server_fd);
