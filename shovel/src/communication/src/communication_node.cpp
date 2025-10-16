@@ -253,80 +253,70 @@ void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
 
  
 /**
- * @brief Serializes, checksums, compresses, and sends a BinaryMessage.
- * * This function takes a BinaryMessage object, converts it to a byte stream,
- * and applies a checksum. It then uses zlib's DEFLATE algorithm for lossless
- * compression. To allow the client to decompress the data, the final payload 
- * is structured as:
- * * [ 4 bytes: Original Uncompressed Size ] [ N bytes: Compressed Data ]
- * * This payload is then sent to the client via a UDP socket.
+ * @brief Serializes, checksums, and conditionally compresses a BinaryMessage before sending.
+ * * This function first compresses the data. If the compressed size is smaller than
+ * the original, it sends a compressed payload prefixed with a '1' flag and the
+ * original data size. Otherwise, it sends the original uncompressed data prefixed
+ * with a '0' flag.
+ *
+ * Compressed Payload:   [ 1-byte flag = 1 ] [ 4-byte original size ] [ N-bytes compressed data ]
+ * Uncompressed Payload: [ 1-byte flag = 0 ] [ N-bytes original data ]
  * * @param message The BinaryMessage object to be sent.
  */
-void send(BinaryMessage message){
+void send(BinaryMessage message) {
+    // 1. Get the raw bytes and apply the checksum.
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
-    checksum_encode(byteList);    
+    checksum_encode(byteList);
 
     std::vector<uint8_t> uncompressed_bytes(byteList->begin(), byteList->end());
     uLong uncompressed_size = uncompressed_bytes.size();
 
-    // Prevent sending empty messages
-    if (uncompressed_size == 0) {
-        return;
-    }
+    if (uncompressed_size == 0) return;
 
+    // 2. Attempt compression.
     uLong compressed_buffer_size = compressBound(uncompressed_size);
     std::vector<uint8_t> compressed_bytes(compressed_buffer_size);
 
-    // Perform compression.
-    // Z_DEFAULT_COMPRESSION is a good balance between speed and compression ratio.
     int compression_result = compress2(
-        compressed_bytes.data(),        // Destination buffer
-        &compressed_buffer_size,        // In: buffer size, Out: actual compressed size
-        uncompressed_bytes.data(),      // Source buffer
-        uncompressed_size,              // Source size
-        Z_DEFAULT_COMPRESSION           // Compression level
-    );
+        compressed_bytes.data(), &compressed_buffer_size,
+        uncompressed_bytes.data(), uncompressed_size, Z_DEFAULT_COMPRESSION);
 
-    if (compression_result != Z_OK) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "zlib compression failed with error code: %d", compression_result);
-        return;
-    }
-
-    // Create the final network payload.
     std::vector<uint8_t> payload;
-    payload.reserve(4 + compressed_buffer_size);
 
-    // Add the 4-byte uncompressed size header (in network byte order - big-endian)
-    payload.push_back((uncompressed_size >> 24) & 0xFF);
-    payload.push_back((uncompressed_size >> 16) & 0xFF);
-    payload.push_back((uncompressed_size >> 8) & 0xFF);
-    payload.push_back(uncompressed_size & 0xFF);
-    
-    // Add the compressed data
-    payload.insert(payload.end(), compressed_bytes.begin(), compressed_bytes.begin() + compressed_buffer_size);
+    // 3. Check if compression was successful AND beneficial.
+    if (compression_result == Z_OK && compressed_buffer_size < uncompressed_size) {
+        // ---- COMPRESSION IS BENEFICIAL ----
+        // Flag (1), Original Size (4 bytes), Compressed Data (N bytes)
+        payload.reserve(1 + 4 + compressed_buffer_size);
+        
+        // Add the '1' flag to indicate compression
+        payload.push_back(1); 
 
-    if (debug) {
-        RCLCPP_INFO(nodeHandle->get_logger(), "Sending '%s': Original size: %lu, Compressed size: %lu, Ratio: %.2f%%", 
-            message.getLabel().c_str(), 
-            uncompressed_size, 
-            compressed_buffer_size,
-            (1.0 - (double)compressed_buffer_size / uncompressed_size) * 100.0
-        );
+        // Add the 4-byte uncompressed size header (network byte order)
+        payload.push_back((uncompressed_size >> 24) & 0xFF);
+        payload.push_back((uncompressed_size >> 16) & 0xFF);
+        payload.push_back((uncompressed_size >> 8) & 0xFF);
+        payload.push_back(uncompressed_size & 0xFF);
+        
+        // Add the compressed data
+        payload.insert(payload.end(), compressed_bytes.begin(), compressed_bytes.begin() + compressed_buffer_size);
+
+    } else {
+        // Flag (1), Original Data (N bytes)
+        payload.reserve(1 + uncompressed_size);
+
+        // Add the '0' flag to indicate raw, uncompressed data
+        payload.push_back(0); 
+
+        // Add the original data
+        payload.insert(payload.end(), uncompressed_bytes.begin(), uncompressed_bytes.end());
     }
-    
+
+    // 4. Send the chosen payload.
     try {
-        total += payload.size();
-        int bytesSent = 0, byteTotal = 0;
-        while(byteTotal < payload.size()){
-            bytesSent = sendto(new_socket, payload.data() + byteTotal, payload.size() - byteTotal, 0, (struct sockaddr *)&address, addrlen);
-            if (bytesSent == -1){
-                RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to send message: %s", strerror(errno));   
-                break;
-            }
-            byteTotal += bytesSent;
-        }
-    }
-    catch(...){
+        if (payload.empty()) return;
+        sendto(new_socket, payload.data(), payload.size(), 0, (struct sockaddr *)&address, addrlen);
+    } catch (...) {
         RCLCPP_ERROR(nodeHandle->get_logger(), "ERROR: Exception when trying to send data to client");
     }
 }
@@ -336,7 +326,6 @@ void update_if_changed(BinaryMessage& msg, bool& changed, uint8_t& old_val, uint
         changed = true;
         msg.addElementUInt8(label, new_val);
         old_val = new_val;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
     }
 }
 
@@ -345,7 +334,6 @@ void update_if_changed(BinaryMessage& msg, bool& changed, std::string& old_val, 
         changed = true;
         msg.addElementString(label, new_val);
         old_val = new_val;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
     }
 }
 
@@ -354,7 +342,6 @@ void update_if_changed(BinaryMessage& msg, bool& changed, uint16_t& old_val, uin
         changed = true;
         msg.addElementUInt16(label, new_val);
         old_val = new_val;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
     }
 }
 
@@ -363,7 +350,6 @@ void update_if_changed(BinaryMessage& msg, bool& changed, float& old_val, float 
         changed = true;
         msg.addElementFloat32(label, new_val);
         old_val = new_val;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
     }
 }
 
@@ -372,7 +358,6 @@ void update_if_changed(BinaryMessage& msg, bool& changed, bool& old_val, bool ne
         changed = true;
         msg.addElementBoolean(label, new_val);
         old_val = new_val;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
     }
 }
 
@@ -381,7 +366,6 @@ void update_if_changed(BinaryMessage& msg, bool& changed, int& old_val, int new_
         changed = true;
         msg.addElementInt32(label, new_val);
         old_val = new_val;
-        RCLCPP_INFO(nodeHandle->get_logger(), "Added '%s' to message", label.c_str());
     }
 }
 
