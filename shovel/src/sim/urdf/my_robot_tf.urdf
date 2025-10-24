@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <link name="odom"/>
+  <link name="base_link"/>
+  <link name="lidar_link"/>
+  <link name="zed2i_base_link"/>
+  <link name="d455i_base_link"/>
+
+  <joint name="odom_to_base_link" type="fixed">
+    <parent link="odom"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="base_to_lidar" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin xyz="0.85 -0.55 0.7" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="base_to_zed2i" type="fixed">
+    <parent link="base_link"/>
+    <child link="zed2i_base_link"/>
+    <origin xyz="0.76 -0.10 0.53" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="base_to_d455i" type="fixed">
+    <parent link="base_link"/>
+    <child link="d455i_base_link"/>
+    <origin xyz="0.85 -0.55 0.5" rpy="0 0 0"/>
+  </joint>
+</robot>
