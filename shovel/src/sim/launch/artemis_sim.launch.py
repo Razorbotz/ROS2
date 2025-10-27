@@ -47,58 +47,5 @@ def generate_launch_description():
                 '-x', '1.5', '-y', '1.5', '-z', '0.2'
             ],
             output='screen'
-        ),
-
-        # RTAB-Map node (subscribe to reliable relay)
-        TimerAction(
-            period=10.0,  # wait for Gazebo to start publishing
-            actions=[
-                Node(
-                    package='rtabmap_ros',
-                    executable='rtabmap',
-                    name='rtabmap',
-                    output='screen',
-                    parameters=[{
-                        'frame_id': 'base_link',
-                        'odom_frame_id': 'odom',
-                        'map_frame': 'map',
-                        'use_sim_time': True,
-                        'publish_tf': True,
-                        'publish_map_tf': True,
-
-                        # --- Enable RGB-D input ---
-                        'subscribe_rgbd': True,
-                        'subscribe_depth': True,
-                        'subscribe_rgb': True,
-                        'subscribe_scan_cloud': True,
-
-                        # --- Topics ---
-                        'rgb_topic': '/my_robot/d455i/color/image_raw',
-                        'depth_topic': '/my_robot/d455i/depth/image_raw',
-                        'camera_info_topic': '/my_robot/d455i/color/camera_info',
-                        'scan_cloud_topic': '/my_robot/d455i/points_reliable',
-
-                        # --- QoS settings ---
-                        'qos_image': 'best_effort',
-                        'qos_camera_info': 'best_effort',
-                        'qos_scan_cloud': 'reliable',
-
-                        # --- Mapping parameters ---
-                        'queue_size': 10,
-                        'approx_sync': True,
-                        'RGBD/ProximityBySpace': 'true',
-                        'RGBD/ProximityPathMaxNeighbors': '1',
-                        'Reg/Strategy': '1',
-                        'Mem/IncrementalMemory': 'true'
-                    }],
-                    remappings=[
-                        ('odom', '/my_robot/odom'),
-                        ('rgb/image', '/my_robot/d455i/color/image_raw'),
-                        ('depth/image', '/my_robot/d455i/depth/image_raw'),
-                        ('rgb/camera_info', '/my_robot/d455i/color/camera_info'),
-                        ('scan_cloud', '/my_robot/d455i/points_reliable')
-                    ]
-                )
-            ]
         )
     ])

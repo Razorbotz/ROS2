@@ -421,6 +421,8 @@
         <plugin name="gazebo_ros_laser" filename="libgazebo_ros_ray_sensor.so">
           <ros_namespace>/my_robot</ros_namespace>
           <remapping>~/out:=/my_robot/d455i/points</remapping>
+
+          <output_type>sensor_msgs/PointCloud2</output_type>
           <ros_qos>
             <reliability>reliable</reliability>
             <durability>volatile</durability>
