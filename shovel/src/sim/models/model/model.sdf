@@ -1,7 +1,6 @@
 <?xml version='1.0'?>
 <sdf version='1.6'>
   <model name='my_robot'>
-    <!-- Base Link -->
     <link name='base_link'>
       <inertial>
         <pose>0.501893 -0.254711 0.215763 0 0 0</pose>
@@ -123,7 +122,9 @@
         <surface>
           <friction>
             <ode>
-              <mu>1.0</mu>    <mu2>0.1</mu2>   </ode>
+              <mu>1.0</mu>
+              <mu2>0.1</mu2>
+            </ode>
           </friction>
         </surface>
       </collision>
@@ -157,7 +158,9 @@
         <surface>
           <friction>
             <ode>
-              <mu>1.0</mu>    <mu2>0.1</mu2>   </ode>
+              <mu>1.0</mu>
+              <mu2>0.1</mu2>
+            </ode>
           </friction>
         </surface>
       </collision>
@@ -191,7 +194,9 @@
         <surface>
           <friction>
             <ode>
-              <mu>1.0</mu>    <mu2>0.1</mu2>   </ode>
+              <mu>1.0</mu>
+              <mu2>0.1</mu2>
+            </ode>
           </friction>
         </surface>
       </collision>
@@ -225,7 +230,9 @@
         <surface>
           <friction>
             <ode>
-              <mu>1.0</mu>    <mu2>0.1</mu2>   </ode>
+              <mu>1.0</mu>
+              <mu2>0.1</mu2>
+            </ode>
           </friction>
         </surface>
       </collision>
@@ -233,7 +240,7 @@
 
     <!-- Camera Link -->
     <link name='zed2i_base_link'>
-      <pose>0.762639 -0.100614 0.526280 0 0 0</pose> 
+      <pose>0.762639 -0.100614 0.526280 0 0 0</pose>
       <inertial>
         <mass>0.166</mass>
         <inertia>
@@ -245,7 +252,7 @@
           <iyz>0</iyz>
         </inertia>
       </inertial>
-      
+
       <visual name='zed2i_visual'>
         <geometry>
           <box>
@@ -259,7 +266,7 @@
           </script>
         </material>
       </visual>
-      
+
       <sensor name='left_camera_sensor' type='camera'>
         <pose>0 -0.06 0 0 0 0</pose>
         <camera name='left_eye'>
@@ -275,16 +282,17 @@
           </clip>
         </camera>
         <plugin name='left_camera_controller' filename='libgazebo_ros_camera.so'>
-          <ros>
-            <namespace>/my_robot</namespace>
-          </ros>
+          <ros_namespace>/my_robot</ros_namespace>
           <camera_name>zed2i/left</camera_name>
           <frame_name>zed2i_left_optical_frame</frame_name>
           <update_rate>30</update_rate>
-          <qos>reliable</qos>
+          <ros_qos>
+            <reliability>reliable</reliability>
+            <durability>volatile</durability>
+          </ros_qos>
         </plugin>
       </sensor>
-      
+
       <sensor name='right_camera_sensor' type='camera'>
         <pose>0 0.06 0 0 0 0</pose>
         <camera name='right_eye'>
@@ -300,25 +308,28 @@
           </clip>
         </camera>
         <plugin name='right_camera_controller' filename='libgazebo_ros_camera.so'>
-          <ros>
-            <namespace>/my_robot</namespace>
-          </ros>
+          <ros_namespace>/my_robot</ros_namespace>
           <camera_name>zed2i/right</camera_name>
           <frame_name>zed2i_right_optical_frame</frame_name>
           <update_rate>30</update_rate>
-          <qos>reliable</qos>
+          <ros_qos>
+            <reliability>reliable</reliability>
+            <durability>volatile</durability>
+          </ros_qos>
         </plugin>
       </sensor>
 
       <sensor name='imu_sensor' type='imu'>
         <pose>0 0 0 0 0 0</pose>
         <plugin name='imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
-          <ros>
-            <namespace>/my_robot</namespace>
-            <remapping>~/out:=zed2i/imu/data</remapping>
-          </ros>
+          <ros_namespace>/my_robot</ros_namespace>
+          <remapping>~/out:=zed2i/imu/data</remapping>
           <frame_name>zed2i_imu_link</frame_name>
           <update_rate>100</update_rate>
+          <ros_qos>
+            <reliability>reliable</reliability>
+            <durability>volatile</durability>
+          </ros_qos>
         </plugin>
       </sensor>
     </link>
@@ -331,7 +342,7 @@
     </joint>
 
     <link name='d455i_base_link'>
-      <pose>0.85 -0.55 0.5 0 0 0</pose> 
+      <pose>0.85 -0.55 0.5 0 0 0</pose>
 
       <inertial>
         <mass>0.113</mass>
@@ -344,7 +355,7 @@
           <iyz>0</iyz>
         </inertia>
       </inertial>
-      
+
       <visual name='d455i_visual'>
         <geometry>
           <box>
@@ -358,7 +369,7 @@
           </script>
         </material>
       </visual>
-      
+
       <sensor name='d455i_color_camera' type='camera'>
         <pose>0 0 0 0 0 0</pose>
         <camera name='d455i_color_cam'>
@@ -374,12 +385,14 @@
           </clip>
         </camera>
         <plugin name='d455i_color_controller' filename='libgazebo_ros_camera.so'>
-          <ros>
-            <namespace>/my_robot</namespace>
-          </ros>
+          <ros_namespace>/my_robot</ros_namespace>
           <camera_name>d455i/color</camera_name>
           <frame_name>d455i_color_optical_frame</frame_name>
           <update_rate>30</update_rate>
+          <ros_qos>
+            <reliability>reliable</reliability>
+            <durability>volatile</durability>
+          </ros_qos>
         </plugin>
       </sensor>
 
@@ -395,9 +408,9 @@
             </horizontal>
             <vertical>
               <samples>40</samples>
-              <min_angle>-0.348</min_angle>  <!-- -10 deg -->
-              <max_angle>0.174</max_angle>   <!-- 10 deg -->
-            </vertical>
+              <min_angle>-0.348</min_angle>
+              <max_angle>0.174</max_angle>
+              </vertical>
           </scan>
           <range>
             <min>0.12</min>
@@ -406,10 +419,8 @@
           </range>
         </ray>
         <plugin name="gazebo_ros_laser" filename="libgazebo_ros_ray_sensor.so">
-          <ros>
-            <namespace>/my_robot</namespace>
-            <remapping>~/out:=/my_robot/d455i/points</remapping>
-          </ros>
+          <ros_namespace>/my_robot</ros_namespace>
+          <remapping>~/out:=/my_robot/d455i/points</remapping>
           <ros_qos>
             <reliability>reliable</reliability>
             <durability>volatile</durability>
@@ -418,53 +429,12 @@
           <queue_size>10</queue_size>
         </plugin>
       </sensor>
-<!--
-      <sensor name='d455i_depth_sensor' type='ray'>
-        <pose>0 0 0 0 0 0</pose>
-        <ray>
-          <scan>
-            <horizontal>
-              <samples>1280</samples>
-              <resolution>1</resolution>
-              <min_angle>-0.759</min_angle> <max_angle>0.759</max_angle>  </horizontal>
-            <vertical>
-              <samples>720</samples>
-              <resolution>1</resolution>
-              <min_angle>-0.506</min_angle> <max_angle>0.506</max_angle>  </vertical>
-          </scan>
-          <range>
-            <min>0.1</min>
-            <max>100.0</max>
-            <resolution>0.01</resolution>
-          </range>
-        </ray>
-        <plugin name='d455i_points_controller' filename='libgazebo_ros_ray_sensor.so'>
-          <ros>
-            <namespace>/my_robot</namespace>
-            <remapping>~/out:=d455i/points</remapping>
-          </ros>
-          <output_type>sensor_msgs/PointCloud2</output_type>
-          <frame_name>d455i_depth_optical_frame</frame_name>
-        </plugin>
-      </sensor>
-      <sensor name='d455i_imu_sensor' type='imu'>
-        <pose>0 0 0 0 0 0</pose>
-        <plugin name='d455i_imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
-          <ros>
-            <namespace>/my_robot</namespace>
-            <remapping>~/out:=d455i/imu/data</remapping>
-          </ros>
-          <frame_name>d455i_imu_link</frame_name>
-          <update_rate>100</update_rate>
-        </plugin>
-      </sensor>
-  -->
-    </link>
+      </link>
 
     <joint name='base_to_d455i_joint' type='fixed'>
       <parent>base_link</parent>
       <child>d455i_base_link</child>
-      <pose>0 0 0 0 0 -3.14</pose> 
+      <pose>0 0 0 0 0 -3.14</pose>
     </joint>
 
     <!-- Arm Joint -->
@@ -555,39 +525,43 @@
       </axis>
     </joint>
 
-  <plugin name="my_robot_drive_front" filename="libgazebo_ros_diff_drive.so">
-    <ros>
-      <namespace>/my_robot</namespace>
-    </ros>
-    <wheel_separation>0.657352</wheel_separation>
-    <wheel_diameter>0.420878</wheel_diameter>
+    <plugin name="my_robot_drive_front" filename="libgazebo_ros_diff_drive.so">
+      <ros_namespace>/my_robot</ros_namespace>
+      <wheel_separation>0.657352</wheel_separation>
+      <wheel_diameter>0.420878</wheel_diameter>
 
-    <left_joint>FL_Wheel_Joint</left_joint>
-    <right_joint>FR_Wheel_Joint</right_joint>
+      <left_joint>FL_Wheel_Joint</left_joint>
+      <right_joint>FR_Wheel_Joint</right_joint>
 
-    <command_topic>cmd_vel</command_topic>
-    <odometry_topic>odom</odometry_topic>
-    <odometry_frame>odom</odometry_frame>
-    <robot_base_frame>base_link</robot_base_frame>
-    <update_rate>100.0</update_rate>
-  </plugin>
+      <command_topic>cmd_vel</command_topic>
+      <odometry_topic>odom</odometry_topic>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+      <update_rate>100.0</update_rate>
+      <ros_qos>
+        <reliability>reliable</reliability>
+        <durability>volatile</durability>
+      </ros_qos>
+    </plugin>
 
-  <plugin name="my_robot_drive_back" filename="libgazebo_ros_diff_drive.so">
-    <ros>
-      <namespace>/my_robot</namespace>
-    </ros>
-    <wheel_separation>0.657352</wheel_separation>
-    <wheel_diameter>0.420878</wheel_diameter>
+    <plugin name="my_robot_drive_back" filename="libgazebo_ros_diff_drive.so">
+      <ros_namespace>/my_robot</ros_namespace>
+      <wheel_separation>0.657352</wheel_separation>
+      <wheel_diameter>0.420878</wheel_diameter>
 
-    <left_joint>BL_Wheel_Joint</left_joint>
-    <right_joint>BR_Wheel_Joint</right_joint>
+      <left_joint>BL_Wheel_Joint</left_joint>
+      <right_joint>BR_Wheel_Joint</right_joint>
 
-    <command_topic>cmd_vel</command_topic>
-    <odometry_topic>odom</odometry_topic>
-    <odometry_frame>odom</odometry_frame>
-    <robot_base_frame>base_link</robot_base_frame>
-    <update_rate>100.0</update_rate>
-  </plugin>
+      <command_topic>cmd_vel</command_topic>
+      <odometry_topic>odom</odometry_topic>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+      <update_rate>100.0</update_rate>
+      <ros_qos>
+        <reliability>reliable</reliability>
+        <durability>volatile</durability>
+      </ros_qos>
+    </plugin>
 
 
     <static>0</static>
