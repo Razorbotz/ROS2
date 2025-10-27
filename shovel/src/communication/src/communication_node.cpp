@@ -821,7 +821,7 @@ void reboot(){
 }
 
 std::string robotName="unnamed";
-std::string interfaceName = "wlan0";
+std::string interfaceName = "wlP1p1s0";
 bool broadcast=true;
 
 

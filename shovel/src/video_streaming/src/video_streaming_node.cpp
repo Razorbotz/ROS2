@@ -169,91 +169,116 @@ bool send_udp_frame_chunked(int sock, const uint8_t* data, size_t len, const str
     return true;
 }
 
+std::mutex img_mutex;
+cv::Mat last_zed_bgr, last_rs_bgr;
+rclcpp::Time last_zed_stamp, last_rs_stamp;
+const rclcpp::Duration SYNC_TOL = rclcpp::Duration::from_seconds(0.10);
 
-/** @brief Receives the ZED camera image and sends it to the client
- *
- * This function converts the received ROS image message, optionally converts
- * it to grayscale, and sends it over the TCP socket to the connected client
- * using a framing protocol (4-byte size header + raw data).
- * @param inputImage The ROS image message.
- */
-void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & inputImage) {
-    // --- Define resolution in one place ---
-    const int STREAM_WIDTH = 640;
-    const int STREAM_HEIGHT = 400;
+void maybe_stitch_and_send();
 
-    // If we aren't streaming, ensure everything is cleaned up and exit.
-    if (!videoStreaming || server_fd < 0) {
-        if (h265_encoder_ctx) {
-            cleanup_h265_encoder();
+void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
+{
+    RCLCPP_INFO(nodeHandle->get_logger(), "zedCallback");
+    try {
+        cv::Mat img_bgr = cv_bridge::toCvCopy(msg, "bgr8")->image;
+        if (img_bgr.empty()) return;
+
+        {
+            std::lock_guard<std::mutex> lk(img_mutex);
+            last_zed_bgr = img_bgr.clone();
+            last_zed_stamp = msg->header.stamp;
         }
+        maybe_stitch_and_send();
+    } catch (const std::exception &e) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "zedImageCallback exception: %s", e.what());
+    }
+}
+
+void intelImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
+{
+    RCLCPP_INFO(nodeHandle->get_logger(), "intelCallback");
+    try {
+        cv::Mat img_bgr = cv_bridge::toCvCopy(msg, "bgr8")->image;
+        if (img_bgr.empty()) return;
+
+        {
+            std::lock_guard<std::mutex> lk(img_mutex);
+            last_rs_bgr = img_bgr.clone();
+            last_rs_stamp = msg->header.stamp;
+        }
+        maybe_stitch_and_send();
+    } catch (const std::exception &e) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "intelImageCallback exception: %s", e.what());
+    }
+}
+
+void maybe_stitch_and_send()
+{
+    // Fast pre-check so we don't lock if we're clearly not streaming
+    if (!videoStreaming || server_fd < 0) return;
+
+    cv::Mat zed, rs;
+    rclcpp::Time ts_zed, ts_rs;
+    {
+        std::lock_guard<std::mutex> lk(img_mutex);
+        if (last_zed_bgr.empty() || last_rs_bgr.empty()) return;
+        ts_zed = last_zed_stamp;
+        ts_rs  = last_rs_stamp;
+        if ((ts_zed - ts_rs).nanoseconds() > SYNC_TOL.nanoseconds() ||
+            (ts_rs - ts_zed).nanoseconds() > SYNC_TOL.nanoseconds()) {
+            // Not close enough in time yet
+            return;
+        }
+        zed = last_zed_bgr.clone();
+        rs  = last_rs_bgr.clone();
+    }
+
+    const int STREAM_HEIGHT = 400;
+    const int ZED_WIDTH = 640, REALSENSE_WIDTH = 640;
+    const int STITCHED_WIDTH = ZED_WIDTH + REALSENSE_WIDTH;
+
+    // Lazy init encoder/colorspace when first needed
+    if (!h265_encoder_ctx) {
+        RCLCPP_INFO(nodeHandle->get_logger(), "Init H.265 %dx%d", STITCHED_WIDTH, STREAM_HEIGHT);
+        if (!initialize_h265_encoder(STITCHED_WIDTH, STREAM_HEIGHT)) {
+            RCLCPP_ERROR(nodeHandle->get_logger(), "H.265 init failed");
+            videoStreaming = false;
+            cleanup_h265_encoder();
+            return;
+        }
+        sws_ctx = sws_getContext(STITCHED_WIDTH, STREAM_HEIGHT, AV_PIX_FMT_BGR24,
+                                 STITCHED_WIDTH, STREAM_HEIGHT, h265_encoder_ctx->pix_fmt,
+                                 SWS_BILINEAR, nullptr, nullptr, nullptr);
+        if (!sws_ctx) {
+            RCLCPP_ERROR(nodeHandle->get_logger(), "SWS init failed");
+            videoStreaming = false;
+            cleanup_h265_encoder();
+            return;
+        }
+    }
+
+    cv::Mat zed_resized, rs_resized, stitched;
+    cv::resize(zed, zed_resized, cv::Size(ZED_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
+    cv::resize(rs,  rs_resized,  cv::Size(REALSENSE_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
+    cv::hconcat(zed_resized, rs_resized, stitched);
+
+    const int stride[] = { static_cast<int>(stitched.step[0]) };
+    sws_scale(sws_ctx, &stitched.data, stride, 0, stitched.rows,
+              video_frame->data, video_frame->linesize);
+
+    video_frame->pts = frame_pts++;
+
+    if (avcodec_send_frame(h265_encoder_ctx, video_frame) < 0) {
+        RCLCPP_WARN(nodeHandle->get_logger(), "H.265 send_frame error");
         return;
     }
-    
-    try {
-        cv::Mat img_bgr = cv_bridge::toCvCopy(inputImage, "bgr8")->image;
-        if (img_bgr.empty()) {
-            RCLCPP_WARN(nodeHandle->get_logger(), "Received empty image frame.");
-            return;
-        }
-
-        // --- Synchronized Initialization Block ---
-        // If the main encoder context doesn't exist, we need to set up the entire pipeline.
-        if (!h265_encoder_ctx) {
-            RCLCPP_INFO(nodeHandle->get_logger(), "Initializing H.265 pipeline for %dx%d.", STREAM_WIDTH, STREAM_HEIGHT);
-            
-            // 1. Initialize the encoder
-            if (!initialize_h265_encoder(STREAM_WIDTH, STREAM_HEIGHT)) {
-                RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to initialize H.265 encoder. Halting stream.");
-                videoStreaming = false;
-                cleanup_h265_encoder(); // Ensure partial initializations are cleaned
-                return;
-            }
-
-            // 2. Initialize the color converter context right after, using the same dimensions.
-            sws_ctx = sws_getContext(STREAM_WIDTH, STREAM_HEIGHT, AV_PIX_FMT_BGR24,
-                                     STREAM_WIDTH, STREAM_HEIGHT, h265_encoder_ctx->pix_fmt,
-                                     SWS_BILINEAR, nullptr, nullptr, nullptr);
-            if (!sws_ctx) {
-                RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to create SWS context. Halting stream.");
-                videoStreaming = false;
-                cleanup_h265_encoder(); // sws_ctx is also cleaned up here
-                return;
-            }
-        }
-        // --- End of Initialization Block ---
-
-        cv::Mat resized_frame;
-        cv::resize(img_bgr, resized_frame, cv::Size(STREAM_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
-
-        // Convert the resized BGR frame to YUV420P for the encoder
-        const int stride[] = { static_cast<int>(resized_frame.step[0]) };
-        sws_scale(sws_ctx, &resized_frame.data, stride, 0, resized_frame.rows,
-                  video_frame->data, video_frame->linesize);
-
-        video_frame->pts = frame_pts++;
-
-        // Send the raw frame to the encoder
-        if (avcodec_send_frame(h265_encoder_ctx, video_frame) < 0) {
-            RCLCPP_WARN(nodeHandle->get_logger(), "Error sending a frame to the H.265 encoder.");
-            return;
-        }
-
-        // Receive any encoded packets and send them over the network
-        while (avcodec_receive_packet(h265_encoder_ctx, video_packet) == 0) {
-            size_t encoded_size = video_packet->size;
-            if (encoded_size == 0) continue;
-
+    while (avcodec_receive_packet(h265_encoder_ctx, video_packet) == 0) {
+        if (video_packet->size > 0) {
             uint16_t frame_id = frame_pts & 0xFFFF;
-            send_udp_frame_chunked(server_fd, video_packet->data, encoded_size, (struct sockaddr*)&client_addr, client_addr_len, frame_id);
-
-            av_packet_unref(video_packet);
+            send_udp_frame_chunked(server_fd, video_packet->data, video_packet->size,
+                                   (struct sockaddr*)&client_addr, client_addr_len, frame_id);
         }
-
-    } catch (const std::exception& e) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Exception in zedImageCallback: %s", e.what());
-        videoStreaming = false;
-        return;
+        av_packet_unref(video_packet);
     }
 }
 
@@ -337,7 +362,15 @@ int main(int argc, char **argv){
     RCLCPP_INFO(nodeHandle->get_logger(),"Starting video streaming server node");
 
     image_transport::ImageTransport it(nodeHandle);
-    image_transport::Subscriber sub = it.subscribe("zed_image", 1, zedImageCallback);
+    auto zed_sub = nodeHandle->create_subscription<sensor_msgs::msg::Image>(
+        "zed_image",
+        rclcpp::SensorDataQoS(),
+        &zedImageCallback);
+
+    auto intel_sub = nodeHandle->create_subscription<sensor_msgs::msg::Image>(
+        "/camera/camera/color/image_raw",
+        rclcpp::SensorDataQoS(),
+        &intelImageCallback);
 
     ssize_t bytesRead;
     struct sockaddr_in address;
