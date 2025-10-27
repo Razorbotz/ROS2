@@ -14,6 +14,7 @@ def generate_launch_description():
     return LaunchDescription([
         # Ensure Gazebo finds models
         SetEnvironmentVariable(name='GAZEBO_MODEL_PATH', value=os.path.join(pkg_path, 'models')),
+        SetEnvironmentVariable(name='GAZEBO_RESOURCE_PATH', value=os.path.join(pkg_path, 'worlds')),
 
         # Robot state publisher
         Node(
@@ -37,15 +38,18 @@ def generate_launch_description():
             cmd=['gazebo', '--verbose', world_path, '-s', 'libgazebo_ros_factory.so'],
             output='screen'
         ),
-
-        # Spawn robot
-        ExecuteProcess(
-            cmd=[
-                'ros2', 'run', 'gazebo_ros', 'spawn_entity.py',
-                '-entity', 'my_robot',
-                '-file', model_sdf_path,
-                '-x', '1.5', '-y', '1.5', '-z', '0.2'
-            ],
-            output='screen'
+        TimerAction(
+            period=5.0,
+            actions=[
+                ExecuteProcess(
+                    cmd=[
+                        'ros2', 'run', 'gazebo_ros', 'spawn_entity.py',
+                        '-entity', 'my_robot',
+                        '-file', model_sdf_path,
+                        '-x', '1.5', '-y', '1.5', '-z', '0.2'
+                    ],
+                    output='screen'
+                )
+            ]
         )
     ])
