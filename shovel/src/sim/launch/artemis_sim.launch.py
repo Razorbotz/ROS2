@@ -1,8 +1,8 @@
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess, SetEnvironmentVariable
+from launch.actions import ExecuteProcess, SetEnvironmentVariable, TimerAction
 from launch_ros.actions import Node
 import os
-from launch.actions import TimerAction
+
 
 def generate_launch_description():
     # Paths
@@ -15,7 +15,7 @@ def generate_launch_description():
         # Ensure Gazebo finds models
         SetEnvironmentVariable(name='GAZEBO_MODEL_PATH', value=os.path.join(pkg_path, 'models')),
 
-        # Robot state publisher (TFs)
+        # Robot state publisher
         Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
@@ -24,7 +24,7 @@ def generate_launch_description():
             parameters=[{'robot_description': open(urdf_path).read()}]
         ),
 
-        # Static transform odom -> base_link (optional redundancy)
+        # Static transform odom -> base_link
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
@@ -32,13 +32,13 @@ def generate_launch_description():
             arguments=['0', '0', '0', '0', '0', '0', 'odom', 'base_link']
         ),
 
-        # Launch Gazebo with your world
+        # Launch Gazebo
         ExecuteProcess(
             cmd=['gazebo', '--verbose', world_path, '-s', 'libgazebo_ros_factory.so'],
             output='screen'
         ),
 
-        # Spawn robot into Gazebo
+        # Spawn robot
         ExecuteProcess(
             cmd=[
                 'ros2', 'run', 'gazebo_ros', 'spawn_entity.py',
@@ -49,8 +49,9 @@ def generate_launch_description():
             output='screen'
         ),
 
+        # RTAB-Map node (subscribe to reliable relay)
         TimerAction(
-            period=10.0,  # wait 10 seconds for Gazebo to publish
+            period=10.0,  # wait for Gazebo to start publishing
             actions=[
                 Node(
                     package='rtabmap_ros',
@@ -61,25 +62,43 @@ def generate_launch_description():
                         'frame_id': 'base_link',
                         'odom_frame_id': 'odom',
                         'map_frame': 'map',
-                        'subscribe_rgb': False,
-                        'subscribe_rgbd': False,
-                        'subscribe_stereo': False,
-                        'subscribe_depth': False,
-                        'subscribe_scan': False,
-                        'subscribe_scan_cloud': True,
-                        'scan_cloud_topic': '/my_robot/d455i/points',
                         'use_sim_time': True,
                         'publish_tf': True,
                         'publish_map_tf': True,
+
+                        # --- Enable RGB-D input ---
+                        'subscribe_rgbd': True,
+                        'subscribe_depth': True,
+                        'subscribe_rgb': True,
+                        'subscribe_scan_cloud': True,
+
+                        # --- Topics ---
+                        'rgb_topic': '/my_robot/d455i/color/image_raw',
+                        'depth_topic': '/my_robot/d455i/depth/image_raw',
+                        'camera_info_topic': '/my_robot/d455i/color/camera_info',
+                        'scan_cloud_topic': '/my_robot/d455i/points_reliable',
+
+                        # --- QoS settings ---
+                        'qos_image': 'best_effort',
+                        'qos_camera_info': 'best_effort',
+                        'qos_scan_cloud': 'reliable',
+
+                        # --- Mapping parameters ---
                         'queue_size': 10,
-                        'approx_sync': True
+                        'approx_sync': True,
+                        'RGBD/ProximityBySpace': 'true',
+                        'RGBD/ProximityPathMaxNeighbors': '1',
+                        'Reg/Strategy': '1',
+                        'Mem/IncrementalMemory': 'true'
                     }],
                     remappings=[
                         ('odom', '/my_robot/odom'),
-                        ('scan_cloud', '/my_robot/d455i/points')
+                        ('rgb/image', '/my_robot/d455i/color/image_raw'),
+                        ('depth/image', '/my_robot/d455i/depth/image_raw'),
+                        ('rgb/camera_info', '/my_robot/d455i/color/camera_info'),
+                        ('scan_cloud', '/my_robot/d455i/points_reliable')
                     ]
                 )
             ]
         )
-
     ])

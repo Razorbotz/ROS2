@@ -284,7 +284,7 @@ int main(int argc, char **argv) {
 
     float actual_marker_size_meters = 0.165f; // real marker size in meters
    // float actual_marker_size_meters = 0.16f; //fake marker size in meters
-    auto dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_100);
+    auto dictionary = aruco::getPredefinedDictionary(aruco::DICT_6X6_100);
 
     std::cout << "Make sure the ArUco marker is a 6x6 (100), measuring " << actual_marker_size_meters * 1000 << " mm" << std::endl;
 
@@ -348,7 +348,7 @@ int main(int argc, char **argv) {
             cv::cvtColor(image_ocv, image_ocv_rgb, cv::COLOR_BGRA2BGR);
             cv::Mat grayImage;
             cv::cvtColor(image_ocv_rgb, grayImage, cv::COLOR_BGR2GRAY);
-            cv::aruco::detectMarkers(image_ocv_rgb, dictionary, corners, ids);
+            aruco::detectMarkers(image_ocv_rgb, dictionary, corners, ids);
 
             for (size_t i = 0; i < corners.size(); ++i) {
                 cv::cornerSubPix(grayImage, corners[i], cv::Size(5, 5), cv::Size(-1, -1),
@@ -360,7 +360,7 @@ int main(int argc, char **argv) {
                      "; z: " + std::to_string(zedPose.pose_data.tz);
             // if at least one marker detected
             if (ids.size() > 0) {
-                cv::aruco::estimatePoseSingleMarkers(corners, actual_marker_size_meters,
+                aruco::estimatePoseSingleMarkers(corners, actual_marker_size_meters,
                                              camera_matrix, dist_coeffs, rvecs,
                                              tvecs);
 
