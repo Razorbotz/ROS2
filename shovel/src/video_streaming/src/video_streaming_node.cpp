@@ -183,6 +183,9 @@ void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
         cv::Mat img_bgr = cv_bridge::toCvCopy(msg, "bgr8")->image;
         if (img_bgr.empty()) return;
 
+        cv::Mat gray_mat;
+        cv::cvtColor(img_bgr, gray_mat, cv::COLOR_BGR2GRAY);
+        cv::cvtColor(gray_mat, img_bgr, cv::COLOR_GRAY2BGR);
         {
             std::lock_guard<std::mutex> lk(img_mutex);
             last_zed_bgr = img_bgr.clone();
@@ -198,9 +201,12 @@ void intelImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
 {
     RCLCPP_INFO(nodeHandle->get_logger(), "intelCallback");
     try {
-        cv::Mat img_bgr = cv_bridge::toCvCopy(msg, "bgr8")->image;
+        cv::Mat img_bgr = cv_bridge::toCvCopy(msg, "rgb8")->image;
         if (img_bgr.empty()) return;
 
+        cv::Mat gray_mat;
+        cv::cvtColor(img_bgr, gray_mat, cv::COLOR_BGR2GRAY);
+        cv::cvtColor(gray_mat, img_bgr, cv::COLOR_GRAY2BGR);
         {
             std::lock_guard<std::mutex> lk(img_mutex);
             last_rs_bgr = img_bgr.clone();
