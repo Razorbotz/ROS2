@@ -84,13 +84,15 @@ bool initialize_h265_encoder(int width, int height) {
     // --- Set Encoder Parameters ---
     h265_encoder_ctx->width = width;
     h265_encoder_ctx->height = height;
-    h265_encoder_ctx->pix_fmt = AV_PIX_FMT_YUV420P; // Standard for H.265
+    h265_encoder_ctx->pix_fmt = AV_PIX_FMT_GRAY8; // Standard for H.265
     h265_encoder_ctx->time_base = {1, 30}; // 30 FPS
     h265_encoder_ctx->framerate = {30, 1};
 
     // Set encoding options for low latency streaming
     av_opt_set(h265_encoder_ctx->priv_data, "preset", "ultrafast", 0);
     av_opt_set(h265_encoder_ctx->priv_data, "tune", "zerolatency", 0);
+    av_opt_set(h265_encoder_ctx->priv_data, "delay", "0", 0);
+    av_opt_set_int(h265_encoder_ctx->priv_data, "g", 10, 0);
 
     if (avcodec_open2(h265_encoder_ctx, codec, nullptr) < 0) {
         //RCLCPP_ERROR(nodeHandle->get_logger(), "Could not open H.265 codec.");
@@ -185,10 +187,9 @@ void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
 
         cv::Mat gray_mat;
         cv::cvtColor(img_bgr, gray_mat, cv::COLOR_BGR2GRAY);
-        cv::cvtColor(gray_mat, img_bgr, cv::COLOR_GRAY2BGR);
         {
             std::lock_guard<std::mutex> lk(img_mutex);
-            last_zed_bgr = img_bgr.clone();
+            last_zed_bgr = gray_mat.clone();
             last_zed_stamp = msg->header.stamp;
         }
         maybe_stitch_and_send();
@@ -205,11 +206,10 @@ void intelImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
         if (img_bgr.empty()) return;
 
         cv::Mat gray_mat;
-        cv::cvtColor(img_bgr, gray_mat, cv::COLOR_BGR2GRAY);
-        cv::cvtColor(gray_mat, img_bgr, cv::COLOR_GRAY2BGR);
+        cv::cvtColor(img_bgr, gray_mat, cv::COLOR_RGB2GRAY);
         {
             std::lock_guard<std::mutex> lk(img_mutex);
-            last_rs_bgr = img_bgr.clone();
+            last_rs_bgr = gray_mat.clone();
             last_rs_stamp = msg->header.stamp;
         }
         maybe_stitch_and_send();
@@ -245,7 +245,7 @@ void maybe_stitch_and_send()
             cleanup_h265_encoder();
             return;
         }
-        sws_ctx = sws_getContext(STITCHED_WIDTH, STREAM_HEIGHT, AV_PIX_FMT_BGR24,
+        sws_ctx = sws_getContext(STITCHED_WIDTH, STREAM_HEIGHT, AV_PIX_FMT_GRAY8,
                                  STITCHED_WIDTH, STREAM_HEIGHT, h265_encoder_ctx->pix_fmt,
                                  SWS_BILINEAR, nullptr, nullptr, nullptr);
         if (!sws_ctx) {
@@ -382,6 +382,18 @@ int main(int argc, char **argv){
         RCLCPP_FATAL(nodeHandle->get_logger(), "UDP Socket creation failed: %s", strerror(errno));
         return EXIT_FAILURE;
     }
+
+    int broadcastEnable = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable)) < 0) {
+        RCLCPP_WARN(nodeHandle->get_logger(), "Failed to enable broadcast: %s", strerror(errno));
+    }
+
+    // Reduce kernel buffering latency
+    int sndbuf = 1 * 1024 * 1024;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_SNDBUF, &sndbuf, sizeof(sndbuf)) < 0) {
+        RCLCPP_WARN(nodeHandle->get_logger(), "Failed to set send buffer: %s", strerror(errno));
+    }
+
 
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))) {
         RCLCPP_ERROR(nodeHandle->get_logger(), "setsockopt failed: %s", strerror(errno));
