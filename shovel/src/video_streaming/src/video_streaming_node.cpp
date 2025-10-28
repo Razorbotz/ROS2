@@ -222,13 +222,6 @@ void maybe_stitch_and_send()
     {
         std::lock_guard<std::mutex> lk(img_mutex);
         if (last_zed_bgr.empty() || last_rs_bgr.empty()) return;
-        ts_zed = last_zed_stamp;
-        ts_rs  = last_rs_stamp;
-        if ((ts_zed - ts_rs).nanoseconds() > SYNC_TOL.nanoseconds() ||
-            (ts_rs - ts_zed).nanoseconds() > SYNC_TOL.nanoseconds()) {
-            // Not close enough in time yet
-            return;
-        }
         zed = last_zed_bgr.clone();
         rs  = last_rs_bgr.clone();
     }

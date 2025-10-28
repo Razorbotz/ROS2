@@ -4,7 +4,7 @@ from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription
 from launch.actions import ExecuteProcess
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-
+from ament_index_python.packages import get_package_share_directory
 
 
 ## @file
@@ -24,6 +24,8 @@ def generate_launch_description():
     drivetrain_launch_file = os.path.join(launch_dir, 'launch', 'launch_drivetrain.py')
     status_monitor_launch_file = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
     reset_launch_file = os.path.join(launch_dir, 'launch', 'launch_reset.py')
+    realsense_pkg_dir = get_package_share_directory('realsense2_camera')
+    realsense_launch_file = os.path.join(realsense_pkg_dir, 'launch', 'rs_launch.py')
 
     return LaunchDescription([
         IncludeLaunchDescription(
@@ -66,5 +68,9 @@ def generate_launch_description():
         #   cmd=['ros2', 'bag', 'record', '-a'],
         #    output='screen'
         #)
+        ,
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(realsense_launch_file)
+        )
     ]
 )
