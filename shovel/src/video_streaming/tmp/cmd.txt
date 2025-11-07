@@ -1,5 +1,7 @@
-g++ /tmp/mmapi_probe.cpp -o /tmp/mmapi_probe \
+g++ /src/video_streaming//tmp/mmapi_probe.cpp -o /src/video_streaming/tmp/mmapi_probe \
   -I/usr/src/jetson_multimedia_api/include \
   -L/usr/lib/aarch64-linux-gnu -L/usr/lib/aarch64-linux-gnu/tegra \
   -Wl,--no-as-needed -Wl,-rpath,/usr/lib/aarch64-linux-gnu/tegra \
   -lnvv4l2 -lnvmm -lnvbufsurface -lnvbufsurftransform -lv4l2 -ldl -lpthread
+  [];'./
+  abcdefghjklmnopqrstuvwxyz
