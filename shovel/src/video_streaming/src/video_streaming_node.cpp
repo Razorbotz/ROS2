@@ -21,201 +21,320 @@
 #include <mutex>
 
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/float32_multi_array.hpp>
+#include <std_msgs/msg/float32.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/empty.hpp>
 #include <sensor_msgs/msg/image.hpp>
+#include <opencv2/opencv.hpp>
 #include "image_transport/image_transport.hpp"
 #include <cv_bridge/cv_bridge.h>
-#include <opencv2/opencv.hpp>
 
-// Jetson Multimedia API
-#include "NvVideoEncoder.h"
-#include "NvBuffer.h"
-#include "NvUtils.h"
+extern "C" {
+#include <libavcodec/avcodec.h>
+#include <libavutil/opt.h>
+#include <libavutil/imgutils.h>
+}
 
-#define STREAM_FPS 30
-#define STREAM_HEIGHT 400
-#define LEFT_WIDTH 640
-#define RIGHT_WIDTH 640
-#define STITCHED_WIDTH (LEFT_WIDTH + RIGHT_WIDTH)
-#define BITRATE 4000000 // 4 Mbps CBR
-#define IDR_INTERVAL 10
+// -------------------- Streaming / Encoder Globals --------------------
 #define PORT 31338
 
 // Global state
+bool videoStreaming = false;
+int  server_fd = -1;
 rclcpp::Node::SharedPtr nodeHandle;
 bool broadcast = true;
-bool videoStreaming = false;
-bool client_connected = false;
-int server_fd = -1;
 
 struct sockaddr_in client_addr;
 socklen_t client_addr_len = sizeof(client_addr);
+bool client_connected     = false;
 
-NvVideoEncoder* g_encoder = nullptr;
-std::mutex encoder_mutex;
+// Simple stitched stream parameters
+static const int STREAM_HEIGHT    = 400;
+static const int ZED_WIDTH        = 640;
+static const int REALSENSE_WIDTH  = 640;
+static const int STITCHED_WIDTH   = ZED_WIDTH + REALSENSE_WIDTH;
+static const int STREAM_FPS       = 30;
+static const int STREAM_BITRATE   = 4'000'000; // 4 Mbps
 
-// Frame storage
+// FFmpeg H.264 encoder state
+static AVCodecContext* h264_ctx   = nullptr;
+static AVFrame*        video_frame = nullptr;
+static AVPacket*       video_packet = nullptr;
+static int64_t         frame_pts   = 0;
+static std::mutex      encoder_mutex;
+
+// Last images from each camera (grayscale)
 std::mutex img_mutex;
 cv::Mat last_zed_gray, last_rs_gray;
 
-// UDP chunk header (same as your client)
-struct FrameHeader {
-    uint16_t frame_id;
-    uint16_t chunk_index;
-    uint16_t total_chunks;
-} __attribute__((packed));
+// For optional timestamp sync (present but unused)
+rclcpp::Time last_zed_stamp, last_rs_stamp;
+const rclcpp::Duration SYNC_TOL = rclcpp::Duration::from_seconds(0.10);
 
-bool init_nvencoder(int width, int height)
+// -------------------- UDP Chunking Helper --------------------
+
+bool send_udp_frame_chunked(int sock,
+                            const uint8_t* data,
+                            size_t len,
+                            const struct sockaddr* dest_addr,
+                            socklen_t addrlen,
+                            uint16_t frame_id)
 {
-    std::lock_guard<std::mutex> lock(encoder_mutex);
+    const size_t CHUNK_SIZE = 1300; // fits in MTU
+    uint16_t chunk_index = 0;
+    uint16_t total_chunks = (len + CHUNK_SIZE - 1) / CHUNK_SIZE;
 
-    if (g_encoder) return true;
+    size_t offset = 0;
+    while (offset < len) {
+        size_t bytes_to_send = std::min(len - offset, CHUNK_SIZE);
 
-    RCLCPP_INFO(nodeHandle->get_logger(), "[NvEnc] Initializing H.265 encoder %dx%d", width, height);
+        struct FrameHeader {
+            uint16_t frame_id;
+            uint16_t chunk_index;
+            uint16_t total_chunks;
+        } header;
 
-    g_encoder = NvVideoEncoder::createVideoEncoder("enc0");
-    if (!g_encoder) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "[NvEnc] createVideoEncoder failed");
-        return false;
+        header.frame_id     = htons(frame_id);
+        header.chunk_index  = htons(chunk_index);
+        header.total_chunks = htons(total_chunks);
+
+        uint8_t packet[sizeof(header) + CHUNK_SIZE];
+        memcpy(packet, &header, sizeof(header));
+        memcpy(packet + sizeof(header), data + offset, bytes_to_send);
+
+        sendto(sock, packet, sizeof(header) + bytes_to_send, 0, dest_addr, addrlen);
+
+        offset += bytes_to_send;
+        chunk_index++;
     }
 
-    if (g_encoder->setCapturePlaneFormat(V4L2_PIX_FMT_HEVC, width, height, 2 * 1024 * 1024) < 0 ||
-        g_encoder->setOutputPlaneFormat(V4L2_PIX_FMT_YUV420M, width, height) < 0)
-    {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "[NvEnc] setFormat failed");
-        return false;
-    }
-
-    g_encoder->setBitrate(BITRATE);
-    g_encoder->setRateControlMode(V4L2_MPEG_VIDEO_BITRATE_MODE_CBR);
-    g_encoder->setFrameRate(STREAM_FPS, 1);
-    g_encoder->setProfile(V4L2_MPEG_VIDEO_H265_PROFILE_MAIN);
-    g_encoder->setIDRInterval(IDR_INTERVAL);
-    g_encoder->setInsertSpsPpsAtIdrEnabled(true);
-
-    g_encoder->output_plane.setupPlane(V4L2_MEMORY_USERPTR, 6, true, false);
-    g_encoder->capture_plane.setupPlane(V4L2_MEMORY_MMAP, 6, true, false);
-
-    g_encoder->output_plane.setStreamStatus(true);
-    g_encoder->capture_plane.setStreamStatus(true);
-
-    RCLCPP_INFO(nodeHandle->get_logger(), "[NvEnc] Ready");
     return true;
 }
 
-void encode_and_send(const cv::Mat& gray)
+/**
+ * @brief Initializes a low-latency H.264 (libx264) encoder.
+ */
+bool initialize_h264_encoder(int width, int height)
 {
-    if (!g_encoder || !videoStreaming) return;
-
-    std::lock_guard<std::mutex> lock(encoder_mutex);
-
-    cv::Mat yuv;
-    cv::cvtColor(gray, yuv, cv::COLOR_GRAY2BGR);
-    cv::cvtColor(yuv, yuv, cv::COLOR_BGR2YUV_I420);
-
-    struct v4l2_buffer v4l2_buf {};
-    struct v4l2_plane planes[MAX_PLANES] {};
-
-    v4l2_buf.type = g_encoder->output_plane.getBufType();
-    v4l2_buf.memory = V4L2_MEMORY_USERPTR;
-    v4l2_buf.m.planes = planes;
-    v4l2_buf.m.planes[0].m.userptr = (unsigned long)yuv.data;
-    v4l2_buf.m.planes[0].bytesused = yuv.total();
-    v4l2_buf.m.planes[0].length = yuv.total();
-
-    if (g_encoder->output_plane.qBuffer(v4l2_buf, nullptr) < 0) return;
-
-    struct v4l2_buffer enc_buf {};
-    struct v4l2_plane enc_planes[MAX_PLANES] {};
-
-    enc_buf.type = g_encoder->capture_plane.getBufType();
-    enc_buf.memory = V4L2_MEMORY_MMAP;
-    enc_buf.m.planes = enc_planes;
-
-    NvBuffer* buffer = nullptr;
-    NvBuffer* shared_buffer = nullptr;
-    uint32_t bytes_used = 0;
-
-    if (g_encoder->capture_plane.dqBuffer(enc_buf,
-                                        &buffer,
-                                        &shared_buffer,
-                                        bytes_used) < 0)
-    {
-        RCLCPP_WARN(nodeHandle->get_logger(), "[NvEnc] dqBuffer failed");
-        return;
+    if (h264_ctx) {
+        return true;
     }
 
-    uint8_t* enc_data =
-        g_encoder->capture_plane.getNthBuffer(enc_buf.index)->planes[0].data;
-    size_t enc_size =
-        enc_buf.m.planes[0].bytesused;
-
-    // Send via UDP in chunks (same protocol)
-    const size_t CHUNK = 1300;
-    uint16_t frame_id = (uint16_t)(std::chrono::steady_clock::now().time_since_epoch().count());
-    uint16_t total = (enc_size + CHUNK - 1) / CHUNK;
-
-    for (uint16_t i = 0; i < total; i++) {
-        size_t off = i * CHUNK;
-        size_t len = std::min(CHUNK, enc_size - off);
-
-        FrameHeader hdr {
-            htons(frame_id),
-            htons(i),
-            htons(total)
-        };
-
-        uint8_t pkt[sizeof(hdr) + CHUNK];
-        memcpy(pkt, &hdr, sizeof(hdr));
-        memcpy(pkt + sizeof(hdr), enc_data + off, len);
-
-        sendto(server_fd, pkt, sizeof(hdr) + len, 0,
-               (struct sockaddr*)&client_addr, client_addr_len);
+    const AVCodec* codec = avcodec_find_encoder_by_name("libx264");
+    if (!codec) {
+        codec = avcodec_find_encoder(AV_CODEC_ID_H264);
+        if (!codec) {
+            RCLCPP_ERROR(nodeHandle->get_logger(), "H.264 encoder not found (libx264/H264).");
+            return false;
+        }
     }
 
-    g_encoder->capture_plane.qBuffer(enc_buf, buffer);
+    h264_ctx = avcodec_alloc_context3(codec);
+    if (!h264_ctx) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Could not allocate H.264 codec context.");
+        return false;
+    }
+
+    // Encoder settings
+    h264_ctx->width     = width;
+    h264_ctx->height    = height;
+    h264_ctx->pix_fmt   = AV_PIX_FMT_YUV420P;
+    h264_ctx->time_base = { 1, STREAM_FPS };
+    h264_ctx->framerate = { STREAM_FPS, 1 };
+    h264_ctx->bit_rate  = STREAM_BITRATE;
+
+    // No B-frames → no reordering → lower latency
+    h264_ctx->max_b_frames = 0;
+
+    // Low-latency x264 options
+    av_opt_set(h264_ctx->priv_data, "preset", "ultrafast", 0);
+    av_opt_set(h264_ctx->priv_data, "tune",   "zerolatency", 0);
+    av_opt_set(h264_ctx->priv_data, "profile","baseline",     0);
+    av_opt_set_int(h264_ctx->priv_data, "keyint", STREAM_FPS, 0);    // IDR every ~1s
+    av_opt_set_int(h264_ctx->priv_data, "rc-lookahead", 0, 0);
+
+    if (avcodec_open2(h264_ctx, codec, nullptr) < 0) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Could not open H.264 codec.");
+        avcodec_free_context(&h264_ctx);
+        return false;
+    }
+
+    video_frame = av_frame_alloc();
+    if (!video_frame) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Could not allocate video frame.");
+        avcodec_free_context(&h264_ctx);
+        h264_ctx = nullptr;
+        return false;
+    }
+
+    video_frame->format = h264_ctx->pix_fmt;
+    video_frame->width  = h264_ctx->width;
+    video_frame->height = h264_ctx->height;
+
+    if (av_frame_get_buffer(video_frame, 32) < 0) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Could not allocate frame buffer.");
+        av_frame_free(&video_frame);
+        avcodec_free_context(&h264_ctx);
+        video_frame = nullptr;
+        h264_ctx    = nullptr;
+        return false;
+    }
+
+    // Pre-fill UV planes to neutral gray (128) once; we only change Y each frame.
+    for (int y = 0; y < (video_frame->height / 2); ++y) {
+        memset(video_frame->data[1] + y * video_frame->linesize[1], 128, video_frame->width / 2);
+        memset(video_frame->data[2] + y * video_frame->linesize[2], 128, video_frame->width / 2);
+    }
+
+    video_packet = av_packet_alloc();
+    if (!video_packet) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Could not allocate video packet.");
+        av_frame_free(&video_frame);
+        avcodec_free_context(&h264_ctx);
+        video_frame = nullptr;
+        h264_ctx    = nullptr;
+        return false;
+    }
+
+    frame_pts = 0;
+    RCLCPP_INFO(nodeHandle->get_logger(), "H.264 encoder initialized %dx%d @ %d FPS",
+                width, height, STREAM_FPS);
+    return true;
 }
 
-void stitch_and_encode()
-{
-    if (!videoStreaming || !client_connected || server_fd < 0) return;
+/**
+ * @brief Cleans up H.264 encoder resources.
+ */
+void cleanup_h264_encoder(){
+    if (h264_ctx) {
+        avcodec_free_context(&h264_ctx);
+        h264_ctx = nullptr;
+    }
+    if (video_frame) {
+        av_frame_free(&video_frame);
+        video_frame = nullptr;
+    }
+    if (video_packet) {
+        av_packet_free(&video_packet);
+        video_packet = nullptr;
+    }
+}
 
-    cv::Mat left, right;
+void maybe_stitch_and_send();
+
+void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg){
+    try {
+        cv::Mat img_bgr = cv_bridge::toCvCopy(msg, "bgr8")->image;
+        if (img_bgr.empty()) return;
+
+        cv::Mat gray_mat;
+        cv::cvtColor(img_bgr, gray_mat, cv::COLOR_BGR2GRAY);
+
+        {
+            std::lock_guard<std::mutex> lk(img_mutex);
+            last_zed_gray  = gray_mat.clone();
+            last_zed_stamp = msg->header.stamp;
+        }
+        maybe_stitch_and_send();
+    }
+    catch (const std::exception &e) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "zedImageCallback exception: %s", e.what());
+    }
+}
+
+void intelImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
+{
+    try {
+        cv::Mat img_bgr = cv_bridge::toCvCopy(msg, "rgb8")->image;
+        if (img_bgr.empty()) return;
+
+        cv::Mat gray_mat;
+        cv::cvtColor(img_bgr, gray_mat, cv::COLOR_RGB2GRAY);
+
+        {
+            std::lock_guard<std::mutex> lk(img_mutex);
+            last_rs_gray  = gray_mat.clone();
+            last_rs_stamp = msg->header.stamp;
+        }
+        maybe_stitch_and_send();
+    }
+    catch (const std::exception &e) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "intelImageCallback exception: %s", e.what());
+    }
+}
+
+void maybe_stitch_and_send()
+{
+    if (!videoStreaming || server_fd < 0 || !client_connected) return;
+
+    cv::Mat zed, rs;
     {
         std::lock_guard<std::mutex> lk(img_mutex);
         if (last_zed_gray.empty() || last_rs_gray.empty()) return;
-        left = last_zed_gray.clone();
-        right = last_rs_gray.clone();
+        zed = last_zed_gray;
+        rs  = last_rs_gray;
     }
 
-    cv::Mat l_resized, r_resized, stitched;
-    cv::resize(left, l_resized, cv::Size(LEFT_WIDTH, STREAM_HEIGHT));
-    cv::resize(right, r_resized, cv::Size(RIGHT_WIDTH, STREAM_HEIGHT));
-    cv::hconcat(l_resized, r_resized, stitched);
-
-    if (!g_encoder && !init_nvencoder(STITCHED_WIDTH, STREAM_HEIGHT)) return;
-
-    encode_and_send(stitched);
-}
-
-void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg){
-    cv::Mat img = cv_bridge::toCvCopy(msg, "bgr8")->image;
-    cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
     {
-        std::lock_guard<std::mutex> lk(img_mutex);
-        last_zed_gray = img.clone();
+        std::lock_guard<std::mutex> enc_lk(encoder_mutex);
+        if (!h264_ctx) {
+            if (!initialize_h264_encoder(STITCHED_WIDTH, STREAM_HEIGHT)) {
+                RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to init H.264 encoder; stopping streaming.");
+                videoStreaming = false;
+                return;
+            }
+        }
     }
-    stitch_and_encode();
-}
 
-void intelImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg){
-    cv::Mat img = cv_bridge::toCvCopy(msg, "rgb8")->image;
-    cv::cvtColor(img, img, cv::COLOR_RGB2GRAY);
+    cv::Mat zed_resized, rs_resized, stitched;
+    cv::resize(zed, zed_resized, cv::Size(ZED_WIDTH,       STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
+    cv::resize(rs,  rs_resized,  cv::Size(REALSENSE_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
+    cv::hconcat(zed_resized, rs_resized, stitched);
+
+    if (stitched.cols != STITCHED_WIDTH || stitched.rows != STREAM_HEIGHT || stitched.type() != CV_8UC1) {
+        RCLCPP_WARN(nodeHandle->get_logger(), "Stitched frame has unexpected size/type.");
+        return;
+    }
+
     {
-        std::lock_guard<std::mutex> lk(img_mutex);
-        last_rs_gray = img.clone();
+        std::lock_guard<std::mutex> enc_lk(encoder_mutex);
+
+        if (!h264_ctx || !video_frame || !video_packet) return;
+
+        if (av_frame_make_writable(video_frame) < 0) {
+            RCLCPP_WARN(nodeHandle->get_logger(), "Frame not writable.");
+            return;
+        }
+
+        // Copy gray into Y plane row-by-row
+        for (int y = 0; y < STREAM_HEIGHT; ++y) {
+            memcpy(video_frame->data[0] + y * video_frame->linesize[0],
+                   stitched.ptr(y),
+                   STITCHED_WIDTH);
+        }
+
+        video_frame->pts = frame_pts++;
+
+        if (avcodec_send_frame(h264_ctx, video_frame) < 0) {
+            RCLCPP_WARN(nodeHandle->get_logger(), "H.264 send_frame error.");
+            return;
+        }
+
+        while (avcodec_receive_packet(h264_ctx, video_packet) == 0) {
+            if (video_packet->size > 0) {
+                uint16_t frame_id = static_cast<uint16_t>(frame_pts & 0xFFFF);
+                send_udp_frame_chunked(server_fd,
+                                       video_packet->data,
+                                       static_cast<size_t>(video_packet->size),
+                                       (struct sockaddr*)&client_addr,
+                                       client_addr_len,
+                                       frame_id);
+            }
+            av_packet_unref(video_packet);
+        }
     }
 }
-
 
 std::string getAddressString(int family, std::string interfaceName){
     std::string addressString("");
@@ -249,6 +368,7 @@ std::string getAddressString(int family, std::string interfaceName){
     freeifaddrs(interfaceAddresses);
     return addressString;
 }
+
 
 
 std::string robotName="shovel";
@@ -288,7 +408,6 @@ void broadcastIP() {
     close(socketDescriptor);
 }
 
-
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
 
@@ -311,7 +430,6 @@ int main(int argc, char **argv){
     int opt = 1;
     socklen_t addrlen = sizeof(address);
     uint8_t buffer[2048] = {0};
-    std::string hello("Hello from server");
 
     if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         RCLCPP_FATAL(nodeHandle->get_logger(), "UDP Socket creation failed: %s", strerror(errno));
@@ -323,22 +441,21 @@ int main(int argc, char **argv){
         RCLCPP_WARN(nodeHandle->get_logger(), "Failed to enable broadcast: %s", strerror(errno));
     }
 
-    // Reduce kernel buffering latency
+    // Reduce kernel buffering latency (but still allow some buffering)
     int sndbuf = 1 * 1024 * 1024;
     if (setsockopt(server_fd, SOL_SOCKET, SO_SNDBUF, &sndbuf, sizeof(sndbuf)) < 0) {
         RCLCPP_WARN(nodeHandle->get_logger(), "Failed to set send buffer: %s", strerror(errno));
     }
 
-
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "setsockopt failed: %s", strerror(errno));
+        RCLCPP_ERROR(nodeHandle->get_logger(), "setsockopt SO_REUSEPORT failed: %s", strerror(errno));
         close(server_fd);
         return EXIT_FAILURE;
     }
 
-    address.sin_family = AF_INET;
+    address.sin_family      = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+    address.sin_port        = htons(PORT);
 
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
         RCLCPP_FATAL(nodeHandle->get_logger(), "Bind failed: %s", strerror(errno));
@@ -351,18 +468,19 @@ int main(int argc, char **argv){
 
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
-    rclcpp::Rate rate(20);
+    rclcpp::Rate rate(60);
 
     int flags = fcntl(server_fd, F_GETFL, 0);
     fcntl(server_fd, F_SETFL, flags | O_NONBLOCK);
 
     auto last_message_time = std::chrono::steady_clock::now();
     while(rclcpp::ok()){
-        bytesRead = recvfrom(server_fd, buffer, sizeof(buffer), 0, (struct sockaddr *)&client_addr, &client_addr_len);
+        bytesRead = recvfrom(server_fd, buffer, sizeof(buffer), 0,
+                             (struct sockaddr *)&client_addr, &client_addr_len);
 
         if (bytesRead > 0) {
             last_message_time = std::chrono::steady_clock::now();
-            
+
             std::string received_str(reinterpret_cast<char*>(buffer), bytesRead);
             if (received_str == "Hello Robot") {
                 if (!client_connected) {
@@ -414,9 +532,7 @@ int main(int argc, char **argv){
     }
 
     RCLCPP_INFO(nodeHandle->get_logger(), "Shutting down video streaming server node.");
-    if (server_fd >= 0) {
-        close(server_fd);
-    }
+    cleanup_h264_encoder();
     if (server_fd >= 0) {
         close(server_fd);
     }

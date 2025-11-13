@@ -2,7 +2,7 @@
 <package format="3">
   <name>video_streaming</name>
   <version>1.0.0</version>
-  <description>communication node</description>
+  <description>video streaming node</description>
 
   <maintainer email="andrewburroughs17@gmail.com">Andrew Burroughs</maintainer>
   <author>Andrew Burroughs</author>
