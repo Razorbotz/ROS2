@@ -12,9 +12,16 @@ def generate_launch_description():
     model_sdf_path = '/home/team/SoftwareDevelopment/ROS2/shovel/src/sim/models/model/model.sdf'
 
     return LaunchDescription([
-        # Ensure Gazebo finds models
-        SetEnvironmentVariable(name='GAZEBO_MODEL_PATH', value=os.path.join(pkg_path, 'models')),
-        SetEnvironmentVariable(name='GAZEBO_RESOURCE_PATH', value=os.path.join(pkg_path, 'worlds')),
+        SetEnvironmentVariable(
+            name='GAZEBO_MODEL_PATH',
+            value='/usr/share/gazebo-11/models:' + os.path.join(pkg_path, 'models')
+        ),
+
+        SetEnvironmentVariable(
+            name='GAZEBO_RESOURCE_PATH',
+            value='/usr/share/gazebo-11:' + os.path.join(pkg_path, 'worlds')
+        ),
+
 
         # Robot state publisher
         Node(
