@@ -21,6 +21,9 @@
 #define ROW_COUNT 10
 rclcpp::Node::SharedPtr nodeHandle;
 
+#define ROLL_OFFSET 12.33
+#define X_OFFSET 1.35
+
 // Create a ZED camera object
 sl::Camera zed;
 
@@ -355,7 +358,7 @@ int main(int argc, char **argv) {
                                 cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
             }
             tracking_state = zed.getPosition(zedPose);
-            std::string position_txt = "ZED  x: " + std::to_string(zedPose.pose_data.tx + 1.35) +
+            std::string position_txt = "ZED  x: " + std::to_string(zedPose.pose_data.tx + X_OFFSET) +
                      "; y: " + std::to_string(zedPose.pose_data.ty) +
                      "; z: " + std::to_string(zedPose.pose_data.tz);
             // if at least one marker detected
@@ -425,7 +428,7 @@ int main(int argc, char **argv) {
                 zedPosition.oy=zedPose.getOrientation().oy;
                 zedPosition.oz=zedPose.getOrientation().oz;
                 zedPosition.ow=zedPose.getOrientation().ow;
-                zedPosition.roll = zedPose.pose_data.getEulerAngles(false).x - 12.33;
+                zedPosition.roll = zedPose.pose_data.getEulerAngles(false).x - ROLL_OFFSET;
                 zedPosition.pitch = zedPose.pose_data.getEulerAngles(false).y;
                 zedPosition.yaw = zedPose.pose_data.getEulerAngles(false).z;
                 zedPosition.x_acc = x_acc;

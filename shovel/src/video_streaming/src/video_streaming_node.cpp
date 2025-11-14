@@ -55,7 +55,7 @@ static const int ZED_WIDTH        = 640;
 static const int REALSENSE_WIDTH  = 640;
 static const int STITCHED_WIDTH   = ZED_WIDTH + REALSENSE_WIDTH;
 static const int STREAM_FPS       = 30;
-static const int STREAM_BITRATE   = 4'000'000; // 4 Mbps
+static const int STREAM_BITRATE   = 2000000; // 4 Mbps
 
 // FFmpeg H.264 encoder state
 static AVCodecContext* h264_ctx   = nullptr;
@@ -149,10 +149,15 @@ bool initialize_h264_encoder(int width, int height)
 
     // Low-latency x264 options
     av_opt_set(h264_ctx->priv_data, "preset", "ultrafast", 0);
-    av_opt_set(h264_ctx->priv_data, "tune",   "zerolatency", 0);
-    av_opt_set(h264_ctx->priv_data, "profile","baseline",     0);
-    av_opt_set_int(h264_ctx->priv_data, "keyint", STREAM_FPS, 0);    // IDR every ~1s
+    av_opt_set(h264_ctx->priv_data, "tune", "zerolatency", 0);
+    av_opt_set(h264_ctx->priv_data, "profile", "baseline", 0);
+    av_opt_set_int(h264_ctx->priv_data, "sync-lookahead", 0, 0);
     av_opt_set_int(h264_ctx->priv_data, "rc-lookahead", 0, 0);
+    av_opt_set_int(h264_ctx->priv_data, "keyint", 5, 0);         // IDR every 5 frames
+    av_opt_set_int(h264_ctx->priv_data, "force-cfr", 1, 0);
+    av_opt_set_int(h264_ctx->priv_data, "crf", 26, 0);
+    av_opt_set_int(h264_ctx->priv_data, "slice-max-size", 1200, 0);
+    av_opt_set_int(h264_ctx->priv_data, "forced-idr", 1, 0);
 
     if (avcodec_open2(h264_ctx, codec, nullptr) < 0) {
         RCLCPP_ERROR(nodeHandle->get_logger(), "Could not open H.264 codec.");
@@ -264,6 +269,23 @@ void intelImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
     }
 }
 
+cv::Mat H;               // 3×3 homography D455 → ZED
+cv::Mat H_gray;          // 3×3 float (CV_32F) copy for warpPerspective
+bool homography_loaded = false;
+
+void load_homography()
+{
+    cv::FileStorage fs("/path/to/homography_jetson.yml", cv::FileStorage::READ);
+    if (!fs.isOpened()) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to load homography file!");
+        return;
+    }
+    fs["H"] >> H;
+    H.convertTo(H_gray, CV_32F);
+    homography_loaded = true;
+}
+
+
 void maybe_stitch_and_send()
 {
     if (!videoStreaming || server_fd < 0 || !client_connected) return;
@@ -288,9 +310,28 @@ void maybe_stitch_and_send()
     }
 
     cv::Mat zed_resized, rs_resized, stitched;
-    cv::resize(zed, zed_resized, cv::Size(ZED_WIDTH,       STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
+    cv::resize(zed, zed_resized, cv::Size(ZED_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
     cv::resize(rs,  rs_resized,  cv::Size(REALSENSE_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
-    cv::hconcat(zed_resized, rs_resized, stitched);
+
+    cv::Mat stitched = cv::Mat::zeros(STREAM_HEIGHT, STITCHED_WIDTH, CV_8UC1);
+
+    zed_resized.copyTo(stitched(cv::Rect(0, 0, ZED_WIDTH, STREAM_HEIGHT)));
+    cv::Mat warped_rs;
+    cv::warpPerspective(
+        rs_resized,
+        warped_rs,
+        H_gray,
+        cv::Size(STITCHED_WIDTH, STREAM_HEIGHT),  // warp into panorama space
+        cv::INTER_LINEAR,
+        cv::BORDER_CONSTANT,
+        cv::Scalar(0)
+    );
+    cv::Mat stitched_roi = stitched.colRange(ZED_WIDTH, STITCHED_WIDTH);
+    cv::Mat warped_roi   = warped_rs.colRange(ZED_WIDTH, STITCHED_WIDTH);
+    cv::Mat mask;
+    cv::compare(warped_roi, 0, mask, cv::CMP_NE);
+    warped_roi.copyTo(stitched_roi, mask);
+
 
     if (stitched.cols != STITCHED_WIDTH || stitched.rows != STREAM_HEIGHT || stitched.type() != CV_8UC1) {
         RCLCPP_WARN(nodeHandle->get_logger(), "Stitched frame has unexpected size/type.");
@@ -430,6 +471,8 @@ int main(int argc, char **argv){
     int opt = 1;
     socklen_t addrlen = sizeof(address);
     uint8_t buffer[2048] = {0};
+
+    load_homography();
 
     if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         RCLCPP_FATAL(nodeHandle->get_logger(), "UDP Socket creation failed: %s", strerror(errno));
