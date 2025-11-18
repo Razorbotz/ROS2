@@ -303,7 +303,6 @@ int main(int argc, char **argv) {
 
     float auto_reset_aruco_screen_ratio = 0.01;
 
-    bool can_reset = false;
     bool has_reset = false;
 
     sl::PositionalTrackingParameters tracking_params;
@@ -331,9 +330,6 @@ int main(int argc, char **argv) {
 
     double x_acc, y_acc, z_acc, x_vel, y_vel, z_vel;
 
-    auto start = std::chrono::high_resolution_clock::now();
-    auto previousReset = std::chrono::high_resolution_clock::now();
-
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);
     RCLCPP_INFO(nodeHandle->get_logger(), "Checking for crash");
@@ -342,7 +338,16 @@ int main(int argc, char **argv) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Starting camera");
 
     int writeCounter = 1;
-    int resetCounter = 0;
+    sl::Transform correction_offset; // Stores the calculated offset (translation + rotation)
+    bool offset_calculated = false;  // Flag to know if we have a valid offset
+    const float correction_smoothing = 0.05f; // Smoothing factor to prevent large jumps if the Aruco becomes visible
+
+    sl::Transform aruco_ground_truth_pose;
+    aruco_ground_truth_pose.setTranslation(sl::Translation(xOffset, 0.2f, 0.0f));
+
+    sl::Orientation yaw90;
+    yaw90.setEulerAngles(sl::float3(0, 0, M_PI/2));
+    aruco_ground_truth_pose.setOrientation(yaw90);
 
     rclcpp::Rate rate(30);
     while (rclcpp::ok()) {
@@ -358,6 +363,8 @@ int main(int argc, char **argv) {
                                 cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
             }
             tracking_state = zed.getPosition(zedPose);
+            sl::Transform zed_raw_pose = zedPose.getPoseData();
+
             std::string position_txt = "ZED  x: " + std::to_string(zedPose.pose_data.tx + X_OFFSET) +
                      "; y: " + std::to_string(zedPose.pose_data.ty) +
                      "; z: " + std::to_string(zedPose.pose_data.tz);
@@ -376,7 +383,6 @@ int main(int argc, char **argv) {
                 pose.inverse();
                 auto user_coordinate_to_image = sl::getCoordinateTransformConversion4f(
                     init_params.coordinate_system, sl::COORDINATE_SYSTEM::IMAGE);
-                can_reset = true;
 
                 sl::Transform user_coordinate_to_ARUCO =
                     IMAGE_TO_ARUCO_basis_change * user_coordinate_to_image;
@@ -385,10 +391,32 @@ int main(int argc, char **argv) {
 
                 pose = ARUCO_to_user_coordinate * pose * user_coordinate_to_ARUCO;
 		        zedPosition.aruco_visible=true;
+
+                sl::Transform target_offset = aruco_ground_truth_pose * pose.inverse();
+
+
+                if (!offset_calculated) {
+                    correction_offset = target_offset;
+                    offset_calculated = true;
+                }
+                else {
+                    sl::float3 current_t = correction_offset.getTranslation();
+                    sl::float3 target_t = target_offset.getTranslation();
+                    sl::float3 new_t;
+                    new_t.x = current_t.x * (1.0f - correction_smoothing) + target_t.x * correction_smoothing;
+                    new_t.y = current_t.y * (1.0f - correction_smoothing) + target_t.y * correction_smoothing;
+                    new_t.z = current_t.z * (1.0f - correction_smoothing) + target_t.z * correction_smoothing;
+
+                    sl::Orientation current_q = correction_offset.getOrientation();
+                    sl::Orientation target_q = target_offset.getOrientation();
+                    sl::Orientation new_q = sl::Orientation::slerp(current_q, target_q, correction_smoothing);
+
+                    correction_offset.setTranslation(sl::Translation(new_t));
+                    correction_offset.setOrientation(new_q);
+                }
 	        } 
             else {
 	            zedPosition.aruco_visible=false;
-                can_reset = false;
 	        }
 
             if (zed.getSensorsData(sensors_data, sl::TIME_REFERENCE::IMAGE) == sl::ERROR_CODE::SUCCESS) {
@@ -409,35 +437,38 @@ int main(int argc, char **argv) {
                 rvecs.resize(1);
                 tvecs.resize(1);
             }
-            
-            if (!ids.empty() && !corners.empty() && can_reset && !has_reset && resetCounter < 2) {
-                bool resetPose = isTagValidForReset(corners[0], cv::Size(image_zed.getWidth(), image_zed.getHeight()), auto_reset_aruco_screen_ratio);
-                if (resetPose) {
-                    RCLCPP_INFO(nodeHandle->get_logger(), "Reset pose");
-                    zed.resetPositionalTracking(pose);
-                    has_reset = true;
-                    initialized = true;
-                    resetCounter++;
-                }
-            }
             if (tracking_state == sl::POSITIONAL_TRACKING_STATE::OK) {
-                zedPosition.x=zedPose.pose_data.tx + xOffset;
-                zedPosition.y=zedPose.pose_data.ty;
-                zedPosition.z=zedPose.pose_data.tz;
-                zedPosition.ox=zedPose.getOrientation().ox;
-                zedPosition.oy=zedPose.getOrientation().oy;
-                zedPosition.oz=zedPose.getOrientation().oz;
-                zedPosition.ow=zedPose.getOrientation().ow;
-                zedPosition.roll = zedPose.pose_data.getEulerAngles(false).x - ROLL_OFFSET;
-                zedPosition.pitch = zedPose.pose_data.getEulerAngles(false).y;
-                zedPosition.yaw = zedPose.pose_data.getEulerAngles(false).z;
+                sl::Transform corrected_pose;
+
+                if (offset_calculated) {
+                    corrected_pose = correction_offset * zed_raw_pose;
+                }
+                else {
+                    corrected_pose = zed_raw_pose;
+                }
+
+                zedPosition.x = corrected_pose.getTranslation().x + xOffset;
+                zedPosition.y = corrected_pose.getTranslation().y;
+                zedPosition.z = corrected_pose.getTranslation().z;
+                
+                sl::Orientation corrected_q = corrected_pose.getOrientation();
+                zedPosition.ox = corrected_q.ox;
+                zedPosition.oy = corrected_q.oy;
+                zedPosition.oz = corrected_q.oz;
+                zedPosition.ow = corrected_q.ow;
+                
+                sl::float3 corrected_euler = corrected_pose.getEulerAngles(false);
+                zedPosition.roll = corrected_euler.x;
+                zedPosition.pitch = corrected_euler.y;
+                zedPosition.yaw = corrected_euler.z;
+
                 zedPosition.x_acc = x_acc;
                 zedPosition.y_acc = y_acc;
                 zedPosition.z_acc = z_acc;
                 zedPosition.x_vel = x_vel;
                 zedPosition.y_vel = y_vel;
                 zedPosition.z_vel = z_vel;
-                zedPosition.aruco_initialized = initialized;
+                zedPosition.aruco_initialized = offset_calculated;
                 zedPositionPublisher->publish(zedPosition);
                 if(printData)
                     RCLCPP_INFO(nodeHandle->get_logger(), "%s", position_txt.c_str());
@@ -448,10 +479,10 @@ int main(int argc, char **argv) {
                         if(printData)
                             RCLCPP_INFO(nodeHandle->get_logger(), "Before writing to file");
                         std::ostringstream oss;
-                        oss << zedPose.pose_data.tx << "," << zedPose.pose_data.ty << "," << zedPose.pose_data.tz << ",";
-                        oss << zedPose.pose_data.getEulerAngles(false).x << "," 
-                            << zedPose.pose_data.getEulerAngles(false).y << "," 
-                            << zedPose.pose_data.getEulerAngles(false).z;
+                        oss << zedPosition.x - xOffset << "," << zedPosition.y << "," << zedPosition.z << ",";
+                        oss << corrected_euler.x << "," 
+                            << corrected_euler.y << "," 
+                            << corrected_euler.z;
 
                         std::string tmp_path = POSITION_FILE + ".tmp";
                         const std::string& data = oss.str();
@@ -493,22 +524,15 @@ int main(int argc, char **argv) {
                 msg = cv_bridge::CvImage(hdr, "rgb8", image_ocv_rgb).toImageMsg();
                 zedImagePublisher.publish(msg);
             }
-    		auto finish = std::chrono::high_resolution_clock::now();
-            if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-previousReset).count() > 15000){
-                has_reset = false;
-                previousReset = std::chrono::high_resolution_clock::now();
-            }
 
 /*
-            if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > 15000){
+            if(stopped_for_excavation){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Before writing area map");
-                // Save area map every 15 seconds
-                // Might need to change this depending on the 
+                // Save area map when the robot is stopped for excavation
                 zed.saveAreaMap(sl::String(AREA_MAP.c_str()));
                 if (std::rename(TEMP_MAP.c_str(), AREA_MAP.c_str()) != 0) {
                     RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to rename temp position file.");
                 }
-                start = std::chrono::high_resolution_clock::now();
             }
 */
 
