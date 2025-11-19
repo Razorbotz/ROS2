@@ -12,11 +12,17 @@
 #include "utils/utils.hpp"
 
 rclcpp::Node::SharedPtr nodeHandle;
+using std::placeholders::_1;
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon14Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon15Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon16Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon17Publisher;
+
+std::shared_ptr<rclcpp::Publisher<messages::msg::LinearStatus>> linearStatus1Publisher;
+std::shared_ptr<rclcpp::Publisher<messages::msg::LinearStatus>> linearStatus2Publisher;
+std::shared_ptr<rclcpp::Publisher<messages::msg::LinearStatus>> linearStatus3Publisher;
+std::shared_ptr<rclcpp::Publisher<messages::msg::LinearStatus>> linearStatus4Publisher;
 
 messages::msg::LinearStatus linearStatus1;
 messages::msg::LinearStatus linearStatus2;
@@ -67,6 +73,40 @@ std::map<Error, const char*> errorMap = {{ActuatorsSyncError, "ActuatorsSyncErro
     {PotentiometerError, "PotentiometerError"},
     {None, "None"}};
 
+// Range where pot is floating/disconnected
+constexpr int POT_FLOAT_LOW = 100;
+constexpr int POT_FLOAT_HIGH = 110;
+
+// Approx valid working range: ~30 - 980 (span ~950)
+constexpr int POT_RAW_MIN_VALID = 30;
+constexpr int POT_RAW_MAX_VALID = 980;
+constexpr int POT_RAW_RANGE = POT_RAW_MAX_VALID - POT_RAW_MIN_VALID;
+
+// Noise and thresholds
+constexpr int NOISE_THRESH = 2;
+constexpr int NO_MOVEMENT_LIMIT = 15;
+
+// Distance sync thresholds (inches)
+float distThresh1 = 0.05f;
+float distThresh2 = 0.10f;
+float distThresh3 = 0.15f;
+
+// Global state
+bool automationGo = false;
+bool run = false;
+float currentArmSpeed = 0.0f;
+float currentBucketSpeed = 0.0f;
+
+// Robot configuration flags
+enum RobotMode {
+    MODE_4_ACTUATOR,  // 2 arm, 2 bucket
+    MODE_3_ACTUATOR,  // 2 arm, 1 bucket
+    MODE_2_ACTUATOR   // 1 arm, 1 bucket
+};
+
+RobotMode robotMode    = MODE_4_ACTUATOR;
+bool armHasPair        = true;   // 14 & 15
+bool bucketHasPair     = true;   // 16 & 17
 
 struct LinearActuator{
     int motorNumber = 0;
@@ -87,24 +127,26 @@ struct LinearActuator{
     bool initialized = false;
     float previousSpeed = 0.0;
     int previousPotent = 0;
+    //float lowerDistance = 0.0;
+   // float upperDistance = 0.0;
+    //float lowerSpeed = 0.0;
+    //float upperSpeed = 0.0;
+    LinearActuator(int motor, float strokeLength, float ExtensionSpeed, float TimeToExtend)
+        : motorNumber(motor), stroke(strokeLength), extensionSpeed(ExtensionSpeed), timeToExtend(TimeToExtend) {}
 };
 
+LinearActuator linear1(14,  9.8f, 0.85f, 11.5f);
+LinearActuator linear2(15,  9.8f, 0.89f, 11.0f);
+LinearActuator linear3(16, 11.8f, 0.69f,  8.5f);
+LinearActuator linear4(17, 11.8f, 0.69f,  8.5f);
 
-LinearActuator linear1{14, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.85, 11.5, false, 0.0, false, 0.0, 0};
-LinearActuator linear2{15, 0.0, 0, 0, 0, 1024, None, false, false, 9.8, 0.0, 0.89, 11.0, false, 0.0, false, 0.0, 0};
-LinearActuator linear3{16, 0.0, 0, 0, 0, 1024, None, false, false, 11.8, 0.0, 0.69, 8.5, false, 0.0, false, 0.0, 0};
-LinearActuator linear4{17, 0.0, 0, 0, 0, 1024, None, false, false, 11.8, 0.0, 0.69, 8.5, false, 0.0, false, 0.0, 0};
+inline bool isFloatValue(int v) {
+    return v >= POT_FLOAT_LOW && v <= POT_FLOAT_HIGH;
+}
 
-float currentArmSpeed = 0.0;
-float currentBucketSpeed = 0.0;
-float distThresh1 = 0.05;
-float distThresh2 = 0.10;
-float distThresh3 = 0.15;
-int noiseThresh = 2;
-
-bool automationGo = false;
-bool run = false;
-
+inline bool isRealValue(int v) {
+    return v >= POT_RAW_MIN_VALID && v <= POT_RAW_MAX_VALID;
+}
 
 void goCallback(std_msgs::msg::Empty::SharedPtr empty){
     run = true;
@@ -139,37 +181,29 @@ void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
         else:
             val = false
     */
-void sync(LinearActuator *linear1, LinearActuator *linear2, float currentSpeed){
-    float diff = abs(linear1->potentiometer - linear2->potentiometer);
-    bool val = (currentSpeed > 0) ? (linear1->potentiometer >= linear2->potentiometer) : (linear1->potentiometer < linear2->potentiometer);
-    
-    if (diff > ((950 / linear1->stroke)/6)){
-        if(val){
-            linear1->speed = 0;
-        }
-        else{
-            linear2->speed = 0;
-        }
+void sync(LinearActuator* a, LinearActuator* b, float currentSpeed) {
+    float diff = std::abs(a->potentiometer - b->potentiometer);
+    bool aIsAhead = (currentSpeed > 0)
+                    ? (a->potentiometer >= b->potentiometer)
+                    : (a->potentiometer <  b->potentiometer);
+
+    float scale = 950.0f / a->stroke;
+
+    if (diff > scale / 6.0f) {
+        if (aIsAhead) a->speed = 0.0f;
+        else          b->speed = 0.0f;
     }
-    else if (diff > ((950 / linear1->stroke)/9)){
-        if(val){
-            linear1->speed *= 0.5;
-        }
-        else{
-            linear2->speed *= 0.5;
-        }
+    else if (diff > scale / 9.0f) {
+        if (aIsAhead) a->speed *= 0.5f;
+        else          b->speed *= 0.5f;
     }
-    else if (diff > ((950 / linear1->stroke)/12)){
-        if(val){
-            linear1->speed *= 0.9;
-        }
-        else{
-            linear2->speed *= 0.9;
-        }
+    else if (diff > scale / 12.0f) {
+        if (aIsAhead) a->speed *= 0.9f;
+        else          b->speed *= 0.9f;
     }
-    else{
-        linear1->speed = currentSpeed;
-        linear2->speed = currentSpeed;
+    else {
+        a->speed = currentSpeed;
+        b->speed = currentSpeed;
     }
 }
 
@@ -186,69 +220,45 @@ void sync(LinearActuator *linear1, LinearActuator *linear2, float currentSpeed){
  * actuator to a lower value. 
  * @return void
  * */
-void syncDistance(LinearActuator *linear1, LinearActuator *linear2, float currentSpeed){
-    float diff = abs(linear1->distance - linear2->distance);
-    bool val = (currentSpeed > 0) ? (linear1->distance >= linear2->distance) : (linear1->distance < linear2->distance);
+void syncDistance(LinearActuator* a, LinearActuator* b, float currentSpeed) {
+    float diff = std::abs(a->distance - b->distance);
+    bool aIsAhead = (currentSpeed > 0)
+                    ? (a->distance >= b->distance)
+                    : (a->distance <  b->distance);
+
     if (diff > distThresh3) {
-        if(val){
-            linear1->speed = 0;
-        }
-        else{
-            linear2->speed = 0;
-        }
-        if(!linear1->sensorless)
-            linear1->error = ActuatorsSyncError;
-        if(!linear2->sensorless)
-            linear2->error = ActuatorsSyncError;
+        if (aIsAhead) a->speed = 0.0f;
+        else          b->speed = 0.0f;
+
+        if (!a->sensorless) a->error = ActuatorsSyncError;
+        if (!b->sensorless) b->error = ActuatorsSyncError;
     }
-    else if (diff > distThresh2){
-        if(val){
-            linear1->speed *= 0.5;
-        }
-        else{
-            linear2->speed *= 0.5;
-        }
-        if(!linear1->sensorless)
-            if(linear1->error == ActuatorsSyncError)
-                linear1->error = None;
-        if(!linear2->sensorless)
-            if(linear2->error == ActuatorsSyncError)
-                linear2->error = None;
+    else if (diff > distThresh2) {
+        if (aIsAhead) a->speed *= 0.5f;
+        else          b->speed *= 0.5f;
+
+        if (!a->sensorless && a->error == ActuatorsSyncError) a->error = None;
+        if (!b->sensorless && b->error == ActuatorsSyncError) b->error = None;
     }
     else if (diff > distThresh1) {
-        if(val){
-            linear1->speed *= 0.9;
-        }
-        else{
-            linear2->speed *= 0.9;
-        }
-        if(!linear1->sensorless)
-            if(linear1->error == ActuatorsSyncError)
-                linear1->error = None;
-        if(!linear2->sensorless)
-            if(linear2->error == ActuatorsSyncError)
-                linear2->error = None;
+        if (aIsAhead) a->speed *= 0.9f;
+        else          b->speed *= 0.9f;
+
+        if (!a->sensorless && a->error == ActuatorsSyncError) a->error = None;
+        if (!b->sensorless && b->error == ActuatorsSyncError) b->error = None;
     }
-    else{
-        linear1->speed = currentSpeed;
-	    linear2->speed = currentSpeed;
-        if(!linear1->sensorless)
-            if(linear1->error == ActuatorsSyncError)
-                linear1->error = None;
-        if(!linear2->sensorless)
-            if(linear2->error == ActuatorsSyncError)
-                linear2->error = None;
+    else {
+        a->speed = currentSpeed;
+        b->speed = currentSpeed;
+        if (!a->sensorless && a->error == ActuatorsSyncError) a->error = None;
+        if (!b->sensorless && b->error == ActuatorsSyncError) b->error = None;
     }
 }
 
 
-void setSpeedAtEnd(LinearActuator *linear1, LinearActuator *linear2, float currentSpeed){
-    if((linear1->atMax && currentSpeed > 0) || (linear1->atMin && currentSpeed < 0)){
-        linear1->speed = 0.0;
-    }
-    if((linear2->atMax && currentSpeed > 0) || (linear2->atMin && currentSpeed < 0)){
-        linear2->speed = 0.0;
-    }
+void setSpeedAtEnd(LinearActuator* a, float currentSpeed) {
+    if ((a->atMax && currentSpeed > 0) || (a->atMin && currentSpeed < 0))
+        a->speed = 0.0f;
 }
 
 
@@ -259,61 +269,22 @@ void setSpeedAtEnd(LinearActuator *linear1, LinearActuator *linear2, float curre
  * or max, then sets the speed to 0.0 if either are true.
  * @return void
  * */
-void setSpeeds(LinearActuator *linear1, LinearActuator *linear2, float currentSpeed){
-    if(!automationGo){
-        linear1->speed = currentSpeed;
-        linear2->speed = currentSpeed;
-    }
-    else{
-        if(linear1->error != PotentiometerError && linear2->error != PotentiometerError){
-            linear1->speed = currentSpeed;
-            linear2->speed = currentSpeed;
+void setSpeedsPair(LinearActuator* a, LinearActuator* b, float currentSpeed) {
+    if (!automationGo) {
+        a->speed = currentSpeed;
+        b->speed = currentSpeed;
+    } else {
+        if (a->error != PotentiometerError && b->error != PotentiometerError) {
+            a->speed = currentSpeed;
+            b->speed = currentSpeed;
         }
     }
-    if(linear1->error != PotentiometerError && linear2->error != PotentiometerError){
-        sync(linear1, linear2, currentSpeed);
-        setSpeedAtEnd(linear1, linear2, currentSpeed);
+
+    if (a->error != PotentiometerError && b->error != PotentiometerError) {
+        sync(a, b, currentSpeed);
+        setSpeedAtEnd(a, currentSpeed);
+        setSpeedAtEnd(b, currentSpeed);
     }
-}
-
-
-/** @brief Function to publish the speeds of the first pair of 
- * actuators to Talons 14 and 15. 
- * 
- * The function creates two new Float32 messages, sets the data to
- * the value of the linear object speed, then publishes the data.
- * @return void
- * */
-void publishSpeeds(){
-    std_msgs::msg::Float32 speed1;
-    speed1.data = linear1.speed;
-    talon14Publisher->publish(speed1);
-    linear1.previousSpeed = linear1.speed;
-    std_msgs::msg::Float32 speed2;
-    speed2.data = linear2.speed;
-    talon15Publisher->publish(speed2);
-    linear2.previousSpeed = linear2.speed;
-    RCLCPP_INFO(nodeHandle->get_logger(), "Arm Speeds: %f, %f", linear1.speed, linear2.speed);
-}
-
-
-/** @brief Function to publish the speeds of the second pair of 
- * actuators to Talons 16 and 17. 
- * 
- * The function creates two new Float32 messages, sets the data to
- * the value of the linear object speed, then publishes the data.
- * @return void
- * */
-void publishSpeeds2(){
-    std_msgs::msg::Float32 speed1;
-    speed1.data = linear3.speed;
-    talon16Publisher->publish(speed1);
-    linear3.previousSpeed = linear3.speed;
-    std_msgs::msg::Float32 speed2;
-    speed2.data = linear4.speed;
-    talon17Publisher->publish(speed2);
-    linear4.previousSpeed = linear4.speed;
-    RCLCPP_INFO(nodeHandle->get_logger(), "Bucket Speeds: %f, %f", linear3.speed, linear4.speed);
 }
 
 
@@ -325,19 +296,58 @@ void publishSpeeds2(){
  * published if either is not zero or the currentSpeed is not zero.
  * @return void
  * */
-void setSpeedsDistance(LinearActuator *linear1, LinearActuator *linear2, float currentSpeed){
-    linear1->speed = currentSpeed;
-    linear2->speed = currentSpeed;
-    syncDistance(linear1, linear2, currentSpeed);
-    setSpeedAtEnd(linear1, linear2, currentSpeed);
-    if(linear1->speed != linear1->previousSpeed || linear2->speed != linear2->previousSpeed){
-        if(linear1->motorNumber == 14){
-            publishSpeeds();
-        }
-        else{
-            publishSpeeds2();
-        }
+void setSpeedsDistancePair(LinearActuator* a, LinearActuator* b, float currentSpeed) {
+    a->speed = currentSpeed;
+    b->speed = currentSpeed;
+    syncDistance(a, b, currentSpeed);
+    setSpeedAtEnd(a, currentSpeed);
+    setSpeedAtEnd(b, currentSpeed);
+}
+
+
+/** @brief Function to publish the speeds of the first pair of 
+ * actuators to Talons 14 and 15. 
+ * 
+ * The function creates two new Float32 messages, sets the data to
+ * the value of the linear object speed, then publishes the data.
+ * @return void
+ * */
+void publishSpeedsArm() {
+    std_msgs::msg::Float32 speed1, speed2;
+    speed1.data = linear1.speed;
+    talon14Publisher->publish(speed1);
+    linear1.previousSpeed = linear1.speed;
+
+    if (robotMode == MODE_4_ACTUATOR || robotMode == MODE_3_ACTUATOR) {
+        speed2.data = linear2.speed;
+        talon15Publisher->publish(speed2);
+        linear2.previousSpeed = linear2.speed;
     }
+
+    RCLCPP_INFO(nodeHandle->get_logger(), "Arm Speeds: %f, %f", linear1.speed, linear2.speed);
+}
+
+
+/** @brief Function to publish the speeds of the second pair of 
+ * actuators to Talons 16 and 17. 
+ * 
+ * The function creates two new Float32 messages, sets the data to
+ * the value of the linear object speed, then publishes the data.
+ * @return void
+ * */
+void publishSpeedsBucket() {
+    std_msgs::msg::Float32 speed3, speed4;
+    speed3.data = linear3.speed;
+    talon16Publisher->publish(speed3);
+    linear3.previousSpeed = linear3.speed;
+
+    if (robotMode == MODE_4_ACTUATOR) {
+        speed4.data = linear4.speed;
+        talon17Publisher->publish(speed4);
+        linear4.previousSpeed = linear4.speed;
+    }
+
+    RCLCPP_INFO(nodeHandle->get_logger(), "Bucket Speeds: %f, %f", linear3.speed, linear4.speed);
 }
 
 
@@ -352,14 +362,17 @@ void setSpeedsDistance(LinearActuator *linear1, LinearActuator *linear2, float c
  * @param *linear - Pointer to linear object
  * @return void
  * */
-void setPotentiometerError(int potentData, LinearActuator *linear){
-    if(potentData > 1024){
+void setPotentiometerError(int potentData, LinearActuator* linear) {
+    // 1024 or higher means completely disconnected
+    if (potentData > 1024) {
         linear->error = PotentiometerError;
         linear->sensorless = true;
-        RCLCPP_INFO(nodeHandle->get_logger(),"EXCAVATION ERROR: PotentiometerError");
+        RCLCPP_INFO(nodeHandle->get_logger(), "EXCAVATION ERROR: PotentiometerError");
     }
-    if(potentData > 110 || potentData < 100){
-        if(linear->error == PotentiometerError){
+
+    // If we return to a “non-floating” region, clear pot error
+    if (potentData > POT_FLOAT_HIGH || potentData < POT_FLOAT_LOW) {
+        if (linear->error == PotentiometerError) {
             linear->error = None;
         }
     }
@@ -385,78 +398,86 @@ void setPotentiometerError(int potentData, LinearActuator *linear){
  * max positions.
  * 
  * NOTE: If the potentiometer is disconnected, the values fall to
- * between 100 and 110. If the 
+ * between 100 and 110.
  * @param potentData - Int value of potentiometer
  * @param *linear - Pointer to linear object
  * @return void
  * */
-void processPotentiometerData(int potentData, LinearActuator *linear){
-    if(potentData < linear->min){
-        linear->min = potentData;
+void processPotentiometerData(int potentData, LinearActuator* linear) {
+    // Track observed min/max within valid range
+    if (potentData < linear->min) linear->min = potentData;
+    if (potentData > linear->max) linear->max = potentData;
+
+    // Initialization: we don't know if connected while in 100–110
+    if (!linear->initialized) {
+        if (!isFloatValue(potentData) && isRealValue(potentData)) {
+            linear->initialized = true;
+        }
     }
 
-    if(potentData > linear->max){
-        linear->max = potentData;
+    // If initialized and value jumps into 100–110 or sticks there while moving:
+    if (linear->initialized && isFloatValue(potentData)) {
+        if (std::abs(linear->potentiometer - potentData) > 50) {
+            linear->sensorless = true;
+            linear->error = PotentiometerError;
+        }
     }
-    if(potentData > 110 || potentData < 100){
-        linear->initialized = true;
-        linear->distance = linear->stroke * (potentData / 950);
+
+    if (isRealValue(potentData)) {
+        linear->distance = linear->stroke * (static_cast<float>(potentData - POT_RAW_MIN_VALID) / POT_RAW_RANGE);
     }
-    if(abs(linear->potentiometer - potentData) > 50 && (potentData >= 100 && potentData <= 110) && linear->initialized){
-        linear->sensorless = true;
-	    linear->error = PotentiometerError;
-    }
-    if(linear->potentiometer >= potentData - noiseThresh && linear->potentiometer <= potentData + noiseThresh){
-        if(linear->speed != 0.0 && run){
+
+    // Not-moving detection
+    if (linear->potentiometer >= potentData - NOISE_THRESH && linear->potentiometer <= potentData + NOISE_THRESH) {
+        if (linear->speed != 0.0f && run) {
             linear->timeWithoutChange += 1;
-            if(linear->timeWithoutChange >= 15){
-                if(linear->potentiometer >= 100 && linear->potentiometer <= 110 && !linear->initialized){
+            if (linear->timeWithoutChange >= NO_MOVEMENT_LIMIT) {
+                if (isFloatValue(linear->potentiometer) && !linear->initialized) {
                     linear->sensorless = true;
                     linear->error = PotentiometerError;
                 }
-                else if(linear->max > 800 && linear->speed > 0.0 && potentData >= linear->max - 20){
+                else if (linear->max > 800 && linear->speed > 0.0f && potentData >= linear->max - 20) {
                     linear->atMax = true;
                     linear->timeWithoutChange = 0;
                 }
-                else if(linear->min < 200 && linear->speed < 0.0 && potentData <= linear->min + 20){
+                else if (linear->min < 200 && linear->speed < 0.0f && potentData <= linear->min + 20) {
                     linear->atMin = true;
                     linear->timeWithoutChange = 0;
                 }
-                else{
-                    if(linear->error == None || linear->error == ActuatorsSyncError){
-                        linear->error = ActuatorNotMovingError;
-                        RCLCPP_INFO(nodeHandle->get_logger(),"EXCAVATION ERROR: ActuatorNotMovingError");
+                else {
+                    if (linear->error == None || linear->error == ActuatorsSyncError) {
+                        if(linear->initialized && isFloatValue(potentData)){
+                            linear->sensorless = true;
+                            linear->error = PotentiometerError;
+                            RCLCPP_INFO(nodeHandle->get_logger(), "EXCAVATION ERROR: PotentiometerError");
+                        }
+                        else{
+                            linear->error = ActuatorNotMovingError;
+                            RCLCPP_INFO(nodeHandle->get_logger(), "EXCAVATION ERROR: ActuatorNotMovingError");
+                        }
                     }
                 }
             }
         }
     }
-    else{
+    else {
         linear->timeWithoutChange = 0;
-        if(linear->error == ActuatorNotMovingError){
+        if (linear->error == ActuatorNotMovingError)
             linear->error = None;
-        }
-        if(linear->atMax){
-            if(linear->speed < 0.0){
-                linear->atMax = false;
-            }
+
+        if (linear->atMax && linear->speed < 0.0f) linear->atMax = false;
+        if (linear->atMin && linear->speed > 0.0f) linear->atMin = false;
+    }
+
+    linear->potentiometer = potentData;
+
+    // Special case for bucket actuators (16, 17)
+    if (linear->motorNumber == 16 || linear->motorNumber == 17) {
+        if (potentData > 700) {
+            linear->atMax = true;
         }
         else{
             linear->atMax = false;
-        }
-        if(linear->atMin){
-            if(linear->speed > 0.0){
-                linear->atMin = false;
-            }
-        }
-        else{
-            linear->atMin = false;
-        }
-    }
-    linear->potentiometer = potentData;
-    if(linear->motorNumber == 16 || linear->motorNumber == 17){
-        if(potentData > 700){
-            linear->atMax = true;
         }
     }
 }
@@ -483,45 +504,41 @@ void automationGoCallback(const std_msgs::msg::Bool::SharedPtr msg){
  * which indicates that the actuators are out of sync.
  * @return void
  * */
-void setSyncErrors(LinearActuator *linear1, LinearActuator *linear2, float currentSpeed){
-    if(abs(linear1->potentiometer - linear2->potentiometer) > ((950 / linear1->stroke) / 6)){
-        if(linear1->potentiometer >= 100 && linear1->potentiometer <= 110 && !linear1->initialized){
-            linear1->error = PotentiometerError;
-            linear1->sensorless = true;
+void setSyncErrors(LinearActuator* a, LinearActuator* b, float currentSpeed) {
+    float diff = std::abs(a->potentiometer - b->potentiometer);
+    float thresh = (950.0f / a->stroke) / 6.0f;
+
+    if (diff > thresh) {
+        if (isFloatValue(a->potentiometer) && !a->initialized) {
+            a->error = PotentiometerError;
+            a->sensorless = true;
         }
-        if(linear2->potentiometer >= 100 && linear2->potentiometer <= 110 && !linear2->initialized){
-            linear2->error = PotentiometerError;
-            linear2->sensorless = true;
+        if (isFloatValue(b->potentiometer) && !b->initialized) {
+            b->error = PotentiometerError;
+            b->sensorless = true;
         }
-        if(linear1->error == None){
-            linear1->error = ActuatorsSyncError;
-        }
-        if(linear2->error == None){
-            linear2->error = ActuatorsSyncError;
-        }
+        if (a->error == None) a->error = ActuatorsSyncError;
+        if (b->error == None) b->error = ActuatorsSyncError;
     }
-    else{
-        if(linear1->error == ActuatorsSyncError){
-            linear1->error = None;
-        }
-        if(linear2->error == ActuatorsSyncError){
-            linear2->error = None;
-        }
+    else {
+        if (a->error == ActuatorsSyncError) a->error = None;
+        if (b->error == ActuatorsSyncError) b->error = None;
     }
-    if(linear1->error != PotentiometerError && linear2->error != PotentiometerError){
-        sync(linear1, linear2, currentSpeed);
-        if(linear1->speed != linear1->previousSpeed || linear2->speed != linear2->previousSpeed){
-            if(linear1->motorNumber == 14){
-                publishSpeeds();
+
+    if (a->error != PotentiometerError && b->error != PotentiometerError) {
+        sync(a, b, currentSpeed);
+        if (a->speed != a->previousSpeed || b->speed != b->previousSpeed) {
+            if (a->motorNumber == 14) {
+                publishSpeedsArm();
             }
-            else{
-                publishSpeeds2();
+            else {
+                publishSpeedsBucket();
             }
         }
     }
 }
 
-/*
+/** @brief Callback function for potentiometer 1
  * 
  * The function sets the error state of linear actuator 1, then
  * processes the potentiometer data and sets the sync errors if the 
@@ -533,15 +550,13 @@ void setSyncErrors(LinearActuator *linear1, LinearActuator *linear2, float curre
  * */
 void potentiometer1Callback(const messages::msg::TalonStatus::SharedPtr msg){
     linear1.maxCurrent = msg->max_current;
-    if(!linear1.sensorless){
+    if (!linear1.sensorless) {
         setPotentiometerError(msg->sensor_position, &linear1);
-
-        if(linear1.error != PotentiometerError){
+        if (linear1.error != PotentiometerError) {
             processPotentiometerData(msg->sensor_position, &linear1);
-            if(!single_arm){
-                if(!linear1.sensorless && !linear2.sensorless){
-                    setSyncErrors(&linear1, &linear2, currentArmSpeed);
-                }
+            if (armHasPair &&
+                !linear1.sensorless && !linear2.sensorless) {
+                setSyncErrors(&linear1, &linear2, currentArmSpeed);
             }
         }
     }
@@ -559,16 +574,18 @@ void potentiometer1Callback(const messages::msg::TalonStatus::SharedPtr msg){
  * @return void
  * */
 void potentiometer2Callback(const messages::msg::TalonStatus::SharedPtr msg){
-    linear2.maxCurrent = msg->max_current;
-    if(!linear2.sensorless){
-        setPotentiometerError(msg->sensor_position, &linear2);
+    if (robotMode == MODE_2_ACTUATOR) {
+        return;
+    }
 
-        if(linear2.error != PotentiometerError){
+    linear2.maxCurrent = msg->max_current;
+    if (!linear2.sensorless) {
+        setPotentiometerError(msg->sensor_position, &linear2);
+        if (linear2.error != PotentiometerError) {
             processPotentiometerData(msg->sensor_position, &linear2);
-            if(!single_arm){
-                if(!linear1.sensorless && !linear2.sensorless){
-                    setSyncErrors(&linear1, &linear2, currentArmSpeed);
-                }
+            if (armHasPair &&
+                !linear1.sensorless && !linear2.sensorless) {
+                setSyncErrors(&linear1, &linear2, currentArmSpeed);
             }
         }
     }
@@ -587,15 +604,13 @@ void potentiometer2Callback(const messages::msg::TalonStatus::SharedPtr msg){
  * */
 void potentiometer3Callback(const messages::msg::TalonStatus::SharedPtr msg){
     linear3.maxCurrent = msg->max_current;
-    if(!linear3.sensorless){
+    if (!linear3.sensorless) {
         setPotentiometerError(msg->sensor_position, &linear3);
-
-        if(linear3.error != PotentiometerError){
+        if (linear3.error != PotentiometerError) {
             processPotentiometerData(msg->sensor_position, &linear3);
-            if(!single_arm){
-                if(!linear3.sensorless && !linear4.sensorless){
-                    setSyncErrors(&linear3, &linear4, currentBucketSpeed);
-                }
+            if (bucketHasPair &&
+                !linear3.sensorless && !linear4.sensorless) {
+                setSyncErrors(&linear3, &linear4, currentBucketSpeed);
             }
         }
     }
@@ -613,16 +628,17 @@ void potentiometer3Callback(const messages::msg::TalonStatus::SharedPtr msg){
  * @return void
  * */
 void potentiometer4Callback(const messages::msg::TalonStatus::SharedPtr msg){
+    if (robotMode != MODE_4_ACTUATOR) {
+        return;
+    }
     linear4.maxCurrent = msg->max_current;
-    if(!linear4.sensorless){
+    if (!linear4.sensorless) {
         setPotentiometerError(msg->sensor_position, &linear4);
-
-        if(linear4.error != PotentiometerError){
+        if (linear4.error != PotentiometerError) {
             processPotentiometerData(msg->sensor_position, &linear4);
-            if(!single_arm){
-                if(!linear3.sensorless && !linear4.sensorless){
-                    setSyncErrors(&linear3, &linear4, currentBucketSpeed);
-                }
+            if (bucketHasPair &&
+                !linear3.sensorless && !linear4.sensorless) {
+                setSyncErrors(&linear3, &linear4, currentBucketSpeed);
             }
         }
     }
@@ -639,13 +655,16 @@ void potentiometer4Callback(const messages::msg::TalonStatus::SharedPtr msg){
  * */
 void armSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     currentArmSpeed = speed->data;
-    if(!single_arm){
-        setSpeeds(&linear1, &linear2, currentArmSpeed);
+
+    if (armHasPair) {
+        setSpeedsPair(&linear1, &linear2, currentArmSpeed);
     }
-    else{
-        linear1.speed = speed->data;
+    else {
+        linear1.speed = currentArmSpeed;
+        setSpeedAtEnd(&linear1, currentArmSpeed);
+        
     }
-    publishSpeeds();
+    publishSpeedsArm();
 }
 
 
@@ -659,13 +678,15 @@ void armSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
  * */
 void bucketSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     currentBucketSpeed = speed->data;
-    if(!single_arm){
-        setSpeeds(&linear3, &linear4, currentBucketSpeed);
+
+    if (bucketHasPair) {
+        setSpeedsPair(&linear3, &linear4, currentBucketSpeed);
     }
-    else{
-        linear3.speed = speed->data;
+    else {
+        linear3.speed = currentBucketSpeed;
+        setSpeedAtEnd(&linear3, currentBucketSpeed);
     }
-    publishSpeeds2();
+    publishSpeedsBucket();
 
 }
 
@@ -695,6 +716,24 @@ void getLinearStatus(messages::msg::LinearStatus *linearStatus, LinearActuator *
 }
 
 
+/*
+Extending:
+Upper += Time * upperSpeed;
+Est += Time * (lowerSpeed + (expMaxCurr - current) * (upperSpeed - lowerSpeed))
+Lower += Time * lowerSpeed;
+
+Retracting:
+Upper -= Time * lowerSpeed;
+Est -= Time * (lowerSpeed + (expMaxCurr - current) * (upperSpeed - lowerSpeed))
+Lower -= Time * upperSpeed;
+
+The upper and lower speeds are given by the datasheet.
+The estimate relies on using the current to estimate load and speed of the motor
+to get a better estimate of what the current position is. 
+These upper and lower estimates should bound the possible positions for the
+actuator based on the max and min speeds of the motor. These bounds will
+grow smaller when the actuator reaches end of travel in either direction.
+*/
 void updateMotorPosition(int millis, LinearActuator *linear){
     if(run){
         linear->distance = linear->speed * linear->extensionSpeed * (millis / 1000.0) + linear->distance;
@@ -726,23 +765,25 @@ void updateMotorPosition(int millis, LinearActuator *linear){
  * @return void
  * */
 void updateMotorPositions(int millis){
+    // ARM
     updateMotorPosition(millis, &linear1);
-    //RCLCPP_INFO(nodeHandle->get_logger(), "Linear 1 Distance: %f", linear1.distance);
+    if (robotMode == MODE_4_ACTUATOR || robotMode == MODE_3_ACTUATOR)
+        updateMotorPosition(millis, &linear2);
 
-    updateMotorPosition(millis, &linear2);
-    //RCLCPP_INFO(nodeHandle->get_logger(), "Linear 2 Distance: %f", linear2.distance);
-    
-    if(linear1.sensorless || linear2.sensorless)
-        setSpeedsDistance(&linear1, &linear2, currentArmSpeed);
-    
+    if (armHasPair &&
+        (linear1.sensorless || linear2.sensorless)) {
+        setSpeedsDistancePair(&linear1, &linear2, currentArmSpeed);
+    }
+
+    // BUCKET
     updateMotorPosition(millis, &linear3);
-    //RCLCPP_INFO(nodeHandle->get_logger(), "Linear 3 Distance: %f", linear3.distance);
+    if (robotMode == MODE_4_ACTUATOR)
+        updateMotorPosition(millis, &linear4);
 
-    updateMotorPosition(millis, &linear4);
-    //RCLCPP_INFO(nodeHandle->get_logger(), "Linear 4 Distance: %f", linear4.distance);
-    
-    if(linear3.sensorless || linear4.sensorless)
-        setSpeedsDistance(&linear3, &linear4, currentBucketSpeed);
+    if (bucketHasPair &&
+        (linear3.sensorless || linear4.sensorless)) {
+        setSpeedsDistancePair(&linear3, &linear4, currentBucketSpeed);
+    }
 }
 
 
@@ -751,6 +792,23 @@ int main(int argc, char **argv){
     nodeHandle = rclcpp::Node::make_shared("excavation");
 
     single_arm = utils::getParameter<bool>(nodeHandle, "single_arm", false);
+    std::string robot_mode_str = utils::getParameter<std::string>(nodeHandle, "actuator_mode", "4_actuator");
+
+    if (robot_mode_str == "4_actuator") {
+        robotMode   = MODE_4_ACTUATOR;
+        armHasPair  = true;
+        bucketHasPair = true;
+    }
+    else if (robot_mode_str == "3_actuator") {
+        robotMode   = MODE_3_ACTUATOR;
+        armHasPair  = true;
+        bucketHasPair = false;  // only linear3 on bucket
+    }
+    else {
+        robotMode   = MODE_2_ACTUATOR;
+        armHasPair  = false;    // only linear1
+        bucketHasPair = false;  // only linear3
+    }
 
     auto automationGoSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>("automationGo",1,automationGoCallback);
     auto stopSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
@@ -769,27 +827,23 @@ int main(int argc, char **argv){
     talon16Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_16_speed",1);
     talon17Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_17_speed",1);
     
-    messages::msg::LinearStatus linearStatus1;
-    messages::msg::LinearStatus linearStatus2;
-    messages::msg::LinearStatus linearStatus3;
-    messages::msg::LinearStatus linearStatus4;
-
-    auto linearStatus1Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus1",1);
-    auto linearStatus2Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus2",1);
-    auto linearStatus3Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus3",1);
-    auto linearStatus4Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus4",1);
+    linearStatus1Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus1",1);
+    linearStatus2Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus2",1);
+    linearStatus3Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus3",1);
+    linearStatus4Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus4",1);
 
     auto start = std::chrono::high_resolution_clock::now();
     auto finish = std::chrono::high_resolution_clock::now();
     rclcpp::Rate rate(60);
     while(rclcpp::ok()){
         finish = std::chrono::high_resolution_clock::now();
-        if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > 33){
-            updateMotorPositions(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() );
+        auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+        if(elapsed_ms > 33){
+            updateMotorPositions(elapsed_ms);
             getLinearStatus(&linearStatus1, &linear1);
             linearStatus1Publisher->publish(linearStatus1);
 
-            if(!single_arm){
+            if (robotMode == MODE_4_ACTUATOR || robotMode == MODE_3_ACTUATOR) {
                 getLinearStatus(&linearStatus2, &linear2);
                 linearStatus2Publisher->publish(linearStatus2);
             }
@@ -797,7 +851,7 @@ int main(int argc, char **argv){
             getLinearStatus(&linearStatus3, &linear3);
             linearStatus3Publisher->publish(linearStatus3);
 
-            if(!single_arm){
+            if (robotMode == MODE_4_ACTUATOR) {
                 getLinearStatus(&linearStatus4, &linear4);
                 linearStatus4Publisher->publish(linearStatus4);
             }
