@@ -51,9 +51,9 @@ bool client_connected     = false;
 
 // Simple stitched stream parameters
 static const int STREAM_HEIGHT    = 400;
+static const int STREAM_WIDTH     = 640;
 static const int ZED_WIDTH        = 640;
 static const int REALSENSE_WIDTH  = 640;
-static const int STITCHED_WIDTH   = ZED_WIDTH + REALSENSE_WIDTH;
 static const int STREAM_FPS       = 30;
 static const int STREAM_BITRATE   = 2000000; // 4 Mbps
 
@@ -68,9 +68,9 @@ static std::mutex      encoder_mutex;
 std::mutex img_mutex;
 cv::Mat last_zed_gray, last_rs_gray;
 
-// For optional timestamp sync (present but unused)
 rclcpp::Time last_zed_stamp, last_rs_stamp;
-const rclcpp::Duration SYNC_TOL = rclcpp::Duration::from_seconds(0.10);
+bool showIntel = false;
+static const int INTEL_THRESHOLD = 400;
 
 // -------------------- UDP Chunking Helper --------------------
 
@@ -269,22 +269,6 @@ void intelImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
     }
 }
 
-cv::Mat H;               // 3×3 homography D455 → ZED
-cv::Mat H_gray;          // 3×3 float (CV_32F) copy for warpPerspective
-bool homography_loaded = false;
-
-void load_homography()
-{
-    cv::FileStorage fs("/path/to/homography_jetson.yml", cv::FileStorage::READ);
-    if (!fs.isOpened()) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to load homography file!");
-        return;
-    }
-    fs["H"] >> H;
-    H.convertTo(H_gray, CV_32F);
-    homography_loaded = true;
-}
-
 
 void maybe_stitch_and_send()
 {
@@ -301,7 +285,7 @@ void maybe_stitch_and_send()
     {
         std::lock_guard<std::mutex> enc_lk(encoder_mutex);
         if (!h264_ctx) {
-            if (!initialize_h264_encoder(STITCHED_WIDTH, STREAM_HEIGHT)) {
+            if (!initialize_h264_encoder(STREAM_WIDTH, STREAM_HEIGHT)) {
                 RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to init H.264 encoder; stopping streaming.");
                 videoStreaming = false;
                 return;
@@ -313,30 +297,13 @@ void maybe_stitch_and_send()
     cv::resize(zed, zed_resized, cv::Size(ZED_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
     cv::resize(rs,  rs_resized,  cv::Size(REALSENSE_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
 
-    cv::Mat stitched = cv::Mat::zeros(STREAM_HEIGHT, STITCHED_WIDTH, CV_8UC1);
+    cv::Mat stitched = cv::Mat::zeros(STREAM_HEIGHT, STREAM_WIDTH, CV_8UC1);
 
-    zed_resized.copyTo(stitched(cv::Rect(0, 0, ZED_WIDTH, STREAM_HEIGHT)));
-    cv::Mat warped_rs;
-    cv::warpPerspective(
-        rs_resized,
-        warped_rs,
-        H_gray,
-        cv::Size(STITCHED_WIDTH, STREAM_HEIGHT),  // warp into panorama space
-        cv::INTER_LINEAR,
-        cv::BORDER_CONSTANT,
-        cv::Scalar(0)
-    );
-    cv::Mat stitched_roi = stitched.colRange(ZED_WIDTH, STITCHED_WIDTH);
-    cv::Mat warped_roi   = warped_rs.colRange(ZED_WIDTH, STITCHED_WIDTH);
+    cv::Mat stitched_roi = stitched.colRange(ZED_WIDTH, STREAM_WIDTH);
+    cv::Mat warped_roi   = warped_rs.colRange(ZED_WIDTH, STREAM_WIDTH);
     cv::Mat mask;
     cv::compare(warped_roi, 0, mask, cv::CMP_NE);
     warped_roi.copyTo(stitched_roi, mask);
-
-
-    if (stitched.cols != STITCHED_WIDTH || stitched.rows != STREAM_HEIGHT || stitched.type() != CV_8UC1) {
-        RCLCPP_WARN(nodeHandle->get_logger(), "Stitched frame has unexpected size/type.");
-        return;
-    }
 
     {
         std::lock_guard<std::mutex> enc_lk(encoder_mutex);
@@ -352,7 +319,7 @@ void maybe_stitch_and_send()
         for (int y = 0; y < STREAM_HEIGHT; ++y) {
             memcpy(video_frame->data[0] + y * video_frame->linesize[0],
                    stitched.ptr(y),
-                   STITCHED_WIDTH);
+                   STREAM_WIDTH);
         }
 
         video_frame->pts = frame_pts++;
@@ -374,6 +341,15 @@ void maybe_stitch_and_send()
             }
             av_packet_unref(video_packet);
         }
+    }
+}
+
+void talon1Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
+    if(talonStatus->sensor_position < INTEL_THRESHOLD){
+        showIntel = true;
+    }
+    else{
+        showIntel = false;
     }
 }
 
@@ -466,13 +442,13 @@ int main(int argc, char **argv){
         rclcpp::SensorDataQoS(),
         &intelImageCallback);
 
+    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,talon1Callback);
+
     ssize_t bytesRead;
     struct sockaddr_in address;
     int opt = 1;
     socklen_t addrlen = sizeof(address);
     uint8_t buffer[2048] = {0};
-
-    load_homography();
 
     if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         RCLCPP_FATAL(nodeHandle->get_logger(), "UDP Socket creation failed: %s", strerror(errno));

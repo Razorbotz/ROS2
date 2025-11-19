@@ -22,6 +22,22 @@ add_executable(${PROJECT_NAME}_node
 install(TARGETS ${PROJECT_NAME}_node
 	DESTINATION lib/${PROJECT_NAME}
 )
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  # Create the test executable
+  # "test_excavation" is the name of the test binary
+  # "test/test_excavation.cpp" is the file we wrote in the previous step
+  ament_add_gtest(test_excavation test/test_excavation.cpp)
+
+  # Allow the test to find "excavation_core.hpp"
+  # Change "include" to "src" if your header is in the src folder
+  target_include_directories(test_excavation PUBLIC include)
+  
+  # If you rely on other libraries (like rclcpp), link them here too,
+  # though strictly for the logic tests we wrote, you might not need rclcpp.
+  # target_link_libraries(test_excavation ${rclcpp_LIBRARIES}) 
+endif()
 
 ament_package()
 ament_target_dependencies(${PROJECT_NAME}_node
