@@ -1,4 +1,3 @@
-
 #include <rclcpp/rclcpp.hpp>
 
 #include <sl/Camera.hpp>
@@ -144,7 +143,10 @@ void check_for_crash() {
                     sl::Transform init_pose;
                     init_pose.setTranslation(sl::Translation(tx, ty, tz));
                     sl::float3 rpy(roll_rad, pitch_rad, yaw_rad);
-                    init_pose.setEulerAngles(rpy, true); // bool radian = true
+                    
+                    sl::Rotation rot;
+                    rot.setEulerAngles(rpy, true); // true = radians
+                    init_pose.setOrientation(sl::Orientation(rot));
 
                     // Reset ZED positional tracking with this transform
                     sl::ERROR_CODE err = zed.resetPositionalTracking(init_pose);
@@ -345,9 +347,9 @@ int main(int argc, char **argv) {
     sl::Transform aruco_ground_truth_pose;
     aruco_ground_truth_pose.setTranslation(sl::Translation(xOffset, 0.2f, 0.0f));
 
-    sl::Orientation yaw90;
-    yaw90.setEulerAngles(sl::float3(0, 0, M_PI/2));
-    aruco_ground_truth_pose.setOrientation(yaw90);
+    sl::Rotation rot90;
+    rot90.setEulerAngles(sl::float3(0, 0, M_PI/2), true); // Use Rotation to set Euler
+    aruco_ground_truth_pose.setOrientation(sl::Orientation(rot90)); // Convert to Orientation
 
     rclcpp::Rate rate(30);
     while (rclcpp::ok()) {
@@ -363,7 +365,8 @@ int main(int argc, char **argv) {
                                 cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
             }
             tracking_state = zed.getPosition(zedPose);
-            sl::Transform zed_raw_pose = zedPose.getPoseData();
+            
+            sl::Transform zed_raw_pose = zedPose.pose_data;
 
             std::string position_txt = "ZED  x: " + std::to_string(zedPose.pose_data.tx + X_OFFSET) +
                      "; y: " + std::to_string(zedPose.pose_data.ty) +
@@ -380,7 +383,6 @@ int main(int argc, char **argv) {
 
                 pose = IMAGE_TO_ARUCO_basis_change * pose;
 
-                pose.inverse();
                 auto user_coordinate_to_image = sl::getCoordinateTransformConversion4f(
                     init_params.coordinate_system, sl::COORDINATE_SYSTEM::IMAGE);
 
@@ -390,31 +392,53 @@ int main(int argc, char **argv) {
                     sl::Transform::inverse(user_coordinate_to_ARUCO);
 
                 pose = ARUCO_to_user_coordinate * pose * user_coordinate_to_ARUCO;
-		        zedPosition.aruco_visible=true;
+                zedPosition.aruco_visible=true;
 
-                sl::Transform target_offset = aruco_ground_truth_pose * pose.inverse();
-
+                sl::Transform pose_inverted = sl::Transform::inverse(pose);
+                sl::Transform target_offset = aruco_ground_truth_pose * pose_inverted;
 
                 if (!offset_calculated) {
                     correction_offset = target_offset;
                     offset_calculated = true;
                 }
                 else {
-                    sl::float3 current_t = correction_offset.getTranslation();
-                    sl::float3 target_t = target_offset.getTranslation();
+                    // 1. Interpolate Translation (Lerp)
+                    sl::float3 cur_t = correction_offset.getTranslation();
+                    sl::float3 tar_t = target_offset.getTranslation();
                     sl::float3 new_t;
-                    new_t.x = current_t.x * (1.0f - correction_smoothing) + target_t.x * correction_smoothing;
-                    new_t.y = current_t.y * (1.0f - correction_smoothing) + target_t.y * correction_smoothing;
-                    new_t.z = current_t.z * (1.0f - correction_smoothing) + target_t.z * correction_smoothing;
+                    new_t.x = cur_t.x + (tar_t.x - cur_t.x) * correction_smoothing;
+                    new_t.y = cur_t.y + (tar_t.y - cur_t.y) * correction_smoothing;
+                    new_t.z = cur_t.z + (tar_t.z - cur_t.z) * correction_smoothing;
 
-                    sl::Orientation current_q = correction_offset.getOrientation();
-                    sl::Orientation target_q = target_offset.getOrientation();
-                    sl::Orientation new_q = sl::Orientation::slerp(current_q, target_q, correction_smoothing);
+                    // 2. Interpolate Orientation (NLerp - Normalize Lerp)
+                    sl::Orientation cur_q = correction_offset.getOrientation();
+                    sl::Orientation tar_q = target_offset.getOrientation();
+                    sl::Orientation new_q;
 
+                    // Check dot product for shortest path
+                    float dot = cur_q.ox * tar_q.ox + cur_q.oy * tar_q.oy + cur_q.oz * tar_q.oz + cur_q.ow * tar_q.ow;
+                    float scale = (dot < 0.0f) ? -1.0f : 1.0f;
+
+                    // Interpolate components
+                    new_q.ox = cur_q.ox + (tar_q.ox * scale - cur_q.ox) * correction_smoothing;
+                    new_q.oy = cur_q.oy + (tar_q.oy * scale - cur_q.oy) * correction_smoothing;
+                    new_q.oz = cur_q.oz + (tar_q.oz * scale - cur_q.oz) * correction_smoothing;
+                    new_q.ow = cur_q.ow + (tar_q.ow * scale - cur_q.ow) * correction_smoothing;
+
+                    // Normalize
+                    float norm = sqrt(new_q.ox*new_q.ox + new_q.oy*new_q.oy + new_q.oz*new_q.oz + new_q.ow*new_q.ow);
+                    if (norm > 1e-6) {
+                        new_q.ox /= norm;
+                        new_q.oy /= norm;
+                        new_q.oz /= norm;
+                        new_q.ow /= norm;
+                    }
+
+                    // 3. Set the interpolated transform
                     correction_offset.setTranslation(sl::Translation(new_t));
                     correction_offset.setOrientation(new_q);
                 }
-	        } 
+            } 
             else {
 	            zedPosition.aruco_visible=false;
 	        }

@@ -36,6 +36,8 @@ extern "C" {
 #include <libavutil/imgutils.h>
 }
 
+#include "messages/msg/talon_status.hpp"
+
 // -------------------- Streaming / Encoder Globals --------------------
 #define PORT 31338
 
@@ -226,7 +228,7 @@ void cleanup_h264_encoder(){
     }
 }
 
-void maybe_stitch_and_send();
+void send_zed_frame();
 
 void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg){
     try {
@@ -241,7 +243,7 @@ void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg){
             last_zed_gray  = gray_mat.clone();
             last_zed_stamp = msg->header.stamp;
         }
-        maybe_stitch_and_send();
+        send_zed_frame();
     }
     catch (const std::exception &e) {
         RCLCPP_ERROR(nodeHandle->get_logger(), "zedImageCallback exception: %s", e.what());
@@ -262,7 +264,6 @@ void intelImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
             last_rs_gray  = gray_mat.clone();
             last_rs_stamp = msg->header.stamp;
         }
-        maybe_stitch_and_send();
     }
     catch (const std::exception &e) {
         RCLCPP_ERROR(nodeHandle->get_logger(), "intelImageCallback exception: %s", e.what());
@@ -270,16 +271,15 @@ void intelImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
 }
 
 
-void maybe_stitch_and_send()
+void send_zed_frame()
 {
     if (!videoStreaming || server_fd < 0 || !client_connected) return;
 
-    cv::Mat zed, rs;
+    cv::Mat zed;
     {
         std::lock_guard<std::mutex> lk(img_mutex);
-        if (last_zed_gray.empty() || last_rs_gray.empty()) return;
+        if (last_zed_gray.empty()) return;
         zed = last_zed_gray;
-        rs  = last_rs_gray;
     }
 
     {
@@ -293,17 +293,9 @@ void maybe_stitch_and_send()
         }
     }
 
-    cv::Mat zed_resized, rs_resized, stitched;
-    cv::resize(zed, zed_resized, cv::Size(ZED_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
-    cv::resize(rs,  rs_resized,  cv::Size(REALSENSE_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
-
-    cv::Mat stitched = cv::Mat::zeros(STREAM_HEIGHT, STREAM_WIDTH, CV_8UC1);
-
-    cv::Mat stitched_roi = stitched.colRange(ZED_WIDTH, STREAM_WIDTH);
-    cv::Mat warped_roi   = warped_rs.colRange(ZED_WIDTH, STREAM_WIDTH);
-    cv::Mat mask;
-    cv::compare(warped_roi, 0, mask, cv::CMP_NE);
-    warped_roi.copyTo(stitched_roi, mask);
+    cv::Mat zed_resized;
+    // Resize zed to fill the entire stream window
+    cv::resize(zed, zed_resized, cv::Size(STREAM_WIDTH, STREAM_HEIGHT), 0, 0, cv::INTER_AREA);
 
     {
         std::lock_guard<std::mutex> enc_lk(encoder_mutex);
@@ -318,7 +310,7 @@ void maybe_stitch_and_send()
         // Copy gray into Y plane row-by-row
         for (int y = 0; y < STREAM_HEIGHT; ++y) {
             memcpy(video_frame->data[0] + y * video_frame->linesize[0],
-                   stitched.ptr(y),
+                   zed_resized.ptr(y),
                    STREAM_WIDTH);
         }
 
