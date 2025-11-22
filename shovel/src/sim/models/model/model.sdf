@@ -97,11 +97,11 @@
     <link name='FL_Wheel'>
       <pose>0.8411 -0.019814 0.235883 1.5708 0 0</pose>
       <inertial>
-        <mass>1.49574</mass>
+        <mass>1.5</mass>
         <inertia>
-          <ixx>0.0112647</ixx>
-          <iyy>0.0112647</iyy>
-          <izz>0.0195379</izz>
+          <ixx>0.01</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>0.01</iyy> <iyz>0</iyz>
+          <izz>0.02</izz>
         </inertia>
       </inertial>
       <visual name='FL_Wheel_visual'>
@@ -113,19 +113,20 @@
         </geometry>
       </visual>
       <collision name='FL_Wheel_collision'>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>model://model/meshes/FL_Wheel.STL</uri>
-            <scale>1 1 1</scale>
-          </mesh>
+          <cylinder>
+            <radius>0.210439</radius> <length>0.1</length>      </cylinder>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>0.5</mu> <mu2>0.5</mu2> <fdir1>1 0 0</fdir1> <slip1>0.0</slip1>
-              <slip2>0.0</slip2>
+              <mu>1.0</mu> <mu2>0.8</mu2> <fdir1>1 0 0</fdir1>
             </ode>
           </friction>
+          <contact>
+            <ode><kp>10000000.0</kp><kd>1.0</kd></ode>
+          </contact>
         </surface>
       </collision>
     </link>
@@ -133,11 +134,11 @@
     <link name='FR_Wheel'>
       <pose>0.8411 -0.538167 0.235883 1.5708 0 0</pose>
       <inertial>
-        <mass>1.49574</mass>
+        <mass>1.5</mass>
         <inertia>
-          <ixx>0.0112647</ixx>
-          <iyy>0.0112647</iyy>
-          <izz>0.0195379</izz>
+          <ixx>0.01</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>0.01</iyy> <iyz>0</iyz>
+          <izz>0.02</izz>
         </inertia>
       </inertial>
       <visual name='FR_Wheel_visual'>
@@ -149,19 +150,22 @@
         </geometry>
       </visual>
       <collision name='FR_Wheel_collision'>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>model://model/meshes/FR_Wheel.STL</uri>
-            <scale>1 1 1</scale>
-          </mesh>
+          <cylinder>
+            <radius>0.210439</radius>
+            <length>0.1</length>
+          </cylinder>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>0.5</mu> <mu2>0.5</mu2> <fdir1>1 0 0</fdir1> <slip1>0.0</slip1>
-              <slip2>0.0</slip2>
+              <mu>1.0</mu> <mu2>0.8</mu2> <fdir1>1 0 0</fdir1>
             </ode>
           </friction>
+          <contact>
+            <ode><kp>10000000.0</kp><kd>1.0</kd></ode>
+          </contact>
         </surface>
       </collision>
     </link>
@@ -169,11 +173,11 @@
     <link name='BL_Wheel'>
       <pose>0.18387 0 0.23588 1.5708 0 0</pose>
       <inertial>
-        <mass>1.49574</mass>
+        <mass>1.5</mass>
         <inertia>
-          <ixx>0.0112647</ixx>
-          <iyy>0.0112647</iyy>
-          <izz>0.0195379</izz>
+          <ixx>0.01</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>0.01</iyy> <iyz>0</iyz>
+          <izz>0.02</izz>
         </inertia>
       </inertial>
       <visual name='BL_Wheel_visual'>
@@ -185,19 +189,22 @@
         </geometry>
       </visual>
       <collision name='BL_Wheel_collision'>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>model://model/meshes/BL_Wheel.STL</uri>
-            <scale>1 1 1</scale>
-          </mesh>
+          <cylinder>
+            <radius>0.210439</radius>
+            <length>0.1</length>
+          </cylinder>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>0.5</mu> <mu2>0.5</mu2> <fdir1>1 0 0</fdir1> <slip1>0.0</slip1>
-              <slip2>0.0</slip2>
+              <mu>1.0</mu> <mu2>0.8</mu2> <fdir1>1 0 0</fdir1>
             </ode>
           </friction>
+          <contact>
+            <ode><kp>10000000.0</kp><kd>1.0</kd></ode>
+          </contact>
         </surface>
       </collision>
     </link>
@@ -205,14 +212,15 @@
     <link name='BR_Wheel'>
       <pose>0.183875 -0.475714 0.235883 1.5708 0 -3.14159</pose>
       <inertial>
-        <mass>1.49574</mass>
+        <mass>1.5</mass>
         <inertia>
-          <ixx>0.0112647</ixx>
-          <iyy>0.0112647</iyy>
-          <izz>0.0195379</izz>
+          <ixx>0.01</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>0.01</iyy> <iyz>0</iyz>
+          <izz>0.02</izz>
         </inertia>
       </inertial>
       <visual name='BR_Wheel_visual'>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://model/meshes/BR_Wheel.STL</uri>
@@ -221,22 +229,97 @@
         </geometry>
       </visual>
       <collision name='BR_Wheel_collision'>
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>model://model/meshes/BR_Wheel.STL</uri>
-            <scale>1 1 1</scale>
-          </mesh>
+          <cylinder>
+            <radius>0.210439</radius>
+            <length>0.1</length>
+          </cylinder>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>0.5</mu> <mu2>0.5</mu2> <fdir1>1 0 0</fdir1> <slip1>0.0</slip1>
-              <slip2>0.0</slip2>
+              <mu>1.0</mu> <mu2>0.8</mu2> <fdir1>1 0 0</fdir1>
             </ode>
           </friction>
+          <contact>
+            <ode><kp>10000000.0</kp><kd>1.0</kd></ode>
+          </contact>
         </surface>
       </collision>
     </link>
+
+    <joint name='FL_Wheel_Joint' type='revolute'>
+      <parent>base_link</parent>
+      <child>FL_Wheel</child>
+      <axis>
+        <xyz>0 0 -1</xyz>
+        <limit>
+          <effort>500</effort>
+          <velocity>20</velocity>
+        </limit>
+
+        <dynamics>
+          <damping>2.0</damping> 
+          <friction>1.0</friction>
+        </dynamics>
+        
+      </axis>
+    </joint>
+
+    <joint name='FR_Wheel_Joint' type='revolute'>
+      <parent>base_link</parent>
+      <child>FR_Wheel</child>
+      <axis>
+        <xyz>0 0 -1</xyz>
+        <limit>
+          <effort>500</effort>
+          <velocity>20</velocity>
+        </limit>
+
+        <dynamics>
+          <damping>2.0</damping> 
+          <friction>1.0</friction>
+        </dynamics>
+        
+      </axis>
+    </joint>
+
+    <joint name='BL_Wheel_Joint' type='revolute'>
+      <parent>base_link</parent>
+      <child>BL_Wheel</child>
+      <axis>
+        <xyz>0 0 -1</xyz>
+        <limit>
+          <effort>500</effort>
+          <velocity>20</velocity>
+        </limit>
+
+        <dynamics>
+          <damping>2.0</damping> 
+          <friction>1.0</friction>
+        </dynamics>
+        
+      </axis>
+    </joint>
+
+    <joint name='BR_Wheel_Joint' type='revolute'>
+      <parent>base_link</parent>
+      <child>BR_Wheel</child>
+      <axis>
+        <xyz>0 0 1</xyz> 
+        <limit>
+          <effort>500</effort>
+          <velocity>20</velocity>
+        </limit>
+
+        <dynamics>
+          <damping>2.0</damping> 
+          <friction>1.0</friction>
+        </dynamics>
+        
+      </axis>
+    </joint>
 
     <!-- Camera Link -->
     <link name='zed2i_base_link'>
@@ -469,63 +552,7 @@
         </limit>
       </axis>
     </joint>
-
-    <!-- Wheel Joints -->
-    <joint name='FL_Wheel_Joint' type='revolute'>
-      <parent>base_link</parent>
-      <child>FL_Wheel</child>
-      <axis>
-        <xyz>0 0 -1</xyz>
-        <limit>
-          <lower>-1e16</lower>
-          <upper>1e16</upper>
-          <effort>469</effort>
-          <velocity>6.68112</velocity>
-        </limit>
-      </axis>
-    </joint>
-
-    <joint name='FR_Wheel_Joint' type='revolute'>
-      <parent>base_link</parent>
-      <child>FR_Wheel</child>
-      <axis>
-        <xyz>0 0 -1</xyz>
-        <limit>
-          <lower>-1e16</lower>
-          <upper>1e16</upper>
-          <effort>469</effort>
-          <velocity>6.68112</velocity>
-        </limit>
-      </axis>
-    </joint>
-
-    <joint name='BL_Wheel_Joint' type='revolute'>
-      <parent>base_link</parent>
-      <child>BL_Wheel</child>
-      <axis>
-        <xyz>0 0 -1</xyz>
-        <limit>
-          <lower>-1e16</lower>
-          <upper>1e16</upper>
-          <effort>469</effort>
-          <velocity>6.68112</velocity>
-        </limit>
-      </axis>
-    </joint>
-
-    <joint name='BR_Wheel_Joint' type='revolute'>
-      <parent>base_link</parent>
-      <child>BR_Wheel</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e16</lower>
-          <upper>1e16</upper>
-          <effort>469</effort>
-          <velocity>6.68112</velocity>
-        </limit>
-      </axis>
-    </joint>
+    
     <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_diff_drive.so">
       <ros>
         <namespace>/my_robot</namespace>
