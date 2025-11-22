@@ -122,8 +122,8 @@
         <surface>
           <friction>
             <ode>
-              <mu>1.0</mu>
-              <mu2>0.1</mu2>
+              <mu>0.5</mu> <mu2>0.5</mu2> <fdir1>1 0 0</fdir1> <slip1>0.0</slip1>
+              <slip2>0.0</slip2>
             </ode>
           </friction>
         </surface>
@@ -158,8 +158,8 @@
         <surface>
           <friction>
             <ode>
-              <mu>1.0</mu>
-              <mu2>0.1</mu2>
+              <mu>0.5</mu> <mu2>0.5</mu2> <fdir1>1 0 0</fdir1> <slip1>0.0</slip1>
+              <slip2>0.0</slip2>
             </ode>
           </friction>
         </surface>
@@ -194,8 +194,8 @@
         <surface>
           <friction>
             <ode>
-              <mu>1.0</mu>
-              <mu2>0.1</mu2>
+              <mu>0.5</mu> <mu2>0.5</mu2> <fdir1>1 0 0</fdir1> <slip1>0.0</slip1>
+              <slip2>0.0</slip2>
             </ode>
           </friction>
         </surface>
@@ -203,7 +203,7 @@
     </link>
 
     <link name='BR_Wheel'>
-      <pose>0.183875 -0.475714 0.235883 1.5708 0.20707 -3.14159</pose>
+      <pose>0.183875 -0.475714 0.235883 1.5708 0 -3.14159</pose>
       <inertial>
         <mass>1.49574</mass>
         <inertia>
@@ -230,8 +230,8 @@
         <surface>
           <friction>
             <ode>
-              <mu>1.0</mu>
-              <mu2>0.1</mu2>
+              <mu>0.5</mu> <mu2>0.5</mu2> <fdir1>1 0 0</fdir1> <slip1>0.0</slip1>
+              <slip2>0.0</slip2>
             </ode>
           </friction>
         </surface>
@@ -526,45 +526,36 @@
         </limit>
       </axis>
     </joint>
+    <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <namespace>/my_robot</namespace>
+        <remapping>cmd_vel:=cmd_vel</remapping>
+        <remapping>odom:=odom</remapping>
+      </ros>
 
-    <plugin name="my_robot_drive_front" filename="libgazebo_ros_diff_drive.so">
-      <ros_namespace>/my_robot</ros_namespace>
-      <wheel_separation>0.657352</wheel_separation>
-      <wheel_diameter>0.420878</wheel_diameter>
+      <update_rate>100.0</update_rate>
 
+      <num_wheel_pairs>2</num_wheel_pairs>
+      
       <left_joint>FL_Wheel_Joint</left_joint>
       <right_joint>FR_Wheel_Joint</right_joint>
-
-      <command_topic>cmd_vel</command_topic>
-      <odometry_topic>odom</odometry_topic>
-      <odometry_frame>odom</odometry_frame>
-      <robot_base_frame>base_link</robot_base_frame>
-      <update_rate>100.0</update_rate>
-      <ros_qos>
-        <reliability>reliable</reliability>
-        <durability>volatile</durability>
-      </ros_qos>
-    </plugin>
-
-    <plugin name="my_robot_drive_back" filename="libgazebo_ros_diff_drive.so">
-      <ros_namespace>/my_robot</ros_namespace>
-      <wheel_separation>0.657352</wheel_separation>
-      <wheel_diameter>0.420878</wheel_diameter>
-
       <left_joint>BL_Wheel_Joint</left_joint>
       <right_joint>BR_Wheel_Joint</right_joint>
 
-      <command_topic>cmd_vel</command_topic>
-      <odometry_topic>odom</odometry_topic>
+      <wheel_separation>0.657352</wheel_separation>
+      <wheel_separation>0.657352</wheel_separation>
+      <wheel_diameter>0.420878</wheel_diameter>
+      <wheel_diameter>0.420878</wheel_diameter>
+
+      <max_wheel_torque>200</max_wheel_torque>
+      <max_wheel_acceleration>10.0</max_wheel_acceleration>
+
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+      <publish_wheel_tf>true</publish_wheel_tf>
       <odometry_frame>odom</odometry_frame>
       <robot_base_frame>base_link</robot_base_frame>
-      <update_rate>100.0</update_rate>
-      <ros_qos>
-        <reliability>reliable</reliability>
-        <durability>volatile</durability>
-      </ros_qos>
     </plugin>
-
 
     <static>0</static>
   </model>

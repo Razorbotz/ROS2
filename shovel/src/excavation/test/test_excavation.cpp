@@ -4,7 +4,7 @@
 /*
 Run the following commands:
 colcon build --packages-select excavation
-colcon test --packages-select excavation
+colcon test --packages-select excavation --event-handlers console_direct+
 colcon test-result --verbose
 */
 
