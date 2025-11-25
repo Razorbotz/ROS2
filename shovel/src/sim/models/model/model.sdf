@@ -210,7 +210,7 @@
     </link>
 
     <link name='BR_Wheel'>
-      <pose>0.183875 -0.475714 0.235883 1.5708 0 -3.14159</pose>
+      <pose>0.183875 -0.538167 0.235883 1.5708 0 -3.14159</pose>
       <inertial>
         <mass>1.5</mass>
         <inertia>
@@ -220,7 +220,7 @@
         </inertia>
       </inertial>
       <visual name='BR_Wheel_visual'>
-        <pose>0 0 0 0 0 0</pose>
+        <pose>0 0 0.06 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://model/meshes/BR_Wheel.STL</uri>
@@ -255,12 +255,12 @@
       <axis>
         <xyz>0 0 -1</xyz>
         <limit>
-          <effort>500</effort>
+          <effort>2000</effort>
           <velocity>20</velocity>
         </limit>
 
         <dynamics>
-          <damping>2.0</damping> 
+          <damping>1.0</damping> 
           <friction>1.0</friction>
         </dynamics>
         
@@ -273,12 +273,12 @@
       <axis>
         <xyz>0 0 -1</xyz>
         <limit>
-          <effort>500</effort>
+          <effort>2000</effort>
           <velocity>20</velocity>
         </limit>
 
         <dynamics>
-          <damping>2.0</damping> 
+          <damping>1.0</damping> 
           <friction>1.0</friction>
         </dynamics>
         
@@ -291,12 +291,12 @@
       <axis>
         <xyz>0 0 -1</xyz>
         <limit>
-          <effort>500</effort>
+          <effort>2000</effort>
           <velocity>20</velocity>
         </limit>
 
         <dynamics>
-          <damping>2.0</damping> 
+          <damping>1.0</damping> 
           <friction>1.0</friction>
         </dynamics>
         
@@ -309,12 +309,12 @@
       <axis>
         <xyz>0 0 1</xyz> 
         <limit>
-          <effort>500</effort>
+          <effort>2000</effort>
           <velocity>20</velocity>
         </limit>
 
         <dynamics>
-          <damping>2.0</damping> 
+          <damping>1.0</damping> 
           <friction>1.0</friction>
         </dynamics>
         
@@ -553,35 +553,8 @@
       </axis>
     </joint>
     
-    <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_diff_drive.so">
-      <ros>
-        <namespace>/my_robot</namespace>
-        <remapping>cmd_vel:=cmd_vel</remapping>
-        <remapping>odom:=odom</remapping>
-      </ros>
-
-      <update_rate>100.0</update_rate>
-
-      <num_wheel_pairs>2</num_wheel_pairs>
-      
-      <left_joint>FL_Wheel_Joint</left_joint>
-      <right_joint>FR_Wheel_Joint</right_joint>
-      <left_joint>BL_Wheel_Joint</left_joint>
-      <right_joint>BR_Wheel_Joint</right_joint>
-
-      <wheel_separation>0.657352</wheel_separation>
-      <wheel_separation>0.657352</wheel_separation>
-      <wheel_diameter>0.420878</wheel_diameter>
-      <wheel_diameter>0.420878</wheel_diameter>
-
-      <max_wheel_torque>200</max_wheel_torque>
-      <max_wheel_acceleration>10.0</max_wheel_acceleration>
-
-      <publish_odom>true</publish_odom>
-      <publish_odom_tf>true</publish_odom_tf>
-      <publish_wheel_tf>true</publish_wheel_tf>
-      <odometry_frame>odom</odometry_frame>
-      <robot_base_frame>base_link</robot_base_frame>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      <parameters>/home/team/SoftwareDevelopment/ROS2/shovel/src/sim/config/controllers.yaml</parameters>
     </plugin>
 
     <static>0</static>
