@@ -19,7 +19,7 @@ TURN_TOLERANCE = 0.1
 KP = 0.5
 
 # Topics
-IMU_TOPIC = '/my_robot/zed2i/imu/data'
+IMU_TOPIC = '/zed2i/imu/data'
 CONTROLLER_TOPIC_FMT = '/falcon_{}_controller/commands'
 
 settings = termios.tcgetattr(sys.stdin)
@@ -104,11 +104,15 @@ class Teleop(Node):
                 self.publish_cmd(0.0, 0.0)
                 break
             
-            speed = error * KP
-            speed = max(min(speed, SPEED_TURN), -SPEED_TURN)
+            speed = error * 3.0 
             
-            if speed > 0 and speed < 1.0: speed = 1.0
-            if speed < 0 and speed > -1.0: speed = -1.0
+            MAX_VAL = 10.0
+            speed = max(min(speed, MAX_VAL), -MAX_VAL)
+            
+            MIN_VAL = 4.0
+            
+            if speed > 0 and speed < MIN_VAL: speed = MIN_VAL
+            if speed < 0 and speed > -MIN_VAL: speed = -MIN_VAL
 
             self.publish_cmd(-speed, speed)
             time.sleep(0.01)
