@@ -480,7 +480,7 @@
         </plugin>
       </sensor>
 
-      <sensor name="lidar" type="ray">
+      <sensor name="lidar" type="gpu_ray">
         <pose>0 0 0.2 0 0 0</pose>
         <update_rate>10</update_rate>
         <ray>
@@ -555,7 +555,7 @@
     </joint>
     
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <parameters>/home/team/SoftwareDevelopment/ROS2/shovel/src/sim/config/controllers.yaml</parameters>
+      <parameters>/home/team/SoftwareDevelopment/ROS2/simulation/src/sim/config/controllers.yaml</parameters>
     </plugin>
 
     <static>0</static>

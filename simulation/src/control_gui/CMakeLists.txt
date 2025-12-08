@@ -10,9 +10,8 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
-find_package(ament_index_cpp REQUIRED) # For finding resource files
+find_package(ament_index_cpp REQUIRED)
 
-# Find all system dependencies from your original CMakeLists.txt
 find_package(PkgConfig REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(SDL2 REQUIRED)
@@ -20,7 +19,6 @@ find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(Threads REQUIRED) # For pthread
 
-# Use PkgConfig to find GTK, Cairo, WebKit, and FFmpeg
 pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)
 pkg_check_modules(CAIRO REQUIRED cairo)
 pkg_check_modules(WEBKITGTK REQUIRED webkit2gtk-4.0)
@@ -31,11 +29,9 @@ pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
     libswscale
 )
 
-# Add definitions (from your original file)
 add_definitions(${GTKMM_CFLAGS_OTHER})
 
 # Define the executable with all its source files
-# This list is taken directly from your original CMakeLists.txt
 add_executable(control_gui
   src/control.cpp
   src/InfoFrame.cpp
@@ -48,7 +44,6 @@ add_executable(control_gui
 )
 
 # Set the include directories using the variables from find_package
-# This replaces your entire hardcoded include_directories(...) block
 target_include_directories(control_gui PUBLIC
   # This is for your local headers (e.g., BinaryMessage.hpp)
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -74,7 +69,6 @@ ament_target_dependencies(control_gui
 )
 
 # Link all system libraries using variables
-# This replaces your entire hardcoded target_link_libraries(...) block
 target_link_libraries(control_gui
   # System Libs
   ${GTKMM_LIBRARIES}
@@ -83,9 +77,9 @@ target_link_libraries(control_gui
   ${OpenCV_LIBS}
   ${SDL2_LIBRARIES}
   ${ZLIB_LIBRARIES}
-  Threads::Threads    # This is the modern way to link pthread
-  CURL::libcurl       # Imported target from find_package(CURL)
-  PkgConfig::FFMPEG   # Imported target from pkg_check_modules(FFMPEG)
+  Threads::Threads
+  CURL::libcurl
+  PkgConfig::FFMPEG
 )
 
 # --- Installation Rules ---
@@ -107,6 +101,11 @@ install(DIRECTORY resources/
 
 # Install the package.xml
 install(FILES package.xml
+  DESTINATION share/${PROJECT_NAME}
+)
+
+# Install launch files
+install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
 

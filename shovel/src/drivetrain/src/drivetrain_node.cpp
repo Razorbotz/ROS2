@@ -25,7 +25,8 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > falcon13UserPublisher;
 std::shared_ptr<rclcpp::Publisher<messages::msg::DrivetrainStatus_<std::allocator<void> >, std::allocator<void> > > drivetrainStatusPublisher;
 
-double wheelCircum = .2 * M_PI;
+double wheelDiameter = .2;
+double wheelCircum = wheelDiameter * M_PI;
 bool printData = false;
 double gearReduction = 100.0;
 const double SENSOR_UNITS_PER_ROTATION = 2048.0;

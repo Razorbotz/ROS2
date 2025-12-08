@@ -6,7 +6,7 @@ import os
 
 def generate_launch_description():
     # --- Paths ---
-    pkg_path = '/home/team/SoftwareDevelopment/ROS2/shovel/src/sim'
+    pkg_path = '/home/team/SoftwareDevelopment/ROS2/simulation/src/sim'
     
     # Configs
     config_path = os.path.join(pkg_path, 'config', 'controllers.yaml')
