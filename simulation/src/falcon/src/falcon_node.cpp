@@ -4,7 +4,9 @@
 #include <thread>
 #include <unistd.h>
 #include <typeinfo>
+#include <cmath>
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -21,19 +23,12 @@
 #include <sys/reboot.h>
 #include <cstdlib>
 
-
 #include <rclcpp/rclcpp.hpp>
-//#include <rclcpp/console.h>
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <std_msgs/msg/empty.hpp>
 #include <messages/msg/key_state.hpp>
 #include <std_msgs/msg/string.hpp>
-
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <cstring>
-#include <string>
 
 #define Phoenix_No_WPI // remove WPI dependencies
 #include <ctre/Phoenix.h>
@@ -49,35 +44,6 @@ using namespace ctre::phoenix;
 using namespace ctre::phoenix::platform;
 using namespace ctre::phoenix::motorcontrol;
 using namespace ctre::phoenix::motorcontrol::can;
-
-/** @file
- * @brief Node controlling one Talon motor 
- * 
- * This node receives information published by the logic node,
- * then transforms the data received into movement by the motor
- * controlled by the Talon instance.  The topics that the node
- * subscribes to are as follows:
- * \li \b speed_topic
- * \li \b STOP
- * \li \b GO
- * 
- * The \b speed_topic topic is either \b drive_left_speed
- * or \b drive_right_speed as defined in the parameters set in
- * the launch file.  To read more about the logic node or the
- * launch file
- * \see logic_node.cpp
- * \see launch.py
- * 
- * The topics being published are as follows:
- * \li \b info_topic
- * 
- * This string has the general form talon_{motorNumber}_info and
- * is defined by the user in the launch file.  To read more about
- * the launch file,
- * \see launch.py
- * 
- * */
-
 
 rclcpp::Node::SharedPtr nodeHandle;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String_<std::allocator<void> >, std::allocator<void> > > resetPublisher;
@@ -100,53 +66,25 @@ bool printData = false;
 int errorCounter = 0;
 std::string resetString = "";
 
-bool is_interface_up(const std::string& interface_name) {
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock < 0) return false;
+// --- Simulation Variables ---
+double simPosition = 0.0;
+double simVelocity = 0.0;
+double simCurrent = 0.0;
+// Falcon 500 approx: 2048 units/rev, ~6380 RPM free speed
+const double MAX_RPM = 6380.0;
+const double UNITS_PER_REV = 2048.0;
+const double MAX_VELOCITY_UNITS = (MAX_RPM / 60.0) * UNITS_PER_REV * 0.1; // Units per 100ms
+const double SIM_LOOP_PERIOD = 0.02; // 20ms loop
 
-    struct ifreq ifr;
-    memset(&ifr, 0, sizeof(ifr));
-    strncpy(ifr.ifr_name, interface_name.c_str(), IFNAMSIZ - 1);
-
-    bool is_up = false;
-    if (ioctl(sock, SIOCGIFFLAGS, &ifr) != -1) {
-        // Check if the interface is UP and RUNNING
-        is_up = (ifr.ifr_flags & IFF_UP) && (ifr.ifr_flags & IFF_RUNNING);
-    }
-    
-    close(sock);
-    return is_up;
-}
-
-/** @brief STOP Callback
- * 
- * Callback function triggered when the node receives
- * a topic with the topic name of STOP.  This function
- * sets a boolean value GO to false, which prevents the
- * robot from moving.
- * @param empty
- * @return void
- * */
 void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
-	if(printData)
-		RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
+	if(printData) RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
 	GO=false;
 	talonFX->Set(ControlMode::PercentOutput, 0.0);
 	Speed = 0.0;
 } 
 
-/** @brief GO Callback
- * 
- * Callback function triggered when the node receives
- * a topic with the topic name of GO.  This function
- * sets a boolean value GO to true, which allows the
- * robot to drive.
- * @param empty
- * @return void
- * */
 void goCallback(std_msgs::msg::Empty::SharedPtr empty){
-	if(printData)
-		RCLCPP_INFO(nodeHandle->get_logger(),"GO");
+	if(printData) RCLCPP_INFO(nodeHandle->get_logger(),"GO");
 	GO=true;
 }
 
@@ -158,19 +96,8 @@ void logicHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
 	logicPrevious = std::chrono::high_resolution_clock::now();
 }
 
-/** @brief Speed Callback Function
- * 
- * Callback function triggered when the node receives
- * a topic with the topic name of drive_left_speed or
- * drive_right_speed.  This function takes the data
- * from the topic and sets the motor to the speed
- * specified.
- * @param speed
- * @return void
- * */
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
-	if(printData)
-		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
+	if(printData) RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	if(speed->data != Speed){
 		talonFX->Set(ControlMode::PercentOutput, speed->data);
 		Speed = speed->data;
@@ -178,8 +105,7 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 }
 
 void userSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
-	if(printData)
-		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
+	if(printData) RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	if(speed->data != Speed){
 		double targetVelocity_RPM = 6000 * speed->data; 
 		talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
@@ -187,24 +113,15 @@ void userSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	}
 }
 
-
 void checkTemperature(double temperature){
-	switch(op_mode){
-		case 0:
-			temperature > 70 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
-			break;
-		case 1:
-			temperature > 80 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
-			break;
-		case 2:
-			temperature > 90 ? TEMP_DISABLE = true : TEMP_DISABLE = false;
-			break;
-	}
+	double limit = 70.0;
+    if (op_mode == 1) limit = 80.0;
+    if (op_mode == 2) limit = 90.0;
+    TEMP_DISABLE = (temperature > limit);
 }
 
 void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
-    if(printData)
-		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
+    if(printData) std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
 	if(keyState->key == 98 && keyState->state==1){
 		std_msgs::msg::String reset;
 		reset.data = resetString;
@@ -212,36 +129,75 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
 	}
 }
 
+// --- Physics Simulation Function ---
+void updateSimPhysics() {
+    TalonFXSimCollection& sim = talonFX->GetSimCollection();
+
+    // 1. Set Input Voltage (Battery)
+    sim.SetBusVoltage(12.0);
+
+    // 2. Read Output Voltage
+    double motorVoltage = sim.GetMotorOutputLeadVoltage();
+    double motorPercent = motorVoltage / 12.0;
+
+    // 3. Calculate Velocity (Simple DC Motor Model: Velocity proportional to Voltage)
+    // In reality, this should account for inertia, back-EMF, etc.
+    // Ideally: V_target = motorPercent * MAX_VELOCITY_UNITS
+    double targetVelocity = motorPercent * MAX_VELOCITY_UNITS;
+
+    // Simple inertia: ramp simulation velocity towards target
+    double ramp = MAX_VELOCITY_UNITS * 0.05; // 5% speed change per loop
+    if (simVelocity < targetVelocity) {
+        simVelocity += ramp;
+        if (simVelocity > targetVelocity) simVelocity = targetVelocity;
+    } else {
+        simVelocity -= ramp;
+        if (simVelocity < targetVelocity) simVelocity = targetVelocity;
+    }
+
+    // 4. Calculate Position
+    // Velocity is in units/100ms. Loop is ~20ms.
+    // ticks = velocity * (loop_time / 0.1s)
+    double positionChange = simVelocity * (SIM_LOOP_PERIOD / 0.1);
+    simPosition += positionChange;
+
+    // 5. Calculate Current (Simulated Load)
+    simCurrent = std::abs(motorPercent) * 5.0; // Arbitrary 5A at full speed
+
+    // 6. Push values back to SimCollection
+    sim.SetIntegratedSensorRawPosition((int)simPosition);
+    sim.SetIntegratedSensorVelocity((int)simVelocity);
+    sim.SetSupplyCurrent(simCurrent);
+}
 
 int main(int argc,char** argv){
 	rclcpp::init(argc,argv);
 	nodeHandle = rclcpp::Node::make_shared("talon");
 
-	RCLCPP_INFO(nodeHandle->get_logger(),"Starting talon");
-	//int success;
+	RCLCPP_INFO(nodeHandle->get_logger(),"Starting SIMULATED Falcon");
 
 	int motorNumber = utils::getParameter<int>(nodeHandle, "motor_number", 1);
 	int portNumber = utils::getParameter<int>(nodeHandle, "diagnostics_port", 1);
-	c_Phoenix_Diagnostics_Create1(portNumber);
-	std::this_thread::sleep_for(std::chrono::milliseconds(8000));
+    
+    // In Simulation, we don't strictly need the Diagnostics server, but we keep the structure
+	// c_Phoenix_Diagnostics_Create1(portNumber); 
 
 	std::string infoTopic = utils::getParameter<std::string>(nodeHandle, "info_topic", "unset");
 	std::string speedTopic = utils::getParameter<std::string>(nodeHandle, "speed_topic", "unset");
 	std::string userTopic = utils::getParameter<std::string>(nodeHandle, "user_topic", "unset");
 	resetString = utils::getParameter<std::string>(nodeHandle, "reset_topic", "1");
 	bool invertMotor = utils::getParameter<bool>(nodeHandle, "invert_motor", false);
+    // PID constants
 	double kP = utils::getParameter<double>(nodeHandle, "kP", 1.0);
 	double kI = utils::getParameter<double>(nodeHandle, "kI", 0.0);
 	double kD = utils::getParameter<double>(nodeHandle, "kD", 0.0);
 	double kF = utils::getParameter<double>(nodeHandle, "kF", 0.0);
 	int publishingDelay = utils::getParameter<int>(nodeHandle, "publishing_delay", 0);
-	killKey = utils::getParameter<int>(nodeHandle, "kill_key", 0);
 	op_mode = utils::getParameter<int>(nodeHandle, "op_mode", 0);
 	printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
-	std::string can_interface = utils::getParameter<std::string>(nodeHandle, "can_interface", "can0");
 
-	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
-	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
+    // Note: We skip SetCANInterface for local simulation if not using a vcan
+	// ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 
 	int kTimeoutMs=30;
 	int kPIDLoopIdx=0;
@@ -257,10 +213,8 @@ int main(int argc,char** argv){
 	talonFX->SelectProfileSlot(0,0);
 	talonFX->ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, kTimeoutMs);
 	talonFX->ConfigClosedloopRamp(2);
-	talonFX->ConfigNominalOutputForward(0, kTimeoutMs);
-	talonFX->ConfigNominalOutputReverse(0, kTimeoutMs);
-	talonFX->ConfigPeakOutputForward(1, kTimeoutMs);
-	talonFX->ConfigPeakOutputReverse(-1, kTimeoutMs);
+    
+    // PID Config
 	talonFX->Config_kF(kPIDLoopIdx, kF, kTimeoutMs);
 	talonFX->Config_kP(kPIDLoopIdx, kP, kTimeoutMs);
 	talonFX->Config_kI(kPIDLoopIdx, kI, kTimeoutMs);
@@ -269,16 +223,11 @@ int main(int argc,char** argv){
 
 	talonFX->Set(ControlMode::PercentOutput, 0);
 
-	RCLCPP_INFO(nodeHandle->get_logger(),"configured falcon");
-
 	TalonFXConfiguration allConfigs;
-
 	ctre::phoenix::motorcontrol::SupplyCurrentLimitConfiguration supplyLimitConfig;
     supplyLimitConfig.enable = true;
     supplyLimitConfig.currentLimit = 70.0;
-    supplyLimitConfig.triggerThresholdCurrent = 75.0;
-    supplyLimitConfig.triggerThresholdTime = 0.1; 
-	talonFX->ConfigSupplyCurrentLimit(supplyLimitConfig, kTimeoutMs);
+    talonFX->ConfigSupplyCurrentLimit(supplyLimitConfig, kTimeoutMs);
 
 	messages::msg::FalconStatus falconStatus;
 	auto falconStatusPublisher=nodeHandle->create_publisher<messages::msg::FalconStatus>(infoTopic.c_str(),1);
@@ -297,16 +246,19 @@ int main(int argc,char** argv){
 	rclcpp::Rate rate(50);
 	auto start = std::chrono::high_resolution_clock::now();
 	auto errorTimer = std::chrono::high_resolution_clock::now();
+    commPrevious = start;
+    logicPrevious = start;
+
 	float maxCurrent = 0.0;
 	double busVoltage = 0.0;
+
 	while(rclcpp::ok()){
-		if (is_interface_up("can0")) {
-			if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
-		}
-		else {
-			RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 1000, 
-				"CAN interface is DOWN. Skipping motor commands.");
-		}
+        // IMPORTANT: In simulation, we must enable the "safety" check locally
+		ctre::phoenix::unmanaged::FeedEnable(100);
+        
+        // --- UPDATE SIMULATION PHYSICS ---
+        if(GO) updateSimPhysics();
+
 		auto finish = std::chrono::high_resolution_clock::now();
 
 		if(error){
@@ -319,9 +271,9 @@ int main(int argc,char** argv){
 			int deviceID=talonFX->GetDeviceID();
 			busVoltage=talonFX->GetBusVoltage();
 			double outputCurrent=talonFX->GetOutputCurrent();
-			bool isInverted=talonFX->GetInverted();
-			double motorOutputVoltage=talonFX->GetMotorOutputVoltage();
 			double motorOutputPercent=talonFX->GetMotorOutputPercent();
+            
+            // Standard Error Checking
 			if(Speed > 0.1 && motorOutputPercent == 0.0){
 				errorCounter++;
 				if(errorCounter > 5 && !error){
@@ -343,21 +295,14 @@ int main(int argc,char** argv){
 			double temperature=talonFX->GetTemperature();
 			double sensorPosition0=talonFX->GetSelectedSensorPosition(0);
 			double sensorVelocity0=talonFX->GetSelectedSensorVelocity(0);
-			int closedLoopError0=talonFX->GetClosedLoopError(0);
-			double integralAccumulator0=talonFX->GetIntegralAccumulator(0);
-			double errorDerivative0=talonFX->GetErrorDerivative(0);
 		
 			falconStatus.device_id=deviceID;	
 			falconStatus.bus_voltage=busVoltage;
 			falconStatus.output_current=outputCurrent;
-			falconStatus.output_voltage=motorOutputVoltage;
 			falconStatus.output_percent=motorOutputPercent;
 			falconStatus.temperature=temperature;
 			falconStatus.sensor_position=sensorPosition0;
 			falconStatus.sensor_velocity=sensorVelocity0;
-			falconStatus.closed_loop_error=closedLoopError0;
-			falconStatus.integral_accumulator=integralAccumulator0;
-			falconStatus.error_derivative=errorDerivative0;
 			falconStatus.temp_disable = TEMP_DISABLE;
 			falconStatus.error = error;
 			falconStatus.restarted = restarted;
@@ -372,18 +317,10 @@ int main(int argc,char** argv){
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 ||  TEMP_DISABLE
 		||	std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100 ){
-			if(TEMP_DISABLE){
-				if(printData)
-					RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
-			}
-			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
-				if(printData)
-					RCLCPP_INFO(nodeHandle->get_logger(),"comm disable");
-			}
-			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100){
-				if(printData)
-					RCLCPP_INFO(nodeHandle->get_logger(),"logic disable");
-			}
+            // Watchdog Logic
+			if(TEMP_DISABLE && printData) RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
+			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100 && printData) RCLCPP_INFO(nodeHandle->get_logger(),"comm disable");
+			
 			talonFX->Set(ControlMode::PercentOutput, 0.0);
 			GO = false;
 		}
@@ -391,5 +328,3 @@ int main(int argc,char** argv){
 		rclcpp::spin_some(nodeHandle);
 	}
 }
-
-
