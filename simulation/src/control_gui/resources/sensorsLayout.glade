@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  
+  <object class="GtkWindow" id="sensorsWindow">
+    <property name="title" translatable="yes">Sensors</property>
+    <property name="default_width">800</property>
+    <property name="default_height">600</property>
+    
+    <child>
+      <object class="GtkBox" id="mainBox">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <property name="margin">10</property>
+        <property name="spacing">5</property>
+        
+        <child>
+          <object class="GtkNotebook" id="notebook_sensors">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="vexpand">True</property>
+            
+            <child>
+              <object class="GtkBox" id="box_tab_talon">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">5</property>
+                <property name="margin">5</property>
+                
+                <child><object class="GtkBox" id="holder_talon_volt"><property name="visible">True</property><property name="vexpand">True</property></object></child>
+                <child><object class="GtkBox" id="holder_talon_curr"><property name="visible">True</property><property name="vexpand">True</property></object></child>
+                <child><object class="GtkBox" id="holder_talon_pos"><property name="visible">True</property><property name="vexpand">True</property></object></child>
+                <child><object class="GtkBox" id="holder_talon_out"><property name="visible">True</property><property name="vexpand">True</property></object></child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel"><property name="visible">True</property><property name="label">Talon Motors</property></object>
+            </child>
+
+            <child>
+              <object class="GtkBox" id="box_tab_falcon">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">5</property>
+                <property name="margin">5</property>
+                
+                <child><object class="GtkBox" id="holder_falcon_volt"><property name="visible">True</property><property name="vexpand">True</property></object></child>
+                <child><object class="GtkBox" id="holder_falcon_curr"><property name="visible">True</property><property name="vexpand">True</property></object></child>
+                <child><object class="GtkBox" id="holder_falcon_pos"><property name="visible">True</property><property name="vexpand">True</property></object></child>
+                <child><object class="GtkBox" id="holder_falcon_out"><property name="visible">True</property><property name="vexpand">True</property></object></child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel"><property name="visible">True</property><property name="label">Falcon Motors</property></object>
+            </child>
+
+            <child>
+              <object class="GtkBox" id="box_tab_linear">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">5</property>
+                <property name="margin">5</property>
+                
+                <child><object class="GtkBox" id="holder_linear_speed"><property name="visible">True</property><property name="vexpand">True</property></object></child>
+                <child><object class="GtkBox" id="holder_linear_pot"><property name="visible">True</property><property name="vexpand">True</property></object></child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel"><property name="visible">True</property><property name="label">Linear Actuators</property></object>
+            </child>
+
+            <child>
+              <object class="GtkBox" id="box_tab_sensors">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <property name="margin">5</property>
+                <child>
+                  <object class="GtkFlowBox" id="sensorBox">
+                    <property name="visible">True</property>
+                    <property name="orientation">horizontal</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel"><property name="visible">True</property><property name="label">Sensors</property></object>
+            </child>
+
+            <child>
+              <object class="GtkBox" id="box_tab_diagnostics">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <property name="margin">5</property>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel"><property name="visible">True</property><property name="label">Diagnostics</property></object>
+            </child>
+            
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

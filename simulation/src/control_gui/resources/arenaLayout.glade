@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  
+  <object class="GtkWindow" id="arenaWindow">
+    <property name="title" translatable="yes">Arena Map/Cams</property>
+    <property name="icon_name">razorbotz.png</property>
+    <property name="default_width">1200</property>
+    <property name="default_height">800</property>
+    
+    <child>
+      <object class="GtkBox" id="mainBox">
+        <property name="visible">True</property>
+        <property name="orientation">horizontal</property>
+        <property name="spacing">10</property>
+        
+        <child>
+          <object class="GtkBox" id="holder_map_area">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+          </packing>
+        </child>
+        
+        <child>
+          <object class="GtkBox" id="camsBox">
+            <property name="visible">True</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">5</property>
+            
+            <child>
+              <object class="GtkOverlay" id="overlay_awareness">
+                <property name="visible">True</property>
+                
+                <child>
+                  <object class="GtkBox" id="holder_webview1">
+                    <property name="visible">True</property>
+                    <property name="width_request">800</property>
+                    <property name="height_request">600</property>
+                  </object>
+                </child>
+                
+                <child type="overlay">
+                  <object class="GtkLabel" id="lbl_awareness">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Awareness Camera:</property>
+                    <property name="halign">start</property>
+                    <property name="valign">start</property>
+                    <style>
+                      <class name="overlay-text"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+            
+            <child>
+              <object class="GtkOverlay" id="overlay_back">
+                <property name="visible">True</property>
+                
+                <child>
+                  <object class="GtkBox" id="holder_webview2">
+                    <property name="visible">True</property>
+                    <property name="width_request">800</property>
+                    <property name="height_request">600</property>
+                  </object>
+                </child>
+                
+                <child type="overlay">
+                  <object class="GtkLabel" id="lbl_back">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Back Camera:</property>
+                    <property name="halign">start</property>
+                    <property name="valign">start</property>
+                    <style>
+                      <class name="overlay-text"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+            
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+          </packing>
+        </child>
+
+      </object>
+    </child>
+  </object>
+</interface>

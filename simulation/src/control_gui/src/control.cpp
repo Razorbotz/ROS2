@@ -2368,220 +2368,99 @@ void on_video_connection_finished() {
 
 /*** Functions that setup the GUI and windows ***/
 void setupGUI(Glib::RefPtr<Gtk::Application> application) {
-    initialize_maps();
-    // Create window instance
-    window = new Gtk::Window();
-    window->maximize();
+    // 1. Initialize Global Pointers
+    window = nullptr;
+    ipAddressEntry = nullptr; connectButton = nullptr; connectionStatusLabel = nullptr;
+    silentRunButton = nullptr; addressListBox = nullptr;
+    videoConnectButton = nullptr; videoConnectionStatusLabel = nullptr; videoStreamButton = nullptr;
+    videoIPAddressEntry = nullptr; videoAddressListBox = nullptr;
+    toggleModeButton = nullptr; settingsButton = nullptr;
+    sensorBox = nullptr; innerLeftBox = nullptr; innerRightBox = nullptr;
 
+    initialize_maps(); 
+
+    // 2. Load the Glade Layout
+    auto builder = Gtk::Builder::create();
     try {
-        auto icon = package_share_directory + "/resources/razorbotz.png";
-        window->set_icon_from_file(icon);
-    } catch (const Glib::FileError& e) {
-        g_print("Failed to load image: %s\n", e.what().c_str());
-        return;
+        builder->add_from_file(package_share_directory + "/resources/mainLayout.glade");
+    }
+    catch(const Glib::Error& ex) {
+        std::cerr << "CRITICAL: Failed to load mainLayout.glade: " << ex.what() << std::endl;
+        exit(1); 
     }
 
-    // Handles key press and release events  
-    window->add_events(Gdk::KEY_PRESS_MASK);
-    window->add_events(Gdk::KEY_RELEASE_MASK);
+    // 3. Get Main Window
+    builder->get_widget("mainWindow", window);
+    if (!window) {
+        std::cerr << "FATAL: 'mainWindow' ID not found in mainLayout.glade" << std::endl;
+        exit(1);
+    }
+    window->maximize();
+
+    try { window->set_icon_from_file(package_share_directory + "/resources/razorbotz.png"); } catch (...) {}
+
+    // 4. Setup Event Handling
+    window->add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
     window->signal_key_press_event().connect(sigc::ptr_fun(&on_key_press_event));
     window->signal_key_release_event().connect(sigc::ptr_fun(&on_key_release_event));
 
-    // Create vertical box to hold top level widgets 
-    Gtk::Box* topLevelBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5));
-    Gtk::Box* topControlsBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5));
-    Gtk::Box* videoTopLevelBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5));
-    videoTopLevelBox->set_visible(false);
+    // 5. Bind Widgets
+    builder->get_widget("list_robot_address", addressListBox);
+    builder->get_widget("entry_robot_ip", ipAddressEntry);
+    builder->get_widget("btn_robot_connect", connectButton);
+    builder->get_widget("lbl_robot_status", connectionStatusLabel);
+    builder->get_widget("btn_silent_run", silentRunButton);
+    
+    // Video controls
+    builder->get_widget("list_video_address", videoAddressListBox);
+    builder->get_widget("entry_video_ip", videoIPAddressEntry);
+    builder->get_widget("btn_video_connect", videoConnectButton);
+    builder->get_widget("lbl_video_status", videoConnectionStatusLabel);
+    builder->get_widget("btn_video_stream", videoStreamButton);
+    
+    // Global controls
+    builder->get_widget("btn_toggle_mode", toggleModeButton);
+    builder->get_widget("btn_settings", settingsButton);
 
-    // Create horizontal box to hold control widgets
-    Gtk::Box* controlsBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5));
-
-    // Create scrolled window instance and list of addresses 
-    Gtk::ScrolledWindow* scrolledList = Gtk::manage(new Gtk::ScrolledWindow());
-    addressListBox = Gtk::manage(new Gtk::ListBox());
-    addressListBox->signal_row_activated().connect(
-        [&](Gtk::ListBoxRow* row){ rowActivated(row, server_ui); }
-    );
-
-    // Create vertical box on right of screen to house controls 
-    Gtk::Box* controlsRightBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5));
-
-    // Create box to hold connection information (IP, connect button, etc.)
-    Gtk::Box* parentConnectBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5));
-    Gtk::Box* connectBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5));
-
-
-    Gtk::Label* ipAddressLabel = Gtk::manage(new Gtk::Label(" IP Address "));
-
-    // Create entry box for IP connection
-    ipAddressEntry = Gtk::manage(new Gtk::Entry());
-    ipAddressEntry->set_can_focus(true);
-    ipAddressEntry->set_editable(true);
-    if(useOrin)
-        ipAddressEntry->set_text(ORIN_IP);
-    else
-        ipAddressEntry->set_text(NANO_IP);
-    ipAddressEntry->set_name("dark_text");
-
-    // Create connection button, single click logic to connectOrDisconnect function
-    connectButton = Gtk::manage(new Gtk::Button("Connect"));
-    connectButton->set_name("dark_text");
-
-    connectionStatusLabel = Gtk::manage(new Gtk::Label("Not Connected"));
-    // Disconnect graphics for connect button
-    Gdk::RGBA red;
-    red.set_rgba(1.0, 0, 0, 1.0);
-    connectionStatusLabel->override_background_color(red);
-    connectionStatusLabel->set_name("dark_text");
-
-    // Create horizontal box to hold silent run functionality
-    Gtk::Box* stateBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 2));
-    silentRunButton = Gtk::manage(new Gtk::Button("Silent Running"));
-    silentRunButton->set_name("dark_text");
-
-    // Create horizontal box to hold remote control functionality
-    Gtk::Box* remoteControlBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 2));
-
-    // Create button to shutdown robot
-    Gtk::Button* shutdownRobotButton = Gtk::manage(new Gtk::Button("Shutdown Robot"));
-    shutdownRobotButton->set_name("dark_text");
-
-    // Button to toggle from dark to light mode
-    toggleModeButton = Gtk::manage(new Gtk::Button("Toggle Dark/Light Mode"));
-    toggleModeButton->set_name("dark_text");
-    toggleModeButton->set_size_request(100, 50);
-
-    settingsButton = Gtk::make_managed<Gtk::Button>();
-    try {
-        Glib::RefPtr<Gdk::Pixbuf> pixbuf = Gdk::Pixbuf::create_from_file(package_share_directory + "/resources/SettingsIcon.png");
-        Glib::RefPtr<Gdk::Pixbuf> scaled_pixbuf = pixbuf->scale_simple(24, 24, Gdk::INTERP_BILINEAR);
-        auto image = Gtk::make_managed<Gtk::Image>(scaled_pixbuf);
-        settingsButton->set_image(*image);
+    // 6. Setup Sensor Box
+    Gtk::Box* topLevelBox = nullptr;
+    builder->get_widget("topLevelBox", topLevelBox);
+    
+    sensorBox = Gtk::manage(new Gtk::FlowBox());
+    sensorBox->set_orientation(Gtk::ORIENTATION_HORIZONTAL);
+    
+    if (topLevelBox) {
+        topLevelBox->add(*sensorBox);
     }
-    catch (const Glib::FileError& e) {
-        g_warning("Failed to load settings icon: %s", e.what().c_str());
-    }
-    settingsButton->set_tooltip_text("Open Settings");
-    settingsButton->signal_clicked().connect([]() {
-        if(allowConfig)
-            create_config_editor_window(get_configFile());
-    });
-    settingsButton->set_size_request(50, 50);
-    settingsButton->set_name("dark_text");
 
-    // Apply CSS
+    // Set Defaults
+    if(ipAddressEntry) ipAddressEntry->set_text(useOrin ? ORIN_IP : NANO_IP);
+    if(videoIPAddressEntry) videoIPAddressEntry->set_text(useOrin ? ORIN_IP : NANO_IP);
+
+    Gdk::RGBA red; red.set_rgba(1.0, 0, 0, 1.0);
+    if(connectionStatusLabel) connectionStatusLabel->override_background_color(red);
+    if(videoConnectionStatusLabel) videoConnectionStatusLabel->override_background_color(red);
+
+    if (settingsButton) {
+        try {
+            auto pixbuf = Gdk::Pixbuf::create_from_file(package_share_directory + "/resources/SettingsIcon.png");
+            auto scaled = pixbuf->scale_simple(24, 24, Gdk::INTERP_BILINEAR);
+            auto image = Gtk::manage(new Gtk::Image(scaled));
+            settingsButton->set_image(*image);
+        } catch (...) {}
+    }
+
     auto css_provider = Gtk::CssProvider::create();
     css_provider->load_from_data(generateLightModeString(lightBackgroundColor));
-    auto screen = Gdk::Screen::get_default();
-    auto style_context = Gtk::StyleContext::create();
-    style_context->add_provider_for_screen(screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    Gtk::StyleContext::add_provider_for_screen(Gdk::Screen::get_default(), css_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
-    // Load and apply the new font
     try {
         auto font_provider = Gtk::CssProvider::create();
         font_provider->load_from_data("* { font-family: 'Proxima Nova'; }");
-        style_context->add_provider_for_screen(screen, font_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+        Gtk::StyleContext::add_provider_for_screen(Gdk::Screen::get_default(), font_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    } catch (...) {}
 
-        // Load the font file
-        std::string font_file = package_share_directory + "/resources/ProximaNova.otf";
-        if (!Glib::file_test(font_file, Glib::FILE_TEST_EXISTS)) {
-            g_print("Font file not found: %s\n", font_file.c_str());
-        }
-        else {
-            // If you need to load the font into Pango, you can do it here
-            Pango::FontDescription font_desc;
-            font_desc.set_family("Proxima Nova");
-            font_desc.set_weight(Pango::WEIGHT_BOLD);
-        }
-    }
-    catch (const Glib::Error& e) {
-        g_print("Failed to load font: %s\n", e.what().c_str());
-    }
-    Gtk::Box* videoControlsBox=Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL,5));
-
-    Gtk::ScrolledWindow* videoScrolledList=Gtk::manage(new Gtk::ScrolledWindow());
-    videoAddressListBox=Gtk::manage(new Gtk::ListBox());
-    videoAddressListBox->signal_row_activated().connect(
-        [&](Gtk::ListBoxRow* row){ videoRowActivated(row, video_server_ui); }
-    );
-
-    Gtk::Box* videoControlsRightBox=Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL,5));
-
-    Gtk::Box* videoConnectBox=Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL,5));
-    Gtk::Label* videoIPAddress=Gtk::manage(new Gtk::Label(" IP Address "));
-    videoIPAddressEntry=Gtk::manage(new Gtk::Entry());
-    videoIPAddressEntry->set_can_focus(true);
-    videoIPAddressEntry->set_editable(true);
-    if(useOrin)
-        videoIPAddressEntry->set_text(ORIN_IP);
-    else
-        videoIPAddressEntry->set_text(NANO_IP);
-    videoIPAddressEntry->set_name("dark_text");
-
-    videoConnectButton=Gtk::manage(new Gtk::Button("Connect"));
-    videoConnectButton->set_name("dark_text");
-    videoConnectionStatusLabel=Gtk::manage(new Gtk::Label("Not Connected"));
-    videoConnectionStatusLabel->override_background_color(red);
-    videoConnectionStatusLabel->set_name("dark_text");
-    
-    Gtk::Box* videoStateBox=Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL,2));
-    videoStreamButton=Gtk::manage(new Gtk::Button("Not Video Streaming"));
-    videoStreamButton->set_name("dark_text");
-
-    videoAddressListBox->set_size_request(200,30);
-    videoScrolledList->set_size_request(200,75);
-
-    videoConnectBox->add(*videoIPAddress);
-    videoConnectBox->add(*videoIPAddressEntry);
-    videoConnectBox->add(*videoConnectButton);
-    videoConnectBox->add(*videoConnectionStatusLabel);
-
-    videoStateBox->add(*videoStreamButton);
-    videoControlsRightBox->add(*videoConnectBox);
-    videoControlsRightBox->add(*videoStateBox);    
-    videoScrolledList->add(*videoAddressListBox);
-
-    Gtk::Label* spacer = Gtk::manage(new Gtk::Label());
-    spacer->set_hexpand(true);
-
-    videoControlsBox->add(*videoScrolledList);
-    videoControlsBox->add(*videoControlsRightBox);
-    videoControlsBox->add(*spacer);
-    videoControlsBox->add(*toggleModeButton);
-    videoControlsBox->add(*settingsButton);
-    videoTopLevelBox->add(*videoControlsBox);
-
-    // Set size for address list box
-    addressListBox->set_size_request(200, 75);
-    scrolledList->set_size_request(200, 75);
-
-    // Add widgets to connect box
-    connectBox->add(*ipAddressLabel);
-    connectBox->add(*ipAddressEntry);
-    connectBox->add(*connectButton);
-    connectBox->add(*connectionStatusLabel);
-
-    // Add widgets to silent run box
-    stateBox->add(*silentRunButton);
-    stateBox->add(*shutdownRobotButton);
-
-    // Add widgets to controls box
-    controlsRightBox->add(*connectBox);
-    controlsRightBox->add(*stateBox);
-
-    // Add address list to scrollable list
-    scrolledList->add(*addressListBox);
-
-    // Add widgets to controls box
-    controlsBox->add(*scrolledList);
-    controlsBox->add(*controlsRightBox);
-
-    // Add widgets to top level box
-    topControlsBox->add(*controlsBox);
-    topControlsBox->add(*videoTopLevelBox);
-    topLevelBox->add(*topControlsBox);
-
-    // Create the structs to hold UI pointers
+    // 7. Update UI Structs
     server_ui.connectButton = connectButton;
     server_ui.connectionStatusLabel = connectionStatusLabel;
     server_ui.silentRunButton = silentRunButton;
@@ -2596,143 +2475,151 @@ void setupGUI(Glib::RefPtr<Gtk::Application> application) {
     video_server_ui.addressListBox = videoAddressListBox;
     video_server_ui.parentWindow = window;
 
-    connectButton->signal_clicked().connect([]() {
-        connectOrDisconnect(server_ui, useOrin, connection_finished_dispatcher);
-    });
+    // 8. Connect Signals
+    if (connectButton) connectButton->signal_clicked().connect([&](){ connectOrDisconnect(server_ui, useOrin, connection_finished_dispatcher); });
+    if (silentRunButton) silentRunButton->signal_clicked().connect([&](){ silentRun(server_ui); });
+    if (addressListBox) addressListBox->signal_row_activated().connect([&](Gtk::ListBoxRow* row){ rowActivated(row, server_ui); });
+    if (toggleModeButton) toggleModeButton->signal_clicked().connect(sigc::ptr_fun(&toggleMode));
+    if (settingsButton) settingsButton->signal_clicked().connect([&](){ if(allowConfig) create_config_editor_window(get_configFile()); });
+    if (videoConnectButton) videoConnectButton->signal_clicked().connect([&](){ videoConnectOrDisconnect(video_server_ui, video_connection_finished_dispatcher); });
+    if (videoStreamButton) videoStreamButton->signal_clicked().connect([&](){ videoStream(video_server_ui); });
+    if (videoAddressListBox) videoAddressListBox->signal_row_activated().connect([&](Gtk::ListBoxRow* row){ videoRowActivated(row, video_server_ui); });
 
-    silentRunButton->signal_clicked().connect([]() {
-        silentRun(server_ui);
-    });
+    // 9. Handle Video/Map Layout
+    if (!noVideo) {
+        sensorBox->set_visible(false);
 
-    addressListBox->signal_row_activated().connect(
-        [&](Gtk::ListBoxRow* row){ rowActivated(row, server_ui); }
-    );
+        Gtk::Box* bottomInnerBox = nullptr;
+        builder->get_widget("box_bottom_inner", bottomInnerBox); 
+        builder->get_widget("box_bottom_lower", bottomLowerBox);
 
-    toggleModeButton->signal_clicked().connect(sigc::ptr_fun(&toggleMode));
+        // --- FIXED: Use explicit initialization order to prevent Segfault ---
 
-    videoConnectButton->signal_clicked().connect([&]() {
-        videoConnectOrDisconnect(video_server_ui, video_connection_finished_dispatcher);
-    });
+        // Inject Left Controls (Arm/Bucket)
+        Gtk::Box* pLeft = nullptr; builder->get_widget("placeholder_inner_left", pLeft);
+        if (pLeft) {
+            // Pass nullptr for the hook, so we can assign innerLeftBox FIRST
+            innerLeftBox = create_motor_column({
+                {"Arm", &talon1Circle}, 
+                {"Bucket", &talon3Circle}
+                }, nullptr, 
+                {"Talon 1", "Talon 3"}, 
+                true);
+            pLeft->add(*innerLeftBox);
+            
+            // Now that innerLeftBox is valid, initialize Arm Pos
+            initArmPos();
+        }
 
-    videoStreamButton->signal_clicked().connect([&]() {
-        videoStream(video_server_ui);
-    });
+        // Inject Video Area
+        Gtk::Box* pVideo = nullptr; builder->get_widget("placeholder_video_area", pVideo);
+        if (pVideo) {
+            videoArea = Gtk::manage(new VideoWidget());
+            if(smallLaptop){
+                videoArea->set_size_request(800, 500);
+            }
+            else{
+                videoArea->set_size_request(1600, 1000);
+            }
+            pVideo->add(*videoArea);
+        }
 
-    videoAddressListBox->signal_row_activated().connect(
-        [&](Gtk::ListBoxRow* row){ videoRowActivated(row, video_server_ui); }
-    );
+        // Inject Right Controls (Falcons)
+        Gtk::Box* pRight = nullptr; builder->get_widget("placeholder_inner_right", pRight);
+        if (pRight) {
+            // Pass nullptr for the hook
+            innerRightBox = create_motor_column({
+                {"Falcon 1", &falcon1Circle}, 
+                {"Falcon 2", &falcon2Circle}, 
+                {"Falcon 3", &falcon3Circle}, 
+                {"Falcon 4", &falcon4Circle}
+                }, nullptr, 
+                {"Falcon 1", "Falcon 2", "Falcon 3", "Falcon 4"}, 
+                false);
+            pRight->add(*innerRightBox);
 
-    if(!noVideo){
-        Gtk::Box* bottomBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5));
-        Gtk::Box* bottomInnerBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5));
-        innerLeftBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5));
-        Gtk::Box* innerMiddleBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5));
-        innerRightBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5));
-        bottomLowerBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5));
-        Gtk::Box* lowerLeftBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5));
-        Gtk::Box* lowerRightBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5));
+            // Now that innerRightBox is valid, initialize Bucket Pos
+            initBucketPos();
+        }
+
+        // Inject Lower Controls (Lower Falcons + Speedometers)
+        Gtk::Box* pLowerLeft = nullptr; builder->get_widget("placeholder_lower_left", pLowerLeft);
+        if (pLowerLeft) {
+            Gtk::Box* lowerLeftBox = create_lower_motor_column({
+                {"Falcon 1", &lowerFalcon1Circle}, 
+                {"Falcon 2", &lowerFalcon2Circle}
+                }, {"Falcon 1", "Falcon 2"}, 
+                true);
+            pLowerLeft->add(*lowerLeftBox);
+        }
+
+        Gtk::Box* pLowerRight = nullptr; builder->get_widget("placeholder_lower_right", pLowerRight);
+        if (pLowerRight) {
+            Gtk::Box* lowerRightBox = create_lower_motor_column({
+                {"Falcon 3", &lowerFalcon3Circle}, 
+                {"Falcon 4", &lowerFalcon4Circle}
+                }, {"Falcon 3", "Falcon 4"});
+            pLowerRight->add(*lowerRightBox);
+        }
         
-        innerLeftBox = create_motor_column({
-            {"Arm", &talon1Circle},
-            {"Bucket", &talon3Circle}
-            }, initArmPos,
-            {"Talon 1", "Talon 3"},
-            true 
-        );
-
-        auto cameraBox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5));
-        if(smallLaptop){
-            cameraBox->set_size_request(800, 500);
+        Gtk::Box* pSpeedLeft = nullptr; builder->get_widget("placeholder_speed_left", pSpeedLeft);
+        if(pSpeedLeft) {
+            leftSpeedometer = Gtk::manage(new Speedometer("Left Speedometer"));
+            leftSpeedometer->set_size_request(300, 175);
+            leftSpeedometer->set_display_speed(displaySpeed);
+            leftSpeedometer->set_numbers_inside(numbersInside);
+            leftSpeedometer->set_numbers_on_ticks(numberTicks);
+            pSpeedLeft->add(*leftSpeedometer);
         }
-        else{
-            cameraBox->set_size_request(1600, 1000);
+
+        Gtk::Box* pSpeedRight = nullptr; builder->get_widget("placeholder_speed_right", pSpeedRight);
+        if(pSpeedRight) {
+            rightSpeedometer = Gtk::manage(new Speedometer("Right Speedometer"));
+            rightSpeedometer->set_size_request(300, 175);
+            rightSpeedometer->set_display_speed(displaySpeed);
+            rightSpeedometer->set_numbers_inside(numbersInside);
+            rightSpeedometer->set_numbers_on_ticks(numberTicks);
+            pSpeedRight->add(*rightSpeedometer);
         }
-        videoArea = Gtk::manage(new VideoWidget());
-        if(smallLaptop){
-            videoArea->set_size_request(800, 500);
+
+        Gtk::Box* pGear = nullptr; builder->get_widget("placeholder_gear_dial", pGear);
+        if(pGear) {
+            gear_dial = create_gear_dial(gears, gear_labels, gear_label_box);
+            highlight_gear_and_scroll("3", gears, gear_labels, gear_dial, gear_label_box);
+            pGear->add(*gear_dial);
         }
-        else{
-            videoArea->set_size_request(1600, 1000);
+        
+        // Inject Roll/Pitch Indicators
+        Gtk::Box* pRoll = nullptr; builder->get_widget("placeholder_roll_image", pRoll);
+        if(pRoll) {
+            createImageIndicator(roll_image, roll_pixbuf, package_share_directory + "/resources/RobotSide.png", pRoll, roll_rotation_angle);
+            roll_init = true;
         }
-        //videoArea->set_hexpand(true);
-        //videoArea->set_vexpand(true);
-        cameraBox->add(*videoArea);
-        innerMiddleBox->add(*cameraBox);
 
-        innerRightBox = create_motor_column({
-            {"Falcon 1", &falcon1Circle},
-            {"Falcon 2", &falcon2Circle},
-            {"Falcon 3", &falcon3Circle},
-            {"Falcon 4", &falcon4Circle}
-            }, initBucketPos,
-            {"Falcon 1", "Falcon 2", "Falcon 3", "Falcon 4"},
-            false
-        );
+        Gtk::Box* pPitch = nullptr; builder->get_widget("placeholder_pitch_image", pPitch);
+        if(pPitch) {
+            createImageIndicator(pitch_image, pitch_pixbuf, package_share_directory + "/resources/RobotBack.png", pPitch, pitch_rotation_angle);
+            pitch_init = true;
+        }
 
-        bottomInnerBox->add(*innerLeftBox);
-        bottomInnerBox->add(*innerMiddleBox);
-        bottomInnerBox->add(*innerRightBox);
-        bottomInnerBox->set_halign(Gtk::ALIGN_CENTER);
-
-        bottomBox->add(*bottomInnerBox);
-        initRoll();
-
-        lowerLeftBox  = create_lower_motor_column({
-            {"Falcon 1", &lowerFalcon1Circle},
-            {"Falcon 2", &lowerFalcon2Circle}
-            },
-            {"Falcon 1", "Falcon 2"},
-            true
-        );
-
-        bottomLowerBox->add(*lowerLeftBox);
-
-        // To change Speedometer sizes, need to change this value
-        leftSpeedometer = Gtk::manage(new Speedometer("Left Speedometer"));
-        leftSpeedometer->set_size_request(300, 175);
-        leftSpeedometer->set_display_speed(displaySpeed);
-        leftSpeedometer->set_numbers_inside(numbersInside);
-        leftSpeedometer->set_numbers_on_ticks(numberTicks);        
-        bottomLowerBox->add(*leftSpeedometer);
-
-        gear_dial = create_gear_dial(gears, gear_labels, gear_label_box);
-        bottomLowerBox->add(*gear_dial);
-        highlight_gear_and_scroll("3", gears, gear_labels, gear_dial, gear_label_box);
-
-        rightSpeedometer = Gtk::manage(new Speedometer("Right Speedometer"));
-        rightSpeedometer->set_size_request(300, 175);
-        rightSpeedometer->set_display_speed(displaySpeed);
-        rightSpeedometer->set_numbers_inside(numbersInside);
-        rightSpeedometer->set_numbers_on_ticks(numberTicks); 
-        bottomLowerBox->add(*rightSpeedometer);
-
-        lowerRightBox  = create_lower_motor_column({
-            {"Falcon 3", &lowerFalcon3Circle},
-            {"Falcon 4", &lowerFalcon4Circle}
-            },
-            {"Falcon 3", "Falcon 4"});
-
-        bottomLowerBox->add(*lowerRightBox);
-
-        initPitch();
-        bottomLowerBox->set_halign(Gtk::ALIGN_CENTER);
-        bottomBox->add(*bottomLowerBox);
-        topLevelBox->add(*bottomBox);
-
-        Gdk::RGBA background;
-        background.set(lightBackgroundColor);
+        Gdk::RGBA background; background.set(lightBackgroundColor);
         setBackgroundColors(background);
+
     }
-    else{
-        sensorBox = Gtk::manage(new Gtk::FlowBox());
-        sensorBox->set_orientation(Gtk::ORIENTATION_HORIZONTAL);
-        topLevelBox->add(*sensorBox);
+    else {
+        // No Video Mode
+        Gtk::Box* boxMainContent = nullptr;
+        builder->get_widget("box_main_content", boxMainContent);
+        if(boxMainContent) boxMainContent->set_visible(false);
+        sensorBox->set_visible(true);
+        initRoll();
+        initPitch();
     }
 
-
-    window->add(*topLevelBox);
-    window->signal_delete_event().connect(sigc::ptr_fun(quit));
-    window->show_all();
+    if (window) {
+        window->signal_delete_event().connect(sigc::ptr_fun(quit));
+        window->show_all();
+    }
 }
 
 void initSensorsWindow() {
