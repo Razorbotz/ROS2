@@ -10,7 +10,8 @@ def generate_launch_description():
             parameters=[
                 {"can_interface": "can0"}
             ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
         )
         ,
         Node(
@@ -34,7 +35,8 @@ def generate_launch_description():
                 {"print_data": False},
                 {"can_interface": "can0"}
             ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
         )
         ,
         Node(
@@ -58,7 +60,8 @@ def generate_launch_description():
                 {"print_data": False},
                 {"can_interface": "can0"}
             ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
         )
         ,
         Node(
@@ -82,7 +85,8 @@ def generate_launch_description():
                 {"print_data": False},
                 {"can_interface": "can0"}
             ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
         )
         ,
         Node(
@@ -106,7 +110,8 @@ def generate_launch_description():
                 {"print_data": False},
                 {"can_interface": "can0"}
             ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
         )
         ,
         Node(
@@ -130,7 +135,9 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"}
-            ]
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
         )
 	    ,
         Node(
@@ -154,7 +161,9 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"}
-            ]
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
         )
         ,
         Node(
@@ -178,7 +187,9 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"}
-            ]
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
         )
 	    ,
         Node(
@@ -202,7 +213,9 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"}
-            ]
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
         )
     ]
 )

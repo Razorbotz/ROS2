@@ -12,7 +12,8 @@ def generate_launch_description():
                 {"turnLeft": True},
                 {"print_data": True}
             ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
         )
     ]
 )

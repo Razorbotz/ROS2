@@ -10,6 +10,7 @@ def generate_launch_description():
             parameters=[
                 {"single_arm": True}
             ],
+            respawn=True
         )
     ]
 )

@@ -12,13 +12,15 @@ def generate_launch_description():
                 {"kill_key": 58},
                 {"resolution": "VGA"},
                 {"print_data": False}
-            ]
+            ],
+            respawn=True
         )
         ,
         Node(
             package='video_streaming',
             name='video_streaming',
-            executable='video_streaming_node'
+            executable='video_streaming_node',
+            respawn=True
         )
     ]
 )

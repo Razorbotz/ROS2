@@ -11,7 +11,8 @@ def generate_launch_description():
                 {"xOffset": 1.25},
                 {"kill_key": 58},
                 {"resolution": "VGA"}
-            ]
+            ],
+            respawn=True
         )
     ]
 )

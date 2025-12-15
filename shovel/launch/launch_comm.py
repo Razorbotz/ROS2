@@ -10,7 +10,8 @@ def generate_launch_description():
             parameters=[
                 {"robot_name": "Shovel"}
             ],
-            output={'stderr': 'screen', 'stdout': 'screen'}
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
         )
     ]
 )

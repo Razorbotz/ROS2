@@ -10,6 +10,7 @@ def generate_launch_description():
             parameters=[
                 {"print_data": False}
             ],
+            respawn=True
         )
     ]
 )

@@ -6,7 +6,8 @@ def generate_launch_description():
         Node(
             package='drivetrain',
             name='drivetrain',
-            executable='drivetrain_node'
+            executable='drivetrain_node',
+            respawn=True
         )
     ]
 )
