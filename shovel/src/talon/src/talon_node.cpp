@@ -99,22 +99,25 @@ int numSleep = 0;
 int N = 0;
 bool usePosition = false;
 
-bool is_interface_up(const std::string& interface_name) {
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock < 0) return false;
+bool can_socket_bind_ok(const std::string& ifname) {
+    int s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    if (s < 0) return false;
 
-    struct ifreq ifr;
-    memset(&ifr, 0, sizeof(ifr));
-    strncpy(ifr.ifr_name, interface_name.c_str(), IFNAMSIZ - 1);
+    struct ifreq ifr {};
+    std::strncpy(ifr.ifr_name, ifname.c_str(), IFNAMSIZ - 1);
 
-    bool is_up = false;
-    if (ioctl(sock, SIOCGIFFLAGS, &ifr) != -1) {
-        // Check if the interface is UP and RUNNING
-        is_up = (ifr.ifr_flags & IFF_UP) && (ifr.ifr_flags & IFF_RUNNING);
+    if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
+        close(s);
+        return false; // ENODEV / etc.
     }
-    
-    close(sock);
-    return is_up;
+
+    sockaddr_can addr {};
+    addr.can_family  = AF_CAN;
+    addr.can_ifindex = ifr.ifr_ifindex;
+
+    bool ok = (bind(s, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == 0);
+    close(s);
+    return ok;
 }
 
 /** @brief STOP Callback
@@ -227,7 +230,6 @@ int main(int argc,char** argv){
 	motorNumber = utils::getParameter<int>(nodeHandle, "motor_number", 1);
 	int portNumber = utils::getParameter<int>(nodeHandle, "diagnostics_port", 1);
 	//c_SetPhoenixDiagnosticsStartTime(-1); //Disables the Phoenix Diagnostics server, but does not allow the Talons to run
-	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
 
 	std::string infoTopic = utils::getParameter<std::string>(nodeHandle, "info_topic", "unset");
 	std::string potentiometerTopic = utils::getParameter<std::string>(nodeHandle, "potentiometer_topic", "unset");
@@ -246,6 +248,15 @@ int main(int argc,char** argv){
 	std::string can_interface = utils::getParameter<std::string>(nodeHandle, "can_interface", "can0");
 	resetString = utils::getParameter<std::string>(nodeHandle, "reset_topic", "1");
 
+	while (rclcpp::ok() && !can_socket_bind_ok(can_interface)) {
+		RCLCPP_WARN_THROTTLE(
+			nodeHandle->get_logger(), *nodeHandle->get_clock(), 1000,
+			"CAN interface '%s' is DOWN / not bindable. Waiting...", can_interface.c_str()
+		);
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	}
+
+	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
 	if(can_interface != "can0")
 		std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
@@ -305,13 +316,7 @@ int main(int argc,char** argv){
 	int counter = 0;
 
 	while(rclcpp::ok()){
-		if (is_interface_up("can0")) {
-			if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
-		}
-		else {
-			RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 1000, 
-				"CAN interface is DOWN. Skipping motor commands.");
-		}
+		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
