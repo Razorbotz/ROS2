@@ -223,7 +223,6 @@ int main(int argc,char** argv){
 	int motorNumber = utils::getParameter<int>(nodeHandle, "motor_number", 1);
 	int portNumber = utils::getParameter<int>(nodeHandle, "diagnostics_port", 1);
 	c_Phoenix_Diagnostics_Create1(portNumber);
-	std::this_thread::sleep_for(std::chrono::milliseconds(8000));
 
 	std::string infoTopic = utils::getParameter<std::string>(nodeHandle, "info_topic", "unset");
 	std::string speedTopic = utils::getParameter<std::string>(nodeHandle, "speed_topic", "unset");
@@ -240,6 +239,8 @@ int main(int argc,char** argv){
 	printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
 	std::string can_interface = utils::getParameter<std::string>(nodeHandle, "can_interface", "can0");
 
+	if(can_interface != "can0")
+		std::this_thread::sleep_for(std::chrono::milliseconds(8000));
 	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
 

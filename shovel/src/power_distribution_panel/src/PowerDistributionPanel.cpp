@@ -1,150 +1,101 @@
-
 #include "power_distribution_panel/PowerDistributionPanel.hpp"
-#include <ncurses.h>
 #include <iostream>
+#include <cmath>
 
-/** @file
- * @brief Functions that parse the PDP CAN messages
- * 
- * This file contains functions that parse the CAN messages
- * published by the PDP.   
- * 
- * */
-
-
-/** @brief Brief description of function
- * Detailed description of function
- * */
 PowerDistributionPanel::PowerDistributionPanel(int canID){
-	this->voltage=0;
-	this->canID = canID;
+    this->voltage = 0;
+    this->temperature = 0;
+    this->canID = canID;
+    for(int i=0; i<16; i++) this->current[i] = 0;
 }
 
-
-/** @brief Brief description of function
- * Detailed description of function
- * @param source
- * @return current[source]
- * */
 float PowerDistributionPanel::getCurrent(int source){
-	return current[source];
+    if(source < 0 || source > 15) return 0.0f;
+    return current[source];
 }
 
-
-/** @brief Brief description of function
- * Detailed description of function
- * @param source
- * @return voltage
- * */
 float PowerDistributionPanel::getVoltage(){
-	return voltage;
+    return voltage;
 }
-
 
 float PowerDistributionPanel::getTemperature(){
-	return temperature;
+    return temperature;
 }
 
-
-/** @brief Brief description of function
- * Detailed description of function
- * @param frame
- * @return void
- * */
 void PowerDistributionPanel::parseFrame(struct can_frame frame){
-	unsigned int can_id = frame.can_id & ID_MASK;
-	if(can_id == (this->STATUS_3 | this->canID)){
-		parseVoltage(frame);
-		parseTemperature(frame);
-	}
-	
-	if(can_id == (this->STATUS_1 | this->canID) ||
-	   can_id == (this->STATUS_2 | this->canID) || 
-	   can_id == (this->STATUS_3 | this->canID)){
-		parseCurrent(frame);
-	}
+    unsigned int can_id = frame.can_id & ID_MASK;
+    
+    // Status 3 contains Voltage, Temperature, and Channels 12-15
+    if(can_id == (this->STATUS_3 | this->canID)){
+        parseVoltage(frame);
+        parseTemperature(frame);
+        parseCurrent(frame);
+    }
+    
+    // Status 1 (0-5) and Status 2 (6-11)
+    else if(can_id == (this->STATUS_1 | this->canID) ||
+            can_id == (this->STATUS_2 | this->canID)){
+        parseCurrent(frame);
+    }
 }
 
-
-/** @brief Function that parses the voltage\n
- * here
- * 
- * @param frame
- * @return void
- * */
 void PowerDistributionPanel::parseVoltage(struct can_frame frame){
-	if((frame.can_id & ID_MASK) == (this->STATUS_3 | this->canID)){
-		this->voltage = .16 * frame.data[7] + 0.48;
-	}
+    uint8_t raw = frame.data[6];
+    this->voltage = (raw * 0.05f) + 4.0f;
 }
-
 
 void PowerDistributionPanel::parseTemperature(struct can_frame frame){
-	if((frame.can_id & ID_MASK) == (this->STATUS_3 | this->canID)){
-		this->temperature = 1.03250836957542 * frame.data[7] - 67.8564500484966;
-	}
+    uint8_t raw = frame.data[7];
+    this->temperature = (1.03250836957542 * raw) - 67.8564500484966; 
 }
 
-
-/** @brief Brief description of function
- * Detailed description of function
- * @param frame
- * @return void
- * */
 void PowerDistributionPanel::parseCurrent(struct can_frame frame){
-        float currentScalar = 0.125f;
-        int i1 = (int16_t)((char)frame.data[0]);
-        i1 = i1 << 2;
-        i1 = i1 | (int16_t)(frame.data[1] >> 6 & 0x03);
-        float current1 = i1 * currentScalar;
+    const uint8_t* d = frame.data; 
+    float currentScalar = 0.125f;
 
-        int i2 = (int16_t)((frame.data[1]) & 0x3f);
-        i2 = i2 << 4;
-        i2 = i2 | (int16_t)(frame.data[2] >> 4 & 0x0f);
-        float current2 = i2 * currentScalar;
+    uint16_t i1 = ((uint16_t)d[0] << 2) | ((d[1] >> 6) & 0x03);
+    float val1 = i1 * currentScalar;
 
-        int i3 = (int16_t)((frame.data[2]) & 0x0f);
-        i3 = i3 << 6;
-        i3 = i3 | (int16_t)(frame.data[3] >> 2 & 0x3f);
-        float current3 = i3 * currentScalar;
+    uint16_t i2 = ((uint16_t)(d[1] & 0x3F) << 4) | ((d[2] >> 4) & 0x0F);
+    float val2 = i2 * currentScalar;
 
-        int i4 = (int16_t)((frame.data[3]) & 0x03);
-        i4 = i4 << 8;
-        i4 = i4 | (int16_t)(frame.data[4]);
-        float current4 = i4 * currentScalar;
+    uint16_t i3 = ((uint16_t)(d[2] & 0x0F) << 6) | ((d[3] >> 2) & 0x3F);
+    float val3 = i3 * currentScalar;
 
-        int i5 = (int16_t)((frame.data[5]));
-        i5 = i5 << 2;
-        i5 = i5 | (int16_t)(frame.data[6] >> 6 & 0x03);
-        float current5 = i5 * currentScalar;
+    uint16_t i4 = ((uint16_t)(d[3] & 0x03) << 8) | d[4];
+    float val4 = i4 * currentScalar;
 
-        int i6 = (int16_t)((frame.data[6]) & 0x3f);
-        i6 = i6 << 4;
-        i6 = i6 | (int16_t)(frame.data[7] >> 4 & 0x0f);
-        float current6 = i6 * currentScalar;
+    uint16_t i5 = ((uint16_t)d[5] << 2) | ((d[6] >> 6) & 0x03);
+    float val5 = i5 * currentScalar;
+
+    uint16_t i6 = ((uint16_t)(d[6] & 0x3F) << 4) | ((d[7] >> 4) & 0x0F);
+    float val6 = i6 * currentScalar;
 
 
+    unsigned int can_id = frame.can_id & ID_MASK;
 
-	if((frame.can_id & ID_MASK) == (this->STATUS_1 | this->canID)){
-		this->current[0]=current1;
-		this->current[1]=current2;
-		this->current[2]=current3;
-		this->current[3]=current4;
-		this->current[4]=current5;
-		this->current[5]=current6;
-	}
-	if((frame.can_id & ID_MASK) == (this->STATUS_2 | this->canID)){
-		this->current[6]=current1;
-		this->current[7]=current2;
-		this->current[8]=current3;
-		this->current[9]=current4;
-		this->current[10]=current5;
-		this->current[11]=current6;
-	}
-	if((frame.can_id & ID_MASK) == (this->STATUS_3 | this->canID)){
-		this->current[12]=current1;
-		this->current[13]=current2;
-		this->current[14]=current3;
-		this->current[15]=current4;
-	}
+    if(can_id == (this->STATUS_1 | this->canID)){
+        // Channels 0-5
+        this->current[0] = val1;
+        this->current[1] = val2;
+        this->current[2] = val3;
+        this->current[3] = val4;
+        this->current[4] = val5;
+        this->current[5] = val6;
+    }
+    else if(can_id == (this->STATUS_2 | this->canID)){
+        // Channels 6-11
+        this->current[6] = val1;
+        this->current[7] = val2;
+        this->current[8] = val3;
+        this->current[9] = val4;
+        this->current[10] = val5;
+        this->current[11] = val6;
+    }
+    else if(can_id == (this->STATUS_3 | this->canID)){
+        this->current[12] = val1;
+        this->current[13] = val2;
+        this->current[14] = val3;
+        this->current[15] = val4;
+    }
 }

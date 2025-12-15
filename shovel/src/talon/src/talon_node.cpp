@@ -228,7 +228,6 @@ int main(int argc,char** argv){
 	int portNumber = utils::getParameter<int>(nodeHandle, "diagnostics_port", 1);
 	//c_SetPhoenixDiagnosticsStartTime(-1); //Disables the Phoenix Diagnostics server, but does not allow the Talons to run
 	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
-	std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 
 	std::string infoTopic = utils::getParameter<std::string>(nodeHandle, "info_topic", "unset");
 	std::string potentiometerTopic = utils::getParameter<std::string>(nodeHandle, "potentiometer_topic", "unset");
@@ -247,6 +246,8 @@ int main(int argc,char** argv){
 	std::string can_interface = utils::getParameter<std::string>(nodeHandle, "can_interface", "can0");
 	resetString = utils::getParameter<std::string>(nodeHandle, "reset_topic", "1");
 
+	if(can_interface != "can0")
+		std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
 
