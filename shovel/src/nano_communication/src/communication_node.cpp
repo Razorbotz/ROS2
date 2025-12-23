@@ -51,17 +51,18 @@
 #define COMMUNICATION_PORT 5555
 #define PORT 31337
 
-const std::string TARGET_IP = "192.168.1.7";
+const std::string TARGET_IP = "192.168.1.6";
 std::string robotName="unnamed";
+// Not sure that this interface is named on the Nano
 std::string interfaceName = "wlP1p1s0";
 bool broadcast=true;
 
-int nano_sock = -1;
-sockaddr_in nano_remote{};
-std::atomic<bool> nano_link_running{true};
+int orin_sock = -1;
+sockaddr_in orin_remote{};
+std::atomic<bool> orin_link_running{true};
 
-std::atomic<uint64_t> nano_last_hb_rx_ms{0};
-std::atomic<bool> nano_alive{false};
+std::atomic<uint64_t> orin_last_hb_rx_ms{0};
+std::atomic<bool> orin_alive{false};
 
 #pragma pack(push, 1)
 struct NanoHeartbeat {
@@ -892,40 +893,40 @@ void broadcastIP(){
 }
 
 
-bool setup_nano_link_socket()
+bool setup_orin_link_socket()
 {
-    nano_sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (nano_sock < 0) { perror("nano socket"); return false; }
+    orin_sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (orin_sock < 0) { perror("orin socket"); return false; }
 
     int yes = 1;
-    setsockopt(nano_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+    setsockopt(orin_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 
     // Optional: force eth0
     struct ifreq ifr{};
     snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", ETHERNET_IFACE);
-    if (setsockopt(nano_sock, SOL_SOCKET, SO_BINDTODEVICE, (void*)&ifr, sizeof(ifr)) < 0) {
-        perror("nano SO_BINDTODEVICE");
+    if (setsockopt(orin_sock, SOL_SOCKET, SO_BINDTODEVICE, (void*)&ifr, sizeof(ifr)) < 0) {
+        perror("orin SO_BINDTODEVICE");
     }
 
     sockaddr_in local{};
     local.sin_family = AF_INET;
     local.sin_addr.s_addr = INADDR_ANY;
-    local.sin_port = htons(ORIN_PORT);
+    local.sin_port = htons(NANO_PORT);
 
-    if (bind(nano_sock, (sockaddr*)&local, sizeof(local)) < 0) {
-        perror("nano bind");
-        close(nano_sock);
-        nano_sock = -1;
+    if (bind(orin_sock, (sockaddr*)&local, sizeof(local)) < 0) {
+        perror("orin bind");
+        close(orin_sock);
+        orin_sock = -1;
         return false;
     }
 
-    nano_remote = {};
-    nano_remote.sin_family = AF_INET;
-    nano_remote.sin_port = htons(NANO_PORT);
-    if (inet_pton(AF_INET, TARGET_IP, &nano_remote.sin_addr) != 1) {
-        perror("inet_pton nano");
-        close(nano_sock);
-        nano_sock = -1;
+    orin_remote = {};
+    orin_remote.sin_family = AF_INET;
+    orin_remote.sin_port = htons(ORIN_PORT);
+    if (inet_pton(AF_INET, TARGET_IP, &orin_remote.sin_addr) != 1) {
+        perror("inet_pton orin");
+        close(orin_sock);
+        orin_sock = -1;
         return false;
     }
 
@@ -945,19 +946,19 @@ void orin_hb_tx_loop()
     uint32_t seq = 0;
     auto next = steady_clock::now();
 
-    while (nano_link_running.load()) {
+    while (orin_link_running.load()) {
         next += milliseconds(50);
 
-        NanoHeartbeat hb{};
+        OrinHeartbeat hb{};
         hb.magic = HB_MAGIC;
         hb.type = HB_TYPE;
         hb.version = HB_VER;
         hb.seq = ++seq;
         hb.t_ms = steady_ms();
 
-        if (nano_sock >= 0) {
-            (void)sendto(nano_sock, &hb, sizeof(hb), 0,
-                         (sockaddr*)&nano_remote, sizeof(nano_remote));
+        if (orin_sock >= 0) {
+            (void)sendto(orin_sock, &hb, sizeof(hb), 0,
+                         (sockaddr*)&orin_remote, sizeof(orin_remote));
         }
 
         std::this_thread::sleep_until(next);
@@ -966,18 +967,18 @@ void orin_hb_tx_loop()
 
 void orin_hb_rx_loop()
 {
-    while (nano_link_running.load()) {
-        NanoHeartbeat hb{};
+    while (orin_link_running.load()) {
+        OrinHeartbeat hb{};
         sockaddr_in sender{};
         socklen_t slen = sizeof(sender);
 
-        int n = recvfrom(nano_sock, &hb, sizeof(hb), 0, (sockaddr*)&sender, &slen);
+        int n = recvfrom(orin_sock, &hb, sizeof(hb), 0, (sockaddr*)&sender, &slen);
         if (n < (int)sizeof(hb)) continue;
 
         if (hb.magic != HB_MAGIC || hb.type != HB_TYPE || hb.version != HB_VER) continue;
 
-        nano_last_hb_rx_ms.store(steady_ms());
-        nano_alive.store(true);
+        orin_last_hb_rx_ms.store(steady_ms());
+        orin_alive.store(true);
     }
 }
 
@@ -1118,14 +1119,14 @@ int main(int argc, char **argv){
 
     fcntl(server_fd, F_SETFL, O_NONBLOCK);
     
-    if (setup_nano_link_socket()) {
+    if (setup_orin_link_socket()) {
         std::thread tx(orin_hb_tx_loop);
         std::thread rx(orin_hb_rx_loop);
         tx.detach();
         rx.detach();
     }
     else {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Nano link socket failed; heartbeats disabled");
+        RCLCPP_ERROR(nodeHandle->get_logger(), "orin link socket failed; heartbeats disabled");
     }
 
     std::list<uint8_t> messageBytesList;
@@ -1259,14 +1260,14 @@ int main(int argc, char **argv){
         }
 
         const uint64_t timeout_ms = 500; // or 250
-        uint64_t last = nano_last_hb_rx_ms.load();
+        uint64_t last = orin_last_hb_rx_ms.load();
         uint64_t now  = steady_ms();
 
         bool alive = (last != 0) && ((now - last) <= timeout_ms);
-        nano_alive.store(alive);
+        orin_alive.store(alive);
 
         if (!alive) {
-            RCLCPP_INFO(nodeHandle->get_logger(), "Nano is not connected")
+            RCLCPP_INFO(nodeHandle->get_logger(), "orin is not connected")
         }
 
         rclcpp::spin_some(nodeHandle);
