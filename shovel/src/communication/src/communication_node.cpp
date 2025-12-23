@@ -46,12 +46,11 @@
 #include <netdb.h>
 
 #define ORIN_PORT 31339
-#define NANO_PORT 31340 
-#define ETHERNET_IFACE "eth0"
-#define COMMUNICATION_PORT 5555
+#define NANO_PORT 31339 
+#define ETHERNET_IFACE "enP8p1s0"
 #define PORT 31337
 
-const std::string TARGET_IP = "192.168.1.7";
+const std::string TARGET_IP = "10.42.0.2";
 std::string robotName="unnamed";
 std::string interfaceName = "wlP1p1s0";
 bool broadcast=true;
@@ -922,7 +921,7 @@ bool setup_nano_link_socket()
     nano_remote = {};
     nano_remote.sin_family = AF_INET;
     nano_remote.sin_port = htons(NANO_PORT);
-    if (inet_pton(AF_INET, TARGET_IP, &nano_remote.sin_addr) != 1) {
+    if (inet_pton(AF_INET, TARGET_IP.c_str(), &nano_remote.sin_addr) != 1) {
         perror("inet_pton nano");
         close(nano_sock);
         nano_sock = -1;
@@ -1266,7 +1265,7 @@ int main(int argc, char **argv){
         nano_alive.store(alive);
 
         if (!alive) {
-            RCLCPP_INFO(nodeHandle->get_logger(), "Nano is not connected")
+            RCLCPP_INFO(nodeHandle->get_logger(), "Nano is not connected");
         }
 
         rclcpp::spin_some(nodeHandle);

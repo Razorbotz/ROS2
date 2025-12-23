@@ -923,7 +923,7 @@ bool setup_orin_link_socket()
     orin_remote = {};
     orin_remote.sin_family = AF_INET;
     orin_remote.sin_port = htons(ORIN_PORT);
-    if (inet_pton(AF_INET, TARGET_IP, &orin_remote.sin_addr) != 1) {
+    if (inet_pton(AF_INET, TARGET_IP.c_str(), &orin_remote.sin_addr) != 1) {
         perror("inet_pton orin");
         close(orin_sock);
         orin_sock = -1;
@@ -949,7 +949,7 @@ void orin_hb_tx_loop()
     while (orin_link_running.load()) {
         next += milliseconds(50);
 
-        OrinHeartbeat hb{};
+        NanoHeartbeat hb{};
         hb.magic = HB_MAGIC;
         hb.type = HB_TYPE;
         hb.version = HB_VER;
@@ -968,7 +968,7 @@ void orin_hb_tx_loop()
 void orin_hb_rx_loop()
 {
     while (orin_link_running.load()) {
-        OrinHeartbeat hb{};
+        NanoHeartbeat hb{};
         sockaddr_in sender{};
         socklen_t slen = sizeof(sender);
 
@@ -1267,7 +1267,7 @@ int main(int argc, char **argv){
         orin_alive.store(alive);
 
         if (!alive) {
-            RCLCPP_INFO(nodeHandle->get_logger(), "orin is not connected")
+            RCLCPP_INFO(nodeHandle->get_logger(), "orin is not connected");
         }
 
         rclcpp::spin_some(nodeHandle);
