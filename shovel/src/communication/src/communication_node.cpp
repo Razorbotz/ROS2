@@ -38,6 +38,7 @@
 #include <messages/msg/drivetrain_status.hpp>
 
 #include <BinaryMessage.hpp>
+#include <Heartbeat.hpp>
 #include "utils/utils.hpp"
 
 #include <iostream>
@@ -45,8 +46,7 @@
 #include <net/if.h>
 #include <netdb.h>
 
-#define ORIN_PORT 31339
-#define NANO_PORT 31339 
+#define ETH_PORT 31339
 #define ETHERNET_IFACE "enP8p1s0"
 #define PORT 31337
 
@@ -61,21 +61,7 @@ std::atomic<bool> nano_link_running{true};
 
 std::atomic<uint64_t> nano_last_hb_rx_ms{0};
 std::atomic<bool> nano_alive{false};
-
-#pragma pack(push, 1)
-struct NanoHeartbeat {
-    uint16_t magic;   // 0xBEEF
-    uint8_t  type;    // 0x01
-    uint8_t  version; // 1
-    uint32_t seq;
-    uint64_t t_ms;    // sender timestamp (optional but helpful)
-};
-#pragma pack(pop)
-
-static constexpr uint16_t HB_MAGIC = 0xBEEF;
-static constexpr uint8_t  HB_TYPE  = 0x01;
-static constexpr uint8_t  HB_VER   = 1;
-
+std::atomic<uint32_t> global_seq{0};
 
 /** @file
  * @brief Node for handling communication between the client and the rover.
@@ -891,8 +877,7 @@ void broadcastIP(){
 }
 
 
-bool setup_nano_link_socket()
-{
+bool setup_nano_link_socket(){
     nano_sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (nano_sock < 0) { perror("nano socket"); return false; }
 
@@ -909,7 +894,7 @@ bool setup_nano_link_socket()
     sockaddr_in local{};
     local.sin_family = AF_INET;
     local.sin_addr.s_addr = INADDR_ANY;
-    local.sin_port = htons(ORIN_PORT);
+    local.sin_port = htons(ETH_PORT);
 
     if (bind(nano_sock, (sockaddr*)&local, sizeof(local)) < 0) {
         perror("nano bind");
@@ -920,7 +905,7 @@ bool setup_nano_link_socket()
 
     nano_remote = {};
     nano_remote.sin_family = AF_INET;
-    nano_remote.sin_port = htons(NANO_PORT);
+    nano_remote.sin_port = htons(ETH_PORT);
     if (inet_pton(AF_INET, TARGET_IP.c_str(), &nano_remote.sin_addr) != 1) {
         perror("inet_pton nano");
         close(nano_sock);
@@ -931,53 +916,96 @@ bool setup_nano_link_socket()
     return true;
 }
 
-static uint64_t steady_ms()
-{
+static uint64_t steady_ms(){
     using namespace std::chrono;
     return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
-void orin_hb_tx_loop()
-{
+void orin_hb_tx_loop(){
     using namespace std::chrono;
-
-    uint32_t seq = 0;
     auto next = steady_clock::now();
 
     while (nano_link_running.load()) {
-        next += milliseconds(50);
+        next += milliseconds(HB_INTERVAL_MS);
 
-        NanoHeartbeat hb{};
+        NanoHeader hb{};
         hb.magic = HB_MAGIC;
-        hb.type = HB_TYPE;
+        hb.type = MSG_TYPE_HEARTBEAT;
         hb.version = HB_VER;
-        hb.seq = ++seq;
+        hb.seq = ++global_seq;
         hb.t_ms = steady_ms();
 
         if (nano_sock >= 0) {
-            (void)sendto(nano_sock, &hb, sizeof(hb), 0,
-                         (sockaddr*)&nano_remote, sizeof(nano_remote));
+            sendto(nano_sock, &hb, sizeof(hb), 0,
+                   (sockaddr*)&nano_remote, sizeof(nano_remote));
         }
 
         std::this_thread::sleep_until(next);
     }
 }
 
-void orin_hb_rx_loop()
-{
+void orin_hb_rx_loop(){
+    uint8_t buffer[1500]; 
+    sockaddr_in sender{};
+    socklen_t slen = sizeof(sender);
+
     while (nano_link_running.load()) {
-        NanoHeartbeat hb{};
-        sockaddr_in sender{};
-        socklen_t slen = sizeof(sender);
+        int n = recvfrom(nano_sock, buffer, sizeof(buffer), 0, (sockaddr*)&sender, &slen);
+        
+        if (n < (int)sizeof(NanoHeader)) continue;
 
-        int n = recvfrom(nano_sock, &hb, sizeof(hb), 0, (sockaddr*)&sender, &slen);
-        if (n < (int)sizeof(hb)) continue;
+        NanoHeader* header = reinterpret_cast<NanoHeader*>(buffer);
 
-        if (hb.magic != HB_MAGIC || hb.type != HB_TYPE || hb.version != HB_VER) continue;
+        if (header->magic != HB_MAGIC || header->version != HB_VER) continue;
 
         nano_last_hb_rx_ms.store(steady_ms());
         nano_alive.store(true);
+
+        if (header->type == MSG_TYPE_HEARTBEAT) {
+            // Don't do anything beyond updating the last time received
+        }
+        else if (header->type == MSG_TYPE_DATA) {
+            if (n < (int)(sizeof(NanoHeader) + sizeof(uint16_t)*2)) continue;
+
+            NanoDataPacket* dataParams = reinterpret_cast<NanoDataPacket*>(buffer);
+            
+            uint16_t id = dataParams->data_id;
+            uint16_t len = dataParams->payload_len;
+            uint8_t* payload = dataParams->payload;
+
+            float val; memcpy(&val, payload, 4); 
+            RCLCPP_INFO(nodeHandle->get_logger(), "Received Data: %f", val);
+        }
     }
+}
+
+void send_nano_data(uint16_t data_id, const void* data, uint16_t len) {
+    if (nano_sock < 0 || !nano_link_running.load()) return;
+    if (len > 1024) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Packet too large!");
+        return;
+    }
+
+    NanoDataPacket packet{};
+    
+    // Fill Header
+    packet.header.magic = HB_MAGIC;
+    packet.header.type = MSG_TYPE_DATA;
+    packet.header.version = HB_VER;
+    packet.header.seq = ++global_seq;
+    packet.header.t_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+
+    // Fill Data
+    packet.data_id = data_id;
+    packet.payload_len = len;
+    memcpy(packet.payload, data, len);
+
+    // Calculate total size: Header + ID/Len fields + Actual Payload
+    size_t total_size = sizeof(NanoHeader) + sizeof(uint16_t) * 2 + len;
+
+    // Send
+    sendto(nano_sock, &packet, total_size, 0, (sockaddr*)&nano_remote, sizeof(nano_remote));
 }
 
 
@@ -1079,6 +1107,16 @@ int main(int argc, char **argv){
     auto systemStatusSubscriber = nodeHandle->create_subscription<messages::msg::SystemStatus>("system_status",10,systemStatusCallback);
     auto drivetrainStatusSubscriber = nodeHandle->create_subscription<messages::msg::DrivetrainStatus>("drivetrain_status",10,drivetrainStatusCallback);
 
+    if (setup_nano_link_socket()) {
+        std::thread tx(orin_hb_tx_loop);
+        std::thread rx(orin_hb_rx_loop);
+        tx.detach();
+        rx.detach();
+    }
+    else {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Nano link socket failed; heartbeats disabled");
+    }
+
     int server_fd, bytesRead; 
     int opt = 1; 
     uint8_t buffer[1024] = {0}; 
@@ -1116,16 +1154,7 @@ int main(int argc, char **argv){
     broadcast=false;
 
     fcntl(server_fd, F_SETFL, O_NONBLOCK);
-    
-    if (setup_nano_link_socket()) {
-        std::thread tx(orin_hb_tx_loop);
-        std::thread rx(orin_hb_rx_loop);
-        tx.detach();
-        rx.detach();
-    }
-    else {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Nano link socket failed; heartbeats disabled");
-    }
+
 
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
