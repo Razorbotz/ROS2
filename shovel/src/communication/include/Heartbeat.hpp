@@ -74,10 +74,14 @@ struct NanoHeader {
 /**
  * @brief Data Packet.
  * Extends the header to include a variable length payload.
- * Motor IDs: 
- * 10 - 13 : TalonFX motor controllers
- * 14 - 16 : TalonSRX motor controllers
+ * Data IDs: 
+ * 001 : Motor speed values
+ *     - This will have motor ID and speed value (float 32)
+ * 002 : Motor position value
+ *     - This will have motor ID and position (int32) 
  * 100 : Message to use the Nano to control motors
+ *     - This will include a message with the motors to control
+ *     - This will be a list of motor IDs to control
  * 101 : Confirmation of motor control from Nano to Orin
  * 200 : Query from Orin to Nano if it is in control
  * 201 : Response from Nano to Orin that it is in control
@@ -86,6 +90,17 @@ struct NanoHeader {
  * 204 : Response from Nano to Orin to take control
  * 205 : Response from Nano to Orin to not take control
  *     - This will include a message for how many seconds to delay
+ * 206 : Message from Orin to Nano that it regained control
+ *     - Include list of regained motor IDs
+ * 207 : Message from Orin to Nano that it regained control
+ *     - Include list of regained motor IDs
+ * 400 : Message to force Nano to stop immediately
+ * 401 : Message to have the Nano stop gracefully
+ * 402 : Message from the Orin to the Nano that it lost control of motors
+ *     - Include a list of lost motor IDs
+ * 403 : Message from Nano to Orin that it lost motors
+ *     - Include a list of lost motor IDs
+ * 
  */
 struct NanoDataPacket {
     NanoHeader header;

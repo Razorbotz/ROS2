@@ -39,6 +39,9 @@
 
 #include <BinaryMessage.hpp>
 #include <Heartbeat.hpp>
+#include <RobotState.hpp>
+#include <NetworkUtils.hpp>
+#include <MessageUtils.hpp>
 #include "utils/utils.hpp"
 
 #include <iostream>
@@ -114,113 +117,19 @@ bool init = false;
 #define UPPER_THRESH 80
 #define CRIT_THRESH 90
 
-struct Falcon {
-    uint8_t device_id;
-    uint16_t voltage;
-    uint16_t current;
-    float output_percent;
-    uint8_t temperature;
-    float sensor_position;
-    float sensor_velocity;
-    float max_current;
-    bool temp_disable;
-    bool error;
-};
 
 Falcon falcon1, falcon2, falcon3, falcon4;
-
-struct Talon {
-    uint8_t device_id;
-    uint16_t voltage;
-    uint16_t current;
-    float output_percent;
-    uint8_t temperature;
-    float sensor_position;
-    float sensor_velocity;
-    float max_current;
-    bool temp_disable;
-};
-
 Talon talon1, talon2, talon3, talon4;
-
-struct Linear {
-    uint8_t motor_number;
-    float speed;
-    uint16_t potentiometer;
-    uint8_t time_without_change;
-    uint16_t max;
-    uint16_t min;
-    std::string error;
-    bool at_min;
-    bool at_max;
-    float distance;
-    bool sensorless;
-};
-
 Linear linear1, linear2, linear3, linear4;
-
-
-struct AutonomyState {
-    std::string robot_state;
-    std::string excavation_state;
-    std::string error_state;
-    std::string diagnostics_state;
-    std::string tilt_state;
-    std::string dump_state;
-    std::string bucket_state;
-    std::string arms_state;
-    float dest_x = 0.0f;
-    float dest_z = 0.0f;
-};
-
 AutonomyState autonomyState;
-
-
-struct ZedState {
-    float x;
-    float y;
-    float z;
-    float roll;
-    float pitch;
-    float yaw;
-    bool aruco;
-};
-
 ZedState zedState;
-
-struct DrivetrainState {
-    float f1_vel;
-    float f1_rpm;
-    float f1_speed;
-    float f2_vel;
-    float f2_rpm;
-    float f2_speed;
-    float f3_vel;
-    float f3_rpm;
-    float f3_speed;
-    float f4_vel;
-    float f4_rpm;
-    float f4_speed;
-};
-
 DrivetrainState drivetrainState;
-
-struct SystemState {
-    int32_t  rssi;
-    std::string wifi;
-    std::string can_bus;
-    bool using_can1;
-    int32_t  rx_packets;
-    int32_t  tx_packets;
-    std::string can_bus2;
-    int32_t  rx_packets2;
-    int32_t  tx_packets2;
-    int32_t  first_motor;
-    int32_t  second_motor;
-    int32_t  num_breaks;
-};
-
 SystemState systemState;
+
+float voltage = 0.0f;
+float temperature = 0.0f;
+std::array<float, 16> currents{};
+
 
 /** * @brief Resets all internal state trackers to impossible values.
  * * This forces the 'update_if_changed' logic to detect a difference 
@@ -310,58 +219,6 @@ void forceDataResync() {
     currents.fill(-1.0f);
 }
 
-/** @brief Parse a byte represenation into a float.
- * 
- * @param array
- * @return value
- * */
-float parseFloat(uint8_t* array){
-    uint32_t axisYInteger=0;
-    axisYInteger|=uint32_t(array[0])<<24;    
-    axisYInteger|=uint32_t(array[1])<<16;    
-    axisYInteger|=uint32_t(array[2])<<8;    
-    axisYInteger|=uint32_t(array[3])<<0;    
-    float value=(float)*(static_cast<float*>(static_cast<void*>(&axisYInteger)));
-
-    return value;
-}
-
-int key = 0x2C;
-void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
-    uint32_t sum = 0;  // Use a wider type to avoid overflow
-
-    // Append zero byte as placeholders for the checksum
-    byteList->push_back(0x00);
-
-
-    //std::cout << "Bytes with placeholders: ";
-    // for (auto byte : *byteList) {
-    //     std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
-    // }
-    //std::cout << std::endl;
-
-    // Sum all the bytes
-    for (uint8_t byte : *byteList) {
-        sum += byte;
-    }
-
-    // Compute Checksum
-    uint8_t checksum = sum % key;
-    //std::cout << "Simple checksum computed: 0x" << std::hex << static_cast<int>(checksum) << std::endl;
-
-    
-    auto it = byteList->end();
-    std::advance(it, -1);
-    *it = checksum;
-
-    // std::cout << "Final byteList: ";
-    // for (auto byte : *byteList) {
-    //     std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
-    // }
-    // std::cout << std::endl;
-}
-
- 
 /**
  * @brief Serializes, checksums, and conditionally compresses a BinaryMessage before sending.
  * * This function first compresses the data. If the compressed size is smaller than
@@ -431,55 +288,6 @@ void send(BinaryMessage message) {
     }
 }
 
-void update_if_changed(BinaryMessage& msg, bool& changed, uint8_t& old_val, uint8_t new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementUInt8(label, new_val);
-        old_val = new_val;
-    }
-}
-
-void update_if_changed(BinaryMessage& msg, bool& changed, std::string& old_val, const std::string& new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementString(label, new_val);
-        old_val = new_val;
-    }
-}
-
-void update_if_changed(BinaryMessage& msg, bool& changed, uint16_t& old_val, uint16_t new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementUInt16(label, new_val);
-        old_val = new_val;
-    }
-}
-
-void update_if_changed(BinaryMessage& msg, bool& changed, float& old_val, float new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementFloat32(label, new_val);
-        old_val = new_val;
-    }
-}
-
-void update_if_changed(BinaryMessage& msg, bool& changed, bool& old_val, bool new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementBoolean(label, new_val);
-        old_val = new_val;
-    }
-}
-
-void update_if_changed(BinaryMessage& msg, bool& changed, int& old_val, int new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementInt32(label, new_val);
-        old_val = new_val;
-    }
-}
-
-
 void send(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr falconStatus, Falcon& falcon) {
     if (silentRunning) return;
 
@@ -531,11 +339,6 @@ void send(std::string messageLabel, const messages::msg::TalonStatus::SharedPtr 
         send(message);
     }
 }
-
-
-float voltage = 0.0f;
-float temperature = 0.0f;
-std::array<float, 16> currents{};
 
 void send(std::string messageLabel, const messages::msg::Power::SharedPtr power) {
     if (silentRunning) return;
@@ -834,100 +637,6 @@ void autonomyStatusCallback(const messages::msg::AutonomyStatus::SharedPtr auton
     if(autonomyCounter % 15 == 0)
         if(rssi < CRIT_THRESH)
             send("Autonomy", autonomyStatus);
-}
-
-
-/** @brief Returns the address string of the rover.
- * 
- * This function is called when the node
- * tries to setup the socket connection between the rover and client. This function
- * returns the address as a string.
- * @param family
- * @param interfaceName
- * @return addressString
- * */
-std::string getAddressString(int family, std::string interfaceName){
-    std::string addressString("");
-    ifaddrs* interfaceAddresses = nullptr;
-    for (int failed=getifaddrs(&interfaceAddresses); !failed && interfaceAddresses; interfaceAddresses=interfaceAddresses->ifa_next){
-        if(strcmp(interfaceAddresses->ifa_name,interfaceName.c_str())==0 && interfaceAddresses->ifa_addr->sa_family == family) {
-            if (interfaceAddresses->ifa_addr->sa_family == AF_INET) {
-                sockaddr_in *socketAddress = reinterpret_cast<sockaddr_in *>(interfaceAddresses->ifa_addr);
-                addressString += inet_ntoa(socketAddress->sin_addr);
-            }
-            if (interfaceAddresses->ifa_addr->sa_family == AF_INET6) {
-                sockaddr_in6 *socketAddress = reinterpret_cast<sockaddr_in6 *>(interfaceAddresses->ifa_addr);
-                for (int index = 0; index < 16; index += 2) {
-                    char bits[5];
-                    sprintf(bits,"%02x%02x", socketAddress->sin6_addr.s6_addr[index],socketAddress->sin6_addr.s6_addr[index + 1]);
-                    if (index)addressString +=":";
-                    addressString +=bits;
-                }
-            }
-            if (interfaceAddresses->ifa_addr->sa_family == AF_PACKET) {
-                sockaddr_ll *socketAddress = reinterpret_cast<sockaddr_ll *>(interfaceAddresses->ifa_addr);
-                for (int index = 0; index < socketAddress->sll_halen; index++) {
-                    char bits[3];
-                    sprintf(bits,"%02x", socketAddress->sll_addr[index]);
-                    if (index)addressString +=":";
-                    addressString +=bits;
-                }
-            }
-        }
-    }
-    freeifaddrs(interfaceAddresses);
-    return addressString;
-}
-
-
-/** @brief Prints the address
- * 
- * */
-void printAddresses() {
-    printf("Addresses\n");
-    ifaddrs* interfaceAddresses = nullptr;
-    for (int failed=getifaddrs(&interfaceAddresses); !failed && interfaceAddresses; interfaceAddresses=interfaceAddresses->ifa_next){
-        printf("%s ",interfaceAddresses->ifa_name);
-        if(interfaceAddresses->ifa_addr->sa_family == AF_INET){
-            printf("AF_INET ");
-            sockaddr_in* socketAddress=reinterpret_cast<sockaddr_in*>(interfaceAddresses->ifa_addr);
-            printf("%d ",socketAddress->sin_port);
-            printf("%s ",inet_ntoa(socketAddress->sin_addr));
-        }
-        if(interfaceAddresses->ifa_addr->sa_family == AF_INET6){
-            printf("AF_INET6 ");
-            sockaddr_in6* socketAddress=reinterpret_cast<sockaddr_in6*>(interfaceAddresses->ifa_addr);
-            printf("%d ",socketAddress->sin6_port);
-            printf("%d ",socketAddress->sin6_flowinfo); 
-            for(int index=0;index<16;index+=2) {
-                if(index)printf(":");
-                printf("%02x%02x",socketAddress->sin6_addr.s6_addr[index],socketAddress->sin6_addr.s6_addr[index+1]);
-            }
-        }
-        if(interfaceAddresses->ifa_addr->sa_family == AF_PACKET){
-            printf("AF_PACKET ");
-            sockaddr_ll* socketAddress=reinterpret_cast<sockaddr_ll*>(interfaceAddresses->ifa_addr);
-            printf("%d ",socketAddress->sll_protocol);
-            printf("%d ",socketAddress->sll_ifindex);
-            printf("%d ",socketAddress->sll_hatype);
-            printf("%d ",socketAddress->sll_pkttype);
-            for(int index=0;index<socketAddress->sll_halen;index++){
-                if(index)printf(":");
-                printf("%02x",socketAddress->sll_addr[index]);
-            }
-        }
-        printf("\n");
-    }
-    printf("Done\n");
-}
-
-
-/** @brief Reboots the rover. 
- *
- * */
-void reboot(){
-    sync();
-    reboot(LINUX_REBOOT_CMD_POWER_OFF);
 }
 
 
