@@ -77,9 +77,15 @@ struct NanoHeader {
  * Motor IDs: 
  * 10 - 13 : TalonFX motor controllers
  * 14 - 16 : TalonSRX motor controllers
- * 120 : Message to use the Nano to control motors
- * 122 : Confirmation of motor control from Nano to Orin
- * 
+ * 100 : Message to use the Nano to control motors
+ * 101 : Confirmation of motor control from Nano to Orin
+ * 200 : Query from Orin to Nano if it is in control
+ * 201 : Response from Nano to Orin that it is in control
+ * 202 : Response from Nano to Orin that it is not in control
+ * 203 : Request from Orin to Nano to retake control
+ * 204 : Response from Nano to Orin to take control
+ * 205 : Response from Nano to Orin to not take control
+ *     - This will include a message for how many seconds to delay
  */
 struct NanoDataPacket {
     NanoHeader header;

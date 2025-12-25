@@ -108,6 +108,7 @@ int total = 0;
 int rssi = 0;
 bool usingCAN1 = false;
 bool debug = false;
+bool init = false;
 
 #define LOWER_THRESH 67
 #define UPPER_THRESH 80
@@ -220,6 +221,94 @@ struct SystemState {
 };
 
 SystemState systemState;
+
+/** * @brief Resets all internal state trackers to impossible values.
+ * * This forces the 'update_if_changed' logic to detect a difference 
+ * the next time a ROS2 callback fires, causing a full transmission 
+ * of all data to the newly connected client.
+ */
+void forceDataResync() {
+    // Helper lambda to reset a Falcon struct
+    auto resetFalcon = [](Falcon& f) {
+        f.device_id = 255;
+        f.voltage = 0xFFFF;
+        f.current = 0xFFFF;
+        f.output_percent = -999.0f; 
+        f.temperature = 255;
+        f.sensor_position = -999999.0f;
+        f.sensor_velocity = -999999.0f;
+        f.max_current = -1.0f;
+        f.temp_disable = !f.temp_disable;
+        f.error = !f.error;
+    };
+
+    // Helper lambda to reset a Talon struct
+    auto resetTalon = [](Talon& t) {
+        t.device_id = 255;
+        t.voltage = 0xFFFF;
+        t.current = 0xFFFF;
+        t.output_percent = -999.0f;
+        t.temperature = 255;
+        t.sensor_position = -999999.0f;
+        t.sensor_velocity = -999999.0f;
+        t.max_current = -1.0f;
+        t.temp_disable = !t.temp_disable;
+    };
+
+    // Helper lambda to reset a Linear struct
+    auto resetLinear = [](Linear& l) {
+        l.motor_number = 255;
+        l.speed = -999.0f;
+        l.potentiometer = 0xFFFF;
+        l.time_without_change = 255;
+        l.max = 0xFFFF;
+        l.min = 0xFFFF;
+        l.error = "FORCE_RESYNC";
+        l.distance = -999.0f;
+    };
+
+    resetFalcon(falcon1); resetFalcon(falcon2); resetFalcon(falcon3); resetFalcon(falcon4);
+    resetTalon(talon1); resetTalon(talon2); resetTalon(talon3); resetTalon(talon4);
+    resetLinear(linear1); resetLinear(linear2); resetLinear(linear3); resetLinear(linear4);
+
+    // Reset Autonomy State
+    autonomyState.robot_state = "RESYNC";
+    autonomyState.excavation_state = "RESYNC";
+    autonomyState.error_state = "RESYNC";
+    autonomyState.diagnostics_state = "RESYNC";
+    autonomyState.tilt_state = "RESYNC";
+    autonomyState.dump_state = "RESYNC";
+    autonomyState.bucket_state = "RESYNC";
+    autonomyState.arms_state = "RESYNC";
+    autonomyState.dest_x = -99999.0f;
+    autonomyState.dest_z = -99999.0f;
+
+    // Reset Zed State
+    zedState.x = -99999.0f;
+    zedState.y = -99999.0f;
+    zedState.z = -99999.0f;
+    zedState.roll = -999.0f;
+    zedState.pitch = -999.0f;
+    zedState.yaw = -999.0f;
+    zedState.aruco = !zedState.aruco;
+
+    // Reset Drivetrain State
+    drivetrainState.f1_vel = -99999.0f; drivetrainState.f1_rpm = -99999.0f; drivetrainState.f1_speed = -99999.0f;
+    drivetrainState.f2_vel = -99999.0f; drivetrainState.f2_rpm = -99999.0f; drivetrainState.f2_speed = -99999.0f;
+    drivetrainState.f3_vel = -99999.0f; drivetrainState.f3_rpm = -99999.0f; drivetrainState.f3_speed = -99999.0f;
+    drivetrainState.f4_vel = -99999.0f; drivetrainState.f4_rpm = -99999.0f; drivetrainState.f4_speed = -99999.0f;
+
+    // Reset System State
+    systemState.rssi = -1;
+    systemState.wifi = "RESYNC";
+    systemState.can_bus = "RESYNC";
+    systemState.rx_packets = -1;
+    
+    // Reset Power Arrays (Global vars)
+    voltage = -1.0f;
+    temperature = -1.0f;
+    currents.fill(-1.0f);
+}
 
 /** @brief Parse a byte represenation into a float.
  * 
@@ -1188,6 +1277,7 @@ int main(int argc, char **argv){
                 sendto(server_fd, hello.c_str(), hello.length(), 0, (struct sockaddr *)&address, addrlen);
                 broadcast = false;
                 messageBytesList.clear();
+                forceDataResync();
             }
         }
         if (isClientConnected) {
@@ -1286,7 +1376,7 @@ int main(int argc, char **argv){
             }
         }
 
-        const uint64_t timeout_ms = 500; // or 250
+        const uint64_t timeout_ms = 500;
         uint64_t last = nano_last_hb_rx_ms.load();
         uint64_t now  = steady_ms();
 
