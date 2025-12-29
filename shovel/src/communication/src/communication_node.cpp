@@ -49,7 +49,6 @@
 #include <net/if.h>
 #include <netdb.h>
 
-#define ETH_PORT 31339
 #define ETHERNET_IFACE "enP8p1s0"
 #define PORT 31337
 
@@ -58,13 +57,8 @@ std::string robotName="unnamed";
 std::string interfaceName = "wlP1p1s0";
 bool broadcast=true;
 
-int nano_sock = -1;
-sockaddr_in nano_remote{};
-std::atomic<bool> nano_link_running{true};
-
-std::atomic<uint64_t> nano_last_hb_rx_ms{0};
-std::atomic<bool> nano_alive{false};
 std::atomic<uint32_t> global_seq{0};
+std::atomic<uint64_t> last_ros_update_time {0};
 
 /** @file
  * @brief Node for handling communication between the client and the rover.
@@ -674,136 +668,44 @@ void broadcastIP(){
     }
 }
 
-
-bool setup_nano_link_socket(){
-    nano_sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (nano_sock < 0) { perror("nano socket"); return false; }
-
-    int yes = 1;
-    setsockopt(nano_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
-
-    // Optional: force eth0
-    struct ifreq ifr{};
-    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", ETHERNET_IFACE);
-    if (setsockopt(nano_sock, SOL_SOCKET, SO_BINDTODEVICE, (void*)&ifr, sizeof(ifr)) < 0) {
-        perror("nano SO_BINDTODEVICE");
-    }
-
-    sockaddr_in local{};
-    local.sin_family = AF_INET;
-    local.sin_addr.s_addr = INADDR_ANY;
-    local.sin_port = htons(ETH_PORT);
-
-    if (bind(nano_sock, (sockaddr*)&local, sizeof(local)) < 0) {
-        perror("nano bind");
-        close(nano_sock);
-        nano_sock = -1;
-        return false;
-    }
-
-    nano_remote = {};
-    nano_remote.sin_family = AF_INET;
-    nano_remote.sin_port = htons(ETH_PORT);
-    if (inet_pton(AF_INET, TARGET_IP.c_str(), &nano_remote.sin_addr) != 1) {
-        perror("inet_pton nano");
-        close(nano_sock);
-        nano_sock = -1;
-        return false;
-    }
-
-    return true;
-}
-
-static uint64_t steady_ms(){
+uint64_t get_time_ms() {
     using namespace std::chrono;
     return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
-void orin_hb_tx_loop(){
-    using namespace std::chrono;
-    auto next = steady_clock::now();
+HeartbeatLink hb_link(31339, "10.42.0.2", 31339);
+std::thread comms_thread;
+std::atomic<bool> node_running {true};
 
-    while (nano_link_running.load()) {
-        next += milliseconds(HB_INTERVAL_MS);
+std::mutex speed_mutex;
+float latest_speed_command = 0.0f;
 
-        NanoHeader hb{};
-        hb.magic = HB_MAGIC;
-        hb.type = MSG_TYPE_HEARTBEAT;
-        hb.version = HB_VER;
-        hb.seq = ++global_seq;
-        hb.t_ms = steady_ms();
-
-        if (nano_sock >= 0) {
-            sendto(nano_sock, &hb, sizeof(hb), 0,
-                   (sockaddr*)&nano_remote, sizeof(nano_remote));
+void network_worker() {
+    while (node_running) {
+        // 1. Read Incoming Packets (Drain the buffer)
+        // We loop until no more packets are waiting to prevent buffer overflow
+        while (hb_link.spin_once()) { 
+            // spin_once calls the callback immediately
         }
 
-        std::this_thread::sleep_until(next);
+        uint64_t now = get_time_ms();
+        if (now - last_ros_update_time > 100) {
+            // The comms thread has crashed and we need to no longer send a heartbeat
+            continue; 
+        }
+        hb_link.send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
-void orin_hb_rx_loop(){
-    uint8_t buffer[1500]; 
-    sockaddr_in sender{};
-    socklen_t slen = sizeof(sender);
 
-    while (nano_link_running.load()) {
-        int n = recvfrom(nano_sock, buffer, sizeof(buffer), 0, (sockaddr*)&sender, &slen);
-        
-        if (n < (int)sizeof(NanoHeader)) continue;
-
-        NanoHeader* header = reinterpret_cast<NanoHeader*>(buffer);
-
-        if (header->magic != HB_MAGIC || header->version != HB_VER) continue;
-
-        nano_last_hb_rx_ms.store(steady_ms());
-        nano_alive.store(true);
-
-        if (header->type == MSG_TYPE_HEARTBEAT) {
-            // Don't do anything beyond updating the last time received
-        }
-        else if (header->type == MSG_TYPE_DATA) {
-            if (n < (int)(sizeof(NanoHeader) + sizeof(uint16_t)*2)) continue;
-
-            NanoDataPacket* dataParams = reinterpret_cast<NanoDataPacket*>(buffer);
-            
-            uint16_t id = dataParams->data_id;
-            uint16_t len = dataParams->payload_len;
-            uint8_t* payload = dataParams->payload;
-
-            float val; memcpy(&val, payload, 4); 
-            RCLCPP_INFO(nodeHandle->get_logger(), "Received Data: %f", val);
-        }
+void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
+    if (id == 001) {
+        // Lock mutex because we are writing data the Main Thread might be reading
+        std::lock_guard<std::mutex> lock(speed_mutex);
+        memcpy(&latest_speed_command, data, sizeof(float));
     }
-}
-
-void send_nano_data(uint16_t data_id, const void* data, uint16_t len) {
-    if (nano_sock < 0 || !nano_link_running.load()) return;
-    if (len > 1024) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Packet too large!");
-        return;
-    }
-
-    NanoDataPacket packet{};
-    
-    // Fill Header
-    packet.header.magic = HB_MAGIC;
-    packet.header.type = MSG_TYPE_DATA;
-    packet.header.version = HB_VER;
-    packet.header.seq = ++global_seq;
-    packet.header.t_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now().time_since_epoch()).count();
-
-    // Fill Data
-    packet.data_id = data_id;
-    packet.payload_len = len;
-    memcpy(packet.payload, data, len);
-
-    // Calculate total size: Header + ID/Len fields + Actual Payload
-    size_t total_size = sizeof(NanoHeader) + sizeof(uint16_t) * 2 + len;
-
-    // Send
-    sendto(nano_sock, &packet, total_size, 0, (sockaddr*)&nano_remote, sizeof(nano_remote));
+    // ... handle other IDs ...
 }
 
 
@@ -815,6 +717,14 @@ int main(int argc, char **argv){
 
     robotName = utils::getParameter<std::string>(nodeHandle, "robot_name", "not named");
     debug = utils::getParameter<bool>(nodeHandle, "debug", false);
+
+    if (!hb_link.init()) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to init Heartbeat Link!");
+        return -1;
+    }
+    hb_link.set_data_callback(on_packet_received);
+    comms_thread = std::thread(network_worker);
+    RCLCPP_INFO(nodeHandle->get_logger(), "Comms Thread Started.");
 
     auto joystickAxisPublisher = nodeHandle->create_publisher<messages::msg::AxisState>("joystick_axis", 1);
     auto joystickHatPublisher = nodeHandle->create_publisher<messages::msg::HatState>("joystick_hat",1);
@@ -905,16 +815,6 @@ int main(int argc, char **argv){
     auto systemStatusSubscriber = nodeHandle->create_subscription<messages::msg::SystemStatus>("system_status",10,systemStatusCallback);
     auto drivetrainStatusSubscriber = nodeHandle->create_subscription<messages::msg::DrivetrainStatus>("drivetrain_status",10,drivetrainStatusCallback);
 
-    if (setup_nano_link_socket()) {
-        std::thread tx(orin_hb_tx_loop);
-        std::thread rx(orin_hb_rx_loop);
-        tx.detach();
-        rx.detach();
-    }
-    else {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Nano link socket failed; heartbeats disabled");
-    }
-
     int server_fd, bytesRead; 
     int opt = 1; 
     uint8_t buffer[1024] = {0}; 
@@ -961,6 +861,10 @@ int main(int argc, char **argv){
     auto previousHeartbeat = std::chrono::high_resolution_clock::now();
     
     while(rclcpp::ok()){
+        if (!hb_link.is_remote_alive()) {
+            RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 1000, "Remote Dead!");
+        }
+        last_ros_update_time = get_time_ms();
         try{
             bytesRead = recvfrom(server_fd, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen);
         
@@ -1085,21 +989,13 @@ int main(int argc, char **argv){
             }
         }
 
-        const uint64_t timeout_ms = 500;
-        uint64_t last = nano_last_hb_rx_ms.load();
-        uint64_t now  = steady_ms();
-
-        bool alive = (last != 0) && ((now - last) <= timeout_ms);
-        nano_alive.store(alive);
-
-        if (!alive) {
-            RCLCPP_INFO(nodeHandle->get_logger(), "Nano is not connected");
-        }
-
         rclcpp::spin_some(nodeHandle);
         commHeartbeatPublisher->publish(heartbeat);
         rate.sleep();
     }
 
-    broadcastThread.join(); //hopefully don't need this anymore
+    node_running = false;
+    if (comms_thread.joinable()) comms_thread.join();
+
+    broadcastThread.join();
 }

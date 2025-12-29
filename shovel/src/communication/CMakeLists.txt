@@ -22,6 +22,7 @@ include_directories(
 
 add_executable(${PROJECT_NAME}_node
 	src/BinaryMessage.cpp
+        src/Heartbeat.cpp
         src/communication_node.cpp
 )
 

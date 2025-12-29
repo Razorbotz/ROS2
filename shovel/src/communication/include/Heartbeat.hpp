@@ -1,28 +1,17 @@
 #pragma once
 #include <cstdint>
+#include <vector>
+#include <atomic>
+#include <netinet/in.h>
+#include <functional>
 
-/**
- * @file heartbeat_protocol.hpp
- *
- * @brief Definition of the hybrid Heartbeat/Data protocol.
- *
- * @section Protocol_Structure
- * All packets verify liveness. The protocol uses a common header format
- * to ensure that Heartbeats and Data packets can be handled by the same
- * receiving loop.
- *
- * Memory Layout:
- * [ Header (16 bytes) ]
- * |
- * +--> [ Optional: Data ID (2 bytes) ]
- * +--> [ Optional: Length  (2 bytes) ]
- * +--> [ Optional: Payload (N bytes) ]
- */
-
+// --- PROTOCOL CONSTANTS ---
 static constexpr uint16_t HB_MAGIC = 0xBEEF;
 static constexpr uint8_t  HB_VER   = 1;
-static constexpr uint32_t HB_INTERVAL_MS = 50;
-static constexpr uint32_t HB_TIMEOUT_MS  = 500;
+
+// UPDATED: 10ms interval / 50ms timeout per your Resiliency Plan
+static constexpr uint32_t HB_INTERVAL_MS = 10; 
+static constexpr uint32_t HB_TIMEOUT_MS  = 50;
 
 // --- MESSAGE TYPES ---
 static constexpr uint8_t MSG_TYPE_HEARTBEAT = 0x01;
@@ -109,4 +98,55 @@ struct NanoDataPacket {
     uint8_t    payload[1024];// Max payload buffer
 };
 
+struct MotorListPayload {
+    uint8_t count;
+    uint8_t motor_ids[16]; // Variable length based on count
+};
+
+struct CanBusPayload {
+    uint8_t interface_id; // 0 = CAN0, 1 = CAN1, etc.
+    uint8_t error_code;   // Optional specific CAN error
+};
+
 #pragma pack(pop)
+
+class HeartbeatLink {
+public:
+    // Callback signature: (Data ID, Pointer to Payload, Length)
+    using DataCallback = std::function<void(uint16_t, const uint8_t*, uint16_t)>;
+
+    HeartbeatLink(uint16_t local_port, const char* remote_ip, uint16_t remote_port);
+    ~HeartbeatLink();
+
+    bool init();
+    void close_socket();
+
+    // Set the function to call when DATA packets arrive
+    void set_data_callback(DataCallback cb);
+
+    void send_heartbeat();
+    void send_data(uint16_t id, const void* payload, uint16_t len);
+    
+    bool spin_once(); 
+
+    // Returns true if valid packets received within HB_TIMEOUT_MS
+    bool is_remote_alive() const;
+    
+    // Returns one-way latency (ms) based on last packet
+    uint64_t get_last_latency_ms() const;
+
+private:
+    int sockfd = -1;
+    uint16_t local_port;
+    struct sockaddr_in remote_addr;
+    
+    std::atomic<uint64_t> last_rx_time {0};
+    std::atomic<uint64_t> last_latency {0};
+    std::atomic<uint32_t> tx_seq {0};
+    
+    DataCallback on_data_received;
+
+    // Helpers
+    void process_packet(const uint8_t* buffer, size_t len);
+    uint64_t current_time_ms() const;
+};
