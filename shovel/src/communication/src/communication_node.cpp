@@ -42,6 +42,7 @@
 #include <RobotState.hpp>
 #include <NetworkUtils.hpp>
 #include <MessageUtils.hpp>
+#include "AegisController.hpp"
 #include "utils/utils.hpp"
 
 #include <iostream>
@@ -119,6 +120,11 @@ AutonomyState autonomyState;
 ZedState zedState;
 DrivetrainState drivetrainState;
 SystemState systemState;
+
+RemoteStatus nanoStatus;
+SystemStatus systemStatus = PRIMARY;
+bool controlMotors = true;
+std::shared_ptr<AegisController> controller;
 
 float voltage = 0.0f;
 float temperature = 0.0f;
@@ -529,7 +535,6 @@ void drivetrainStatusCallback(const messages::msg::DrivetrainStatus::SharedPtr s
 }
 
 
-
 // 10 Hz
 int powerCounter = 0;
 /** @brief Callback function for the power topic.
@@ -677,8 +682,8 @@ HeartbeatLink hb_link(31339, "10.42.0.2", 31339);
 std::thread comms_thread;
 std::atomic<bool> node_running {true};
 
-std::mutex speed_mutex;
-float latest_speed_command = 0.0f;
+std::mutex comms_mutex;
+bool sendRawData = false;
 
 void network_worker() {
     while (node_running) {
@@ -699,16 +704,6 @@ void network_worker() {
 }
 
 
-void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
-    if (id == 001) {
-        // Lock mutex because we are writing data the Main Thread might be reading
-        std::lock_guard<std::mutex> lock(speed_mutex);
-        memcpy(&latest_speed_command, data, sizeof(float));
-    }
-    // ... handle other IDs ...
-}
-
-
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
 
@@ -718,11 +713,24 @@ int main(int argc, char **argv){
     robotName = utils::getParameter<std::string>(nodeHandle, "robot_name", "not named");
     debug = utils::getParameter<bool>(nodeHandle, "debug", false);
 
+    nanoStatus.UP = false;
+    nanoStatus.WIFI_UP = false;
+    nanoStatus.CAN0_UP = false;
+    nanoStatus.CAN1_UP = false;
+    
+    // 1. Initialize Heartbeat Link
     if (!hb_link.init()) {
         RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to init Heartbeat Link!");
         return -1;
     }
-    hb_link.set_data_callback(on_packet_received);
+
+    controller = std::make_shared<AegisController>(
+        nodeHandle, hb_link, comms_mutex, nanoStatus, sendRawData, systemStatus
+    );
+    using namespace std::placeholders;
+    hb_link.set_data_callback(
+        std::bind(&AegisController::on_packet_received, controller, _1, _2, _3)
+    );
     comms_thread = std::thread(network_worker);
     RCLCPP_INFO(nodeHandle->get_logger(), "Comms Thread Started.");
 
@@ -924,6 +932,8 @@ int main(int argc, char **argv){
             // 6: Joystick hat values
             // 7: GUI silent running button
             // 8: GUI reboot button
+
+            // TODO: Check if sendRawData == true, send data to Nano
             uint8_t command=message[0];
             if(debug){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Message size: %d, Command: %d", messageSize, command);

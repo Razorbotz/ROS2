@@ -63,32 +63,53 @@ struct NanoHeader {
 /**
  * @brief Data Packet.
  * Extends the header to include a variable length payload.
- * Data IDs: 
- * 001 : Motor speed values
- *     - This will have motor ID and speed value (float 32)
- * 002 : Motor position value
+ * 0xx: Telemetry & Setpoints
+ * 001: Motor speed values
+ *    - This will have motor ID and speed value (float 32)
+ * 002: Motor position value
  *     - This will have motor ID and position (int32) 
- * 100 : Message to use the Nano to control motors
+ * 
+ * 1xx: Resource Ownership & Delegation
+ * Commands to change the configuration of the robot.
+ * NOTE: This DOES NOT change the control status, only individual motor status
+ * 100: Message from the Orin to the Nano to control motors
  *     - This will include a message with the motors to control
  *     - This will be a list of motor IDs to control
- * 101 : Confirmation of motor control from Nano to Orin
- * 200 : Query from Orin to Nano if it is in control
- * 201 : Response from Nano to Orin that it is in control
- * 202 : Response from Nano to Orin that it is not in control
- * 203 : Request from Orin to Nano to retake control
- * 204 : Response from Nano to Orin to take control
- * 205 : Response from Nano to Orin to not take control
+ * 101: Confirmation of motor control from Nano to Orin
+ * 
+ * 2xx: State & Handshake
+ * Negotiating who is in charge.
+ * 200: Query about who is in control
+ * 201: Response that the sender is in control
+ * 202: Response that the sender is not in control
+ * 203: Request from Orin to Nano to retake control
+ * 204: Response from Nano to Orin to take control
+ * 205: Response from Nano to Orin to not take control
  *     - This will include a message for how many seconds to delay
- * 206 : Message from Orin to Nano that it regained control
- *     - Include list of regained motor IDs
- * 207 : Message from Orin to Nano that it regained control
- *     - Include list of regained motor IDs
- * 400 : Message to force Nano to stop immediately
- * 401 : Message to have the Nano stop gracefully
- * 402 : Message from the Orin to the Nano that it lost control of motors
+ * 206: Query if the other is alive
+ * 207: Response to alive query
+ * 208: Request from Nano to Orin to relinquish control
+ * 209: Accept control of system
+
+ * 4xx: Operational Faults & Stops
+ * Interface issues
+ * 400: Message to force stop immediately
+ * 401: Message to stop gracefully
+ * 402: Message from the sender that it lost control of motors
  *     - Include a list of lost motor IDs
- * 403 : Message from Nano to Orin that it lost motors
- *     - Include a list of lost motor IDs
+ * 403: Message from sender that it has regained control
+ *     - Include list of regained motor IDs
+ * 404: Lost Wi-Fi connection
+ * 405: Regained Wi-Fi connection
+ * 406: Wi-Fi Mode Change Confirm
+ * 407: CAN Bus is down
+ * 408: CAN Bus is up
+ * 409: CAN Bus Mode Change Confirm
+
+ * 5xx: System & Critical Hardware
+ * System level errors and shutdown commands
+ * 500: System shutting down
+ * 501: System functioning again
  * 
  */
 struct NanoDataPacket {
@@ -103,9 +124,61 @@ struct MotorListPayload {
     uint8_t motor_ids[16]; // Variable length based on count
 };
 
+struct MotorSpeed {
+    uint8_t motor_id;
+    float speed;
+};
+
+struct MotorPosition {
+    uint8_t motor_id;
+    int32_t position;
+};
+
 struct CanBusPayload {
     uint8_t interface_id; // 0 = CAN0, 1 = CAN1, etc.
     uint8_t error_code;   // Optional specific CAN error
+};
+
+struct RemoteStatus {
+    bool UP;
+    bool WIFI_UP;
+    bool CAN0_UP;
+    bool CAN1_UP;
+};
+
+struct JoystickAxis {
+    uint8_t joystick_id;
+    uint8_t axis_id;
+    float   value;
+};
+
+struct JoystickButton {
+    uint8_t joystick_id;
+    uint8_t button_id;
+    uint8_t state; // 0=Release, 1=Press
+};
+
+struct JoystickHat {
+    uint8_t joystick_id;
+    uint8_t hat_id;
+    uint8_t value; // Hat direction code
+};
+
+struct KeyboardEvent {
+    uint32_t key_code;
+    uint8_t  state; // 0=Release, 1=Press
+};
+
+enum SystemStatus {
+    PRIMARY, // Should control all motors and send data to client
+    STANDBY, // Should act as safety monitor and backup
+    SINGLE_FC, // Only acting FC, should be more careful
+    PARTIAL_PRIMARY, // Should send data to client, controls part of motors
+    PARTIAL_SECONDARY, // Controls part of motors, only send those motors to client,
+    CAN_INOP, // 
+    ERROR, // 
+    SAFETY_DEGRADED,
+    STOP // STOP
 };
 
 #pragma pack(pop)
