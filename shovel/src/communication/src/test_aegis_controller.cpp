@@ -1,3 +1,4 @@
+// g++ -o run_integration test_system_integration.cpp AegisController.cpp ../src/BinaryMessage.cpp Heartbeat.cpp -lgtest -lgtest_main -lpthread -std=c++17 -I. -I../include -DUNIT_TEST
 #include <gtest/gtest.h>
 #include "MockDeps.hpp"
 

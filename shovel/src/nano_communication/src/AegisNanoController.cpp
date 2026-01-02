@@ -1,7 +1,6 @@
-// g++ -o run_full_integration     test_system_integration.cpp     AegisController.cpp     AegisNanoController.cpp     ../src/BinaryMessage.cpp     Heartbeat.cpp     -lgtest -lgtest_main -lpthread -std=c++17 -I. -I../include -DUNIT_TEST
-#include "AegisController.hpp"
+#include "AegisNanoController.hpp"
 
-AegisController::AegisController(rclcpp::Node::SharedPtr node, 
+AegisNanoController::AegisNanoController(rclcpp::Node::SharedPtr node, 
                                  HeartbeatLink& link_ref, 
                                  std::mutex& mutex_ref, 
                                  RemoteStatus& status_ref,
@@ -14,80 +13,12 @@ AegisController::AegisController(rclcpp::Node::SharedPtr node,
 }
 
 
-void AegisController::sendJoystickAxis(uint8_t which, uint8_t axis, float value) {
-    if (!hb_link.is_remote_alive()) return;
-    JoystickAxis msg {which, axis, value};
-    hb_link.send_data(010, &msg, sizeof(msg));
-}
-
-
-void AegisController::sendJoystickButton(uint8_t which, uint8_t button, uint8_t state) {
-    if (!hb_link.is_remote_alive()) return;
-    JoystickButton msg {which, button, state};
-    hb_link.send_data(011, &msg, sizeof(msg));
-}
-
-
-void AegisController::sendJoystickHat(uint8_t which, uint8_t hat, uint8_t value) {
-    if (!hb_link.is_remote_alive()) return;
-    JoystickHat msg {which, hat, value};
-    hb_link.send_data(012, &msg, sizeof(msg));
-}
-
-
-void AegisController::sendKeyboardEvent(uint32_t keyval, uint8_t state) {
-    if (!hb_link.is_remote_alive()) return;
-    KeyboardEvent msg {keyval, state};
-    hb_link.send_data(013, &msg, sizeof(msg));
-}
-
-
-void AegisController::sendBinaryMessage(BinaryMessage& binMsg) {
-    if (!hb_link.is_remote_alive()) return;
-    auto bytesList = binMsg.getBytes();
-    std::vector<uint8_t> buffer(bytesList->begin(), bytesList->end());
-    hb_link.send_data(020, buffer.data(), buffer.size());
-}
-
-
-void AegisController::queryControl(){
-    if (!hb_link.is_remote_alive()) return;
-    hb_link.send_data(200, "", 0);
-}
-
-
-void AegisController::alertPrimary(){
-    if (!hb_link.is_remote_alive()) return;
-    hb_link.send_data(201, "", 0);
-}
-
-
-void AegisController::alertNotPrimary(){
-    if (!hb_link.is_remote_alive()) return;
-    hb_link.send_data(202, "", 0);
-}
-
-
-void AegisController::alertSystemStatusChange(){
-    if (!hb_link.is_remote_alive()) return;
-    uint8_t msg = systemStatus_ref;
-    hb_link.send_data(211, &msg, sizeof(msg));
-}
-
-
-void AegisController::acknowledgeSystemStatusChange(bool error){
-    if (!hb_link.is_remote_alive()) return;
-    uint8_t msg = (error) ? 1 : 0;
-    hb_link.send_data(212, &msg, sizeof(msg));
-}
-
-
-void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
+void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Received Message ID: %d", id);
     // Packet containing motor speed values
     switch (id) {
-        // --- TELEMETRY --- 000s
-        case ID_SPEED_MSG: {
+        // --- TELEMETRY ---
+        case 001: {
             MotorSpeed msg;
             if (parse_packet(data, len, msg, "MotorSpeed")) {
                 std::lock_guard<std::mutex> lock(comms_mutex);
@@ -96,7 +27,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             }
             break;
         }
-        case ID_POS_MSG: {
+        case 002: {
             MotorPosition msg;
             if (parse_packet(data, len, msg, "MotorPosition")) {
                 std::lock_guard<std::mutex> lock(comms_mutex);
@@ -105,51 +36,51 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             break;
         }
 
-        case ID_JAXIS_MSG: {
+        case 010: {
             // Joystick Axis
             JoystickAxis msg;
             if (parse_packet(data, len, msg, "JoyAxis")) {
                 // Handle axis
                 std::lock_guard<std::mutex> lock(comms_mutex);
-                std::cout << "Joystick ID: " << (int)msg.joystick_id << " Axis: " << (int)msg.axis_id << " value: " << msg.value << std::endl;
+                std::cout << "Joystick ID: " (int)msg.joystick_id << " Axis: " << (int)msg.axis_id << " value: " << msg.value << std::endl;
             }
             break;
         }
 
-        case ID_JBTN_MSG: {
+        case 011: {
             // Joystick Button
             JoystickButton msg;
             if (parse_packet(data, len, msg, "JoyBtn")) {
                 // Handle button
                 std::lock_guard<std::mutex> lock(comms_mutex);
-                std::cout << "Joystick ID: " << (int)msg.joystick_id << " Button ID: " << (int)msg.button_id << " state: " << (int)msg.state << std::endl;
+                std::cout << "Joystick ID: " (int)msg.joystick_id << " Button ID: " << (int)msg.button_id << " state: " << (int)msg.state << std::endl;
             }
             break;
         }
 
-        case ID_JHAT_MSG: {
+        case 012: {
             // Joystick Hat
             JoystickHat msg;
             if (parse_packet(data, len, msg, "JoyHat")) {
                 // Handle hat
                 std::lock_guard<std::mutex> lock(comms_mutex);
-                std::cout << "Joystick ID: " << (int)msg.joystick_id << " Hat ID: " << (int)msg.hat_id << " value: " << (int)msg.value << std::endl;
+                std::cout << "Joystick ID: " (int)msg.joystick_id << " Hat ID: " << (int)msg.hat_id << " value: " << (int)msg.value << std::endl;
             }
             break;
         }
 
-        case ID_KEY_MSG: {
+        case 013: {
             // Keyboard
             KeyboardEvent msg;
             if (parse_packet(data, len, msg, "Keyboard")) {
                 // Handle key
                 std::lock_guard<std::mutex> lock(comms_mutex);
-                std::cout << "Keycode: " << (int)msg.key_code << " state: " << (int)msg.state << std::endl;
+                std::cout << "Keycode: " (int)msg.key_code << " state: " << (int)msg.state << std::endl;
             }
             break;
         }
 
-        case ID_BM_MSG: {
+        case 020: {
             // Complex BinaryMessage
             // 1. Reconstruct list for BinaryMessage constructor
             std::list<uint8_t> byteList;
@@ -160,141 +91,74 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             break;
         }
 
-        // --- Control Configuration --- 100s
-        case ID_ASSIGN_AUTH:
+        // --- Control Configuration ---
+        case 100:
             // Request to Nano to control specific motors 
             // This shouldn't be sent to the Orin, might need to handle the error
             RCLCPP_ERROR(nodeHandle->get_logger(), "ERROR: ID 100 received on Orin (Nano only).");
             break;
-        
-        case ID_CONFIRM_AUTH:
+        case 101:
             // Response to control request from Nano
             break;
 
-        // --- State & Handshake --- 200s
-        case ID_QUERY_CONTROL:
+        // --- State & Handshake --- 
+        case 200:
             // Query about who is in control
-            if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
-                alertPrimary();
-            }
-            else if(systemStatus_ref == STANDBY || systemStatus_ref == PARTIAL_SECONDARY){
-                alertNotPrimary();
-            }
             break;
 
-        case ID_STATE_PRIMARY:
+        case 201:
             // Response that the sender is in control
-            std::cout << "Received ID_R_PRIM" << std::endl;
-            
-            // Because at most one FC can be in charge, need to transition to standby
-            if(systemStatus_ref == PRIMARY){
-                std::cout << "Orin to STANDBY" << std::endl;
-                systemStatus_ref = STANDBY;
-            }
-            if(systemStatus_ref == PARTIAL_PRIMARY){
-                std::cout << "Orin to PARTIAL_SECONDARY" << std::endl;
-                systemStatus_ref = PARTIAL_SECONDARY;
-            }
-            alertSystemStatusChange();
             break;
             
-        case ID_STATE_STANDBY:
+        case 202:
             // Response that the sender is not in control
-            std::cout << "Received ID_R_NOT_PRIM" << std::endl;
-            
-            // Secondary is not in control, need to transition to be in charge
-            if(systemStatus_ref == STANDBY){
-                systemStatus_ref = PRIMARY;
-            }
-            if(systemStatus_ref == PARTIAL_SECONDARY){
-                systemStatus_ref = PARTIAL_PRIMARY;
-            }
-            alertSystemStatusChange();
             break;
             
-        case ID_REQ_RETAKE:
+        case 203:
             // Request from Orin to Nano to retake control
             break;
             
-        case ID_GRANT_CONTROL:
+        case 204:
             // Response from Nano to Orin to take control
             break;
             
-        case ID_DENY_CONTROL:
+        case 205:
             // Response from Nano to Orin to not take control
             // This will include a message for how many seconds to delay
             break;
             
-        case ID_LIVENESS_QUERY:
+        case 206:
             //  Query if the other is alive
             break;
             
-        case ID_LIVENESS_PING:
+        case 207:
             // Response to alive query
             break;
             
-        case ID_REQ_RELINQUISH:
+        case 208:
             // Request from Nano to Orin to relinquish control
             break;
             
-        case ID_ACCEPT_CONTROL:
+        case 209:
             // Accept control of system
             break;
-        
-        case ID_REJECT_CONTROL:
-            // Reject control of the system
-            break;
-        
-        case ID_SYS_STATUS_CHG: {
-            // Change in SystemStatus
-            std::cout << "Received 211" << std::endl;
-            bool error = false;
-            uint8_t status = data[0];
-            if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
-                if(status == PRIMARY || status == PARTIAL_PRIMARY){
-                    error = true;
-                    systemStatus_ref = ERROR;
-                    std::cout << "Error " << std::endl;
-                }
-            }
-            acknowledgeSystemStatusChange(error);
-            break;
-        }
-        
-        case ID_ACK_STATUS_CHG: {
-            // Acknowledge change in SystemStatus
-            if (len < 1) return;
-            uint8_t err = data[0];
-            if(err == 1){
-                systemStatus_ref = ERROR;
-                std::cout << "ERROR" << std::endl;
-            }
-            else{
-                std::cout << "No Error" << std::endl;
-            }
-            break;
-        }
             
 
-        // --- Operational Faults & Stops --- 400s
-        case ID_ESTOP_HARD:
+        // --- Operational Faults & Stops ---
+        case 400:
             // Message to stop immediately
             break;
             
-        case ID_ESTOP_SOFT:
+        case 401:
             // Message to stop gracefully
             break;
             
-        case ID_LOST_MOTORS:
+        case 402:
             // Message from the sender that it lost control of motors
             // Include a list of lost motor IDs
             break;
-        
-        case ID_REGAINED_MOTORS:
-
-            break;
             
-        case ID_WIFI_LOST:
+        case 404:
             // Lost Wi-Fi connection
             // Nano lost wifi connection, need to send all received data to it
             {
@@ -306,7 +170,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             // Send ACK with ID 406
             break;
 
-        case ID_WIFI_REGAINED:
+        case 405:
             // Regained Wi-Fi connection
             // Nano regained wifi connection, no need to send all received data to it
             {
@@ -318,11 +182,11 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             // Send ACK with ID 406
             break;
 
-        case ID_WIFI_CONFIRM:
+        case 406:
             // Wi-Fi Mode Change Confirm
             break;
 
-        case ID_CAN_DOWN: { 
+        case 407: { 
             // CAN Bus Down
             if (len != 2 * sizeof(uint8_t)) { 
                 RCLCPP_ERROR(nodeHandle->get_logger(), "Packet 502 wrong size. Expected 2, got %d", len);
@@ -348,7 +212,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             break;
         }
             
-        case ID_CAN_UP: { 
+        case 408: { 
             // CAN Bus back up
             if (len != 2 * sizeof(uint8_t)) { 
                 RCLCPP_ERROR(nodeHandle->get_logger(), "Packet 503 wrong size. Expected 2, got %d", len);
@@ -373,21 +237,21 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             // Send ACK with ID 409
             break;
         }
-        case ID_CAN_CONFIRM:
+        case 409:
             // CAN Bus Mode Change Confirm
             break;
 
-        case ID_SAFE_VIOL_SPD:
+        case 410:
             break;
         
-        case ID_SAFE_VIOL_POS:
+        case 411:
             break;
         
-        case ID_SAFE_CONFIRM:
+        case 412:
             break;
 
-        // --- System & Critical Hardware --- 500s
-        case ID_SYS_SHUTDOWN:
+        // --- System & Critical Hardware --- 
+        case 500:
             // System shutting down
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
@@ -397,7 +261,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             RCLCPP_WARN(nodeHandle->get_logger(), "Nano shutting down");
             break;
             
-        case ID_SYS_BOOT_OK:
+        case 501:
             // System functioning again
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
@@ -405,7 +269,6 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             }
             systemStatus_ref = PRIMARY;
             RCLCPP_INFO(nodeHandle->get_logger(), "Nano rebooted");
-            alertSystemStatusChange();
             break;    
     
         default:

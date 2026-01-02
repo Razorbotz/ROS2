@@ -12,9 +12,9 @@
 #include <mutex>
 #include <cstring>
 
-class AegisController {
+class AegisNanoController {
 public:
-    AegisController(rclcpp::Node::SharedPtr node, 
+    AegisNanoController(rclcpp::Node::SharedPtr node, 
                     HeartbeatLink& link_ref, 
                     std::mutex& mutex_ref, 
                     RemoteStatus& status_ref,
@@ -38,7 +38,7 @@ private:
     rclcpp::Node::SharedPtr nodeHandle; 
     HeartbeatLink& hb_link;
     std::mutex& comms_mutex;
-    RemoteStatus& nanoStatus;
+    RemoteStatus& orinStatus;
     bool& sendRawData_ref;
     SystemStatus& systemStatus_ref;
 

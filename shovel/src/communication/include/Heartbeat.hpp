@@ -90,6 +90,9 @@ struct NanoHeader {
  * 207: Response to alive query
  * 208: Request from Nano to Orin to relinquish control
  * 209: Accept control of system
+ * 210: Reject control of the system
+ * 211: Change in SystemStatus
+ * 212: Acknowledge change in SystemStatus
 
  * 4xx: Operational Faults & Stops
  * Interface issues
@@ -117,6 +120,55 @@ struct NanoDataPacket {
     uint16_t   data_id;      // specific ID for the data
     uint16_t   payload_len;  // Length of the following data
     uint8_t    payload[1024];// Max payload buffer
+};
+
+enum MessageIDs : uint16_t {
+    // --- 0xx Telemetry & Setpoints ---
+    ID_SPEED_MSG        = 1,
+    ID_POS_MSG          = 2,
+    ID_JAXIS_MSG        = 10,
+    ID_JBTN_MSG         = 11,
+    ID_JHAT_MSG         = 12,
+    ID_KEY_MSG          = 13,
+    ID_BM_MSG           = 20,
+
+    // --- 1xx Control Configuration ---
+    ID_ASSIGN_AUTH      = 100,
+    ID_CONFIRM_AUTH     = 101,
+
+    // --- 2xx State & Handshake ---
+    ID_QUERY_CONTROL    = 200,
+    ID_STATE_PRIMARY    = 201,
+    ID_STATE_STANDBY    = 202,
+    ID_REQ_RETAKE       = 203,
+    ID_GRANT_CONTROL    = 204,
+    ID_DENY_CONTROL     = 205, 
+    ID_LIVENESS_QUERY   = 206, 
+    ID_LIVENESS_PING    = 207, 
+    ID_REQ_RELINQUISH   = 208, 
+    ID_ACCEPT_CONTROL   = 209, 
+    ID_REJECT_CONTROL   = 210, 
+    ID_SYS_STATUS_CHG   = 211, 
+    ID_ACK_STATUS_CHG   = 212, 
+
+    // --- 4xx Operational Faults ---
+    ID_ESTOP_HARD       = 400,
+    ID_ESTOP_SOFT       = 401, 
+    ID_LOST_MOTORS      = 402,
+    ID_REGAINED_MOTORS  = 403, 
+    ID_WIFI_LOST        = 404,
+    ID_WIFI_REGAINED    = 405, 
+    ID_WIFI_CONFIRM     = 406, 
+    ID_CAN_DOWN         = 407, 
+    ID_CAN_UP           = 408,
+    ID_CAN_CONFIRM      = 409, 
+    ID_SAFE_VIOL_SPD    = 410, 
+    ID_SAFE_VIOL_POS    = 411, 
+    ID_SAFE_CONFIRM     = 412, 
+
+    // --- 5xx System ---
+    ID_SYS_SHUTDOWN     = 500,
+    ID_SYS_BOOT_OK      = 501  
 };
 
 struct MotorListPayload {
@@ -169,7 +221,7 @@ struct KeyboardEvent {
     uint8_t  state; // 0=Release, 1=Press
 };
 
-enum SystemStatus {
+enum SystemStatus : uint8_t {
     PRIMARY, // Should control all motors and send data to client
     STANDBY, // Should act as safety monitor and backup
     SINGLE_FC, // Only acting FC, should be more careful

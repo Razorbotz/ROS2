@@ -1,4 +1,3 @@
-// g++ -o run_integration test_system_integration.cpp AegisController.cpp ../src/BinaryMessage.cpp Heartbeat.cpp -lgtest -lpthread -std=c++17 -I. -I../include -DUNIT_TEST
 #include <gtest/gtest.h>
 #include <thread>
 #include <atomic>
@@ -6,16 +5,17 @@
 
 #include "MockDeps.hpp"
 #include "Heartbeat.hpp"
-#include "AegisController.hpp"
 
-// Define the ports for localhost testing
+#include "AegisController.hpp"
+#include "AegisNanoController.hpp"
+
+// Ports for localhost testing
 #define ORIN_PORT 31337
 #define NANO_PORT 31338
 #define LOCAL_IP "127.0.0.1"
 
 class SystemIntegrationTest : public ::testing::Test {
 protected:
-    // --- ORIN SIDE ---
     std::shared_ptr<rclcpp::Node> orinNode;
     std::unique_ptr<HeartbeatLink> orinLink;
     std::shared_ptr<AegisController> orinController;
@@ -24,63 +24,74 @@ protected:
     bool orinRawData = false;
     SystemStatus orinSysStatus = PRIMARY;
 
-    // --- NANO SIDE (The Simulated Partner) ---
+    std::shared_ptr<rclcpp::Node> nanoNode;
     std::unique_ptr<HeartbeatLink> nanoLink;
-    std::vector<uint16_t> received_packet_ids;
-    bool nano_running = true;
+    std::shared_ptr<AegisNanoController> nanoController;
+    std::mutex nanoMutex;
+    RemoteStatus nanoRemoteStatus;
+    bool nanoRawData = false;
+    SystemStatus nanoSysStatus = STANDBY;
+
+    std::atomic<bool> system_running {true};
     std::thread nano_thread;
+    std::thread orin_thread;
 
     void SetUp() override {
-        // 1. Setup Orin (Port 31337, sending to 31338)
+        // 1. Setup Orin (Sends to Nano)
         orinNode = rclcpp::Node::make_shared("orin_node");
         orinLink = std::make_unique<HeartbeatLink>(ORIN_PORT, LOCAL_IP, NANO_PORT);
         orinLink->init();
-
         orinController = std::make_shared<AegisController>(
             orinNode, *orinLink, orinMutex, orinRemoteStatus, orinRawData, orinSysStatus
         );
-
-        // Bind Orin RX
         using namespace std::placeholders;
         orinLink->set_data_callback(
             std::bind(&AegisController::on_packet_received, orinController, _1, _2, _3)
         );
 
-        // 2. Setup Nano (Port 31338, sending to 31337)
+        // 2. Setup Nano (Sends to Orin)
+        nanoNode = rclcpp::Node::make_shared("nano_node");
         nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, LOCAL_IP, ORIN_PORT);
         nanoLink->init();
+        nanoController = std::make_shared<AegisNanoController>(
+            nanoNode, *nanoLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus
+        );
+        nanoLink->set_data_callback(
+            std::bind(&AegisNanoController::on_packet_received, nanoController, _1, _2, _3)
+        );
 
-        // Nano Logic: Just store IDs of what we receive so we can check them in tests
-        nanoLink->set_data_callback([this](uint16_t id, const uint8_t* data, uint16_t len) {
-            std::cout << "[NANO] Received Packet ID: " << id << std::endl;
-            received_packet_ids.push_back(id);
-            
-            // Example: If we receive "Joystick Button" (011), send back a "Motor Speed" (001)
-            if (id == 011) {
-                MotorSpeed reply { 1, 0.99f };
-                nanoLink->send_data(001, &reply, sizeof(reply));
-            }
-        });
-
-        // 3. Start Nano Thread (Simulates the loop on the other Jetson)
-        nano_thread = std::thread([this]() {
-            while (nano_running) {
-                nanoLink->spin_once();
-                nanoLink->send_heartbeat(); // Crucial for "is_remote_alive"
+        // 3. Start Communication Threads
+        orin_thread = std::thread([this]() {
+            while (system_running) {
+                orinLink->spin_once();
+                orinLink->send_heartbeat();
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
+
+        nano_thread = std::thread([this]() {
+            while (system_running) {
+                nanoLink->spin_once();
+                nanoLink->send_heartbeat();
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+        });
+
+        // 4. Wait for connection to stabilize
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        ASSERT_TRUE(orinLink->is_remote_alive()) << "Orin cannot see Nano";
+        ASSERT_TRUE(nanoLink->is_remote_alive()) << "Nano cannot see Orin";
     }
 
     void TearDown() override {
-        nano_running = false;
+        system_running = false;
+        if (orin_thread.joinable()) orin_thread.join();
         if (nano_thread.joinable()) nano_thread.join();
         orinLink->close_socket();
         nanoLink->close_socket();
     }
 };
 
-// --- TEST 1: Heartbeat Handshake ---
 TEST_F(SystemIntegrationTest, EstablishHeartbeatConnection) {
     // Run for 100ms to allow heartbeats to exchange
     for (int i = 0; i < 10; i++) {
@@ -94,27 +105,147 @@ TEST_F(SystemIntegrationTest, EstablishHeartbeatConnection) {
     EXPECT_TRUE(nanoLink->is_remote_alive()) << "Nano should see Orin";
 }
 
-// --- TEST 2: Two-Way Data Exchange ---
-TEST_F(SystemIntegrationTest, OrinSendsAndNanoResponds) {
-    // 1. Orin sends Joystick Button (ID 011)
-    std::cout << "[TEST] Orin sending Joystick Button..." << std::endl;
-    orinController->sendJoystickButton(0, 1, 1);
+// --- TEST 1: Orin Sends Joystick -> Nano Receives ---
+TEST_F(SystemIntegrationTest, OrinControlsNano) {
+    // 1. Send data from Orin
+    std::cout << "[TEST] Sending Joystick Button Press..." << std::endl;
+    orinController->sendJoystickButton(0, 5, 1); // Joystick 0, Button 5, Pressed
 
-    // 2. Run simulation loop for a bit
+    // 2. Wait for transmission
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    // 3. Verify
+    // Since AegisNanoController just prints to cout, we check the console output visually.
+    // Ideally, you would add a "last_received_button" member to AegisNanoController
+    // to allow this test to ASSERT_EQ(nanoController->last_btn, 5);
+}
+
+TEST_F(SystemIntegrationTest, OrinQuerysNanoControl_OrinPrimary) {
+    // 1. Send control query from Orin to Nano
+    std::cout << "[TEST] Query Control" << std::endl;
+    orinController->queryControl();
+
+    for (int i = 0; i < 10; i++) {
+        orinLink->spin_once();
+        orinLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    std::cout << "orinSysStatus" << (int)orinSysStatus << std::endl;
+    ASSERT_TRUE(orinSysStatus == PRIMARY) << "Orin should be PRIMARY";
+}
+
+TEST_F(SystemIntegrationTest, OrinQuerysNanoControl_OrinStandby) {
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = STANDBY;
+    
+    for (int i=0; i<10; i++) {
+        orinLink->spin_once(); orinLink->send_heartbeat();
+        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    std::cout << "[TEST] Query Control" << std::endl;
+    orinController->queryControl();
+
     for (int i = 0; i < 20; i++) {
-        orinLink->spin_once();      // Orin reads Nano's reply
-        orinLink->send_heartbeat(); // Keep connection alive
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        orinLink->spin_once();
+        nanoLink->spin_once();
+        orinLink->send_heartbeat();
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    std::cout << "orinSysStatus: " << (int)orinSysStatus << std::endl;
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not switch to PRIMARY after Nano yielded control";
+}
+
+TEST_F(SystemIntegrationTest, OrinQuerysNanoControl_AlertAck){
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = STANDBY;
+    
+    for (int i=0; i<10; i++) {
+        orinLink->spin_once(); orinLink->send_heartbeat();
+        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-    // 3. Verify Nano received the ID
-    bool nano_got_packet = false;
-    for (auto id : received_packet_ids) {
-        if (id == 011) nano_got_packet = true;
-    }
-    EXPECT_TRUE(nano_got_packet) << "Nano did not receive the button press";
+    std::cout << "[TEST] Query Control" << std::endl;
+    orinController->queryControl();
 
-    // 4. Verify Orin processed the reply
-    // (In your code, ID 001 prints "Motor X set to Y")
-    // We can't easily assert on std::cout, but if this doesn't crash, the RX path works.
+    for (int i = 0; i < 20; i++) {
+        orinLink->spin_once();
+        nanoLink->spin_once();
+        orinLink->send_heartbeat();
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    uint8_t error_val = 1;
+    
+    std::cout << "[TEST] Injecting ID 212 (System Error)..." << std::endl;
+    nanoLink->send_data(212, &error_val, sizeof(error_val));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    orinLink->spin_once();
+    ASSERT_EQ(orinSysStatus, ERROR) << "Orin did not enter ERROR state after Nano sent error";
+}
+
+TEST_F(SystemIntegrationTest, OrinPrimary_NanoBecomesPrimary){
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = PRIMARY;
+    
+    for (int i=0; i<10; i++) {
+        orinLink->spin_once(); orinLink->send_heartbeat();
+        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    uint8_t status = 0;
+    std::cout << "[TEST] Injecting ID 211 (Change in SystemStatus)" << std::endl;
+    nanoLink->send_data(211, &status, sizeof(status));
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    orinLink->spin_once();
+    ASSERT_EQ(orinSysStatus, ERROR) << "Orin did not enter error state after Nano attempted to become PRIMARY while Orin was PRIMARY";
+}
+
+TEST_F(SystemIntegrationTest, NanoShutdown){
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = PRIMARY;
+    
+    for (int i=0; i<10; i++) {
+        orinLink->spin_once(); orinLink->send_heartbeat();
+        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    std::cout << "[TEST] Injecting ID 500 (System Shutdown)" << std::endl;
+    nanoLink->send_data(500, "", 0);
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    orinLink->spin_once();
+    ASSERT_EQ(orinSysStatus, SINGLE_FC) << "Orin did not enter SINGLE_FC as expected";
+}
+
+TEST_F(SystemIntegrationTest, NanoReboot){
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = PRIMARY;
+    
+    for (int i=0; i<10; i++) {
+        orinLink->spin_once(); orinLink->send_heartbeat();
+        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    std::cout << "[TEST] Injecting ID 500 (System Shutdown)" << std::endl;
+    nanoLink->send_data(500, "", 0);
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    orinLink->spin_once();
+
+    std::cout << "[TEST] Injecting ID 501 (System Shutdown)" << std::endl;
+    nanoLink->send_data(501, "", 0);
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    orinLink->spin_once();
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter SINGLE_FC as expected";
 }
