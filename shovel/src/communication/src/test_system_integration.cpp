@@ -5,6 +5,7 @@
 
 #include "MockDeps.hpp"
 #include "Heartbeat.hpp"
+#include "CANHeartbeat.hpp"
 
 #include "AegisController.hpp"
 #include "AegisNanoController.hpp"
@@ -18,6 +19,7 @@ class SystemIntegrationTest : public ::testing::Test {
 protected:
     std::shared_ptr<rclcpp::Node> orinNode;
     std::unique_ptr<HeartbeatLink> orinLink;
+    std::unique_ptr<CanLink> orinCanLink;
     std::shared_ptr<AegisController> orinController;
     std::mutex orinMutex;
     RemoteStatus orinRemoteStatus;
@@ -26,6 +28,7 @@ protected:
 
     std::shared_ptr<rclcpp::Node> nanoNode;
     std::unique_ptr<HeartbeatLink> nanoLink;
+    std::unique_ptr<CanLink> nanoCanLink;
     std::shared_ptr<AegisNanoController> nanoController;
     std::mutex nanoMutex;
     RemoteStatus nanoRemoteStatus;
@@ -33,17 +36,25 @@ protected:
     SystemStatus nanoSysStatus = STANDBY;
 
     std::atomic<bool> orin_running {true};
+    std::atomic<bool> orin_can_running{true};
+    std::atomic<bool> orin_eth_running{true};
     std::atomic<bool> nano_running {true};
+    std::atomic<bool> nano_can_running{true};
+    std::atomic<bool> nano_eth_running{true};
     std::thread nano_thread;
     std::thread orin_thread;
+
+    CanHeartbeatPayload orin_hb {0x01, 0, 0, 0};
+    CanHeartbeatPayload nano_hb {0x02, 0, 0, 0};
 
     void SetUp() override {
         // 1. Setup Orin (Sends to Nano)
         orinNode = rclcpp::Node::make_shared("orin_node");
         orinLink = std::make_unique<HeartbeatLink>(ORIN_PORT, LOCAL_IP, NANO_PORT);
         orinLink->init();
+        orinCanLink = std::make_unique<CanLink>();
         orinController = std::make_shared<AegisController>(
-            orinNode, *orinLink, orinMutex, orinRemoteStatus, orinRawData, orinSysStatus
+            orinNode, *orinLink, *orinCanLink, orinMutex, orinRemoteStatus, orinRawData, orinSysStatus
         );
         using namespace std::placeholders;
         orinLink->set_data_callback(
@@ -54,8 +65,9 @@ protected:
         nanoNode = rclcpp::Node::make_shared("nano_node");
         nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, LOCAL_IP, ORIN_PORT);
         nanoLink->init();
+        nanoCanLink = std::make_unique<CanLink>();
         nanoController = std::make_shared<AegisNanoController>(
-            nanoNode, *nanoLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus
+            nanoNode, *nanoLink, *nanoCanLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus
         );
         nanoLink->set_data_callback(
             std::bind(&AegisNanoController::on_packet_received, nanoController, _1, _2, _3)
@@ -66,6 +78,7 @@ protected:
             while (orin_running) {
                 orinLink->spin_once();
                 orinLink->send_heartbeat();
+                nanoCanLink->read_heartbeat(orin_hb);
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
@@ -75,6 +88,7 @@ protected:
                 nanoLink->spin_once();
                 nanoController->checkTakeoverTimer();
                 nanoLink->send_heartbeat();
+                orinCanLink->read_heartbeat(nano_hb);
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
@@ -244,6 +258,78 @@ TEST_F(SystemIntegrationTest, NanoReboot){
     ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
 }
 
+TEST_F(SystemIntegrationTest, CanParserTest) {
+    struct can_frame frame;
+    std::memset(&frame, 0, sizeof(frame));
+
+    uint32_t id = 0;
+    id |= (10 & 0x1F) << 24; // DEV_TYPE_FC (10)
+    id |= (15 & 0xFF) << 16; // MFR_CUSTOM (15)
+    id |= (1  & 0x3F) << 10; // API_CLASS_STATUS (1)
+    id |= (1  & 0x0F) << 6;  // API_IDX_HB (1)
+    id |= (2  & 0x3F) << 0;  // Sender ID (2 = Nano)
+    
+    frame.can_id = id | CAN_EFF_FLAG; 
+    frame.can_dlc = sizeof(CanHeartbeatPayload);
+
+    CanHeartbeatPayload tx_payload;
+    tx_payload.seq_counter = 42;
+    tx_payload.system_status = PRIMARY;
+    tx_payload.system_flags = 0xFF;
+    std::memcpy(frame.data, &tx_payload, sizeof(tx_payload));
+
+    CanHeartbeatPayload rx_payload;
+    bool success = orinCanLink->parse_heartbeat(frame, rx_payload);
+
+    ASSERT_TRUE(success) << "Failed to parse valid Heartbeat frame";
+    EXPECT_EQ(rx_payload.seq_counter, 42);
+    EXPECT_EQ(rx_payload.system_status, PRIMARY);
+    EXPECT_EQ(rx_payload.system_flags, 0xFF);
+}
+
+TEST_F(SystemIntegrationTest, CanDataFailoverTest) {
+    struct can_frame frame;
+    std::memset(&frame, 0, sizeof(frame));
+
+    uint32_t id = 0;
+    id |= (10 & 0x1F) << 24; // DEV_TYPE_FC
+    id |= (15 & 0xFF) << 16; // MFR_CUSTOM
+    id |= (2  & 0x3F) << 10; // API_CLASS_CONTROL (2)
+    id |= (2  & 0x0F) << 6;  // API_IDX_DATA (2)
+    id |= (2  & 0x3F) << 0;  // Sender ID
+    frame.can_id = id | CAN_EFF_FLAG;
+    frame.can_dlc = sizeof(CanDataPayload);
+
+    CanDataPayload data_load;
+    data_load.message_id = ID_JAXIS_MSG;
+    
+    JoystickAxis joyMsg {0, 0, 1.0f}; // ID 0, Axis 0, Val 1.0
+    std::memcpy(data_load.data, &joyMsg, sizeof(joyMsg));
+    std::memcpy(frame.data, &data_load, sizeof(data_load));
+
+
+    while(orinLink->spin_once()); orinLink->send_heartbeat();
+    ASSERT_TRUE(orinLink->is_remote_alive());
+
+    CanDataPayload parsed_data;
+    ASSERT_TRUE(orinCanLink->parse_data(frame, parsed_data));
+    
+    orinController->onCanDataReceived(parsed_data);
+
+
+    std::cout << "[TEST] Killing Ethernet..." << std::endl;
+    nano_running = false; 
+    if (nano_thread.joinable()) nano_thread.join();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(60));
+    orinLink->spin_once(); // Update liveness check
+
+    ASSERT_FALSE(orinLink->is_remote_alive());
+
+    std::cout << "[TEST] Injecting CAN Joystick Command..." << std::endl;
+    orinController->onCanDataReceived(parsed_data);
+}
+
 TEST_F(SystemIntegrationTest, NormalStartSequence){
     nanoSysStatus = STANDBY; 
     orinSysStatus = STANDBY;
@@ -395,6 +481,14 @@ TEST_F(SystemIntegrationTest, AbnormalStart_OrinDelayed){
 
     ASSERT_EQ(nanoSysStatus, PRIMARY) << "Nano did not enter PRIMARY as expected";
     ASSERT_EQ(orinSysStatus, STANDBY) << "Orin did not enter STANDBY as expected";
+}
+
+TEST_F(SystemIntegrationTest, AbnormalStart_Partial_HB_From_Nano){
+
+}
+
+TEST_F(SystemIntegrationTest, AbnormalStart_Partial_HB_From_Orin){
+
 }
 
 TEST_F(SystemIntegrationTest, AbnormalStart_Orin_Does_Not_Take_Charge){

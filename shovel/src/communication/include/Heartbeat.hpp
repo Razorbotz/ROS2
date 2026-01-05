@@ -9,7 +9,7 @@
 static constexpr uint16_t HB_MAGIC = 0xBEEF;
 static constexpr uint8_t  HB_VER   = 1;
 
-// UPDATED: 10ms interval / 50ms timeout per your Resiliency Plan
+// 10ms interval / 50ms timeout
 static constexpr uint32_t HB_INTERVAL_MS = 10; 
 static constexpr uint32_t HB_TIMEOUT_MS  = 50;
 

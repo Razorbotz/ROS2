@@ -2,14 +2,53 @@
 #include "AegisController.hpp"
 
 AegisController::AegisController(rclcpp::Node::SharedPtr node, 
-                                 HeartbeatLink& link_ref, 
+                                 HeartbeatLink& link_ref,  
+                                 CanLink& can_ref,
                                  std::mutex& mutex_ref, 
                                  RemoteStatus& status_ref,
                                  bool& rawData_in,
                                  SystemStatus& sysStatus_in
                                  )
-    : AegisBase(node, link_ref, mutex_ref, status_ref, rawData_in, sysStatus_in)
+    : AegisBase(node, link_ref,  can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in)
 {
+}
+
+void AegisController::verifyCanStatus(const CanHeartbeatPayload& hb) {
+    if (hb.system_status == ERROR) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "ALERT: Peer reported ERROR state via CAN!");
+        systemStatus_ref = ERROR;
+    }
+
+    if (systemStatus_ref == PRIMARY && hb.system_status == PRIMARY) {
+        RCLCPP_WARN(nodeHandle->get_logger(), "Error: Both FCs think they are PRIMARY!");
+    }
+}
+
+void AegisController::onCanDataReceived(const CanDataPayload& payload) {
+    if (hb_link.is_remote_alive()) {
+        return;
+    }
+
+    switch (payload.message_id) {
+        case ID_JAXIS_MSG: {
+            JoystickAxis msg;
+            if (sizeof(msg) <= sizeof(payload.data)) {
+                std::memcpy(&msg, payload.data, sizeof(msg));
+                std::cout << "[CAN FAILOVER] JoyAxis: " << (int)msg.axis_id << " val: " << msg.value << std::endl;
+            }
+            break;
+        }
+        case ID_JBTN_MSG: {
+            JoystickButton msg;
+            if (sizeof(msg) <= sizeof(payload.data)) {
+                std::memcpy(&msg, payload.data, sizeof(msg));
+                std::cout << "[CAN FAILOVER] JoyBtn: " << (int)msg.button_id << " state: " << (int)msg.state << std::endl;
+            }
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {

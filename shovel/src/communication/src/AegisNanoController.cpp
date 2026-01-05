@@ -1,13 +1,14 @@
 #include "AegisNanoController.hpp"
 
 AegisNanoController::AegisNanoController(rclcpp::Node::SharedPtr node, 
-                                 HeartbeatLink& link_ref, 
+                                 HeartbeatLink& link_ref,  
+                                 CanLink& can_ref,
                                  std::mutex& mutex_ref, 
                                  RemoteStatus& status_ref,
                                  bool& rawData_in,
                                  SystemStatus& sysStatus_in
                                  )
-    : AegisBase(node, link_ref, mutex_ref, status_ref, rawData_in, sysStatus_in)
+    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in)
 {
 }
 
@@ -17,7 +18,7 @@ void AegisNanoController::checkTakeoverTimer() {
     auto now = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - takeover_start_time).count();
 
-    if (elapsed >= 100) {
+    if (elapsed >= 50) {
         takeover_timer_active = false;
 
         if (systemStatus_ref == STANDBY) {
@@ -35,6 +36,33 @@ void AegisNanoController::checkTakeoverTimer() {
     }
 }
 
+void AegisNanoController::verifyCanStatus(const CanHeartbeatPayload& hb) {
+    if (hb.system_status == ERROR) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "ALERT: Peer reported ERROR state via CAN!");
+        systemStatus_ref = ERROR;
+    }
+
+    if (systemStatus_ref == PRIMARY && hb.system_status == PRIMARY) {
+        RCLCPP_WARN(nodeHandle->get_logger(), "Error: Both FCs think they are PRIMARY!");
+    }
+}
+
+void AegisNanoController::onCanDataReceived(const CanDataPayload& payload) {
+    if (hb_link.is_remote_alive()) return; 
+
+    switch (payload.message_id) {
+        case ID_SPEED_MSG: {
+            MotorSpeed msg;
+            if (sizeof(msg) <= sizeof(payload.data)) {
+                std::memcpy(&msg, payload.data, sizeof(msg));
+                std::cout << "[CAN FAILOVER] Set Motor " << (int)msg.motor_id << " to " << msg.speed << std::endl;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+}
 
 void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Nano: Received Message ID: %d", id);
@@ -151,22 +179,19 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             break;
             
         case ID_STATE_STANDBY:
-            // Response that the sender is not in control
-            std::cout << "Received 202" << std::endl;
-            
             // Secondary is not in control, need to transition to be in charge
-            // This will start a timer for 100ms. If FC1 does not transition to PRIMARY
+            // This will start a timer for 50ms. If FC1 does not transition to PRIMARY
             // within that timeframe, transition to PRIMARY. 
             if(systemStatus_ref == STANDBY ){
                 if (!takeover_timer_active) {
-                    std::cout << "Nano: Starting 100ms takeover timer..." << std::endl;
+                    std::cout << "Nano: Starting 50ms takeover timer..." << std::endl;
                     takeover_start_time = std::chrono::steady_clock::now();
                     takeover_timer_active = true;
                 }
             }
             if(systemStatus_ref == PARTIAL_SECONDARY){
                 if (!takeover_timer_active) {
-                    std::cout << "Nano: Starting 100ms takeover timer..." << std::endl;
+                    std::cout << "Nano: Starting 50ms takeover timer..." << std::endl;
                     takeover_start_time = std::chrono::steady_clock::now();
                     takeover_timer_active = true;
                 }
@@ -208,7 +233,6 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
         
         case ID_SYS_STATUS_CHG: {
             // Change in SystemStatus
-            std::cout << "Received 211" << std::endl;
             bool error = false;
             uint8_t status = data[0];
             if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
@@ -216,6 +240,10 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                     error = true;
                     systemStatus_ref = ERROR;
                 }
+            }
+            if(status == PRIMARY || status == PARTIAL_PRIMARY){
+                // Stop timer for Nano to take Primary
+                takeover_timer_active = false;
             }
             acknowledgeSystemStatusChange(error);
             break;
