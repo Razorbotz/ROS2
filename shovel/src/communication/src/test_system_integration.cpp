@@ -228,7 +228,7 @@ TEST_F(SystemIntegrationTest, NanoShutdown){
 
 TEST_F(SystemIntegrationTest, NanoReboot){
     nanoSysStatus = STANDBY; 
-    orinSysStatus = PRIMARY;
+    orinSysStatus = STANDBY;
     
     for (int i=0; i<10; i++) {
         orinLink->spin_once(); orinLink->send_heartbeat();
@@ -240,12 +240,42 @@ TEST_F(SystemIntegrationTest, NanoReboot){
     nanoLink->send_data(500, "", 0);
     
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    orinLink->spin_once();
+    orinLink->spin_once();orinLink->send_heartbeat();
+
+    ASSERT_EQ(orinSysStatus, SINGLE_FC) << "Orin did not enter SINGLE_FC as expected";
 
     std::cout << "[TEST] Injecting ID 501 (System Shutdown)" << std::endl;
+    nanoLink->spin_once(); nanoLink->send_heartbeat();
     nanoLink->send_data(501, "", 0);
     
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    orinLink->spin_once();
-    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter SINGLE_FC as expected";
+     for (int i=0; i<10; i++) {
+        orinLink->spin_once(); orinLink->send_heartbeat();
+        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+}
+
+TEST_F(SystemIntegrationTest, NormalStartSequence){
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = STANDBY;
+    
+    for (int i=0; i<10; i++) {
+        orinLink->spin_once(); orinLink->send_heartbeat();
+        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    std::cout << "[TEST] Injecting ID 501 (System Booted)" << std::endl;
+    nanoLink->send_data(501, "", 0);
+    orinLink->send_data(501, "", 0);
+    
+    for (int i=0; i<10; i++) {
+        orinLink->spin_once(); orinLink->send_heartbeat();
+        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
 }

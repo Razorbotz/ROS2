@@ -165,6 +165,9 @@ enum MessageIDs : uint16_t {
     ID_SAFE_VIOL_SPD    = 410, 
     ID_SAFE_VIOL_POS    = 411, 
     ID_SAFE_CONFIRM     = 412, 
+    ID_CAN_HB_LOST      = 413,
+    ID_CAN_HB_REGAINED  = 414,
+    ID_CAN_ACK_CHG      = 415,
 
     // --- 5xx System ---
     ID_SYS_SHUTDOWN     = 500,

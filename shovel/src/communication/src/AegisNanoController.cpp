@@ -82,7 +82,7 @@ void AegisNanoController::acknowledgeSystemStatusChange(bool error){
 
 
 void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
-    RCLCPP_INFO(nodeHandle->get_logger(), "Received Message ID: %d", id);
+    RCLCPP_INFO(nodeHandle->get_logger(), "Nano: Received Message ID: %d", id);
     // Packet containing motor speed values
     switch (id) {
         // --- TELEMETRY ---
@@ -181,17 +181,18 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             break;
 
         case ID_STATE_PRIMARY:
-            // Response that the sender is in control
-            std::cout << "Received 201" << std::endl;
-            
+            // Response that the sender is in control            
             // Because at most one FC can be in charge, need to transition to standby
             if(systemStatus_ref == PRIMARY){
                 systemStatus_ref = STANDBY;
+                alertSystemStatusChange();
+                std::cout << "Nano is transitioning to STANDBY" << std::endl;
             }
             if(systemStatus_ref == PARTIAL_PRIMARY){
                 systemStatus_ref = PARTIAL_SECONDARY;
+                std::cout << "Nano is transitioning to PARTIAL_SECONDARY" << std::endl;
+                alertSystemStatusChange();
             }
-            alertSystemStatusChange();
             break;
             
         case ID_STATE_STANDBY:
@@ -199,13 +200,18 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             std::cout << "Received 202" << std::endl;
             
             // Secondary is not in control, need to transition to be in charge
+            // This will start a timer for 100ms. If FC1 does not transition to PRIMARY
+            // within that timeframe, transition to PRIMARY. 
             if(systemStatus_ref == STANDBY){
-                systemStatus_ref = PRIMARY;
+                //systemStatus_ref = PRIMARY;
+                std::cout << "Nano is starting a timer to transition to PRIMARY" << std::endl;
+                //alertSystemStatusChange();
             }
             if(systemStatus_ref == PARTIAL_SECONDARY){
-                systemStatus_ref = PARTIAL_PRIMARY;
+                //systemStatus_ref = PARTIAL_PRIMARY;
+                std::cout << "Nano is starting a timer to transition to PARTIAL_PRIMARY" << std::endl;
+                //alertSystemStatusChange();
             }
-            alertSystemStatusChange();
             break;
             
         case ID_REQ_RETAKE:
@@ -297,8 +303,9 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                 orinStatus.WIFI_UP = false;
                 sendRawData_ref = true;
             }
-            RCLCPP_WARN(nodeHandle->get_logger(), "Nano Wi-Fi is down");
+            RCLCPP_WARN(nodeHandle->get_logger(), "Orin Wi-Fi is down");
             // Send ACK with ID 406
+            
             break;
 
         case ID_WIFI_REGAINED:
@@ -309,7 +316,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                 orinStatus.WIFI_UP = true;
                 sendRawData_ref = false;
             }
-            RCLCPP_INFO(nodeHandle->get_logger(), "Nano Wi-Fi is up");
+            RCLCPP_INFO(nodeHandle->get_logger(), "Orin Wi-Fi is up");
             // Send ACK with ID 406
             break;
 
@@ -389,7 +396,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                 orinStatus.UP = false;
             }
             systemStatus_ref = SINGLE_FC;
-            RCLCPP_WARN(nodeHandle->get_logger(), "Nano shutting down");
+            RCLCPP_WARN(nodeHandle->get_logger(), "Orin shutting down");
             break;
             
         case ID_SYS_BOOT_OK:
@@ -398,8 +405,8 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 orinStatus.UP = true;
             }
-            systemStatus_ref = PRIMARY;
-            RCLCPP_INFO(nodeHandle->get_logger(), "Nano rebooted");
+            queryControl();
+            RCLCPP_INFO(nodeHandle->get_logger(), "Orin Booted");
             break;    
     
         default:

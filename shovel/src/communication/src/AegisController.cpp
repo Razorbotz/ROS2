@@ -70,6 +70,7 @@ void AegisController::alertNotPrimary(){
 
 void AegisController::alertSystemStatusChange(){
     if (!hb_link.is_remote_alive()) return;
+    RCLCPP_INFO(nodeHandle->get_logger(), "Sending SystemStatusChange");
     uint8_t msg = systemStatus_ref;
     hb_link.send_data(211, &msg, sizeof(msg));
 }
@@ -83,7 +84,7 @@ void AegisController::acknowledgeSystemStatusChange(bool error){
 
 
 void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
-    RCLCPP_INFO(nodeHandle->get_logger(), "Received Message ID: %d", id);
+    RCLCPP_INFO(nodeHandle->get_logger(), "Orin: Received Message ID: %d", id);
     // Packet containing motor speed values
     switch (id) {
         // --- TELEMETRY --- 000s
@@ -162,9 +163,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
 
         // --- Control Configuration --- 100s
         case ID_ASSIGN_AUTH:
-            // Request to Nano to control specific motors 
-            // This shouldn't be sent to the Orin, might need to handle the error
-            RCLCPP_ERROR(nodeHandle->get_logger(), "ERROR: ID 100 received on Orin (Nano only).");
+            // Request to control specific motors 
             break;
         
         case ID_CONFIRM_AUTH:
@@ -190,26 +189,29 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             if(systemStatus_ref == PRIMARY){
                 std::cout << "Orin to STANDBY" << std::endl;
                 systemStatus_ref = STANDBY;
+                alertSystemStatusChange();
             }
             if(systemStatus_ref == PARTIAL_PRIMARY){
                 std::cout << "Orin to PARTIAL_SECONDARY" << std::endl;
                 systemStatus_ref = PARTIAL_SECONDARY;
+                alertSystemStatusChange();
             }
-            alertSystemStatusChange();
             break;
             
         case ID_STATE_STANDBY:
             // Response that the sender is not in control
-            std::cout << "Received ID_R_NOT_PRIM" << std::endl;
             
             // Secondary is not in control, need to transition to be in charge
-            if(systemStatus_ref == STANDBY){
+            if(systemStatus_ref == STANDBY || systemStatus_ref == SINGLE_FC){
+                std::cout << "Orin is transitioning to PRIMARY" << std::endl;
                 systemStatus_ref = PRIMARY;
+                alertSystemStatusChange();
             }
             if(systemStatus_ref == PARTIAL_SECONDARY){
+                std::cout << "Orin is transitioning to PARTIAL_PRIMARY" << std::endl;
                 systemStatus_ref = PARTIAL_PRIMARY;
+                alertSystemStatusChange();
             }
-            alertSystemStatusChange();
             break;
             
         case ID_REQ_RETAKE:
@@ -403,9 +405,8 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 nanoStatus.UP = true;
             }
-            systemStatus_ref = PRIMARY;
-            RCLCPP_INFO(nodeHandle->get_logger(), "Nano rebooted");
-            alertSystemStatusChange();
+            queryControl();
+            RCLCPP_INFO(nodeHandle->get_logger(), "Nano Booted");
             break;    
     
         default:
