@@ -112,8 +112,6 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
 
         case ID_STATE_PRIMARY:
             // Response that the sender is in control
-            std::cout << "Received ID_R_PRIM" << std::endl;
-            
             // Because at most one FC can be in charge, need to transition to standby
             if(systemStatus_ref == PRIMARY){
                 std::cout << "Orin to STANDBY" << std::endl;
@@ -333,6 +331,9 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 remoteStatus.UP = true;
+            }
+            if(systemStatus_ref == SINGLE_FC){
+                systemStatus_ref = PRIMARY;
             }
             queryControl();
             RCLCPP_INFO(nodeHandle->get_logger(), "Nano Booted");

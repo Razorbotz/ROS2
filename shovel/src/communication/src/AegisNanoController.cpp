@@ -11,6 +11,31 @@ AegisNanoController::AegisNanoController(rclcpp::Node::SharedPtr node,
 {
 }
 
+void AegisNanoController::checkTakeoverTimer() {
+    if (!takeover_timer_active) return;
+
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - takeover_start_time).count();
+
+    if (elapsed >= 100) {
+        takeover_timer_active = false;
+
+        if (systemStatus_ref == STANDBY) {
+            std::cout << "Nano: Takeover Timer Expired! Switching to PRIMARY." << std::endl;
+            systemStatus_ref = PRIMARY;
+            alertSystemStatusChange();
+            alertPrimary();
+        }
+        else if (systemStatus_ref == PARTIAL_SECONDARY) {
+            std::cout << "Nano: Takeover Timer Expired! Switching to PARTIAL_PRIMARY." << std::endl;
+            systemStatus_ref = PARTIAL_PRIMARY;
+            alertSystemStatusChange();
+            alertPrimary(); 
+        }
+    }
+}
+
+
 void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Nano: Received Message ID: %d", id);
     // Packet containing motor speed values
@@ -132,15 +157,19 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // Secondary is not in control, need to transition to be in charge
             // This will start a timer for 100ms. If FC1 does not transition to PRIMARY
             // within that timeframe, transition to PRIMARY. 
-            if(systemStatus_ref == STANDBY){
-                //systemStatus_ref = PRIMARY;
-                std::cout << "Nano is starting a timer to transition to PRIMARY" << std::endl;
-                //alertSystemStatusChange();
+            if(systemStatus_ref == STANDBY ){
+                if (!takeover_timer_active) {
+                    std::cout << "Nano: Starting 100ms takeover timer..." << std::endl;
+                    takeover_start_time = std::chrono::steady_clock::now();
+                    takeover_timer_active = true;
+                }
             }
             if(systemStatus_ref == PARTIAL_SECONDARY){
-                //systemStatus_ref = PARTIAL_PRIMARY;
-                std::cout << "Nano is starting a timer to transition to PARTIAL_PRIMARY" << std::endl;
-                //alertSystemStatusChange();
+                if (!takeover_timer_active) {
+                    std::cout << "Nano: Starting 100ms takeover timer..." << std::endl;
+                    takeover_start_time = std::chrono::steady_clock::now();
+                    takeover_timer_active = true;
+                }
             }
             break;
             
@@ -334,6 +363,10 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 remoteStatus.UP = true;
+            }
+            
+            if(systemStatus_ref == SINGLE_FC){
+                systemStatus_ref = PRIMARY;
             }
             queryControl();
             RCLCPP_INFO(nodeHandle->get_logger(), "Orin Booted");

@@ -32,7 +32,8 @@ protected:
     bool nanoRawData = false;
     SystemStatus nanoSysStatus = STANDBY;
 
-    std::atomic<bool> system_running {true};
+    std::atomic<bool> orin_running {true};
+    std::atomic<bool> nano_running {true};
     std::thread nano_thread;
     std::thread orin_thread;
 
@@ -62,7 +63,7 @@ protected:
 
         // 3. Start Communication Threads
         orin_thread = std::thread([this]() {
-            while (system_running) {
+            while (orin_running) {
                 orinLink->spin_once();
                 orinLink->send_heartbeat();
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -70,8 +71,9 @@ protected:
         });
 
         nano_thread = std::thread([this]() {
-            while (system_running) {
+            while (nano_running) {
                 nanoLink->spin_once();
+                nanoController->checkTakeoverTimer();
                 nanoLink->send_heartbeat();
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
@@ -84,7 +86,8 @@ protected:
     }
 
     void TearDown() override {
-        system_running = false;
+        orin_running = false;
+        nano_running = false;
         if (orin_thread.joinable()) orin_thread.join();
         if (nano_thread.joinable()) nano_thread.join();
         orinLink->close_socket();
@@ -103,21 +106,6 @@ TEST_F(SystemIntegrationTest, EstablishHeartbeatConnection) {
     // Verify both sides see each other
     EXPECT_TRUE(orinLink->is_remote_alive()) << "Orin should see Nano";
     EXPECT_TRUE(nanoLink->is_remote_alive()) << "Nano should see Orin";
-}
-
-// --- TEST 1: Orin Sends Joystick -> Nano Receives ---
-TEST_F(SystemIntegrationTest, OrinControlsNano) {
-    // 1. Send data from Orin
-    std::cout << "[TEST] Sending Joystick Button Press..." << std::endl;
-    orinController->sendJoystickButton(0, 5, 1); // Joystick 0, Button 5, Pressed
-
-    // 2. Wait for transmission
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
-    // 3. Verify
-    // Since AegisNanoController just prints to cout, we check the console output visually.
-    // Ideally, you would add a "last_received_button" member to AegisNanoController
-    // to allow this test to ASSERT_EQ(nanoController->last_btn, 5);
 }
 
 TEST_F(SystemIntegrationTest, OrinQuerysNanoControl_OrinPrimary) {
@@ -261,8 +249,11 @@ TEST_F(SystemIntegrationTest, NormalStartSequence){
     orinSysStatus = STANDBY;
     
     for (int i=0; i<10; i++) {
-        orinLink->spin_once(); orinLink->send_heartbeat();
-        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -271,8 +262,11 @@ TEST_F(SystemIntegrationTest, NormalStartSequence){
     orinLink->send_data(501, "", 0);
     
     for (int i=0; i<10; i++) {
-        orinLink->spin_once(); orinLink->send_heartbeat();
-        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -280,28 +274,156 @@ TEST_F(SystemIntegrationTest, NormalStartSequence){
     ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
 }
 
-TEST_F(SystemIntegrationTest, NormalStartSequenceAlt){
+TEST_F(SystemIntegrationTest, AbnormalStart_NanoAbsent){
+    nano_running = false;
+    if (nano_thread.joinable()) {
+        nano_thread.join();
+    }
+    orinSysStatus = STANDBY;
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+    while(orinLink->spin_once());  orinLink->send_heartbeat();
+    orinController->alertSystemBoot();
+    orinController->queryControl();
+
+    for (int i=0; i<10; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    ASSERT_EQ(orinSysStatus, SINGLE_FC) << "Orin did not enter SINGLE_FC as expected";
+}
+
+TEST_F(SystemIntegrationTest, AbnormalStart_OrinAbsent){
+    orin_running = false;
+    if (orin_thread.joinable()) {
+        orin_thread.join();
+    }
+    orinSysStatus = STANDBY;
+    nanoSysStatus = STANDBY;
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+    while(nanoLink->spin_once());  nanoLink->send_heartbeat();
+    nanoController->alertSystemBoot();
+    nanoController->queryControl();
+
+    for (int i=0; i<10; i++) {
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    ASSERT_EQ(nanoSysStatus, SINGLE_FC) << "Nano did not enter SINGLE_FC as expected";
+}
+
+TEST_F(SystemIntegrationTest, AbnormalStart_NanoDelayed){
+    nano_running = false;
+    if (nano_thread.joinable()) {
+        nano_thread.join();
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
     nanoSysStatus = STANDBY; 
     orinSysStatus = STANDBY;
     
     orinLink->spin_once(); orinLink->send_heartbeat();
-    orinLink->send_data(501, "", 0);
+    orinController->alertSystemBoot();
+    orinController->queryControl();
 
-    for (int i=0; i<10; i++) {
-        orinLink->spin_once(); orinLink->send_heartbeat();
-        nanoLink->spin_once(); nanoLink->send_heartbeat();
+    for (int i=0; i<100; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
+    ASSERT_EQ(orinSysStatus, SINGLE_FC) << "Orin did not enter SINGLE_FC as expected";
+
+    nanoLink->spin_once(); nanoLink->send_heartbeat();
     std::cout << "[TEST] Injecting ID 501 (System Booted)" << std::endl;
-    nanoLink->send_data(501, "", 0);
+    nanoController->alertSystemBoot();
     
     for (int i=0; i<10; i++) {
-        orinLink->spin_once(); orinLink->send_heartbeat();
-        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
     ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+}
+
+
+TEST_F(SystemIntegrationTest, AbnormalStart_OrinDelayed){
+    orin_running = false;
+    if (orin_thread.joinable()) {
+        orin_thread.join();
+    }
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = STANDBY;
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    
+    nanoLink->spin_once(); nanoLink->send_heartbeat();
+    nanoController->alertSystemBoot();
+    nanoController->queryControl();
+
+    for (int i=0; i<100; i++) {
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    ASSERT_EQ(nanoSysStatus, SINGLE_FC) << "Nano did not enter SINGLE_FC as expected";
+
+    orinLink->spin_once(); orinLink->send_heartbeat();
+    std::cout << "[TEST] Injecting ID 501 (System Booted)" << std::endl;
+    orinController->alertSystemBoot();
+    
+    for (int i=0; i<10; i++) {
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
+        
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    ASSERT_EQ(nanoSysStatus, PRIMARY) << "Nano did not enter PRIMARY as expected";
+    ASSERT_EQ(orinSysStatus, STANDBY) << "Orin did not enter STANDBY as expected";
+}
+
+TEST_F(SystemIntegrationTest, AbnormalStart_Orin_Does_Not_Take_Charge){
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = ERROR;
+    
+    for (int i=0; i<10; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    std::cout << "[TEST] Injecting ID 501 (System Booted)" << std::endl;
+    nanoLink->send_data(501, "", 0);
+    orinLink->send_data(501, "", 0);
+    orinLink->send_data(202, "", 0);
+    
+    for (int i=0; i<20; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    ASSERT_EQ(orinSysStatus, ERROR) << "Orin did not enter ERROR as expected";
+    ASSERT_EQ(nanoSysStatus, PRIMARY) << "Nano did not enter PRIMARY as expected";
 }

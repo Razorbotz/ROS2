@@ -14,4 +14,9 @@ public:
                     );
 
     void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len);
+    void checkTakeoverTimer(); 
+
+    private:
+        std::chrono::steady_clock::time_point takeover_start_time;
+        bool takeover_timer_active = false;
 };

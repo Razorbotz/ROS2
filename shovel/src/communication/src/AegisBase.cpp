@@ -36,7 +36,11 @@ void AegisBase::sendBinaryMessage(BinaryMessage& binMsg) {
 
 
 void AegisBase::queryControl(){
-    if (!hb_link.is_remote_alive()) return;
+    if (!hb_link.is_remote_alive()){
+        systemStatus_ref = SINGLE_FC;
+        alertSystemStatusChange();
+        return;
+    }
     hb_link.send_data(200, "", 0);
 }
 
@@ -65,4 +69,15 @@ void AegisBase::acknowledgeSystemStatusChange(bool error){
     if (!hb_link.is_remote_alive()) return;
     uint8_t msg = (error) ? 1 : 0;
     hb_link.send_data(212, &msg, sizeof(msg));
+}
+
+
+void AegisBase::alertSystemShutdown(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(500, "", 0);
+}
+
+void AegisBase::alertSystemBoot(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(501, "", 0);
 }

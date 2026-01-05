@@ -42,6 +42,8 @@ public:
     void alertPrimary();
     void alertSystemStatusChange();
     void acknowledgeSystemStatusChange(bool error);
+    void alertSystemShutdown();
+    void alertSystemBoot();
     
     virtual void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) = 0;
 
