@@ -1,18 +1,8 @@
 // AegisController.hpp
 #pragma once
+#include "AegisBase.hpp"
 
-#ifdef UNIT_TEST
-    #include "MockDeps.hpp"
-#else
-    #include <rclcpp/rclcpp.hpp>
-#endif
-#include "BinaryMessage.hpp"
-#include "Heartbeat.hpp" 
-#include "RobotState.hpp"
-#include <mutex>
-#include <cstring>
-
-class AegisController {
+class AegisController : public AegisBase {
 public:
     AegisController(rclcpp::Node::SharedPtr node, 
                     HeartbeatLink& link_ref, 
@@ -21,35 +11,5 @@ public:
                     bool& sendRawData_ref,
                     SystemStatus& systemStatus_ref
                     );
-
-    void sendJoystickAxis(uint8_t which, uint8_t axis, float value);
-    void sendJoystickButton(uint8_t which, uint8_t button, uint8_t state);
-    void sendJoystickHat(uint8_t which, uint8_t hat, uint8_t value);
-    void sendKeyboardEvent(uint32_t keyval, uint8_t state);
-    void sendBinaryMessage(BinaryMessage& binMsg);
-    void queryControl();
-    void alertNotPrimary();
-    void alertPrimary();
-    void alertSystemStatusChange();
-    void acknowledgeSystemStatusChange(bool error);
     void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len);
-
-private:
-    rclcpp::Node::SharedPtr nodeHandle; 
-    HeartbeatLink& hb_link;
-    std::mutex& comms_mutex;
-    RemoteStatus& nanoStatus;
-    bool& sendRawData_ref;
-    SystemStatus& systemStatus_ref;
-
-    template <typename T>
-    static bool parse_packet(const uint8_t* data, uint16_t len, T& out_struct, const char* name) {
-        if (len != sizeof(T)) {
-            std::cerr << "Error: Malformed " << name << " packet. Expected " 
-                      << sizeof(T) << " bytes, got " << len << std::endl;
-            return false;
-        }
-        std::memcpy(&out_struct, data, sizeof(T));
-        return true;
-    }
 };

@@ -279,3 +279,29 @@ TEST_F(SystemIntegrationTest, NormalStartSequence){
     ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
     ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
 }
+
+TEST_F(SystemIntegrationTest, NormalStartSequenceAlt){
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = STANDBY;
+    
+    orinLink->spin_once(); orinLink->send_heartbeat();
+    orinLink->send_data(501, "", 0);
+
+    for (int i=0; i<10; i++) {
+        orinLink->spin_once(); orinLink->send_heartbeat();
+        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    std::cout << "[TEST] Injecting ID 501 (System Booted)" << std::endl;
+    nanoLink->send_data(501, "", 0);
+    
+    for (int i=0; i<10; i++) {
+        orinLink->spin_once(); orinLink->send_heartbeat();
+        nanoLink->spin_once(); nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+}

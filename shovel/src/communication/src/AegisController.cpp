@@ -8,80 +8,9 @@ AegisController::AegisController(rclcpp::Node::SharedPtr node,
                                  bool& rawData_in,
                                  SystemStatus& sysStatus_in
                                  )
-    : nodeHandle(node), hb_link(link_ref), comms_mutex(mutex_ref), nanoStatus(status_ref),
-      sendRawData_ref(rawData_in), systemStatus_ref(sysStatus_in)
+    : AegisBase(node, link_ref, mutex_ref, status_ref, rawData_in, sysStatus_in)
 {
 }
-
-
-void AegisController::sendJoystickAxis(uint8_t which, uint8_t axis, float value) {
-    if (!hb_link.is_remote_alive()) return;
-    JoystickAxis msg {which, axis, value};
-    hb_link.send_data(010, &msg, sizeof(msg));
-}
-
-
-void AegisController::sendJoystickButton(uint8_t which, uint8_t button, uint8_t state) {
-    if (!hb_link.is_remote_alive()) return;
-    JoystickButton msg {which, button, state};
-    hb_link.send_data(011, &msg, sizeof(msg));
-}
-
-
-void AegisController::sendJoystickHat(uint8_t which, uint8_t hat, uint8_t value) {
-    if (!hb_link.is_remote_alive()) return;
-    JoystickHat msg {which, hat, value};
-    hb_link.send_data(012, &msg, sizeof(msg));
-}
-
-
-void AegisController::sendKeyboardEvent(uint32_t keyval, uint8_t state) {
-    if (!hb_link.is_remote_alive()) return;
-    KeyboardEvent msg {keyval, state};
-    hb_link.send_data(013, &msg, sizeof(msg));
-}
-
-
-void AegisController::sendBinaryMessage(BinaryMessage& binMsg) {
-    if (!hb_link.is_remote_alive()) return;
-    auto bytesList = binMsg.getBytes();
-    std::vector<uint8_t> buffer(bytesList->begin(), bytesList->end());
-    hb_link.send_data(020, buffer.data(), buffer.size());
-}
-
-
-void AegisController::queryControl(){
-    if (!hb_link.is_remote_alive()) return;
-    hb_link.send_data(200, "", 0);
-}
-
-
-void AegisController::alertPrimary(){
-    if (!hb_link.is_remote_alive()) return;
-    hb_link.send_data(201, "", 0);
-}
-
-
-void AegisController::alertNotPrimary(){
-    if (!hb_link.is_remote_alive()) return;
-    hb_link.send_data(202, "", 0);
-}
-
-
-void AegisController::alertSystemStatusChange(){
-    if (!hb_link.is_remote_alive()) return;
-    RCLCPP_INFO(nodeHandle->get_logger(), "Sending SystemStatusChange");
-    uint8_t msg = systemStatus_ref;
-    hb_link.send_data(211, &msg, sizeof(msg));
-}
-
-
-void AegisController::acknowledgeSystemStatusChange(bool error){
-    if (!hb_link.is_remote_alive()) return;
-    uint8_t msg = (error) ? 1 : 0;
-    hb_link.send_data(212, &msg, sizeof(msg));
-}
-
 
 void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Orin: Received Message ID: %d", id);
@@ -301,7 +230,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             // Nano lost wifi connection, need to send all received data to it
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
-                nanoStatus.WIFI_UP = false;
+                remoteStatus.WIFI_UP = false;
                 sendRawData_ref = true;
             }
             RCLCPP_WARN(nodeHandle->get_logger(), "Nano Wi-Fi is down");
@@ -313,7 +242,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             // Nano regained wifi connection, no need to send all received data to it
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
-                nanoStatus.WIFI_UP = true;
+                remoteStatus.WIFI_UP = true;
                 sendRawData_ref = false;
             }
             RCLCPP_INFO(nodeHandle->get_logger(), "Nano Wi-Fi is up");
@@ -341,8 +270,8 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 
-                if (payload.interface_id == 0) nanoStatus.CAN0_UP = false;
-                if (payload.interface_id == 1) nanoStatus.CAN1_UP = false;
+                if (payload.interface_id == 0) remoteStatus.CAN0_UP = false;
+                if (payload.interface_id == 1) remoteStatus.CAN1_UP = false;
                 
                 RCLCPP_WARN(nodeHandle->get_logger(), "CRITICAL: Remote CAN Interface %d DOWN (Error: %d)", payload.interface_id, payload.error_code);
             }
@@ -367,8 +296,8 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 
-                if (payload.interface_id == 0) nanoStatus.CAN0_UP = true;
-                if (payload.interface_id == 1) nanoStatus.CAN1_UP = true;
+                if (payload.interface_id == 0) remoteStatus.CAN0_UP = true;
+                if (payload.interface_id == 1) remoteStatus.CAN1_UP = true;
                 
                 RCLCPP_INFO(nodeHandle->get_logger(), "CRITICAL: Remote CAN Interface %d UP (Error: %d)", payload.interface_id, payload.error_code);
             }
@@ -393,7 +322,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             // System shutting down
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
-                nanoStatus.UP = false;
+                remoteStatus.UP = false;
             }
             systemStatus_ref = SINGLE_FC;
             RCLCPP_WARN(nodeHandle->get_logger(), "Nano shutting down");
@@ -403,7 +332,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             // System functioning again
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
-                nanoStatus.UP = true;
+                remoteStatus.UP = true;
             }
             queryControl();
             RCLCPP_INFO(nodeHandle->get_logger(), "Nano Booted");
