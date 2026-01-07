@@ -242,8 +242,26 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             }
             break;
         }
-            
 
+        // --- Parameter Exchange --- 300s
+        case ID_PARAM_INIT:
+            break;
+
+        case ID_PARAM_DATA:
+            break;
+        
+        case ID_PARAM_ACK:
+            break;
+            
+        case ID_PARAM_REJECT:
+            break;
+
+        case ID_SYNC_COMPLETE:
+            break;
+
+        case ID_READY_OP:
+            break;
+        
         // --- Operational Faults & Stops --- 400s
         case ID_ESTOP_HARD:
             // Message to stop immediately
@@ -354,6 +372,33 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         case ID_SAFE_CONFIRM:
             break;
 
+        case ID_CAN_HB_LOST:
+            break;
+           
+        case ID_CAN_HB_REGAINED:
+            break;
+            
+        case ID_CAN_ACK_CHG:
+            break;
+            
+        case ID_ETH_HB_LOST:
+            break;
+            
+        case ID_ETH_HB_REGAINED:
+            break;
+            
+        case ID_ETH_ACK_CHG:
+            break;
+            
+        case ID_ETH_LOST:
+            break; 
+        
+        case ID_ETH_REGAINED:
+            break; 
+
+        case ID_ETH_ACK_CHG:
+            break; 
+        
         // --- System & Critical Hardware --- 500s
         case ID_SYS_SHUTDOWN:
             // System shutting down

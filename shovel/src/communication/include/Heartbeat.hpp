@@ -151,6 +151,14 @@ enum MessageIDs : uint16_t {
     ID_SYS_STATUS_CHG   = 211, 
     ID_ACK_STATUS_CHG   = 212, 
 
+    // --- 3xx Parameter Exchange ---
+    ID_PARAM_INIT       = 300,
+    ID_PARAM_DATA       = 301,
+    ID_PARAM_ACK        = 302,
+    ID_PARAM_REJECT     = 303,
+    ID_SYNC_COMPLETE    = 304,
+    ID_READY_OP         = 305
+
     // --- 4xx Operational Faults ---
     ID_ESTOP_HARD       = 400,
     ID_ESTOP_SOFT       = 401, 
@@ -168,6 +176,12 @@ enum MessageIDs : uint16_t {
     ID_CAN_HB_LOST      = 413,
     ID_CAN_HB_REGAINED  = 414,
     ID_CAN_ACK_CHG      = 415,
+    ID_ETH_HB_LOST      = 416,
+    ID_ETH_HB_REGAINED  = 417,
+    ID_ETH_ACK_CHG      = 418,
+    ID_ETH_LOST         = 419,
+    ID_ETH_REGAINED     = 420,
+    ID_ETH_ACK_CHG      = 421,
 
     // --- 5xx System ---
     ID_SYS_SHUTDOWN     = 500,

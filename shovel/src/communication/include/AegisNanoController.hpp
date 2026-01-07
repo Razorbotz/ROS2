@@ -1,4 +1,3 @@
-// AegisController.hpp
 #pragma once
 
 #include "AegisBase.hpp"
