@@ -143,14 +143,42 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
         }
 
         // --- Control Configuration ---
-        case ID_ASSIGN_AUTH:
-            // Request to Nano to control specific motors 
-            // This shouldn't be sent to the Orin, might need to handle the error
-            RCLCPP_ERROR(nodeHandle->get_logger(), "ERROR: ID 100 received on Orin (Nano only).");
+        case ID_ASSIGN_AUTH: {
+            // Request to control specific motors 
+            if (len != sizeof(MotorAuthPayload)) {
+                return;
+            }
+
+            const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+            processRemoteAuth(payload->motor_states);
+            setAuthFromRemote(payload->motor_states);
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                bool is_authorized = auth_table[i];
+                if (is_authorized) {
+                   std::cout << "Nano: Authorized for Motor ID: " << i << std::endl;
+                }
+            }
+
+            // Send Confirmation (ID 101)
+            sendAuthConfirm();
             break;
-        case ID_CONFIRM_AUTH:
+        }
+        
+        case ID_CONFIRM_AUTH:{
             // Response to control request from Nano
+            const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+            processRemoteAuth(payload->motor_states);
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                bool is_authorized = remote_auth[i];
+                if (is_authorized) {
+                   std::cout << "Orin Authorized for Motor ID: " << i << std::endl;
+                }
+            }
+            if(checkAuth()){
+                std::cout << "ERROR state, need to resolve." << std::endl;
+            }
             break;
+        }
 
         // --- State & Handshake --- 
         case ID_QUERY_CONTROL:
@@ -294,6 +322,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
         case ID_LOST_MOTORS:
             // Message from the sender that it lost control of motors
             // Include a list of lost motor IDs
+
             break;
 
         case ID_REGAINED_MOTORS:
@@ -409,7 +438,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
         case ID_ETH_HB_REGAINED:
             break;
             
-        case ID_ETH_ACK_CHG:
+        case ID_ETH_ACK_HB_CHG:
             break;
             
         case ID_ETH_LOST:

@@ -521,3 +521,67 @@ TEST_F(SystemIntegrationTest, AbnormalStart_Orin_Does_Not_Take_Charge){
     ASSERT_EQ(orinSysStatus, ERROR) << "Orin did not enter ERROR as expected";
     ASSERT_EQ(nanoSysStatus, PRIMARY) << "Nano did not enter PRIMARY as expected";
 }
+
+TEST_F(SystemIntegrationTest, MotorNodeCrash_OrinPrimary){
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = STANDBY;
+    
+    orinController->updateMotorCAN0State(10, true);
+    orinController->updateMotorCAN0State(11, true);
+    orinController->updateMotorCAN0State(12, true);
+    orinController->updateMotorCAN0State(13, true);
+    orinController->updateMotorCAN0State(14, true);
+    orinController->updateMotorCAN0State(15, true);
+    orinController->updateMotorCAN0State(16, true);
+    orinController->updateMotorCAN0State(17, true);
+    orinController->updateMotorCAN1State(10, true);
+    orinController->updateMotorCAN1State(11, true);
+    orinController->updateMotorCAN1State(12, true);
+    orinController->updateMotorCAN1State(13, true);
+    orinController->updateMotorCAN1State(14, true);
+    orinController->updateMotorCAN1State(15, true);
+    orinController->updateMotorCAN1State(16, true);
+    orinController->updateMotorCAN1State(17, true);
+
+    nanoController->updateMotorCAN0State(10, true);
+    nanoController->updateMotorCAN0State(11, true);
+    nanoController->updateMotorCAN0State(12, true);
+    nanoController->updateMotorCAN0State(13, true);
+    nanoController->updateMotorCAN0State(14, true);
+    nanoController->updateMotorCAN0State(15, true);
+    nanoController->updateMotorCAN0State(16, true);
+    nanoController->updateMotorCAN0State(17, true);
+    nanoController->updateMotorCAN1State(10, true);
+    nanoController->updateMotorCAN1State(11, true);
+    nanoController->updateMotorCAN1State(12, true);
+    nanoController->updateMotorCAN1State(13, true);
+    nanoController->updateMotorCAN1State(14, true);
+    nanoController->updateMotorCAN1State(15, true);
+    nanoController->updateMotorCAN1State(16, true);
+    nanoController->updateMotorCAN1State(17, true);
+
+    orinController->alertSystemBoot();
+    nanoController->alertSystemBoot();
+
+    for (int i=0; i<20; i++) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+    orinController->alertLostMotor(10);
+
+    for (int i=0; i<20; i++) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    ASSERT_EQ(orinSysStatus, PARTIAL_PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, PARTIAL_SECONDARY) << "Nano did not enter STANDBY as expected";
+
+    orinController->alertRegainedMotor(10);
+
+    for (int i=0; i<20; i++) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+}

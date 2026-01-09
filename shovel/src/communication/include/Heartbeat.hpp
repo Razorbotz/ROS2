@@ -157,7 +157,7 @@ enum MessageIDs : uint16_t {
     ID_PARAM_ACK        = 302,
     ID_PARAM_REJECT     = 303,
     ID_SYNC_COMPLETE    = 304,
-    ID_READY_OP         = 305
+    ID_READY_OP         = 305,
 
     // --- 4xx Operational Faults ---
     ID_ESTOP_HARD       = 400,
@@ -178,7 +178,7 @@ enum MessageIDs : uint16_t {
     ID_CAN_ACK_CHG      = 415,
     ID_ETH_HB_LOST      = 416,
     ID_ETH_HB_REGAINED  = 417,
-    ID_ETH_ACK_CHG      = 418,
+    ID_ETH_ACK_HB_CHG   = 418,
     ID_ETH_LOST         = 419,
     ID_ETH_REGAINED     = 420,
     ID_ETH_ACK_CHG      = 421,
@@ -191,6 +191,12 @@ enum MessageIDs : uint16_t {
 struct MotorListPayload {
     uint8_t count;
     uint8_t motor_ids[16]; // Variable length based on count
+};
+
+constexpr size_t MAX_MOTORS = 8; 
+
+struct MotorAuthPayload {
+    uint8_t motor_states[MAX_MOTORS]; 
 };
 
 struct MotorSpeed {
@@ -248,6 +254,17 @@ enum SystemStatus : uint8_t {
     ERROR, // 
     SAFETY_DEGRADED,
     STOP // STOP
+};
+
+enum ParameterCode : uint8_t {
+    MAX_MOTOR_SPEED,
+    MAX_MOTOR_POSITION
+};
+
+struct OperatingParameter {
+    ParameterCode code;
+    uint8_t len;
+    uint8_t data[16];
 };
 
 #pragma pack(pop)

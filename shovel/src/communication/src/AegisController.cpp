@@ -130,13 +130,41 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         }
 
         // --- Control Configuration --- 100s
-        case ID_ASSIGN_AUTH:
+        case ID_ASSIGN_AUTH: {
             // Request to control specific motors 
+            if (len != sizeof(MotorAuthPayload)) {
+                return;
+            }
+
+            const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+            processRemoteAuth(payload->motor_states);
+            setAuthFromRemote(payload->motor_states);
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                bool is_authorized = auth_table[i];
+                if (is_authorized) {
+                   std::cout << "Orin: Authorized for Motor ID: " << i << std::endl;
+                }
+            }
+            // Send Confirmation (ID 101)
+            sendAuthConfirm();
             break;
+        }
         
-        case ID_CONFIRM_AUTH:
+        case ID_CONFIRM_AUTH:{
             // Response to control request from Nano
+            const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+            processRemoteAuth(payload->motor_states);
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                bool is_authorized = remote_auth[i];
+                if (is_authorized) {
+                   std::cout << "Nano Authorized for Motor ID: " << i << std::endl;
+                }
+            }
+            if(checkAuth()){
+                std::cout << "ERROR state, need to resolve." << std::endl;
+            }
             break;
+        }
 
         // --- State & Handshake --- 200s
         case ID_QUERY_CONTROL:
@@ -171,6 +199,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             if(systemStatus_ref == STANDBY || systemStatus_ref == SINGLE_FC){
                 std::cout << "Orin is transitioning to PRIMARY" << std::endl;
                 systemStatus_ref = PRIMARY;
+                enableMotorAuthorization();
                 alertSystemStatusChange();
             }
             if(systemStatus_ref == PARTIAL_SECONDARY){
@@ -290,6 +319,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             }
             RCLCPP_WARN(nodeHandle->get_logger(), "Nano Wi-Fi is down");
             // Send ACK with ID 406
+            acknowledgeWifiChange();
             break;
 
         case ID_WIFI_REGAINED:
@@ -302,6 +332,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             }
             RCLCPP_INFO(nodeHandle->get_logger(), "Nano Wi-Fi is up");
             // Send ACK with ID 406
+            acknowledgeWifiChange();
             break;
 
         case ID_WIFI_CONFIRM:
@@ -387,7 +418,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         case ID_ETH_HB_REGAINED:
             break;
             
-        case ID_ETH_ACK_CHG:
+        case ID_ETH_ACK_HB_CHG:
             break;
             
         case ID_ETH_LOST:

@@ -13,6 +13,10 @@
 #include <cstring>
 #include <atomic>
 
+
+// Currently there are 8 motors. They range from 10-17
+constexpr size_t MAX_MOTOR_ID = 8;
+
 class AegisBase {
 protected:
     rclcpp::Node::SharedPtr nodeHandle; 
@@ -23,6 +27,18 @@ protected:
     bool& sendRawData_ref;
     SystemStatus& systemStatus_ref;
     std::atomic<uint64_t> last_can_rx_time {0};
+    
+    // This is used to track whether the controller has authorization
+    // to control the motor
+    std::array<bool, MAX_MOTOR_ID> auth_table;
+    // Used to track whether the motors are found on CAN0
+    std::array<bool, MAX_MOTOR_ID> can0_table;
+    // Used to track whether the motors are found on CAN1
+    std::array<bool, MAX_MOTOR_ID> can1_table;
+    // Used to track which interface the motor is currently attached to
+    std::array<bool, MAX_MOTOR_ID> can_table;
+    // Used to track whether the remote controller can control the motor
+    std::array<bool, MAX_MOTOR_ID> remote_auth;
 
 public:
     AegisBase(rclcpp::Node::SharedPtr node, 
@@ -33,7 +49,13 @@ public:
               bool& raw_data, 
               SystemStatus& sys_status)
         : nodeHandle(node), hb_link(link), can_link(c_link), comms_mutex(mutex), remoteStatus(r_status),
-          sendRawData_ref(raw_data), systemStatus_ref(sys_status) {}
+          sendRawData_ref(raw_data), systemStatus_ref(sys_status) {
+            auth_table.fill(false);
+            can0_table.fill(false);
+            can1_table.fill(false);
+            can_table.fill(false);
+            remote_auth.fill(false);
+          }
 
     virtual ~AegisBase() = default;
 
@@ -42,14 +64,37 @@ public:
     void sendJoystickHat(uint8_t which, uint8_t hat, uint8_t value);
     void sendKeyboardEvent(uint32_t keyval, uint8_t state);
     void sendBinaryMessage(BinaryMessage& binMsg);
+
+    void sendAuth();
+    void sendAuthConfirm();
+
     void queryControl();
     void alertNotPrimary();
     void alertPrimary();
     void alertSystemStatusChange();
     void acknowledgeSystemStatusChange(bool error);
+
+    void alertLostMotor(uint8_t motor_id);
+    void alertRegainedMotor(uint8_t motor_id);
+    void alertWifiLost();
+    void alertWifiRegained();
+    void acknowledgeWifiChange();
+
     void alertSystemShutdown();
     void alertSystemBoot();
-    
+
+    bool isMotorAuthorized(uint8_t motor_id) const;
+    void updateMotorAuthorization(uint8_t motor_id, bool authorized);
+    bool isMotorDetectedCAN0(uint8_t motor_id);
+    void updateMotorCAN0State(uint8_t motor_id, bool up);
+    bool isMotorDetectedCAN1(uint8_t motor_id);
+    void updateMotorCAN1State(uint8_t motor_id, bool up);
+
+    void enableMotorAuthorization();
+    void processRemoteAuth(const uint8_t motor_states[MAX_MOTORS]);
+    void setAuthFromRemote(const uint8_t motor_states[MAX_MOTORS]);
+    bool checkAuth();
+
     virtual void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) = 0;
     
     virtual void onCanHeartbeatReceived(const CanHeartbeatPayload& hb) {
