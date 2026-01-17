@@ -164,7 +164,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             break;
         }
         
-        case ID_CONFIRM_AUTH:{
+        case ID_CONFIRM_AUTH: {
             // Response to control request from Nano
             const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
             processRemoteAuth(payload->motor_states);
@@ -226,9 +226,15 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             }
             break;
             
-        case ID_REQ_RETAKE:
+        case ID_REQ_RETAKE:{
             // Request from Orin to Nano to retake control
+            // TODO: This will need guards to check whether the robot is in a 
+            // mission critical phase of flight, such as motors moving or other 
+            // criteria
+            grantControl();
             break;
+        }
+            
             
         case ID_GRANT_CONTROL:
             // Response from Nano to Orin to take control
@@ -239,11 +245,11 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // This will include a message for how many seconds to delay
             break;
             
-        case ID_LIVENESS_QUERY:
+        case ID_LIVENESS_PING:
             //  Query if the other is alive
             break;
             
-        case ID_LIVENESS_PING:
+        case ID_LIVENESS_PONG:
             // Response to alive query
             break;
             
@@ -267,6 +273,19 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                 if(status == PRIMARY || status == PARTIAL_PRIMARY){
                     error = true;
                     systemStatus_ref = ERROR;
+                    alertSystemStatusChange();
+                }
+            }
+            if(systemStatus_ref == STANDBY){
+                if(status == PARTIAL_PRIMARY){
+                    systemStatus_ref = PARTIAL_SECONDARY;
+                    alertSystemStatusChange();
+                }
+            }
+            if(systemStatus_ref == PARTIAL_SECONDARY){
+                if(status == PRIMARY){
+                    systemStatus_ref = STANDBY;
+                    alertSystemStatusChange();
                 }
             }
             if(status == PRIMARY || status == PARTIAL_PRIMARY){
@@ -450,6 +469,27 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
         case ID_ETH_ACK_CHG:
             break; 
 
+        case ID_MOTORS_INIT:{
+            if (len != sizeof(MotorAuthPayload)) {
+                return;
+            }
+
+            const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+            processRemoteControl(payload->motor_states);
+            acknowledgeMotorsDetected();
+
+            break;
+        }
+
+        case ID_MOTORS_ACK:{
+            if(systemStatus_ref == PRIMARY){
+                enableMotorAuthorization();
+                sendAuth();
+            }
+            break;
+        }
+        
+
         // --- System & Critical Hardware --- 
         case ID_SYS_SHUTDOWN:
             // System shutting down
@@ -461,19 +501,23 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             RCLCPP_WARN(nodeHandle->get_logger(), "Orin shutting down");
             break;
             
-        case ID_SYS_BOOT_OK:
+        case ID_SYS_BOOT_OK: {
             // System functioning again
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 remoteStatus.UP = true;
             }
-            
             if(systemStatus_ref == SINGLE_FC){
                 systemStatus_ref = PRIMARY;
             }
             queryControl();
-            RCLCPP_INFO(nodeHandle->get_logger(), "Orin Booted");
+            RCLCPP_INFO(nodeHandle->get_logger(), "Nano Booted");
+            if(!init_timer_active){
+                init_start_time = std::chrono::steady_clock::now();
+                init_timer_active = true;
+            }
             break;    
+        } 
     
         default:
             RCLCPP_WARN(nodeHandle->get_logger(), "Received unknown Message ID: %d", id);

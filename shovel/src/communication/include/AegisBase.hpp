@@ -39,6 +39,10 @@ protected:
     std::array<bool, MAX_MOTOR_ID> can_table;
     // Used to track whether the remote controller can control the motor
     std::array<bool, MAX_MOTOR_ID> remote_auth;
+    // Used to track whether the remote controller can control the motor
+    std::array<bool, MAX_MOTOR_ID> remote_cont;
+    bool alertedRemoteMotors = false;
+    bool motorsAuthorized = false;
 
 public:
     AegisBase(rclcpp::Node::SharedPtr node, 
@@ -55,34 +59,50 @@ public:
             can1_table.fill(false);
             can_table.fill(false);
             remote_auth.fill(false);
+            remote_cont.fill(false);
           }
 
     virtual ~AegisBase() = default;
 
+    // 000s
     void sendJoystickAxis(uint8_t which, uint8_t axis, float value);
     void sendJoystickButton(uint8_t which, uint8_t button, uint8_t state);
     void sendJoystickHat(uint8_t which, uint8_t hat, uint8_t value);
     void sendKeyboardEvent(uint32_t keyval, uint8_t state);
     void sendBinaryMessage(BinaryMessage& binMsg);
 
+    // 100s
     void sendAuth();
     void sendAuthConfirm();
 
+    // 200s
     void queryControl();
-    void alertNotPrimary();
     void alertPrimary();
+    void alertNotPrimary();
+    void requestControl();
+    void grantControl();
+    void denyControl();
+    void sendPing();
+    void sendPong();
     void alertSystemStatusChange();
     void acknowledgeSystemStatusChange(bool error);
 
+    // 300s
+
+    // 400s
     void alertLostMotor(uint8_t motor_id);
     void alertRegainedMotor(uint8_t motor_id);
     void alertWifiLost();
     void alertWifiRegained();
     void acknowledgeWifiChange();
+    void alertMotorsDetected();
+    void acknowledgeMotorsDetected();
 
+    // 500s
     void alertSystemShutdown();
     void alertSystemBoot();
 
+    // Helper functions
     bool isMotorAuthorized(uint8_t motor_id) const;
     void updateMotorAuthorization(uint8_t motor_id, bool authorized);
     bool isMotorDetectedCAN0(uint8_t motor_id);
@@ -90,10 +110,53 @@ public:
     bool isMotorDetectedCAN1(uint8_t motor_id);
     void updateMotorCAN1State(uint8_t motor_id, bool up);
 
+    /**
+     * This function sets the authorization of the PRIMARY controller
+     * based on whether the motors can be detected on either CAN
+     * interface.
+     */
     void enableMotorAuthorization();
-    void processRemoteAuth(const uint8_t motor_states[MAX_MOTORS]);
+    /**
+     * This function takes the authorization array from the remote controller
+     * and sets the remote_auth values based on the received values. 
+     */
+    bool processRemoteAuth(const uint8_t motor_states[MAX_MOTORS]);
+    /**
+     * This function is used to set the authorization of the controller based
+     * on the other. This will be called by the secondary flight controller to 
+     * ensure that only one controller is responsible for commanding motors at any
+     * time. 
+     */
     void setAuthFromRemote(const uint8_t motor_states[MAX_MOTORS]);
+    /**
+     * This function is used to ensure that both motor controllers aren't attempting
+     * to have authorization for a motor. If both 
+     */
     bool checkAuth();
+    /**
+     * This function is used to check whether the controller is authorized
+     * to control any motors. 
+     * 
+     * @return Boolean value of whether any motors are authorized to be controlled 
+     */
+    bool checkAuthStatus();
+    /**
+     * This function is used to check whether the remote controller is authorized
+     * to control any motors. 
+     * 
+     * @return Boolean value of whether any motors are authorized to be controlled by
+     * the remote controller
+     */
+    bool checkRemoteAuthStatus();
+    void processRemoteControl(const uint8_t motor_states[MAX_MOTORS]);
+    void processLostMotor(const uint8_t motor_states[MAX_MOTORS]);
+
+    bool checkAllMotorsInit();
+
+    void checkMotorInitTimer();
+
+    std::chrono::steady_clock::time_point init_start_time;
+    bool init_timer_active = false;
 
     virtual void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) = 0;
     

@@ -163,6 +163,9 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             if(checkAuth()){
                 std::cout << "ERROR state, need to resolve." << std::endl;
             }
+            if(!checkRemoteAuthStatus()){
+                requestControl();
+            }
             break;
         }
 
@@ -192,7 +195,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             }
             break;
             
-        case ID_STATE_STANDBY:
+        case ID_STATE_STANDBY:{
             // Response that the sender is not in control
             
             // Secondary is not in control, need to transition to be in charge
@@ -205,28 +208,38 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             if(systemStatus_ref == PARTIAL_SECONDARY){
                 std::cout << "Orin is transitioning to PARTIAL_PRIMARY" << std::endl;
                 systemStatus_ref = PARTIAL_PRIMARY;
+                enableMotorAuthorization();
                 alertSystemStatusChange();
             }
             break;
+        }
             
-        case ID_REQ_RETAKE:
+        case ID_REQ_RETAKE:{
             // Request from Orin to Nano to retake control
             break;
+        }
             
-        case ID_GRANT_CONTROL:
+        case ID_GRANT_CONTROL:{
             // Response from Nano to Orin to take control
+            if(systemStatus_ref == PARTIAL_PRIMARY){
+                std::cout << "Orin is transitioning to PRIMARY" << std::endl;
+                systemStatus_ref = PRIMARY;
+            }
+            alertSystemStatusChange();
             break;
+        }
             
         case ID_DENY_CONTROL:
             // Response from Nano to Orin to not take control
             // This will include a message for how many seconds to delay
             break;
             
-        case ID_LIVENESS_QUERY:
+        case ID_LIVENESS_PING:
             //  Query if the other is alive
+            sendPong();
             break;
             
-        case ID_LIVENESS_PING:
+        case ID_LIVENESS_PONG:
             // Response to alive query
             break;
             
@@ -244,7 +257,6 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         
         case ID_SYS_STATUS_CHG: {
             // Change in SystemStatus
-            std::cout << "Received 211" << std::endl;
             bool error = false;
             uint8_t status = data[0];
             if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
@@ -300,14 +312,17 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             // Message to stop gracefully
             break;
             
-        case ID_LOST_MOTORS:
+        case ID_LOST_MOTORS:{
             // Message from the sender that it lost control of motors
             // Include a list of lost motor IDs
+            //processLostMotor();
             break;
+        }
         
-        case ID_REGAINED_MOTORS:
-
+        case ID_REGAINED_MOTORS:{
+            //processRegainedMotor();
             break;
+        }
             
         case ID_WIFI_LOST:
             // Lost Wi-Fi connection
@@ -429,6 +444,27 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
 
         case ID_ETH_ACK_CHG:
             break; 
+
+        case ID_MOTORS_INIT:{
+            if (len != sizeof(MotorAuthPayload)) {
+                return;
+            }
+
+            const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+            processRemoteControl(payload->motor_states);
+            acknowledgeMotorsDetected();
+
+            if(systemStatus_ref == PRIMARY){
+                enableMotorAuthorization();
+                sendAuth();
+            }
+            break;
+        }
+
+        case ID_MOTORS_ACK:{
+            
+            break;
+        }
         
         // --- System & Critical Hardware --- 500s
         case ID_SYS_SHUTDOWN:
@@ -441,7 +477,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             RCLCPP_WARN(nodeHandle->get_logger(), "Nano shutting down");
             break;
             
-        case ID_SYS_BOOT_OK:
+        case ID_SYS_BOOT_OK: {
             // System functioning again
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
@@ -452,7 +488,12 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             }
             queryControl();
             RCLCPP_INFO(nodeHandle->get_logger(), "Nano Booted");
+            if(!init_timer_active){
+                init_start_time = std::chrono::steady_clock::now();
+                init_timer_active = true;
+            }
             break;    
+        }
     
         default:
             RCLCPP_WARN(nodeHandle->get_logger(), "Received unknown Message ID: %d", id);

@@ -97,6 +97,8 @@ protected:
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         ASSERT_TRUE(orinLink->is_remote_alive()) << "Orin cannot see Nano";
         ASSERT_TRUE(nanoLink->is_remote_alive()) << "Nano cannot see Orin";
+
+        InitializeAllMotors();
     }
 
     void TearDown() override {
@@ -106,6 +108,17 @@ protected:
         if (nano_thread.joinable()) nano_thread.join();
         orinLink->close_socket();
         nanoLink->close_socket();
+    }
+
+    void InitializeAllMotors() {
+        for (int id = 10; id <= 17; id++) {
+            // Set Orin Motors
+            orinController->updateMotorCAN0State(id, true);
+            orinController->updateMotorCAN1State(id, true);
+
+            nanoController->updateMotorCAN0State(id, true);
+            nanoController->updateMotorCAN1State(id, true);
+        }
     }
 };
 
@@ -360,6 +373,16 @@ TEST_F(SystemIntegrationTest, NormalStartSequence){
     ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
 }
 
+
+// --- Abnormal Startup Sequences ---
+/* Tested Configurations:
+ * Nano Absent, Orin Absent
+ * Nano Delayed, Orin Delayed
+ * Partial Heartbeat, No CAN - Nano , Orin
+ * Partial Heartbeat, No Eth - Nano, Orin
+ * Orin Does Not Take Control
+*/
+// Peer Absent During Startup - Nano
 TEST_F(SystemIntegrationTest, AbnormalStart_NanoAbsent){
     nano_running = false;
     if (nano_thread.joinable()) {
@@ -382,6 +405,7 @@ TEST_F(SystemIntegrationTest, AbnormalStart_NanoAbsent){
     ASSERT_EQ(orinSysStatus, SINGLE_FC) << "Orin did not enter SINGLE_FC as expected";
 }
 
+// Peer Absent During Startup - Orin
 TEST_F(SystemIntegrationTest, AbnormalStart_OrinAbsent){
     orin_running = false;
     if (orin_thread.joinable()) {
@@ -405,6 +429,7 @@ TEST_F(SystemIntegrationTest, AbnormalStart_OrinAbsent){
     ASSERT_EQ(nanoSysStatus, SINGLE_FC) << "Nano did not enter SINGLE_FC as expected";
 }
 
+// Peer Delayed During Startup - Nano
 TEST_F(SystemIntegrationTest, AbnormalStart_NanoDelayed){
     nano_running = false;
     if (nano_thread.joinable()) {
@@ -444,7 +469,7 @@ TEST_F(SystemIntegrationTest, AbnormalStart_NanoDelayed){
     ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
 }
 
-
+// Peer Delayed During Startup - Orin
 TEST_F(SystemIntegrationTest, AbnormalStart_OrinDelayed){
     orin_running = false;
     if (orin_thread.joinable()) {
@@ -483,14 +508,27 @@ TEST_F(SystemIntegrationTest, AbnormalStart_OrinDelayed){
     ASSERT_EQ(orinSysStatus, STANDBY) << "Orin did not enter STANDBY as expected";
 }
 
-TEST_F(SystemIntegrationTest, AbnormalStart_Partial_HB_From_Nano){
+// Partial Peer Heartbeat: No CAN - Nano
+TEST_F(SystemIntegrationTest, AbnormalStart_No_CAN_HB_From_Nano){
 
 }
 
-TEST_F(SystemIntegrationTest, AbnormalStart_Partial_HB_From_Orin){
+// Partial Peer Heartbeat: No CAN - Orin
+TEST_F(SystemIntegrationTest, AbnormalStart_No_CAN_HB_From_Orin){
 
 }
 
+// Partial Peer Heartbeat: No Ethernet - Nano
+TEST_F(SystemIntegrationTest, AbnormalStart_No_Eth_HB_From_Nano){
+
+}
+
+// Partial Peer Heartbeat: No Ethernet - Orin
+TEST_F(SystemIntegrationTest, AbnormalStart_No_Eth_HB_From_Orin){
+
+}
+
+// Orin Does Not Take Control
 TEST_F(SystemIntegrationTest, AbnormalStart_Orin_Does_Not_Take_Charge){
     nanoSysStatus = STANDBY; 
     orinSysStatus = ERROR;
@@ -522,7 +560,8 @@ TEST_F(SystemIntegrationTest, AbnormalStart_Orin_Does_Not_Take_Charge){
     ASSERT_EQ(nanoSysStatus, PRIMARY) << "Nano did not enter PRIMARY as expected";
 }
 
-TEST_F(SystemIntegrationTest, MotorNodeCrash_OrinPrimary){
+
+TEST_F(SystemIntegrationTest, NormalStartSequenceWithMotorInit){
     nanoSysStatus = STANDBY; 
     orinSysStatus = STANDBY;
     
@@ -563,25 +602,145 @@ TEST_F(SystemIntegrationTest, MotorNodeCrash_OrinPrimary){
     orinController->alertSystemBoot();
     nanoController->alertSystemBoot();
 
-    for (int i=0; i<20; i++) {
+    for (int i=0; i<10; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
-    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
-    orinController->alertLostMotor(10);
-
-    for (int i=0; i<20; i++) {
+    for (int i=0; i<10; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    ASSERT_EQ(orinSysStatus, PARTIAL_PRIMARY) << "Orin did not enter PRIMARY as expected";
-    ASSERT_EQ(nanoSysStatus, PARTIAL_SECONDARY) << "Nano did not enter STANDBY as expected";
+    orinController->alertMotorsDetected();
 
-    orinController->alertRegainedMotor(10);
-
-    for (int i=0; i<20; i++) {
+    for (int i=0; i<10; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
     ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
 }
+
+TEST_F(SystemIntegrationTest, NormalStartSequenceWithMissingMotor_OrinPrimary){
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = STANDBY;
+    
+    orinController->updateMotorCAN0State(10, false);
+    orinController->updateMotorCAN1State(10, false);
+
+    orinController->alertSystemBoot();
+    nanoController->alertSystemBoot();
+
+    for (int i=0; i<10; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    for (int i=0; i<10; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    orinController->alertMotorsDetected();
+
+    for (int i=0; i<20; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    ASSERT_EQ(orinSysStatus, PARTIAL_PRIMARY) << "Orin did not enter PARTIAL_PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, PARTIAL_SECONDARY) << "Nano did not enter PARTIAL_SECONDARY as expected";
+}
+
+
+// --- Motor Node Crashes ---
+/* Tested configurations:
+ * Orin Primary, Nano Primary
+ * Orin SINGLE_FC, Nano SINGLE_FC
+*/
+// Orin Primary
+TEST_F(SystemIntegrationTest, MotorNodeCrash_OrinPrimary){
+    nanoSysStatus = STANDBY; 
+    orinSysStatus = STANDBY;
+
+    orinController->alertSystemBoot();
+    nanoController->alertSystemBoot();
+
+    for (int i=0; i<20; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+    std::cout << "Lost motor" << std::endl;
+    orinController->alertLostMotor(10);
+
+    for (int i=0; i<20; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    ASSERT_EQ(orinSysStatus, PARTIAL_PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, PARTIAL_SECONDARY) << "Nano did not enter STANDBY as expected";
+
+    std::cout << "Regained motor" << std::endl;
+    orinController->alertRegainedMotor(10);
+
+    for (int i=0; i<20; i++) {
+        while(orinLink->spin_once()); 
+        orinLink->send_heartbeat();
+        
+        while(nanoLink->spin_once()); 
+        nanoLink->send_heartbeat();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+}
+
+// Nano Primary
+TEST_F(SystemIntegrationTest, MotorNodeCrash_NanoPrimary){
+
+}
+
+// Orin SINGLE_FC
+TEST_F(SystemIntegrationTest, MotorNodeCrash_Orin_Single){
+
+}
+
+// Nano SINGLE_FC
+TEST_F(SystemIntegrationTest, MotorNodeCrash_NanoSingle){
+
+}
+

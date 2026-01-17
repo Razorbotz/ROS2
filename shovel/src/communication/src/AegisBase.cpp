@@ -84,19 +84,34 @@ void AegisBase::alertNotPrimary(){
 }
 
 // ID 203
-
+void AegisBase::requestControl(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(203, "", 0);
+}
 
 // ID 204
-
+void AegisBase::grantControl(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(204, "", 0);
+}
 
 // ID 205
-
+void AegisBase::denyControl(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(205, "", 0);
+}
 
 // ID 206
-
+void AegisBase::sendPing(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(206, "", 0);
+}
 
 // ID 207
-
+void AegisBase::sendPong(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(206, "", 0);
+}
 
 // ID 208
 
@@ -157,17 +172,26 @@ void AegisBase::alertLostMotor(uint8_t motor_id){
     if (!hb_link.is_remote_alive()) return;
     hb_link.send_data(402, &msg, sizeof(msg));
     sendAuth();
+    if(systemStatus_ref == PRIMARY){
+        systemStatus_ref = PARTIAL_PRIMARY;
+    }
+    alertSystemStatusChange();
 }
 
 // ID 403
 void AegisBase::alertRegainedMotor(uint8_t motor_id){
-    updateMotorAuthorization(motor_id, false);
+    updateMotorAuthorization(motor_id, true);
     MotorListPayload msg;
     msg.count = 1;
     msg.motor_ids[0] = motor_id;
     if (!hb_link.is_remote_alive()) return;
     hb_link.send_data(403, &msg, sizeof(msg));
     sendAuth();
+    if(!checkRemoteAuthStatus()){
+        if(systemStatus_ref == PARTIAL_PRIMARY){
+            requestControl();
+        }
+    }
 }
 
 // ID 404
@@ -231,6 +255,28 @@ void AegisBase::acknowledgeWifiChange(){
 
 
 // ID 421
+
+
+// ID 422
+void AegisBase::alertMotorsDetected(){
+    if (!hb_link.is_remote_alive()) return;
+    
+    MotorAuthPayload payload;
+    for (size_t i = 0; i < MAX_MOTORS; i++) {
+        payload.motor_states[i] = can0_table[i] || can1_table[i];
+    }
+    hb_link.send_data(422, &payload, sizeof(payload));
+    alertedRemoteMotors = true;
+}
+
+// ID 423
+void AegisBase::acknowledgeMotorsDetected(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(423, "", 0);
+    if(!alertedRemoteMotors){
+        alertMotorsDetected();
+    }
+}
 
 
 // --- 5xx System ---
@@ -312,14 +358,23 @@ void AegisBase::enableMotorAuthorization(){
         }
         else{
             auth_table[i] = false;
+            if(systemStatus_ref == PRIMARY){
+                std::cout << "Switching to PARTIAL_PRIMARY" << std::endl;
+                systemStatus_ref = PARTIAL_PRIMARY;
+                alertSystemStatusChange();
+            }
         }
     }
 }
 
-void AegisBase::processRemoteAuth(const uint8_t motor_states[MAX_MOTORS]){
+bool AegisBase::processRemoteAuth(const uint8_t motor_states[MAX_MOTORS]){
     for (size_t i = 0; i < MAX_MOTORS; i++) {
+        if(auth_table[i] == motor_states[i] && auth_table[i] == 1){
+            auth_table[i] = !motor_states[i];
+        }
         remote_auth[i] = motor_states[i];
     }
+    return true;
 }
 
 void AegisBase::setAuthFromRemote(const uint8_t motor_states[MAX_MOTORS]){
@@ -343,4 +398,57 @@ bool AegisBase::checkAuth(){
         }
     }
     return false;
+}
+
+// Used to check whether or not the FC has any authorization, need to rename
+bool AegisBase::checkAuthStatus(){
+    for (size_t i = 0; i < MAX_MOTORS; i++) {
+        if(auth_table[i]){
+            return true;
+        }
+    }
+    return false;
+}
+
+// Used to check whether or not the peer FC has any authorization, need to rename
+bool AegisBase::checkRemoteAuthStatus(){
+    for (size_t i = 0; i < MAX_MOTORS; i++) {
+        if(remote_auth[i]){
+            return true;
+        }
+    }
+    return false;
+}
+
+void AegisBase::processRemoteControl(const uint8_t motor_states[MAX_MOTORS]){
+    for (size_t i = 0; i < MAX_MOTORS; i++) {
+        remote_cont[i] = motor_states[i];
+    }
+}
+
+
+void AegisBase::processLostMotor(const uint8_t motor_states[MAX_MOTORS]){
+
+}
+
+
+bool AegisBase::checkAllMotorsInit(){
+    for (size_t i = 0; i < MAX_MOTORS; i++) {
+        if(!(can0_table[i] || can1_table[i])){
+            return true;
+        }
+    }
+    return false;
+}
+
+void AegisBase::checkMotorInitTimer() {
+    if (!init_timer_active) return;
+
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - init_start_time).count();
+
+    if (elapsed >= 200) {
+        init_timer_active = false;
+        alertMotorsDetected();
+    }
 }

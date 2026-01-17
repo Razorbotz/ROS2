@@ -143,8 +143,8 @@ enum MessageIDs : uint16_t {
     ID_REQ_RETAKE       = 203,
     ID_GRANT_CONTROL    = 204,
     ID_DENY_CONTROL     = 205, 
-    ID_LIVENESS_QUERY   = 206, 
-    ID_LIVENESS_PING    = 207, 
+    ID_LIVENESS_PING    = 206, 
+    ID_LIVENESS_PONG    = 207, 
     ID_REQ_RELINQUISH   = 208, 
     ID_ACCEPT_CONTROL   = 209, 
     ID_REJECT_CONTROL   = 210, 
@@ -182,6 +182,8 @@ enum MessageIDs : uint16_t {
     ID_ETH_LOST         = 419,
     ID_ETH_REGAINED     = 420,
     ID_ETH_ACK_CHG      = 421,
+    ID_MOTORS_INIT      = 422,
+    ID_MOTORS_ACK       = 423,
 
     // --- 5xx System ---
     ID_SYS_SHUTDOWN     = 500,
