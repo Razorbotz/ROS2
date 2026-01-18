@@ -26,6 +26,7 @@ protected:
     RemoteStatus& remoteStatus;
     bool& sendRawData_ref;
     SystemStatus& systemStatus_ref;
+    ErrorCode& errorCode_ref;
     std::atomic<uint64_t> last_can_rx_time {0};
     
     // This is used to track whether the controller has authorization
@@ -37,6 +38,8 @@ protected:
     std::array<bool, MAX_MOTOR_ID> can1_table;
     // Used to track which interface the motor is currently attached to
     std::array<bool, MAX_MOTOR_ID> can_table;
+    // Used to track whether the motor nodes are functional
+    std::array<bool, MAX_MOTOR_ID> node_table;
     // Used to track whether the remote controller can control the motor
     std::array<bool, MAX_MOTOR_ID> remote_auth;
     // Used to track whether the remote controller can control the motor
@@ -51,13 +54,15 @@ public:
               std::mutex& mutex, 
               RemoteStatus& r_status,
               bool& raw_data, 
-              SystemStatus& sys_status)
+              SystemStatus& sys_status,
+              ErrorCode& error_code)
         : nodeHandle(node), hb_link(link), can_link(c_link), comms_mutex(mutex), remoteStatus(r_status),
-          sendRawData_ref(raw_data), systemStatus_ref(sys_status) {
+          sendRawData_ref(raw_data), systemStatus_ref(sys_status), errorCode_ref(error_code) {
             auth_table.fill(false);
             can0_table.fill(false);
             can1_table.fill(false);
             can_table.fill(false);
+            node_table.fill(false);
             remote_auth.fill(false);
             remote_cont.fill(false);
           }
@@ -84,12 +89,17 @@ public:
     void denyControl();
     void sendPing();
     void sendPong();
+    void sendRelinquishRequest();
+    void sendAcceptControl();
+    void sendRejectControl();
     void alertSystemStatusChange();
     void acknowledgeSystemStatusChange(bool error);
 
     // 300s
 
     // 400s
+    void sendHardEStop();
+    void sendSoftEStop();
     void alertLostMotor(uint8_t motor_id);
     void alertRegainedMotor(uint8_t motor_id);
     void alertWifiLost();
@@ -132,7 +142,7 @@ public:
      * This function is used to ensure that both motor controllers aren't attempting
      * to have authorization for a motor. If both 
      */
-    bool checkAuth();
+    bool checkAuthErrors();
     /**
      * This function is used to check whether the controller is authorized
      * to control any motors. 
@@ -154,6 +164,11 @@ public:
     bool checkAllMotorsInit();
 
     void checkMotorInitTimer();
+
+    bool canAcceptControl();
+    bool canGiveControl();
+
+    bool checkControlErrors();
 
     std::chrono::steady_clock::time_point init_start_time;
     bool init_timer_active = false;

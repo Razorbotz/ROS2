@@ -258,6 +258,13 @@ enum SystemStatus : uint8_t {
     STOP // STOP
 };
 
+enum ErrorCode : uint8_t {
+    NO_ERROR,
+    MISSING_MOTOR_CAN,
+    MISSING_MOTOR_NODE,
+    MISSING_MOTOR_BOTH
+};
+
 enum ParameterCode : uint8_t {
     MAX_MOTOR_SPEED,
     MAX_MOTOR_POSITION

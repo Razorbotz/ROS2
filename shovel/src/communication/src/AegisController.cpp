@@ -7,9 +7,10 @@ AegisController::AegisController(rclcpp::Node::SharedPtr node,
                                  std::mutex& mutex_ref, 
                                  RemoteStatus& status_ref,
                                  bool& rawData_in,
-                                 SystemStatus& sysStatus_in
+                                 SystemStatus& sysStatus_in,
+                                 ErrorCode& errCode_in
                                  )
-    : AegisBase(node, link_ref,  can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in)
+    : AegisBase(node, link_ref,  can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, errCode_in)
 {
 }
 
@@ -160,11 +161,12 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                    std::cout << "Nano Authorized for Motor ID: " << i << std::endl;
                 }
             }
-            if(checkAuth()){
+            if(checkAuthErrors()){
                 std::cout << "ERROR state, need to resolve." << std::endl;
             }
-            if(!checkRemoteAuthStatus()){
-                requestControl();
+            if(!checkRemoteAuthStatus() && systemStatus_ref != PRIMARY){
+                if(!test)
+                    requestControl();
             }
             break;
         }
@@ -224,14 +226,18 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             if(systemStatus_ref == PARTIAL_PRIMARY){
                 std::cout << "Orin is transitioning to PRIMARY" << std::endl;
                 systemStatus_ref = PRIMARY;
+                alertSystemStatusChange();
             }
-            alertSystemStatusChange();
+            else{
+                std::cout << "Orin was granted control, but is currently in state " << systemStatus_ref << std::endl;
+            }
             break;
         }
             
         case ID_DENY_CONTROL:
             // Response from Nano to Orin to not take control
             // This will include a message for how many seconds to delay
+            std::cout << "Request to take control was denied" << std::endl;
             break;
             
         case ID_LIVENESS_PING:
@@ -245,6 +251,12 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             
         case ID_REQ_RELINQUISH:
             // Request from Nano to Orin to relinquish control
+            if(canAcceptControl()){
+                sendAcceptControl();
+            }
+            else{
+                sendRejectControl();
+            }
             break;
             
         case ID_ACCEPT_CONTROL:
@@ -264,7 +276,12 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                     error = true;
                     systemStatus_ref = ERROR;
                     std::cout << "Error " << std::endl;
+                    alertSystemStatusChange();
                 }
+            }
+            if(systemStatus_ref == PARTIAL_PRIMARY && status == STANDBY){
+                systemStatus_ref = PRIMARY;
+                alertSystemStatusChange();
             }
             acknowledgeSystemStatusChange(error);
             break;
@@ -279,7 +296,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                 std::cout << "ERROR" << std::endl;
             }
             else{
-                std::cout << "No Error" << std::endl;
+
             }
             break;
         }
@@ -457,6 +474,10 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             if(systemStatus_ref == PRIMARY){
                 enableMotorAuthorization();
                 sendAuth();
+            }
+            if(checkControlErrors()){
+                systemStatus_ref = ERROR;
+                alertSystemStatusChange();
             }
             break;
         }

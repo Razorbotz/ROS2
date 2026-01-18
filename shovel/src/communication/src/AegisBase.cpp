@@ -110,17 +110,26 @@ void AegisBase::sendPing(){
 // ID 207
 void AegisBase::sendPong(){
     if (!hb_link.is_remote_alive()) return;
-    hb_link.send_data(206, "", 0);
+    hb_link.send_data(207, "", 0);
 }
 
 // ID 208
-
+void AegisBase::sendRelinquishRequest(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(208, "", 0);
+}
 
 // ID 209
-
+void AegisBase::sendAcceptControl(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(209, "", 0);
+}
 
 // ID 210
-
+void AegisBase::sendRejectControl(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(210, "", 0);
+}
 
 // ID 211
 void AegisBase::alertSystemStatusChange(){
@@ -158,9 +167,16 @@ void AegisBase::acknowledgeSystemStatusChange(bool error){
 
 // --- 4xx Operational Faults ---
 // ID 400
-
+void AegisBase::sendHardEStop(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(400, "", 0);
+}
 
 // ID 401
+void AegisBase::sendSoftEStop(){
+    if (!hb_link.is_remote_alive()) return;
+    hb_link.send_data(401, "", 0);
+}
 
 
 // ID 402
@@ -390,10 +406,15 @@ void AegisBase::setAuthFromRemote(const uint8_t motor_states[MAX_MOTORS]){
     }
 }
 
-bool AegisBase::checkAuth(){
+bool AegisBase::checkAuthErrors(){
     for (size_t i = 0; i < MAX_MOTORS; i++) {
         if(auth_table[i] == remote_auth[i]){
-            std::cout << "ERROR: Duplicate auth." << std::endl;
+            if(auth_table[i] == 1){
+                std::cout << "ERROR: Duplicate auth." << std::endl;
+            }
+            else{
+                std::cout << "ERROR: Both motors failed to auth" << std::endl;
+            }
             return true;
         }
     }
@@ -451,4 +472,25 @@ void AegisBase::checkMotorInitTimer() {
         init_timer_active = false;
         alertMotorsDetected();
     }
+}
+
+bool AegisBase::canGiveControl(){
+    // TODO: Add checks to determine whether the system is in a state that it can
+    // give control back to the other FC. This will most likely include a check on
+    // whether or not the motors are moving, whether the other FC can control all 
+    // motors and any other checks necessary to determine system safety.
+    return true;
+}
+
+bool AegisBase::canAcceptControl(){
+    return true;
+}
+
+bool AegisBase::checkControlErrors(){
+    for (size_t i = 0; i < MAX_MOTORS; i++) {
+        if(!(remote_cont[i] || can0_table[i] || can1_table[i])){
+            return true;
+        }
+    }
+    return false;
 }

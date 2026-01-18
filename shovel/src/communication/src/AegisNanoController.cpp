@@ -6,11 +6,35 @@ AegisNanoController::AegisNanoController(rclcpp::Node::SharedPtr node,
                                  std::mutex& mutex_ref, 
                                  RemoteStatus& status_ref,
                                  bool& rawData_in,
-                                 SystemStatus& sysStatus_in
+                                 SystemStatus& sysStatus_in,
+                                 ErrorCode& errCode_in
                                  )
-    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in)
+    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, errCode_in)
 {
 }
+
+void AegisNanoController::checkTimers(){
+    checkAuthorityTimer();
+    checkTakeoverTimer();
+}
+
+void AegisNanoController::checkAuthorityTimer(){
+    if(!relinquish_timer_active)return;
+
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - relinquish_start_time).count();
+
+    if (elapsed >= 50) {
+        if(canGiveControl()){
+            relinquish_timer_active = false;
+            sendRelinquishRequest();
+        }
+        else{
+            relinquish_start_time = now;
+        }
+    }
+}
+
 
 void AegisNanoController::checkTakeoverTimer() {
     if (!takeover_timer_active) return;
@@ -161,6 +185,10 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
 
             // Send Confirmation (ID 101)
             sendAuthConfirm();
+            if(!checkAuthStatus()){
+                relinquish_timer_active = true;
+                relinquish_start_time = std::chrono::steady_clock::now();
+            }
             break;
         }
         
@@ -174,7 +202,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                    std::cout << "Orin Authorized for Motor ID: " << i << std::endl;
                 }
             }
-            if(checkAuth()){
+            if(checkAuthErrors()){
                 std::cout << "ERROR state, need to resolve." << std::endl;
             }
             break;
@@ -231,7 +259,13 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // TODO: This will need guards to check whether the robot is in a 
             // mission critical phase of flight, such as motors moving or other 
             // criteria
-            grantControl();
+            relinquish_timer_active = false;
+            if(canGiveControl()){
+                grantControl();
+            }
+            else{
+                denyControl();
+            }
             break;
         }
             
@@ -247,6 +281,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             
         case ID_LIVENESS_PING:
             //  Query if the other is alive
+            sendPong();
             break;
             
         case ID_LIVENESS_PONG:
@@ -257,12 +292,22 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // Request from Nano to Orin to relinquish control
             break;
             
-        case ID_ACCEPT_CONTROL:
+        case ID_ACCEPT_CONTROL:{
             // Accept control of system
+            if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
+                systemStatus_ref = STANDBY;
+                alertSystemStatusChange();
+            }
+            if(systemStatus_ref == PARTIAL_SECONDARY){
+                systemStatus_ref = STANDBY;
+                alertSystemStatusChange();
+            }
             break;
+        }
         
         case ID_REJECT_CONTROL:
             // Reject control of the system
+            std::cout << "Orin rejected request to take control" << std::endl;
             break;
         
         case ID_SYS_STATUS_CHG: {
@@ -305,7 +350,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                 std::cout << "ERROR" << std::endl;
             }
             else{
-                std::cout << "No Error" << std::endl;
+                
             }
             break;
         }
@@ -477,6 +522,10 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
             processRemoteControl(payload->motor_states);
             acknowledgeMotorsDetected();
+            if(checkControlErrors()){
+                systemStatus_ref = ERROR;
+                alertSystemStatusChange();
+            }
 
             break;
         }
