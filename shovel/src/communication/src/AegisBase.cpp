@@ -5,35 +5,35 @@
 
 // ID 10
 void AegisBase::sendJoystickAxis(uint8_t which, uint8_t axis, float value) {
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     JoystickAxis msg {which, axis, value};
     hb_link.send_data(010, &msg, sizeof(msg));
 }
 
 // ID 11
 void AegisBase::sendJoystickButton(uint8_t which, uint8_t button, uint8_t state) {
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     JoystickButton msg {which, button, state};
     hb_link.send_data(011, &msg, sizeof(msg));
 }
 
 // ID 12
 void AegisBase::sendJoystickHat(uint8_t which, uint8_t hat, uint8_t value) {
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     JoystickHat msg {which, hat, value};
     hb_link.send_data(012, &msg, sizeof(msg));
 }
 
 // ID 13
 void AegisBase::sendKeyboardEvent(uint32_t keyval, uint8_t state) {
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     KeyboardEvent msg {keyval, state};
     hb_link.send_data(013, &msg, sizeof(msg));
 }
 
 // ID 20
 void AegisBase::sendBinaryMessage(BinaryMessage& binMsg) {
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     auto bytesList = binMsg.getBytes();
     std::vector<uint8_t> buffer(bytesList->begin(), bytesList->end());
     hb_link.send_data(020, buffer.data(), buffer.size());
@@ -42,7 +42,7 @@ void AegisBase::sendBinaryMessage(BinaryMessage& binMsg) {
 // --- 1xx Control Configuration ---
 // ID 100
 void AegisBase::sendAuth(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     MotorAuthPayload payload;
     for (size_t i = 0; i < MAX_MOTORS; i++) {
         payload.motor_states[i] = auth_table[i] ? 1 : 0;
@@ -52,7 +52,7 @@ void AegisBase::sendAuth(){
 
 // ID 101
 void AegisBase::sendAuthConfirm(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     MotorAuthPayload payload;
     for (size_t i = 0; i < MAX_MOTORS; i++) {
         payload.motor_states[i] = auth_table[i] ? 1 : 0;
@@ -64,76 +64,80 @@ void AegisBase::sendAuthConfirm(){
 // ID 200
 void AegisBase::queryControl(){
     if (!hb_link.is_remote_alive()){
-        systemStatus_ref = SINGLE_FC;
-        alertSystemStatusChange();
-        return;
+        if(systemStatus_ref == STANDBY){
+            systemStatus_ref = SINGLE_FC;
+            std::cout << "Entering SINGLE_FC" << std::endl;
+            enableMotorAuthorization();
+            alertSystemStatusChange();
+            return;
+        }        
     }
     hb_link.send_data(200, "", 0);
 }
 
 // ID 201
 void AegisBase::alertPrimary(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(201, "", 0);
 }
 
 // ID 202
 void AegisBase::alertNotPrimary(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(202, "", 0);
 }
 
 // ID 203
 void AegisBase::requestControl(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(203, "", 0);
 }
 
 // ID 204
 void AegisBase::grantControl(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(204, "", 0);
 }
 
 // ID 205
 void AegisBase::denyControl(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(205, "", 0);
 }
 
 // ID 206
 void AegisBase::sendPing(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(206, "", 0);
 }
 
 // ID 207
 void AegisBase::sendPong(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(207, "", 0);
 }
 
 // ID 208
 void AegisBase::sendRelinquishRequest(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(208, "", 0);
 }
 
 // ID 209
 void AegisBase::sendAcceptControl(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(209, "", 0);
 }
 
 // ID 210
 void AegisBase::sendRejectControl(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(210, "", 0);
 }
 
 // ID 211
 void AegisBase::alertSystemStatusChange(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     RCLCPP_INFO(nodeHandle->get_logger(), "Sending SystemStatusChange");
     uint8_t msg = systemStatus_ref;
     hb_link.send_data(211, &msg, sizeof(msg));
@@ -141,7 +145,7 @@ void AegisBase::alertSystemStatusChange(){
 
 // ID 212
 void AegisBase::acknowledgeSystemStatusChange(bool error){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     uint8_t msg = (error) ? 1 : 0;
     hb_link.send_data(212, &msg, sizeof(msg));
 }
@@ -168,13 +172,13 @@ void AegisBase::acknowledgeSystemStatusChange(bool error){
 // --- 4xx Operational Faults ---
 // ID 400
 void AegisBase::sendHardEStop(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(400, "", 0);
 }
 
 // ID 401
 void AegisBase::sendSoftEStop(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(401, "", 0);
 }
 
@@ -185,7 +189,8 @@ void AegisBase::alertLostMotor(uint8_t motor_id){
     MotorListPayload msg;
     msg.count = 1;
     msg.motor_ids[0] = motor_id;
-    if (!hb_link.is_remote_alive()) return;
+    checkMotorControlStatus();
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(402, &msg, sizeof(msg));
     sendAuth();
     if(systemStatus_ref == PRIMARY){
@@ -200,7 +205,8 @@ void AegisBase::alertRegainedMotor(uint8_t motor_id){
     MotorListPayload msg;
     msg.count = 1;
     msg.motor_ids[0] = motor_id;
-    if (!hb_link.is_remote_alive()) return;
+    checkMotorControlStatus();
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(403, &msg, sizeof(msg));
     sendAuth();
     if(!checkRemoteAuthStatus()){
@@ -212,19 +218,19 @@ void AegisBase::alertRegainedMotor(uint8_t motor_id){
 
 // ID 404
 void AegisBase::alertWifiLost(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(404, "", 0);
 }
 
 // ID 405
 void AegisBase::alertWifiRegained(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(405, "", 0);
 }
 
 // ID 406
 void AegisBase::acknowledgeWifiChange(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(406, "", 0);
 }
 
@@ -275,7 +281,7 @@ void AegisBase::acknowledgeWifiChange(){
 
 // ID 422
 void AegisBase::alertMotorsDetected(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     
     MotorAuthPayload payload;
     for (size_t i = 0; i < MAX_MOTORS; i++) {
@@ -287,24 +293,45 @@ void AegisBase::alertMotorsDetected(){
 
 // ID 423
 void AegisBase::acknowledgeMotorsDetected(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(423, "", 0);
     if(!alertedRemoteMotors){
         alertMotorsDetected();
     }
 }
 
+// ID 424
+void AegisBase::alertLostNode(uint8_t node_lost){
+    if(!checkRemoteAlive()) return;
+    uint8_t msg = node_lost;
+    hb_link.send_data(424, &msg, sizeof(msg));
+}
+
+void AegisBase::alertRegainedNode(uint8_t node_regained){
+    if(!checkRemoteAlive()) return;
+    uint8_t msg = node_regained;
+    hb_link.send_data(425, &node_regained, sizeof(node_regained));
+}
+
+void AegisBase::acknowledgeNodeChange(){
+    if(!checkRemoteAlive()) return;
+    hb_link.send_data(426, "", 0);
+}
 
 // --- 5xx System ---
 // ID 500
 void AegisBase::alertSystemShutdown(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(500, "", 0);
 }
 
 // ID 501
 void AegisBase::alertSystemBoot(){
-    if (!hb_link.is_remote_alive()) return;
+    if(!init_timer_active){
+        init_start_time = std::chrono::steady_clock::now();
+        init_timer_active = true;
+    }
+    if(!checkRemoteAlive()) return;
     hb_link.send_data(501, "", 0);
 }
 
@@ -321,6 +348,7 @@ void AegisBase::updateMotorAuthorization(uint8_t motor_id, bool authorized) {
         std::cout << "Motor ID out of bounds: " << (int)motor_id << std::endl;
     }
     std::cout << "Motor ID " << (int)adj_id << ": " << authorized << std::endl;
+    checkMotorControlStatus();
 }
 
 void AegisBase::updateMotorCAN0State(uint8_t motor_id, bool up){
@@ -449,9 +477,24 @@ void AegisBase::processRemoteControl(const uint8_t motor_states[MAX_MOTORS]){
 
 
 void AegisBase::processLostMotor(const uint8_t motor_states[MAX_MOTORS]){
+    for (size_t i = 0; i < MAX_MOTORS; i++) {
+        remote_cont[i] = motor_states[i];
+    }
+}
+
+void AegisBase::processRegainedMotor(const uint8_t motor_states[MAX_MOTORS]){
+    for (size_t i = 0; i < MAX_MOTORS; i++) {
+        remote_cont[i] = motor_states[i];
+    }
+}
+
+void AegisBase::processLostNode(uint8_t node){
 
 }
 
+void AegisBase::processRegainedNode(uint8_t node){
+
+}
 
 bool AegisBase::checkAllMotorsInit(){
     for (size_t i = 0; i < MAX_MOTORS; i++) {
@@ -492,5 +535,35 @@ bool AegisBase::checkControlErrors(){
             return true;
         }
     }
+    return false;
+}
+
+void AegisBase::checkMotorControlStatus(){
+    for (size_t i = 0; i < MAX_MOTORS; i++) {
+        std::cout << "!can0_table[" << i << "]: " << !can0_table[i] << "!can1_table[i]: " << !can1_table[i] << 
+        "!auth_table[i]: " << !auth_table[i] << std::endl;
+        if((!can0_table[i] && !can1_table[i]) || !auth_table[i]){
+            std::cout << "Here" << std::endl;
+            if(systemStatus_ref == SINGLE_FC){
+                std::cout << "Entering Stop state" << std::endl;
+                systemStatus_ref = STOP;
+            }
+            return;
+        }
+    }
+    if(systemStatus_ref == STOP){
+        if(remoteStatus.UP == false){
+            systemStatus_ref = SINGLE_FC;
+            enableMotorAuthorization();
+        }
+    }
+}
+
+bool AegisBase::checkRemoteAlive(){
+    if (hb_link.is_remote_alive()) {
+        remoteStatus.UP = true;
+        return true;
+    }
+    remoteStatus.UP = false;
     return false;
 }

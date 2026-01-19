@@ -184,6 +184,9 @@ enum MessageIDs : uint16_t {
     ID_ETH_ACK_CHG      = 421,
     ID_MOTORS_INIT      = 422,
     ID_MOTORS_ACK       = 423,
+    ID_NODE_LOST        = 424,
+    ID_NODE_REGAINED    = 425,
+    ID_NODE_ACK_CHG     = 426,
 
     // --- 5xx System ---
     ID_SYS_SHUTDOWN     = 500,
@@ -214,13 +217,6 @@ struct MotorPosition {
 struct CanBusPayload {
     uint8_t interface_id; // 0 = CAN0, 1 = CAN1, etc.
     uint8_t error_code;   // Optional specific CAN error
-};
-
-struct RemoteStatus {
-    bool UP;
-    bool WIFI_UP;
-    bool CAN0_UP;
-    bool CAN1_UP;
 };
 
 struct JoystickAxis {
@@ -258,11 +254,34 @@ enum SystemStatus : uint8_t {
     STOP // STOP
 };
 
+struct RemoteStatus {
+    bool UP;
+    bool WIFI_UP;
+    bool CAN0_UP;
+    bool CAN1_UP;
+    SystemStatus STATUS;
+};
+
 enum ErrorCode : uint8_t {
     NO_ERROR,
     MISSING_MOTOR_CAN,
     MISSING_MOTOR_NODE,
     MISSING_MOTOR_BOTH
+};
+
+enum Nodes : uint8_t {
+    MOTOR_10,
+    MOTOR_11,
+    MOTOR_12,
+    MOTOR_13,
+    MOTOR_14,
+    MOTOR_15,
+    MOTOR_16,
+    MOTOR_17,
+    DRIVETRAIN,
+    EXCAVATION,
+    LOGIC,
+    AUTONOMY
 };
 
 enum ParameterCode : uint8_t {

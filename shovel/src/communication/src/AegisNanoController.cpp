@@ -238,6 +238,12 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // Secondary is not in control, need to transition to be in charge
             // This will start a timer for 50ms. If FC1 does not transition to PRIMARY
             // within that timeframe, transition to PRIMARY. 
+
+            // Occasionally the standby response can come out of order, so if the standby is
+            // received after the other transitions to PRIMARY, double check
+            if(remoteStatus.STATUS == PRIMARY || remoteStatus.STATUS == PARTIAL_PRIMARY){
+                break;
+            }
             if(systemStatus_ref == STANDBY ){
                 if (!takeover_timer_active) {
                     std::cout << "Nano: Starting 50ms takeover timer..." << std::endl;
@@ -259,9 +265,9 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // TODO: This will need guards to check whether the robot is in a 
             // mission critical phase of flight, such as motors moving or other 
             // criteria
-            relinquish_timer_active = false;
             if(canGiveControl()){
                 grantControl();
+                relinquish_timer_active = false;
             }
             else{
                 denyControl();
@@ -314,6 +320,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // Change in SystemStatus
             bool error = false;
             uint8_t status = data[0];
+            remoteStatus.STATUS = (SystemStatus)status;
             if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
                 if(status == PRIMARY || status == PARTIAL_PRIMARY){
                     error = true;

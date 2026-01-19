@@ -65,6 +65,7 @@ public:
             node_table.fill(false);
             remote_auth.fill(false);
             remote_cont.fill(false);
+            remoteStatus.STATUS = STANDBY;
           }
 
     virtual ~AegisBase() = default;
@@ -107,6 +108,9 @@ public:
     void acknowledgeWifiChange();
     void alertMotorsDetected();
     void acknowledgeMotorsDetected();
+    void alertLostNode(uint8_t node_lost);
+    void alertRegainedNode(uint8_t node_regained);
+    void acknowledgeNodeChange();
 
     // 500s
     void alertSystemShutdown();
@@ -160,6 +164,9 @@ public:
     bool checkRemoteAuthStatus();
     void processRemoteControl(const uint8_t motor_states[MAX_MOTORS]);
     void processLostMotor(const uint8_t motor_states[MAX_MOTORS]);
+    void processRegainedMotor(const uint8_t motor_states[MAX_MOTORS]);
+    void processLostNode(uint8_t node);
+    void processRegainedNode(uint8_t node);
 
     bool checkAllMotorsInit();
 
@@ -169,6 +176,8 @@ public:
     bool canGiveControl();
 
     bool checkControlErrors();
+    void checkMotorControlStatus();
+    bool checkRemoteAlive();
 
     std::chrono::steady_clock::time_point init_start_time;
     bool init_timer_active = false;

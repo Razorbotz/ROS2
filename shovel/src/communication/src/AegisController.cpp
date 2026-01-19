@@ -487,6 +487,18 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             break;
         }
         
+        case ID_NODE_LOST: {
+            break;
+        }
+
+        case ID_NODE_REGAINED: {
+            break;
+        }
+
+        case ID_NODE_ACK_CHG: {
+            break;
+        }
+
         // --- System & Critical Hardware --- 500s
         case ID_SYS_SHUTDOWN:
             // System shutting down
