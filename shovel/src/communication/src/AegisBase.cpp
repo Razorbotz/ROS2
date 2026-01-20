@@ -1,34 +1,79 @@
 #include "AegisBase.hpp"
+void AegisBase::requestStateTransition(SystemStatus new_state) {
+    if (systemStatus_ref == new_state) {
+        return;
+    }
+
+    if (!isValidTransition(systemStatus_ref, new_state)) {
+        std::cerr << "[FSM] ILLEGAL TRANSITION ATTEMPT: " 
+                  << stateToString(systemStatus_ref) << " -> " 
+                  << stateToString(new_state) << std::endl;
+        return;
+    }
+
+    std::cout << "[FSM] Transition: " << stateToString(systemStatus_ref) 
+              << " -> " << stateToString(new_state) << std::endl;
+
+    onExitState(systemStatus_ref);
+    systemStatus_ref = new_state;
+    onEnterState(new_state);
+    alertSystemStatusChange();
+}
+
+std::string AegisBase::stateToString(SystemStatus state) {
+    switch (state) {
+        case BOOT:              return "BOOT";
+        case STANDBY:           return "STANDBY";
+        case PRIMARY:           return "PRIMARY";
+        case SINGLE_FC:         return "SINGLE_FC";
+        case PARTIAL_PRIMARY:   return "PARTIAL_PRIMARY";
+        case PARTIAL_SECONDARY: return "PARTIAL_SECONDARY";
+        case CAN_INOP:          return "CAN_INOP";
+        case ERROR:             return "ERROR";
+        case SAFETY_DEGRADED:   return "SAFETY_DEGRADED";
+        case STOP:              return "STOP";
+        default:                return "UNKNOWN_STATE (" + std::to_string(state) + ")";
+    }
+}
+
 // ID 1
+void AegisBase::sendSpeedMessage(){
+    if(!checkRemoteAlive()) return;
+    hb_link.send_data(1, "", 0);
+}
 
 // ID 2
+void AegisBase::sendPositionMessage(){
+    if(!checkRemoteAlive()) return;
+    hb_link.send_data(2, "", 0);
+}
 
 // ID 10
 void AegisBase::sendJoystickAxis(uint8_t which, uint8_t axis, float value) {
     if(!checkRemoteAlive()) return;
     JoystickAxis msg {which, axis, value};
-    hb_link.send_data(010, &msg, sizeof(msg));
+    hb_link.send_data(10, &msg, sizeof(msg));
 }
 
 // ID 11
 void AegisBase::sendJoystickButton(uint8_t which, uint8_t button, uint8_t state) {
     if(!checkRemoteAlive()) return;
     JoystickButton msg {which, button, state};
-    hb_link.send_data(011, &msg, sizeof(msg));
+    hb_link.send_data(11, &msg, sizeof(msg));
 }
 
 // ID 12
 void AegisBase::sendJoystickHat(uint8_t which, uint8_t hat, uint8_t value) {
     if(!checkRemoteAlive()) return;
     JoystickHat msg {which, hat, value};
-    hb_link.send_data(012, &msg, sizeof(msg));
+    hb_link.send_data(12, &msg, sizeof(msg));
 }
 
 // ID 13
 void AegisBase::sendKeyboardEvent(uint32_t keyval, uint8_t state) {
     if(!checkRemoteAlive()) return;
     KeyboardEvent msg {keyval, state};
-    hb_link.send_data(013, &msg, sizeof(msg));
+    hb_link.send_data(13, &msg, sizeof(msg));
 }
 
 // ID 20
@@ -36,7 +81,7 @@ void AegisBase::sendBinaryMessage(BinaryMessage& binMsg) {
     if(!checkRemoteAlive()) return;
     auto bytesList = binMsg.getBytes();
     std::vector<uint8_t> buffer(bytesList->begin(), bytesList->end());
-    hb_link.send_data(020, buffer.data(), buffer.size());
+    hb_link.send_data(20, buffer.data(), buffer.size());
 }
 
 // --- 1xx Control Configuration ---
@@ -152,22 +197,40 @@ void AegisBase::acknowledgeSystemStatusChange(bool error){
 
 // --- 3xx Parameter Exchange ---
 // ID 300
-
+void AegisBase::sendParamInit(){
+    if(!checkRemoteAlive()) return;
+    hb_link.send_data(300, "", 0);
+}
 
 // ID 301
-
+void AegisBase::sendParamData(){
+    if(!checkRemoteAlive()) return;
+    hb_link.send_data(301, "", 0);
+}
 
 // ID 302
-
+void AegisBase::sendParamAck(){
+    if(!checkRemoteAlive()) return;
+    hb_link.send_data(302, "", 0);
+}
 
 // ID 303
-
+void AegisBase::sendParamReject(){
+    if(!checkRemoteAlive()) return;
+    hb_link.send_data(303, "", 0);
+}
 
 // ID 304
-
+void AegisBase::sendSyncComplete(){
+    if(!checkRemoteAlive()) return;
+    hb_link.send_data(304, "", 0);
+}
 
 // ID 305
-
+void AegisBase::sendReadyOp(){
+    if(!checkRemoteAlive()) return;
+    hb_link.send_data(305, "", 0);
+}
 
 // --- 4xx Operational Faults ---
 // ID 400
@@ -307,12 +370,14 @@ void AegisBase::alertLostNode(uint8_t node_lost){
     hb_link.send_data(424, &msg, sizeof(msg));
 }
 
+// ID 425
 void AegisBase::alertRegainedNode(uint8_t node_regained){
     if(!checkRemoteAlive()) return;
     uint8_t msg = node_regained;
     hb_link.send_data(425, &node_regained, sizeof(node_regained));
 }
 
+// ID 426
 void AegisBase::acknowledgeNodeChange(){
     if(!checkRemoteAlive()) return;
     hb_link.send_data(426, "", 0);

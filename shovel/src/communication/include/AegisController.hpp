@@ -15,5 +15,8 @@ public:
     void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len);
     void verifyCanStatus(const CanHeartbeatPayload& hb) override;
     void onCanDataReceived(const CanDataPayload& payload) override;
+    bool isValidTransition(SystemStatus from, SystemStatus to) override;
+    void onEnterState(SystemStatus state) override;
+    void onExitState(SystemStatus state) override;
     bool test = false;
 };

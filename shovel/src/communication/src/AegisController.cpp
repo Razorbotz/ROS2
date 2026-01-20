@@ -52,6 +52,120 @@ void AegisController::onCanDataReceived(const CanDataPayload& payload) {
     }
 }
 
+bool AegisController::isValidTransition(SystemStatus from, SystemStatus to) {
+    switch (from) {
+        case PRIMARY:
+            return (to == PARTIAL_PRIMARY || // Motor/Node lost
+                    to == SINGLE_FC       || // Peer lost (HB/500)
+                    to == STANDBY);          // Peer asserted PRIMARY
+
+        case PARTIAL_PRIMARY:
+            return (to == PRIMARY ||         // Recovery
+                    to == STOP);             // Peer lost while in Partial (Critical)
+            
+        case SINGLE_FC:
+            return (to == PRIMARY ||         // Peer returned
+                    to == STOP);             // Motor/Node lost while alone
+            
+        case STANDBY:
+            return (to == SINGLE_FC ||       // Peer died, need to take over
+                    to == PRIMARY);         // Normal handover
+            
+        case STOP:
+            return (to == PARTIAL_PRIMARY || // Recovered FC2, still missing motor
+                    to == SINGLE_FC ||       // Recovered motor, still missing FC2
+                    to == ERROR);            // Gave up
+            
+        case ERROR:
+                return false;
+        default:
+            return false;
+    }
+}
+
+void AegisController::onEnterState(SystemStatus state) {
+    switch (state) {
+        case PRIMARY:{
+            if(!motorsAuthorized){
+                enableMotorAuthorization();
+                motorsAuthorized = true;
+            }
+            break;
+        }
+        case STANDBY:
+
+            break;
+        case PARTIAL_PRIMARY:{
+            if(!motorsAuthorized){
+                enableMotorAuthorization();
+                motorsAuthorized = true;
+            }
+            break;
+        }
+
+        case PARTIAL_SECONDARY:
+            // Auto-trigger the alert logic we discussed
+            // alert_pilot("System degraded");
+            break;
+
+        case CAN_INOP:
+        
+            break;
+
+        case ERROR:
+            // Immediate safety kill
+            // disable_all_motors();
+            // trigger_audible_alarm();
+            break;
+
+        case SAFETY_DEGRADED:
+
+            break;
+            
+        case STOP:
+            // Ensure timers are cleared
+            // takeover_timer.cancel();
+            break;
+    }
+}
+
+void AegisController::onExitState(SystemStatus state) {
+    switch (state) {
+        case PRIMARY:
+
+            break;
+        case STANDBY:
+
+            break;
+        case PARTIAL_PRIMARY:
+            break;
+
+        case PARTIAL_SECONDARY:
+            // Auto-trigger the alert logic we discussed
+            // alert_pilot("System degraded");
+            break;
+
+        case CAN_INOP:
+        
+            break;
+
+        case ERROR:
+            // Immediate safety kill
+            // disable_all_motors();
+            // trigger_audible_alarm();
+            break;
+
+        case SAFETY_DEGRADED:
+
+            break;
+            
+        case STOP:
+            // Ensure timers are cleared
+            // takeover_timer.cancel();
+            break;
+    }
+}
+
 void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Orin: Received Message ID: %d", id);
     // Packet containing motor speed values
@@ -186,32 +300,21 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             // Response that the sender is in control
             // Because at most one FC can be in charge, need to transition to standby
             if(systemStatus_ref == PRIMARY){
-                std::cout << "Orin to STANDBY" << std::endl;
-                systemStatus_ref = STANDBY;
-                alertSystemStatusChange();
+                requestStateTransition(STANDBY);
             }
             if(systemStatus_ref == PARTIAL_PRIMARY){
-                std::cout << "Orin to PARTIAL_SECONDARY" << std::endl;
-                systemStatus_ref = PARTIAL_SECONDARY;
-                alertSystemStatusChange();
+                requestStateTransition(PARTIAL_SECONDARY);
             }
             break;
             
         case ID_STATE_STANDBY:{
             // Response that the sender is not in control
-            
             // Secondary is not in control, need to transition to be in charge
             if(systemStatus_ref == STANDBY || systemStatus_ref == SINGLE_FC){
-                std::cout << "Orin is transitioning to PRIMARY" << std::endl;
-                systemStatus_ref = PRIMARY;
-                enableMotorAuthorization();
-                alertSystemStatusChange();
+                requestStateTransition(PRIMARY);
             }
             if(systemStatus_ref == PARTIAL_SECONDARY){
-                std::cout << "Orin is transitioning to PARTIAL_PRIMARY" << std::endl;
-                systemStatus_ref = PARTIAL_PRIMARY;
-                enableMotorAuthorization();
-                alertSystemStatusChange();
+                requestStateTransition(PARTIAL_PRIMARY);
             }
             break;
         }
@@ -224,9 +327,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         case ID_GRANT_CONTROL:{
             // Response from Nano to Orin to take control
             if(systemStatus_ref == PARTIAL_PRIMARY){
-                std::cout << "Orin is transitioning to PRIMARY" << std::endl;
-                systemStatus_ref = PRIMARY;
-                alertSystemStatusChange();
+                requestStateTransition(PRIMARY);
             }
             else{
                 std::cout << "Orin was granted control, but is currently in state " << systemStatus_ref << std::endl;
@@ -274,14 +375,15 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
                 if(status == PRIMARY || status == PARTIAL_PRIMARY){
                     error = true;
-                    systemStatus_ref = ERROR;
                     std::cout << "Error " << std::endl;
                     alertSystemStatusChange();
+                    acknowledgeSystemStatusChange(error);
+                    requestStateTransition(STANDBY);
                 }
             }
             if(systemStatus_ref == PARTIAL_PRIMARY && status == STANDBY){
-                systemStatus_ref = PRIMARY;
-                alertSystemStatusChange();
+                acknowledgeSystemStatusChange(error);
+                requestStateTransition(PRIMARY);
             }
             acknowledgeSystemStatusChange(error);
             break;
@@ -292,8 +394,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             if (len < 1) return;
             uint8_t err = data[0];
             if(err == 1){
-                systemStatus_ref = ERROR;
-                std::cout << "ERROR" << std::endl;
+                requestStateTransition(ERROR);
             }
             else{
 
@@ -476,8 +577,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                 sendAuth();
             }
             if(checkControlErrors()){
-                systemStatus_ref = ERROR;
-                alertSystemStatusChange();
+                requestStateTransition(STOP);
             }
             break;
         }
@@ -506,7 +606,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 remoteStatus.UP = false;
             }
-            systemStatus_ref = SINGLE_FC;
+            requestStateTransition(SINGLE_FC);
             RCLCPP_WARN(nodeHandle->get_logger(), "Nano shutting down");
             break;
             
@@ -517,7 +617,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                 remoteStatus.UP = true;
             }
             if(systemStatus_ref == SINGLE_FC){
-                systemStatus_ref = PRIMARY;
+                requestStateTransition(PRIMARY);
             }
             queryControl();
             RCLCPP_INFO(nodeHandle->get_logger(), "Nano Booted");

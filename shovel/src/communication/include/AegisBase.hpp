@@ -70,7 +70,16 @@ public:
 
     virtual ~AegisBase() = default;
 
+    void requestStateTransition(SystemStatus new_state);
+
+    virtual bool isValidTransition(SystemStatus from, SystemStatus to) = 0;
+    virtual void onEnterState(SystemStatus state) = 0;
+    virtual void onExitState(SystemStatus state) = 0;
+    std::string stateToString(SystemStatus state);
+
     // 000s
+    void sendSpeedMessage();
+    void sendPositionMessage();
     void sendJoystickAxis(uint8_t which, uint8_t axis, float value);
     void sendJoystickButton(uint8_t which, uint8_t button, uint8_t state);
     void sendJoystickHat(uint8_t which, uint8_t hat, uint8_t value);
@@ -97,6 +106,12 @@ public:
     void acknowledgeSystemStatusChange(bool error);
 
     // 300s
+    void sendParamInit();
+    void sendParamData();
+    void sendParamAck();
+    void sendParamReject();
+    void sendSyncComplete();
+    void sendReadyOp();
 
     // 400s
     void sendHardEStop();

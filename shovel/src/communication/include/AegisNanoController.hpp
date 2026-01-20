@@ -20,6 +20,9 @@ public:
     void checkAuthorityTimer();
     void verifyCanStatus(const CanHeartbeatPayload& hb) override;
     void onCanDataReceived(const CanDataPayload& payload) override;
+    bool isValidTransition(SystemStatus from, SystemStatus to) override;
+    void onEnterState(SystemStatus state) override;
+    void onExitState(SystemStatus state) override;
 
     private:
         std::chrono::steady_clock::time_point takeover_start_time;

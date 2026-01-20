@@ -243,6 +243,7 @@ struct KeyboardEvent {
 };
 
 enum SystemStatus : uint8_t {
+    BOOT,
     PRIMARY, // Should control all motors and send data to client
     STANDBY, // Should act as safety monitor and backup
     SINGLE_FC, // Only acting FC, should be more careful
