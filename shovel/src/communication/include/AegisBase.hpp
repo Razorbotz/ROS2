@@ -46,6 +46,10 @@ protected:
     std::array<bool, MAX_MOTOR_ID> remote_cont;
     bool alertedRemoteMotors = false;
     bool motorsAuthorized = false;
+    std::chrono::steady_clock::time_point param_start_time;
+    bool param_timer_active = false;
+    std::chrono::steady_clock::time_point motor_start_time;
+    bool motor_timer_active = false;
 
 public:
     AegisBase(rclcpp::Node::SharedPtr node, 
@@ -65,18 +69,20 @@ public:
             node_table.fill(false);
             remote_auth.fill(false);
             remote_cont.fill(false);
-            remoteStatus.STATUS = STANDBY;
+            remoteStatus.STATUS = BOOT;
           }
 
     virtual ~AegisBase() = default;
 
+    virtual void checkTimers();
+    void initAegis();
+
     void requestStateTransition(SystemStatus new_state);
 
-    virtual bool isValidTransition(SystemStatus from, SystemStatus to) = 0;
+    bool isValidTransition(SystemStatus from, SystemStatus to);
     virtual void onEnterState(SystemStatus state) = 0;
     virtual void onExitState(SystemStatus state) = 0;
     std::string stateToString(SystemStatus state);
-
     // 000s
     void sendSpeedMessage();
     void sendPositionMessage();
@@ -186,6 +192,7 @@ public:
     bool checkAllMotorsInit();
 
     void checkMotorInitTimer();
+    void checkParamInitTimer();
 
     bool canAcceptControl();
     bool canGiveControl();

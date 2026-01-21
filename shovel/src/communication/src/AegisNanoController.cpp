@@ -13,52 +13,25 @@ AegisNanoController::AegisNanoController(rclcpp::Node::SharedPtr node,
 {
 }
 
-bool AegisNanoController::isValidTransition(SystemStatus from, SystemStatus to) {
-    switch (from) {
-        case PRIMARY:
-            return (to == PARTIAL_PRIMARY || // Motor/Node lost
-                    to == SINGLE_FC       || // Peer lost (HB/500)
-                    to == STANDBY);          // Peer asserted PRIMARY
-            
-        case PARTIAL_PRIMARY:
-            return (to == PRIMARY ||         // Recovery
-                    to == STOP);             // Peer lost while in Partial
-            
-        case SINGLE_FC:
-            return (to == PRIMARY ||         // Peer returned
-                    to == STOP);             // Motor/Node lost while alone
-            
-        case STANDBY:
-            return (to == SINGLE_FC ||       // Peer died, need to take over
-                    to == PARTIAL_SECONDARY ||
-                    to == PRIMARY);         // Normal handover
-            
-        case STOP:
-            return (to == PARTIAL_PRIMARY || // Recovered FC2, still missing motor
-                    to == SINGLE_FC ||       // Recovered motor, still missing FC2
-                    to == ERROR);            // Gave up
-            
-        case PARTIAL_SECONDARY:
-            return (to == STANDBY ||
-                    to == SINGLE_FC ||
-                    to == STOP);
-        case ERROR:
-                return false;
-        default:
-            return false;
-    }
-}
-
 void AegisNanoController::onEnterState(SystemStatus state) {
     switch (state) {
-        case PRIMARY:
-
+        case PRIMARY:{
+            if(!motorsAuthorized){
+                enableMotorAuthorization();
+                motorsAuthorized = true;
+            }
             break;
+        }
         case STANDBY:
 
             break;
-        case PARTIAL_PRIMARY:
+        case PARTIAL_PRIMARY:{
+            if(!motorsAuthorized){
+                enableMotorAuthorization();
+                motorsAuthorized = true;
+            }
             break;
+        }
 
         case PARTIAL_SECONDARY:
             // Auto-trigger the alert logic we discussed
@@ -124,6 +97,7 @@ void AegisNanoController::onExitState(SystemStatus state) {
 }
 
 void AegisNanoController::checkTimers(){
+    AegisBase::checkTimers();
     checkAuthorityTimer();
     checkTakeoverTimer();
 }

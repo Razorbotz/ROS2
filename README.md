@@ -7,7 +7,7 @@ This page is intended to provide a starting point and overview of the project.  
 
 
 ## Getting Started
-To get started with the project, install the [virtual machine](https://github.com/Razorbotz/ROS2-Installation). Then after installing the virtual machine, go through these [Linux tutorials](https://www.hostinger.com/tutorials/linux-commands). The key objective of these tutorials is to teach how to navigate through the file structure via the terminal, as well manipulating files using commands. Because the robot is designed to be operated remotely on the lunar surface, understanding these commands is an essential skill for this project. 
+To get started with the project, install the [virtual machine](https://github.com/Razorbotz/Install). Then after installing the virtual machine, go through these [Linux tutorials](https://www.hostinger.com/tutorials/linux-commands). The key objective of these tutorials is to teach how to navigate through the file structure via the terminal, as well manipulating files using commands. Because the robot is designed to be operated remotely on the lunar surface, understanding these commands is an essential skill for this project. 
 
 
 ## Understanding the Codebase
@@ -35,3 +35,14 @@ The ROS2 packages currently in this project are as follows:
 ![Node Relationship Visual](docs/images/Nodes23-24.png)
 
 All motor controller nodes, ie Talon, Falcon, and Exavation nodes, also subscribe to two publishers from the communication node that are called the GO and STOP publishers.  These subscriptions were omitted from the diagram for the sake of clarity.
+
+## Running the Simulation
+To run the autonomy code, run the following command in WSL one terminal:
+cd SoftwareDevelopment/ROS2/simulation
+source install/setup.bash
+ros2 launch sim artemis_sim.launch.py
+
+Run the following in a second terminal:
+cd SoftwareDevelopment/ROS2/simulation
+source install/setup.bash
+ros2 run teleop keyboard_control

@@ -1,4 +1,32 @@
 #include "AegisBase.hpp"
+
+void AegisBase::checkTimers(){
+    auto now = std::chrono::steady_clock::now();
+    if(motor_timer_active){
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - motor_start_time).count();
+        if(elapsed > 400){
+            motor_timer_active = false;
+            if(!motorsAuthorized){
+                enableMotorAuthorization();
+            }
+        }
+    }
+    checkMotorInitTimer();
+    checkParamInitTimer();
+}
+
+void AegisBase::initAegis(){
+    systemStatus_ref = BOOT;
+    auto now = std::chrono::steady_clock::now();
+    param_start_time = now;
+    param_timer_active = true;
+    motor_start_time = now;
+    motor_timer_active = true;
+    requestStateTransition(STANDBY);
+    alertSystemBoot();
+}
+
+
 void AegisBase::requestStateTransition(SystemStatus new_state) {
     if (systemStatus_ref == new_state) {
         return;
@@ -18,6 +46,43 @@ void AegisBase::requestStateTransition(SystemStatus new_state) {
     systemStatus_ref = new_state;
     onEnterState(new_state);
     alertSystemStatusChange();
+}
+
+bool AegisBase::isValidTransition(SystemStatus from, SystemStatus to) {
+    switch (from) {
+        case PRIMARY:
+            return (to == PARTIAL_PRIMARY || // Motor/Node lost
+                    to == SINGLE_FC       || // Peer lost (HB/500)
+                    to == STANDBY);          // Peer asserted PRIMARY
+
+        case PARTIAL_PRIMARY:
+            return (to == PRIMARY ||         // Recovery
+                    to == STOP);             // Peer lost while in Partial (Critical)
+            
+        case SINGLE_FC:
+            return (to == PRIMARY ||         // Peer returned
+                    to == STOP);             // Motor/Node lost while alone
+            
+        case STANDBY:
+            return (to == SINGLE_FC ||       // Peer died, need to take over
+                    to == PRIMARY   ||       // Normal handover
+                    to == PARTIAL_SECONDARY);
+            
+        case STOP:
+            return (to == PARTIAL_PRIMARY || // Recovered FC2, still missing motor
+                    to == SINGLE_FC ||       // Recovered motor, still missing FC2
+                    to == ERROR);            // Gave up
+            
+        case PARTIAL_SECONDARY:
+            return (to == STANDBY ||
+                    to == SINGLE_FC ||
+                    to == STOP);
+            
+        case ERROR:
+                return false;
+        default:
+            return false;
+    }
 }
 
 std::string AegisBase::stateToString(SystemStatus state) {
@@ -110,9 +175,9 @@ void AegisBase::sendAuthConfirm(){
 void AegisBase::queryControl(){
     if (!hb_link.is_remote_alive()){
         if(systemStatus_ref == STANDBY){
-            systemStatus_ref = SINGLE_FC;
-            std::cout << "Entering SINGLE_FC" << std::endl;
-            enableMotorAuthorization();
+            requestStateTransition(SINGLE_FC);
+            if(!motorsAuthorized)
+                enableMotorAuthorization();
             alertSystemStatusChange();
             return;
         }        
@@ -248,6 +313,8 @@ void AegisBase::sendSoftEStop(){
 
 // ID 402
 void AegisBase::alertLostMotor(uint8_t motor_id){
+    if(!motorsAuthorized)
+        enableMotorAuthorization();
     updateMotorAuthorization(motor_id, false);
     MotorListPayload msg;
     msg.count = 1;
@@ -257,13 +324,15 @@ void AegisBase::alertLostMotor(uint8_t motor_id){
     hb_link.send_data(402, &msg, sizeof(msg));
     sendAuth();
     if(systemStatus_ref == PRIMARY){
-        systemStatus_ref = PARTIAL_PRIMARY;
+        requestStateTransition(PARTIAL_PRIMARY);
     }
     alertSystemStatusChange();
 }
 
 // ID 403
 void AegisBase::alertRegainedMotor(uint8_t motor_id){
+    if(!motorsAuthorized)
+        enableMotorAuthorization();
     updateMotorAuthorization(motor_id, true);
     MotorListPayload msg;
     msg.count = 1;
@@ -461,18 +530,23 @@ bool AegisBase::isMotorAuthorized(uint8_t motor_id) const {
 }
 
 void AegisBase::enableMotorAuthorization(){
-    for(int i = 0; i < MAX_MOTOR_ID; i++){
-        if(can0_table[i] || can1_table[i]){
-            auth_table[i] = true;
-        }
-        else{
-            auth_table[i] = false;
-            if(systemStatus_ref == PRIMARY){
-                std::cout << "Switching to PARTIAL_PRIMARY" << std::endl;
-                systemStatus_ref = PARTIAL_PRIMARY;
-                alertSystemStatusChange();
+    if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || systemStatus_ref == SINGLE_FC){
+        std::cout << "Enabling motor authorization" << std::endl;
+        for(int i = 0; i < MAX_MOTOR_ID; i++){
+            if(can0_table[i] || can1_table[i]){
+                auth_table[i] = true;
+            }
+            else{
+                std::cout << "Motor " << i << "not authorized" << std::endl;
+                auth_table[i] = false;
+                if(systemStatus_ref == PRIMARY){
+                    std::cout << "Switching to PARTIAL_PRIMARY" << std::endl;
+                    requestStateTransition(PARTIAL_PRIMARY);
+                    alertSystemStatusChange();
+                }
             }
         }
+        motorsAuthorized = true;
     }
 }
 
@@ -582,6 +656,17 @@ void AegisBase::checkMotorInitTimer() {
     }
 }
 
+void AegisBase::checkParamInitTimer(){
+    if(!param_timer_active)return;
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - param_start_time).count();
+    if(elapsed > 300){
+        param_timer_active = false;
+        std::cout << "Send Params" << std::endl;
+        //sendParams();
+    }
+}
+
 bool AegisBase::canGiveControl(){
     // TODO: Add checks to determine whether the system is in a state that it can
     // give control back to the other FC. This will most likely include a check on
@@ -611,15 +696,16 @@ void AegisBase::checkMotorControlStatus(){
             std::cout << "Here" << std::endl;
             if(systemStatus_ref == SINGLE_FC){
                 std::cout << "Entering Stop state" << std::endl;
-                systemStatus_ref = STOP;
+                requestStateTransition(STOP);
             }
             return;
         }
     }
     if(systemStatus_ref == STOP){
         if(remoteStatus.UP == false){
-            systemStatus_ref = SINGLE_FC;
-            enableMotorAuthorization();
+            requestStateTransition(SINGLE_FC);
+            if(!motorsAuthorized)
+                enableMotorAuthorization();
         }
     }
 }

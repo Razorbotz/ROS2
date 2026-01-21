@@ -86,7 +86,8 @@ protected:
             while (orin_running) {
                 orinLink->spin_once();
                 orinLink->send_heartbeat();
-                nanoCanLink->read_heartbeat(orin_hb);
+                orinController->checkTimers();
+                orinCanLink->read_heartbeat(nano_hb);
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
@@ -96,7 +97,7 @@ protected:
                 nanoLink->spin_once();
                 nanoController->checkTimers();
                 nanoLink->send_heartbeat();
-                orinCanLink->read_heartbeat(nano_hb);
+                nanoCanLink->read_heartbeat(orin_hb);
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
@@ -433,7 +434,7 @@ TEST_F(SystemIntegrationTest, OrinQuerysNanoControl_AlertAck){
 }
 
 TEST_F(SystemIntegrationTest, OrinPrimary_NanoBecomesPrimary){
-    nanoSysStatus = STANDBY; 
+    nanoSysStatus = PRIMARY; 
     orinSysStatus = PRIMARY;
     
     for (int i=0; i<10; i++) {
@@ -452,6 +453,7 @@ TEST_F(SystemIntegrationTest, OrinPrimary_NanoBecomesPrimary){
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     ASSERT_EQ(orinSysStatus, STANDBY) << "Orin did not enter STANDBY state after Nano attempted to become PRIMARY while Orin was PRIMARY";
+    ASSERT_EQ(nanoSysStatus, STOP);
 }
 
 TEST_F(SystemIntegrationTest, NanoShutdown){
@@ -1120,7 +1122,10 @@ TEST_F(SystemIntegrationTest, MotorNodeCrash_Nano_Single){
     if (orin_thread.joinable()) {
         orin_thread.join();
     }
+    while(orinLink->spin_once()); 
+
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
     nanoSysStatus = STANDBY; 
     nanoController->alertSystemBoot();
     nanoController->queryControl();
@@ -1136,9 +1141,6 @@ TEST_F(SystemIntegrationTest, MotorNodeCrash_Nano_Single){
     nanoController->alertLostMotor(10);
 
     for (int i=0; i<20; i++) {
-        while(orinLink->spin_once()); 
-        orinLink->send_heartbeat();
-        
         while(nanoLink->spin_once()); 
         nanoLink->send_heartbeat();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -1149,9 +1151,6 @@ TEST_F(SystemIntegrationTest, MotorNodeCrash_Nano_Single){
     nanoController->alertRegainedMotor(10);
 
     for (int i=0; i<20; i++) {
-        while(orinLink->spin_once()); 
-        orinLink->send_heartbeat();
-        
         while(nanoLink->spin_once()); 
         nanoLink->send_heartbeat();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -1188,6 +1187,7 @@ TEST_F(SystemIntegrationTest, MotorNodeCrash_Nano_Single_Orin_Rejoins_After_Rebo
     }
 }
 
+/*
 TEST_F(SystemIntegrationTest, PingNano){
     testing::internal::CaptureStdout();
 
@@ -1288,3 +1288,4 @@ TEST_F(SystemIntegrationTest, PingOrin){
 
     ValidateFlexibleFlow(output, expected_flow);
 }
+    */

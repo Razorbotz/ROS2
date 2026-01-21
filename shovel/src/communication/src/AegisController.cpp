@@ -52,43 +52,13 @@ void AegisController::onCanDataReceived(const CanDataPayload& payload) {
     }
 }
 
-bool AegisController::isValidTransition(SystemStatus from, SystemStatus to) {
-    switch (from) {
-        case PRIMARY:
-            return (to == PARTIAL_PRIMARY || // Motor/Node lost
-                    to == SINGLE_FC       || // Peer lost (HB/500)
-                    to == STANDBY);          // Peer asserted PRIMARY
-
-        case PARTIAL_PRIMARY:
-            return (to == PRIMARY ||         // Recovery
-                    to == STOP);             // Peer lost while in Partial (Critical)
-            
-        case SINGLE_FC:
-            return (to == PRIMARY ||         // Peer returned
-                    to == STOP);             // Motor/Node lost while alone
-            
-        case STANDBY:
-            return (to == SINGLE_FC ||       // Peer died, need to take over
-                    to == PRIMARY);         // Normal handover
-            
-        case STOP:
-            return (to == PARTIAL_PRIMARY || // Recovered FC2, still missing motor
-                    to == SINGLE_FC ||       // Recovered motor, still missing FC2
-                    to == ERROR);            // Gave up
-            
-        case ERROR:
-                return false;
-        default:
-            return false;
-    }
-}
-
 void AegisController::onEnterState(SystemStatus state) {
     switch (state) {
         case PRIMARY:{
-            if(!motorsAuthorized){
-                enableMotorAuthorization();
-                motorsAuthorized = true;
+            if(checkAllMotorsInit()){
+                if(!motorsAuthorized){
+                    enableMotorAuthorization();
+                }
             }
             break;
         }
@@ -96,9 +66,10 @@ void AegisController::onEnterState(SystemStatus state) {
 
             break;
         case PARTIAL_PRIMARY:{
-            if(!motorsAuthorized){
-                enableMotorAuthorization();
-                motorsAuthorized = true;
+            if(checkAllMotorsInit()){
+                if(!motorsAuthorized){
+                    enableMotorAuthorization();
+                }
             }
             break;
         }
@@ -107,6 +78,17 @@ void AegisController::onEnterState(SystemStatus state) {
             // Auto-trigger the alert logic we discussed
             // alert_pilot("System degraded");
             break;
+
+        case SINGLE_FC:{
+            // When transitioning to the SINGLE_FC, need to remove any 
+            // authorization that the peer has
+            //clearRemoteAuth();
+            // Need to check whether all motors and nodes are active. If 
+            // they are down, need to transition to the STOP state until they
+            // recover.
+            //checkMotorControl();
+            break;
+        }
 
         case CAN_INOP:
         
@@ -376,14 +358,16 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                 if(status == PRIMARY || status == PARTIAL_PRIMARY){
                     error = true;
                     std::cout << "Error " << std::endl;
-                    alertSystemStatusChange();
                     acknowledgeSystemStatusChange(error);
+                    alertSystemStatusChange();
                     requestStateTransition(STANDBY);
+                    break;
                 }
             }
             if(systemStatus_ref == PARTIAL_PRIMARY && status == STANDBY){
                 acknowledgeSystemStatusChange(error);
                 requestStateTransition(PRIMARY);
+                break;
             }
             acknowledgeSystemStatusChange(error);
             break;
@@ -573,7 +557,10 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             acknowledgeMotorsDetected();
 
             if(systemStatus_ref == PRIMARY){
-                enableMotorAuthorization();
+                if(!motorsAuthorized){
+                    std::cout << "Enabling motor authorization" << std::endl;
+                    enableMotorAuthorization();
+                }
                 sendAuth();
             }
             if(checkControlErrors()){
