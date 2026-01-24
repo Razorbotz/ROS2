@@ -7,9 +7,10 @@ AegisNanoController::AegisNanoController(rclcpp::Node::SharedPtr node,
                                  RemoteStatus& status_ref,
                                  bool& rawData_in,
                                  SystemStatus& sysStatus_in,
+                                 HandshakeStatus& handStatus_in,
                                  ErrorCode& errCode_in
                                  )
-    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, errCode_in)
+    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in)
 {
 }
 
@@ -18,7 +19,6 @@ void AegisNanoController::onEnterState(SystemStatus state) {
         case PRIMARY:{
             if(!motorsAuthorized){
                 enableMotorAuthorization();
-                motorsAuthorized = true;
             }
             break;
         }
@@ -28,7 +28,6 @@ void AegisNanoController::onEnterState(SystemStatus state) {
         case PARTIAL_PRIMARY:{
             if(!motorsAuthorized){
                 enableMotorAuthorization();
-                motorsAuthorized = true;
             }
             break;
         }
@@ -37,6 +36,13 @@ void AegisNanoController::onEnterState(SystemStatus state) {
             // Auto-trigger the alert logic we discussed
             // alert_pilot("System degraded");
             break;
+
+        case SINGLE_FC:{
+            if(!motorsAuthorized){
+                enableMotorAuthorization();
+            }
+            break;
+        }
 
         case CAN_INOP:
         
@@ -97,9 +103,19 @@ void AegisNanoController::onExitState(SystemStatus state) {
 }
 
 void AegisNanoController::checkTimers(){
-    AegisBase::checkTimers();
+    AegisBase::checkBootTimer();
     checkAuthorityTimer();
     checkTakeoverTimer();
+
+    // Auto-Retry Logic
+    if (handshakeStatus_ref != IDLE_HANDSHAKE && 
+        handshakeStatus_ref != COMPLETE_HANDSHAKE && 
+        retry_timer.isExpired()) 
+    {
+        // Resend the packet for the current step
+        advanceHandshake(); 
+        retry_timer.restart();
+    }
 }
 
 void AegisNanoController::checkAuthorityTimer(){
@@ -168,11 +184,117 @@ void AegisNanoController::onCanDataReceived(const CanDataPayload& payload) {
     }
 }
 
+void AegisNanoController::advanceHandshake() {
+    // Nano is mostly reactive, but we use this to handle retries for 
+    // packets WE initiate (like the Motor Report in Stage 3)
+    retry_timer.start(50);
+
+    if (handshakeStatus_ref == MOTOR_HANDSHAKE) {
+        if (handshake_step == 1) {
+            // FC2 -> FC1: 422 
+            alertMotorsDetected();
+        }
+    }
+}
+
+void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* data) {
+    // --- STAGE 1: CONTROL NEGOTIATION ---
+    if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
+        if (id == ID_QUERY_CONTROL) { // 200
+            if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
+                alertPrimary();
+                if(remoteStatus.STATUS == STANDBY){
+                    handshakeStatus_ref = PARAM_HANDSHAKE;
+                    handshake_step = 0;
+                }
+            }
+            else if(systemStatus_ref == STANDBY || systemStatus_ref == PARTIAL_SECONDARY){
+                alertNotPrimary();
+            }
+        }
+        // FIX: Added "else if (id == ...)" wrapper. 
+        // Previously this ran for EVERY packet, causing phantom 212 ACKs.
+        else if (id == ID_SYS_STATUS_CHG) { 
+            if (data[0] == PRIMARY && (systemStatus_ref == STANDBY || systemStatus_ref == PARTIAL_SECONDARY)) {
+                acknowledgeSystemStatusChange(false);
+                handshakeStatus_ref = PARAM_HANDSHAKE;
+                handshake_step = 0;
+            }
+            else if((data[0] == STANDBY) && (systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY)){
+                acknowledgeSystemStatusChange(false);
+                handshakeStatus_ref = PARAM_HANDSHAKE;
+                handshake_step = 0;
+            }
+            else {
+                acknowledgeSystemStatusChange(false);
+            }
+        }
+    }
+
+    // --- STAGE 2: PARAMETER EXCHANGE ---
+    else if (handshakeStatus_ref == PARAM_HANDSHAKE) {
+        if (id == ID_PARAM_INIT) { // 300
+            // Reset param buffer logic
+        }
+        else if(id == ID_PARAM_DATA){ // 301
+            sendParamAck(); // 302
+        }
+        else if (id == ID_SYNC_COMPLETE) { // 304
+            sendReadyOp(); // 305
+            handshakeStatus_ref = MOTOR_HANDSHAKE;
+            handshake_step = 0;
+        }
+    }
+
+    // --- STAGE 3: MOTOR AUTH ---
+    else if (handshakeStatus_ref == MOTOR_HANDSHAKE) {
+        // Step 0: Receive Orin's 422
+        if (handshake_step == 0 && id == ID_MOTORS_INIT) { // 422
+            acknowledgeMotorsDetected(); // Send 423
+            
+            // Now we must send OUR motors (Step 1)
+            handshake_step = 1;
+            advanceHandshake(); // Triggers sending my 422
+        }
+        // Step 1: Waiting for Ack (423) for the 422 we just sent
+        else if (handshake_step == 1 && id == ID_MOTORS_ACK) { // 423
+            handshake_step = 2; // Ready for final Auth
+        }
+        // Step 2: Receive Final Auth Assignment
+        else if (handshake_step == 2 && id == ID_ASSIGN_AUTH) { // 100
+             const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+             processRemoteAuth(payload->motor_states);
+             setAuthFromRemote(payload->motor_states);
+             // Send Confirmation (ID 101)
+             sendAuthConfirm();
+             std::cout << "[Handshake] Nano Complete. Entering STANDBY." << std::endl;
+             handshakeStatus_ref = COMPLETE_HANDSHAKE;
+             requestStateTransition(STANDBY);
+             retry_timer.cancel();
+        }
+    }
+}
+
+
 void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Nano: Received Message ID: %d", id);
-    // Packet containing motor speed values
+    bool is_handshaking = handshakeStatus_ref != IDLE_HANDSHAKE && handshakeStatus_ref != COMPLETE_HANDSHAKE;
+    if (is_handshaking) {
+        if (isHandshakeMsg(id)) {
+            processHandshakePacket(id, data);
+            return; 
+        }
+        if (systemStatus_ref == SINGLE_FC || systemStatus_ref == PRIMARY) {
+            // Fall through
+        }
+        else {
+            return; 
+        }
+    }
+    
     switch (id) {
         // --- TELEMETRY ---
+        // Packet containing motor speed values
         case ID_SPEED_MSG: {
             MotorSpeed msg;
             if (parse_packet(data, len, msg, "MotorSpeed")) {
@@ -432,6 +554,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             break;
 
         case ID_PARAM_DATA:
+            sendParamAck();
             break;
         
         case ID_PARAM_ACK:
@@ -628,17 +751,43 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 remoteStatus.UP = true;
             }
-            if(systemStatus_ref == SINGLE_FC){
+            RCLCPP_INFO(nodeHandle->get_logger(), "Orin Booted");
+            alertSystemBootAck();
+
+            if (systemStatus_ref == SINGLE_FC) {
+                std::cout << "[System] Peer Rejoining during flight. Starting Live Handshake." << std::endl;
                 requestStateTransition(PRIMARY);
+                handshakeStatus_ref = CONTROL_HANDSHAKE;
+                handshake_step = 0;
+                advanceHandshake(); 
             }
-            queryControl();
-            RCLCPP_INFO(nodeHandle->get_logger(), "Nano Booted");
-            if(!init_timer_active){
-                init_start_time = std::chrono::steady_clock::now();
-                init_timer_active = true;
+            else if (systemStatus_ref == STOP) {
+                std::cout << "[System] Peer Found. Starting Blocking Handshake." << std::endl;
+                requestStateTransition(STANDBY);
+                handshakeStatus_ref = CONTROL_HANDSHAKE;
+                handshake_step = 0;
+                advanceHandshake();
+            }
+            else if(systemStatus_ref == BOOT || systemStatus_ref == STANDBY){
+                std::cout << "[System] Peer Found. Starting Blocking Handshake." << std::endl;
+                requestStateTransition(STANDBY);
+                handshakeStatus_ref = CONTROL_HANDSHAKE;
+                handshake_step = 0;
+                advanceHandshake();
             }
             break;    
-        } 
+        }
+
+        case ID_SYS_BOOT_ACK: { // 502
+            RCLCPP_INFO(nodeHandle->get_logger(), "Nano: Boot Acknowledged (502). Entering Handshake.");
+            // If we are booting up, this is the trigger to start asking for control
+            if ((systemStatus_ref == BOOT || systemStatus_ref == STANDBY) && handshakeStatus_ref != CONTROL_HANDSHAKE) {
+                handshakeStatus_ref = CONTROL_HANDSHAKE;
+                handshake_step = 0; 
+                queryControl();
+            }
+            break;
+        }
     
         default:
             RCLCPP_WARN(nodeHandle->get_logger(), "Received unknown Message ID: %d", id);

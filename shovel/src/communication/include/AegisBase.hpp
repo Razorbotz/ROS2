@@ -12,6 +12,7 @@
 #include <mutex>
 #include <cstring>
 #include <atomic>
+#include "SimpleTimer.hpp"
 
 
 // Currently there are 8 motors. They range from 10-17
@@ -26,6 +27,7 @@ protected:
     RemoteStatus& remoteStatus;
     bool& sendRawData_ref;
     SystemStatus& systemStatus_ref;
+    HandshakeStatus& handshakeStatus_ref;
     ErrorCode& errorCode_ref;
     std::atomic<uint64_t> last_can_rx_time {0};
     
@@ -46,10 +48,8 @@ protected:
     std::array<bool, MAX_MOTOR_ID> remote_cont;
     bool alertedRemoteMotors = false;
     bool motorsAuthorized = false;
-    std::chrono::steady_clock::time_point param_start_time;
-    bool param_timer_active = false;
-    std::chrono::steady_clock::time_point motor_start_time;
-    bool motor_timer_active = false;
+    SimpleTimer boot_timer; 
+    bool boot_checks_passed = false;
 
 public:
     AegisBase(rclcpp::Node::SharedPtr node, 
@@ -59,9 +59,10 @@ public:
               RemoteStatus& r_status,
               bool& raw_data, 
               SystemStatus& sys_status,
+              HandshakeStatus& hand_status,
               ErrorCode& error_code)
         : nodeHandle(node), hb_link(link), can_link(c_link), comms_mutex(mutex), remoteStatus(r_status),
-          sendRawData_ref(raw_data), systemStatus_ref(sys_status), errorCode_ref(error_code) {
+          sendRawData_ref(raw_data), systemStatus_ref(sys_status), handshakeStatus_ref(hand_status), errorCode_ref(error_code) {
             auth_table.fill(false);
             can0_table.fill(false);
             can1_table.fill(false);
@@ -74,8 +75,8 @@ public:
 
     virtual ~AegisBase() = default;
 
-    virtual void checkTimers();
     void initAegis();
+    void checkBootTimer();
 
     void requestStateTransition(SystemStatus new_state);
 
@@ -136,6 +137,7 @@ public:
     // 500s
     void alertSystemShutdown();
     void alertSystemBoot();
+    void alertSystemBootAck();
 
     // Helper functions
     bool isMotorAuthorized(uint8_t motor_id) const;
@@ -191,15 +193,13 @@ public:
 
     bool checkAllMotorsInit();
 
-    void checkMotorInitTimer();
-    void checkParamInitTimer();
-
     bool canAcceptControl();
     bool canGiveControl();
 
     bool checkControlErrors();
     void checkMotorControlStatus();
     bool checkRemoteAlive();
+    bool isHandshakeMsg(uint16_t id);
 
     std::chrono::steady_clock::time_point init_start_time;
     bool init_timer_active = false;

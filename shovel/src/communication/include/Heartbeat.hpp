@@ -190,7 +190,8 @@ enum MessageIDs : uint16_t {
 
     // --- 5xx System ---
     ID_SYS_SHUTDOWN     = 500,
-    ID_SYS_BOOT_OK      = 501  
+    ID_SYS_BOOT_OK      = 501,
+    ID_SYS_BOOT_ACK     = 502
 };
 
 struct MotorListPayload {
@@ -253,6 +254,14 @@ enum SystemStatus : uint8_t {
     ERROR, // 
     SAFETY_DEGRADED,
     STOP // STOP
+};
+
+enum HandshakeStatus : uint8_t {
+    IDLE_HANDSHAKE,
+    CONTROL_HANDSHAKE,
+    PARAM_HANDSHAKE,
+    MOTOR_HANDSHAKE,
+    COMPLETE_HANDSHAKE
 };
 
 struct RemoteStatus {

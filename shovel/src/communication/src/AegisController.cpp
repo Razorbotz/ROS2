@@ -8,9 +8,10 @@ AegisController::AegisController(rclcpp::Node::SharedPtr node,
                                  RemoteStatus& status_ref,
                                  bool& rawData_in,
                                  SystemStatus& sysStatus_in,
+                                 HandshakeStatus& handStatus_in,
                                  ErrorCode& errCode_in
                                  )
-    : AegisBase(node, link_ref,  can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, errCode_in)
+    : AegisBase(node, link_ref,  can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in)
 {
 }
 
@@ -80,6 +81,9 @@ void AegisController::onEnterState(SystemStatus state) {
             break;
 
         case SINGLE_FC:{
+            if(!motorsAuthorized){
+                enableMotorAuthorization();
+            }
             // When transitioning to the SINGLE_FC, need to remove any 
             // authorization that the peer has
             //clearRemoteAuth();
@@ -123,7 +127,6 @@ void AegisController::onExitState(SystemStatus state) {
             break;
 
         case PARTIAL_SECONDARY:
-            // Auto-trigger the alert logic we discussed
             // alert_pilot("System degraded");
             break;
 
@@ -148,8 +151,175 @@ void AegisController::onExitState(SystemStatus state) {
     }
 }
 
+void AegisController::checkTimers() {
+    AegisBase::checkBootTimer();
+
+    if (systemStatus_ref != BOOT && systemStatus_ref != SINGLE_FC && systemStatus_ref != ERROR) {
+        checkRemoteAlive(); 
+    }
+
+    // Auto-Retry Logic
+    if (handshakeStatus_ref != IDLE_HANDSHAKE && 
+        handshakeStatus_ref != COMPLETE_HANDSHAKE && 
+        retry_timer.isExpired()) 
+    {
+        // Resend the packet for the current step
+        advanceHandshake(); 
+        retry_timer.restart();
+    }
+}
+
+void AegisController::advanceHandshake() {
+    retry_timer.start(50); 
+
+    switch (handshakeStatus_ref) {
+        // --- STAGE 1: CONTROL NEGOTIATION ---
+        case CONTROL_HANDSHAKE:
+            if (handshake_step == 0) {
+                // FC1 -> FC2: 200 (Query)
+                queryControl(); 
+            }
+            break;
+
+        // --- STAGE 2: PARAMETER EXCHANGE ---
+        case PARAM_HANDSHAKE:
+            if (handshake_step == 0) {
+                sendParamInit(); 
+                handshake_step = 1;
+                advanceHandshake(); 
+            }
+            else if (handshake_step == 1) {
+                sendParamData(); 
+            }
+            else if (handshake_step == 2) {
+                sendSyncComplete();
+            }
+            break;
+
+        // --- STAGE 3: MOTOR AUTH ---
+        case MOTOR_HANDSHAKE:
+            if (handshake_step == 0) {
+                alertMotorsDetected(); 
+            }
+            else if (handshake_step == 2) {
+                acknowledgeMotorsDetected();
+                handshake_step++;
+                advanceHandshake();
+            }
+            else if (handshake_step == 3) {
+                enableMotorAuthorization();
+                sendAuth(); 
+            }
+            break;
+    }
+}
+
+void AegisController::processHandshakePacket(uint16_t id, const uint8_t* data) {
+    bool step_complete = false;
+    std::cout << "here" << std::endl;
+    if (id == ID_SYS_STATUS_CHG) {
+        std::cout << "HERE" << std::endl;
+        acknowledgeSystemStatusChange(false); 
+        return;
+    }
+
+    // --- STAGE 1 CHECKS (Control) ---
+    if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
+        // Step 0: Waiting for Response (201/202)
+        if (handshake_step == 0) { 
+            if (id == ID_STATE_STANDBY) { 
+                std::cout << "Orin: Nano yielded. Transitioning to PRIMARY." << std::endl;
+                requestStateTransition(PRIMARY);
+                handshake_step = 1;
+                retry_timer.cancel();
+                advanceHandshake();
+            } 
+            else if (id == ID_STATE_PRIMARY) { 
+                std::cout << "Orin: Nano claimed Primary. I am yielding to STANDBY." << std::endl;
+                if(systemStatus_ref == STANDBY){
+                    handshakeStatus_ref = PARAM_HANDSHAKE;
+                    handshake_step = 0;
+                }
+                else{
+                    requestStateTransition(STANDBY);
+                }
+                retry_timer.cancel();
+                advanceHandshake();
+            }
+        } 
+        // Step 1: We sent 211, Waiting for Ack (212)
+        else if (handshake_step == 1 && id == ID_ACK_STATUS_CHG) { 
+            handshakeStatus_ref = PARAM_HANDSHAKE;
+            handshake_step = 0;
+            advanceHandshake();
+        }
+    }
+
+    // --- STAGE 2 CHECKS (Params) ---
+    else if (handshakeStatus_ref == PARAM_HANDSHAKE) {
+        if (handshake_step == 1 && (id == ID_PARAM_ACK || id == ID_PARAM_REJECT)) {
+            std::cout << "[Handshake] Param Ack Received." << std::endl;
+            handshake_step = 2;
+            advanceHandshake();
+            return;
+        }
+        if (handshake_step == 2 && id == ID_READY_OP) {
+            std::cout << "[Handshake] Params Synced. Moving to Motors." << std::endl;
+            handshakeStatus_ref = MOTOR_HANDSHAKE;
+            handshake_step = 0;
+            advanceHandshake();
+            return;
+        }
+    }
+
+    // --- STAGE 3 CHECKS (Motors) ---
+    else if (handshakeStatus_ref == MOTOR_HANDSHAKE) {
+        if (handshake_step == 0 && id == ID_MOTORS_ACK) { 
+            step_complete = true; 
+        }
+        else if (handshake_step == 1 && id == ID_MOTORS_INIT) { 
+            step_complete = true; 
+        }
+        else if (handshake_step == 3 && id == ID_CONFIRM_AUTH) { 
+            std::cout << "[Handshake] Complete! Entering PRIMARY." << std::endl;
+            handshakeStatus_ref = COMPLETE_HANDSHAKE;
+            retry_timer.cancel();
+            if(systemStatus_ref == STANDBY){
+                requestControl();
+            }
+            return;
+        }
+    }
+
+    if (step_complete) {
+        handshake_step++;
+        retry_timer.cancel(); 
+        advanceHandshake();   
+    }
+}
+
 void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Orin: Received Message ID: %d", id);
+    bool is_handshaking = handshakeStatus_ref != IDLE_HANDSHAKE && handshakeStatus_ref != COMPLETE_HANDSHAKE;
+
+    if (is_handshaking) {
+        // Allow Handshake Packets (200-212, 300-305, 422-423, 100-101)
+        if (isHandshakeMsg(id)) {
+            processHandshakePacket(id, data);
+            return; 
+        }
+        
+        // CRITICAL: If doing a "Live" handshake (SINGLE_FC), 
+        // MUST still process motor commands and sensor data!
+        if (systemStatus_ref == SINGLE_FC || systemStatus_ref == PRIMARY) {
+            // Fall through to normal switch statement below
+        }
+        else {
+            // If Blocking Handshake (STOP/BOOT), DROP everything else
+            return; 
+        }
+    }
+
     // Packet containing motor speed values
     switch (id) {
         // --- TELEMETRY --- 000s
@@ -312,7 +482,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                 requestStateTransition(PRIMARY);
             }
             else{
-                std::cout << "Orin was granted control, but is currently in state " << systemStatus_ref << std::endl;
+                std::cout << "Orin was granted control, but is currently in state " << (int)systemStatus_ref << std::endl;
             }
             break;
         }
@@ -598,21 +768,51 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             break;
             
         case ID_SYS_BOOT_OK: {
-            // System functioning again
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 remoteStatus.UP = true;
             }
-            if(systemStatus_ref == SINGLE_FC){
-                requestStateTransition(PRIMARY);
-            }
-            queryControl();
             RCLCPP_INFO(nodeHandle->get_logger(), "Nano Booted");
-            if(!init_timer_active){
-                init_start_time = std::chrono::steady_clock::now();
-                init_timer_active = true;
+            alertSystemBootAck();
+
+            if (systemStatus_ref == SINGLE_FC) {
+                std::cout << "[System] Peer Rejoining during flight. Starting Live Handshake." << std::endl;
+                requestStateTransition(PRIMARY);
+                handshakeStatus_ref = CONTROL_HANDSHAKE;
+                handshake_step = 1; 
+                advanceHandshake(); 
+            }
+            else if (systemStatus_ref == STOP) {
+                std::cout << "[System] Peer Found. Starting Blocking Handshake." << std::endl;
+                requestStateTransition(BOOT);
+                handshakeStatus_ref = CONTROL_HANDSHAKE;
+                handshake_step = 0;
+                advanceHandshake();
+            }
+            else if (systemStatus_ref == PRIMARY) {
+                std::cout << "[System] Peer rebooted. I am already Primary. Re-initiating Handshake." << std::endl;
+                handshakeStatus_ref = CONTROL_HANDSHAKE;
+                handshake_step = 1;
+                advanceHandshake();
+            }
+            else if(systemStatus_ref == BOOT || systemStatus_ref == STANDBY){
+                std::cout << "[System] Peer Found. Starting Blocking Handshake." << std::endl;
+                requestStateTransition(STANDBY);
+                handshakeStatus_ref = CONTROL_HANDSHAKE;
+                handshake_step = 0;
+                advanceHandshake();
             }
             break;    
+        }
+
+        case ID_SYS_BOOT_ACK: { // 502
+            RCLCPP_INFO(nodeHandle->get_logger(), "Orin: Boot Acknowledged (502). Entering Handshake.");
+            if ((systemStatus_ref == BOOT || systemStatus_ref == STANDBY) && handshakeStatus_ref == IDLE_HANDSHAKE) {
+                handshakeStatus_ref = CONTROL_HANDSHAKE;
+                handshake_step = 0; 
+                queryControl();
+            }
+            break;
         }
     
         default:

@@ -11,11 +11,16 @@ public:
                     RemoteStatus& status_ref,
                     bool& sendRawData_ref,
                     SystemStatus& systemStatus_ref,
+                    HandshakeStatus& handshakeStatus_ref,
                     ErrorCode& errorCode_ref
                     );
 
+    int handshake_step = 0;
+    SimpleTimer retry_timer; 
+    void advanceHandshake();
+    void processHandshakePacket(uint16_t id, const uint8_t* data);
     void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len);
-    void checkTimers() override;
+    void checkTimers();
     void checkTakeoverTimer(); 
     void checkAuthorityTimer();
     void verifyCanStatus(const CanHeartbeatPayload& hb) override;

@@ -1,29 +1,22 @@
 #include "AegisBase.hpp"
 
-void AegisBase::checkTimers(){
-    auto now = std::chrono::steady_clock::now();
-    if(motor_timer_active){
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - motor_start_time).count();
-        if(elapsed > 400){
-            motor_timer_active = false;
-            if(!motorsAuthorized){
-                enableMotorAuthorization();
-            }
-        }
-    }
-    checkMotorInitTimer();
-    checkParamInitTimer();
-}
+// AegisBase.cpp
 
 void AegisBase::initAegis(){
-    systemStatus_ref = BOOT;
-    auto now = std::chrono::steady_clock::now();
-    param_start_time = now;
-    param_timer_active = true;
-    motor_start_time = now;
-    motor_timer_active = true;
-    requestStateTransition(STANDBY);
-    alertSystemBoot();
+    systemStatus_ref = BOOT;    
+    std::cout << "[System] Booting... Waiting 1s for peripherals." << std::endl;
+    boot_timer.start(1000); 
+}
+
+// You likely need to add this logic to a check function called by your main loop
+// Since AegisBase doesn't have a main loop, ensure your Controller's checkTimers calls this logic.
+void AegisBase::checkBootTimer() {
+    if (systemStatus_ref == BOOT) {
+        if (boot_timer.isExpired()) {
+            alertSystemBoot();
+            requestStateTransition(STANDBY);
+        }
+    }
 }
 
 
@@ -80,6 +73,9 @@ bool AegisBase::isValidTransition(SystemStatus from, SystemStatus to) {
             
         case ERROR:
                 return false;
+
+        case BOOT:
+                return (to == STANDBY);
         default:
             return false;
     }
@@ -180,7 +176,7 @@ void AegisBase::queryControl(){
                 enableMotorAuthorization();
             alertSystemStatusChange();
             return;
-        }        
+        }
     }
     hb_link.send_data(200, "", 0);
 }
@@ -249,13 +245,17 @@ void AegisBase::sendRejectControl(){
 void AegisBase::alertSystemStatusChange(){
     if(!checkRemoteAlive()) return;
     RCLCPP_INFO(nodeHandle->get_logger(), "Sending SystemStatusChange");
+    std::cout << "SystemStatus: " << (int)systemStatus_ref << std::endl;
     uint8_t msg = systemStatus_ref;
     hb_link.send_data(211, &msg, sizeof(msg));
 }
 
 // ID 212
 void AegisBase::acknowledgeSystemStatusChange(bool error){
-    if(!checkRemoteAlive()) return;
+    if(!checkRemoteAlive()) {
+        RCLCPP_WARN(nodeHandle->get_logger(), "Skipping 212 ACK: remote not alive");
+        return;
+    }
     uint8_t msg = (error) ? 1 : 0;
     hb_link.send_data(212, &msg, sizeof(msg));
 }
@@ -461,12 +461,14 @@ void AegisBase::alertSystemShutdown(){
 
 // ID 501
 void AegisBase::alertSystemBoot(){
-    if(!init_timer_active){
-        init_start_time = std::chrono::steady_clock::now();
-        init_timer_active = true;
-    }
     if(!checkRemoteAlive()) return;
     hb_link.send_data(501, "", 0);
+}
+
+// ID 502
+void AegisBase::alertSystemBootAck(){
+    if(!checkRemoteAlive()) return;
+    hb_link.send_data(502, "", 0);
 }
 
 void AegisBase::updateMotorAuthorization(uint8_t motor_id, bool authorized) {
@@ -644,29 +646,6 @@ bool AegisBase::checkAllMotorsInit(){
     return false;
 }
 
-void AegisBase::checkMotorInitTimer() {
-    if (!init_timer_active) return;
-
-    auto now = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - init_start_time).count();
-
-    if (elapsed >= 200) {
-        init_timer_active = false;
-        alertMotorsDetected();
-    }
-}
-
-void AegisBase::checkParamInitTimer(){
-    if(!param_timer_active)return;
-    auto now = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - param_start_time).count();
-    if(elapsed > 300){
-        param_timer_active = false;
-        std::cout << "Send Params" << std::endl;
-        //sendParams();
-    }
-}
-
 bool AegisBase::canGiveControl(){
     // TODO: Add checks to determine whether the system is in a state that it can
     // give control back to the other FC. This will most likely include a check on
@@ -716,5 +695,30 @@ bool AegisBase::checkRemoteAlive(){
         return true;
     }
     remoteStatus.UP = false;
+    if (systemStatus_ref != BOOT && systemStatus_ref != STOP && systemStatus_ref != ERROR) {
+        requestStateTransition(SINGLE_FC);
+        if(!motorsAuthorized)
+            enableMotorAuthorization();
+    }
+    return false;
+}
+
+bool AegisBase::isHandshakeMsg(uint16_t id){
+    if(id == 100 ||
+       id == 101 ||
+       id == 200 ||
+       id == 201 ||
+       id == 202 ||
+       id == 211 ||
+       id == 212 ||
+       id == 300 || 
+       id == 301 || 
+       id == 302 || 
+       id == 303 || 
+       id == 304 || 
+       id == 305 || 
+       id == 422 || 
+       id == 423)
+        return true;
     return false;
 }
