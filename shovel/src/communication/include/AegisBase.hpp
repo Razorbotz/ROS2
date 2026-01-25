@@ -50,6 +50,7 @@ protected:
     bool motorsAuthorized = false;
     SimpleTimer boot_timer; 
     bool boot_checks_passed = false;
+    std::atomic<bool> remote_shutdown_latched{false};
 
 public:
     AegisBase(rclcpp::Node::SharedPtr node, 
@@ -109,7 +110,7 @@ public:
     void sendRelinquishRequest();
     void sendAcceptControl();
     void sendRejectControl();
-    void alertSystemStatusChange();
+    void alertSystemStatusChange(bool verbose = true);
     void acknowledgeSystemStatusChange(bool error);
 
     // 300s
@@ -198,6 +199,7 @@ public:
 
     bool checkControlErrors();
     void checkMotorControlStatus();
+    void applyRemoteAlivePolicy();
     bool checkRemoteAlive();
     bool isHandshakeMsg(uint16_t id);
 

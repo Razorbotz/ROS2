@@ -154,16 +154,12 @@ void AegisController::onExitState(SystemStatus state) {
 void AegisController::checkTimers() {
     AegisBase::checkBootTimer();
 
-    if (systemStatus_ref != BOOT && systemStatus_ref != SINGLE_FC && systemStatus_ref != ERROR) {
-        checkRemoteAlive(); 
-    }
+    applyRemoteAlivePolicy(); 
 
-    // Auto-Retry Logic
     if (handshakeStatus_ref != IDLE_HANDSHAKE && 
         handshakeStatus_ref != COMPLETE_HANDSHAKE && 
         retry_timer.isExpired()) 
     {
-        // Resend the packet for the current step
         advanceHandshake(); 
         retry_timer.restart();
     }
@@ -178,6 +174,10 @@ void AegisController::advanceHandshake() {
             if (handshake_step == 0) {
                 // FC1 -> FC2: 200 (Query)
                 queryControl(); 
+            }
+            else if (handshake_step == 1) {
+                // FC1 -> FC2: 211 (Assert Status)
+                alertSystemStatusChange(false);
             }
             break;
 
@@ -199,34 +199,46 @@ void AegisController::advanceHandshake() {
         // --- STAGE 3: MOTOR AUTH ---
         case MOTOR_HANDSHAKE:
             if (handshake_step == 0) {
-                alertMotorsDetected(); 
+                alertMotorsDetected();
             }
-            else if (handshake_step == 2) {
-                acknowledgeMotorsDetected();
-                handshake_step++;
-                advanceHandshake();
-            }
-            else if (handshake_step == 3) {
+            if (handshake_step == 2) {
                 enableMotorAuthorization();
-                sendAuth(); 
+                sendAuth();
+                handshake_step = 3;
+                retry_timer.cancel();
+                retry_timer.start(50);
             }
             break;
+
     }
 }
 
 void AegisController::processHandshakePacket(uint16_t id, const uint8_t* data) {
-    bool step_complete = false;
-    std::cout << "here" << std::endl;
-    if (id == ID_SYS_STATUS_CHG) {
-        std::cout << "HERE" << std::endl;
-        acknowledgeSystemStatusChange(false); 
-        return;
+    if (handshakeStatus_ref == IDLE_HANDSHAKE) {
+        if (id == ID_STATE_PRIMARY || id == ID_STATE_STANDBY || id == ID_ACK_STATUS_CHG || id == ID_QUERY_CONTROL || id == ID_SYS_STATUS_CHG) {
+            handshakeStatus_ref = CONTROL_HANDSHAKE;
+            handshake_step = 0;
+        }
+        else if (id == ID_PARAM_ACK || id == ID_PARAM_REJECT || id == ID_READY_OP || id == ID_PARAM_INIT || id == ID_PARAM_DATA) {
+            handshakeStatus_ref = PARAM_HANDSHAKE;
+            handshake_step = 0;
+        }
+        else if (id == ID_MOTORS_INIT) {
+            handshakeStatus_ref = MOTOR_HANDSHAKE;
+            handshake_step = 1;
+        }
+        else if (id == ID_CONFIRM_AUTH || id == ID_ASSIGN_AUTH) {
+            handshakeStatus_ref = MOTOR_HANDSHAKE;
+            handshake_step = 0;
+        }
     }
+    
+    bool step_complete = false;
 
     // --- STAGE 1 CHECKS (Control) ---
     if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
-        // Step 0: Waiting for Response (201/202)
         if (handshake_step == 0) { 
+            // Case: Nano says "I am Standby" (202) -> We take Primary
             if (id == ID_STATE_STANDBY) { 
                 std::cout << "Orin: Nano yielded. Transitioning to PRIMARY." << std::endl;
                 requestStateTransition(PRIMARY);
@@ -234,21 +246,37 @@ void AegisController::processHandshakePacket(uint16_t id, const uint8_t* data) {
                 retry_timer.cancel();
                 advanceHandshake();
             } 
+            // Case: Nano says "I am Primary" (201) -> We yield
             else if (id == ID_STATE_PRIMARY) { 
                 std::cout << "Orin: Nano claimed Primary. I am yielding to STANDBY." << std::endl;
-                if(systemStatus_ref == STANDBY){
-                    handshakeStatus_ref = PARAM_HANDSHAKE;
-                    handshake_step = 0;
-                }
-                else{
-                    requestStateTransition(STANDBY);
-                }
+                if(systemStatus_ref != STANDBY) requestStateTransition(STANDBY);
+                
+                handshake_step = 1; 
                 retry_timer.cancel();
                 advanceHandshake();
             }
+            else if (id == ID_SYS_STATUS_CHG) { // 211
+                remoteStatus.STATUS = (SystemStatus)data[0];
+
+                acknowledgeSystemStatusChange(false); // sends 212
+
+                if (remoteStatus.STATUS == PRIMARY || remoteStatus.STATUS == PARTIAL_PRIMARY) {
+                    std::cout << "Orin: Peer asserted PRIMARY via 211. Yielding to STANDBY." << std::endl;
+                    if (systemStatus_ref != STANDBY) requestStateTransition(STANDBY);
+                }
+                else {
+                    std::cout << "Orin: Peer asserted STANDBY via 211. Taking PRIMARY." << std::endl;
+                    if (systemStatus_ref != PRIMARY) requestStateTransition(PRIMARY);
+                }
+
+                handshake_step = 1;
+                retry_timer.cancel();
+                advanceHandshake();   // sends 211
+                return;
+            }
         } 
-        // Step 1: We sent 211, Waiting for Ack (212)
         else if (handshake_step == 1 && id == ID_ACK_STATUS_CHG) { 
+            retry_timer.cancel(); 
             handshakeStatus_ref = PARAM_HANDSHAKE;
             handshake_step = 0;
             advanceHandshake();
@@ -259,12 +287,14 @@ void AegisController::processHandshakePacket(uint16_t id, const uint8_t* data) {
     else if (handshakeStatus_ref == PARAM_HANDSHAKE) {
         if (handshake_step == 1 && (id == ID_PARAM_ACK || id == ID_PARAM_REJECT)) {
             std::cout << "[Handshake] Param Ack Received." << std::endl;
+            retry_timer.cancel();
             handshake_step = 2;
             advanceHandshake();
             return;
         }
         if (handshake_step == 2 && id == ID_READY_OP) {
             std::cout << "[Handshake] Params Synced. Moving to Motors." << std::endl;
+            retry_timer.cancel();
             handshakeStatus_ref = MOTOR_HANDSHAKE;
             handshake_step = 0;
             advanceHandshake();
@@ -277,8 +307,9 @@ void AegisController::processHandshakePacket(uint16_t id, const uint8_t* data) {
         if (handshake_step == 0 && id == ID_MOTORS_ACK) { 
             step_complete = true; 
         }
-        else if (handshake_step == 1 && id == ID_MOTORS_INIT) { 
-            step_complete = true; 
+        else if (handshake_step == 1 && id == ID_MOTORS_INIT) {
+            acknowledgeMotorsDetected();
+            step_complete = true;
         }
         else if (handshake_step == 3 && id == ID_CONFIRM_AUTH) { 
             std::cout << "[Handshake] Complete! Entering PRIMARY." << std::endl;
@@ -300,24 +331,10 @@ void AegisController::processHandshakePacket(uint16_t id, const uint8_t* data) {
 
 void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Orin: Received Message ID: %d", id);
-    bool is_handshaking = handshakeStatus_ref != IDLE_HANDSHAKE && handshakeStatus_ref != COMPLETE_HANDSHAKE;
-
-    if (is_handshaking) {
-        // Allow Handshake Packets (200-212, 300-305, 422-423, 100-101)
-        if (isHandshakeMsg(id)) {
-            processHandshakePacket(id, data);
-            return; 
-        }
-        
-        // CRITICAL: If doing a "Live" handshake (SINGLE_FC), 
-        // MUST still process motor commands and sensor data!
-        if (systemStatus_ref == SINGLE_FC || systemStatus_ref == PRIMARY) {
-            // Fall through to normal switch statement below
-        }
-        else {
-            // If Blocking Handshake (STOP/BOOT), DROP everything else
-            return; 
-        }
+    
+    if (isHandshakeMsg(id)) {
+        processHandshakePacket(id, data);
+        return;
     }
 
     // Packet containing motor speed values
@@ -759,6 +776,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         // --- System & Critical Hardware --- 500s
         case ID_SYS_SHUTDOWN:
             // System shutting down
+            remote_shutdown_latched.store(true);
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 remoteStatus.UP = false;
@@ -768,6 +786,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             break;
             
         case ID_SYS_BOOT_OK: {
+            remote_shutdown_latched.store(false);
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 remoteStatus.UP = true;
@@ -776,27 +795,24 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             alertSystemBootAck();
 
             if (systemStatus_ref == SINGLE_FC) {
-                std::cout << "[System] Peer Rejoining during flight. Starting Live Handshake." << std::endl;
+                std::cout << "[System] Peer Rejoining. Live Handshake." << std::endl;
                 requestStateTransition(PRIMARY);
                 handshakeStatus_ref = CONTROL_HANDSHAKE;
-                handshake_step = 1; 
+                handshake_step = 1; // Assert Primary
                 advanceHandshake(); 
             }
             else if (systemStatus_ref == STOP) {
-                std::cout << "[System] Peer Found. Starting Blocking Handshake." << std::endl;
                 requestStateTransition(BOOT);
                 handshakeStatus_ref = CONTROL_HANDSHAKE;
                 handshake_step = 0;
                 advanceHandshake();
             }
             else if (systemStatus_ref == PRIMARY) {
-                std::cout << "[System] Peer rebooted. I am already Primary. Re-initiating Handshake." << std::endl;
                 handshakeStatus_ref = CONTROL_HANDSHAKE;
-                handshake_step = 1;
+                handshake_step = 1; 
                 advanceHandshake();
             }
             else if(systemStatus_ref == BOOT || systemStatus_ref == STANDBY){
-                std::cout << "[System] Peer Found. Starting Blocking Handshake." << std::endl;
                 requestStateTransition(STANDBY);
                 handshakeStatus_ref = CONTROL_HANDSHAKE;
                 handshake_step = 0;
@@ -805,8 +821,8 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             break;    
         }
 
-        case ID_SYS_BOOT_ACK: { // 502
-            RCLCPP_INFO(nodeHandle->get_logger(), "Orin: Boot Acknowledged (502). Entering Handshake.");
+        case ID_SYS_BOOT_ACK: { 
+            RCLCPP_INFO(nodeHandle->get_logger(), "Orin: Boot Acknowledged.");
             if ((systemStatus_ref == BOOT || systemStatus_ref == STANDBY) && handshakeStatus_ref == IDLE_HANDSHAKE) {
                 handshakeStatus_ref = CONTROL_HANDSHAKE;
                 handshake_step = 0; 

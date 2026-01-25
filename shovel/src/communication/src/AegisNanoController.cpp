@@ -107,12 +107,12 @@ void AegisNanoController::checkTimers(){
     checkAuthorityTimer();
     checkTakeoverTimer();
 
-    // Auto-Retry Logic
+    applyRemoteAlivePolicy();
+
     if (handshakeStatus_ref != IDLE_HANDSHAKE && 
         handshakeStatus_ref != COMPLETE_HANDSHAKE && 
         retry_timer.isExpired()) 
     {
-        // Resend the packet for the current step
         advanceHandshake(); 
         retry_timer.restart();
     }
@@ -198,36 +198,70 @@ void AegisNanoController::advanceHandshake() {
 }
 
 void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* data) {
-    // --- STAGE 1: CONTROL NEGOTIATION ---
-    if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
-        if (id == ID_QUERY_CONTROL) { // 200
-            if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
-                alertPrimary();
-                if(remoteStatus.STATUS == STANDBY){
-                    handshakeStatus_ref = PARAM_HANDSHAKE;
-                    handshake_step = 0;
-                }
+    // ALWAYS handle + ACK system status changes, regardless of handshake stage.
+    if (id == ID_SYS_STATUS_CHG) { // 211
+        remoteStatus.STATUS = (SystemStatus)data[0];
+        acknowledgeSystemStatusChange(false); // 212
+
+        // Only do handshake stage transitions if we're actually in CONTROL_HANDSHAKE
+        if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
+
+            if (systemStatus_ref == SINGLE_FC && remoteStatus.STATUS == STANDBY) {
+                requestStateTransition(PRIMARY);
+                handshakeStatus_ref = PARAM_HANDSHAKE;
+                handshake_step = 0;
+                return;
             }
-            else if(systemStatus_ref == STANDBY || systemStatus_ref == PARTIAL_SECONDARY){
-                alertNotPrimary();
+
+            bool safe_to_advance =
+                (systemStatus_ref == STANDBY ||
+                systemStatus_ref == PARTIAL_SECONDARY ||
+                systemStatus_ref == BOOT ||
+                systemStatus_ref == SINGLE_FC);
+
+            if (data[0] == PRIMARY && safe_to_advance) {
+                handshakeStatus_ref = PARAM_HANDSHAKE;
+                handshake_step = 0;
+                return;
+            }
+
+            if ((data[0] == STANDBY) &&
+                (systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || systemStatus_ref == SINGLE_FC)) {
+                handshakeStatus_ref = PARAM_HANDSHAKE;
+                handshake_step = 0;
+                return;
             }
         }
-        // FIX: Added "else if (id == ...)" wrapper. 
-        // Previously this ran for EVERY packet, causing phantom 212 ACKs.
-        else if (id == ID_SYS_STATUS_CHG) { 
-            if (data[0] == PRIMARY && (systemStatus_ref == STANDBY || systemStatus_ref == PARTIAL_SECONDARY)) {
-                acknowledgeSystemStatusChange(false);
-                handshakeStatus_ref = PARAM_HANDSHAKE;
-                handshake_step = 0;
-            }
-            else if((data[0] == STANDBY) && (systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY)){
-                acknowledgeSystemStatusChange(false);
-                handshakeStatus_ref = PARAM_HANDSHAKE;
-                handshake_step = 0;
+
+        return;
+    }
+
+    
+    if (handshakeStatus_ref == IDLE_HANDSHAKE) {
+        if (id == ID_QUERY_CONTROL || id == ID_SYS_STATUS_CHG || id == ID_STATE_PRIMARY || id == ID_STATE_STANDBY) {
+            handshakeStatus_ref = CONTROL_HANDSHAKE;
+            handshake_step = 0;
+        }
+        else if (id == ID_PARAM_INIT || id == ID_PARAM_DATA || id == ID_SYNC_COMPLETE) {
+            handshakeStatus_ref = PARAM_HANDSHAKE;
+            handshake_step = 0;
+        }
+        else if (id == ID_MOTORS_INIT || id == ID_MOTORS_ACK || id == ID_ASSIGN_AUTH || id == ID_CONFIRM_AUTH) {
+            handshakeStatus_ref = MOTOR_HANDSHAKE;
+            handshake_step = 0;
+        }
+    }
+    
+    // --- STAGE 1: CONTROL NEGOTIATION ---
+    if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
+        if (id == ID_QUERY_CONTROL) {
+            if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || systemStatus_ref == SINGLE_FC) {
+                alertPrimary();      // 201
             }
             else {
-                acknowledgeSystemStatusChange(false);
+                alertNotPrimary();   // 202
             }
+            return;
         }
     }
 
@@ -278,18 +312,10 @@ void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* dat
 
 void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Nano: Received Message ID: %d", id);
-    bool is_handshaking = handshakeStatus_ref != IDLE_HANDSHAKE && handshakeStatus_ref != COMPLETE_HANDSHAKE;
-    if (is_handshaking) {
-        if (isHandshakeMsg(id)) {
-            processHandshakePacket(id, data);
-            return; 
-        }
-        if (systemStatus_ref == SINGLE_FC || systemStatus_ref == PRIMARY) {
-            // Fall through
-        }
-        else {
-            return; 
-        }
+    
+    if (isHandshakeMsg(id)) {
+        processHandshakePacket(id, data);
+        return;
     }
     
     switch (id) {
@@ -425,12 +451,12 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // Response that the sender is in control            
             // Because at most one FC can be in charge, need to transition to standby
             if(systemStatus_ref == PRIMARY){
-                systemStatus_ref = STANDBY;
+                requestStateTransition(STANDBY);
                 alertSystemStatusChange();
                 std::cout << "Nano is transitioning to STANDBY" << std::endl;
             }
             if(systemStatus_ref == PARTIAL_PRIMARY){
-                systemStatus_ref = PARTIAL_SECONDARY;
+                requestStateTransition(PARTIAL_SECONDARY);
                 std::cout << "Nano is transitioning to PARTIAL_SECONDARY" << std::endl;
                 alertSystemStatusChange();
             }
@@ -736,55 +762,38 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
         // --- System & Critical Hardware --- 
         case ID_SYS_SHUTDOWN:
             // System shutting down
+            remote_shutdown_latched.store(true);
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 remoteStatus.UP = false;
             }
             requestStateTransition(SINGLE_FC);
-            systemStatus_ref = SINGLE_FC;
             RCLCPP_WARN(nodeHandle->get_logger(), "Orin shutting down");
             break;
             
         case ID_SYS_BOOT_OK: {
-            // System functioning again
-            {
+            remote_shutdown_latched.store(false);
+            { 
                 std::lock_guard<std::mutex> lock(comms_mutex); 
-                remoteStatus.UP = true;
+                remoteStatus.UP = true; 
             }
             RCLCPP_INFO(nodeHandle->get_logger(), "Orin Booted");
-            alertSystemBootAck();
+            alertSystemBootAck(); 
 
             if (systemStatus_ref == SINGLE_FC) {
-                std::cout << "[System] Peer Rejoining during flight. Starting Live Handshake." << std::endl;
-                requestStateTransition(PRIMARY);
-                handshakeStatus_ref = CONTROL_HANDSHAKE;
-                handshake_step = 0;
-                advanceHandshake(); 
+                std::cout << "[System] Peer Rejoining. Waiting for Orin." << std::endl;
             }
             else if (systemStatus_ref == STOP) {
-                std::cout << "[System] Peer Found. Starting Blocking Handshake." << std::endl;
-                requestStateTransition(STANDBY);
-                handshakeStatus_ref = CONTROL_HANDSHAKE;
-                handshake_step = 0;
-                advanceHandshake();
-            }
-            else if(systemStatus_ref == BOOT || systemStatus_ref == STANDBY){
-                std::cout << "[System] Peer Found. Starting Blocking Handshake." << std::endl;
-                requestStateTransition(STANDBY);
-                handshakeStatus_ref = CONTROL_HANDSHAKE;
-                handshake_step = 0;
-                advanceHandshake();
+                requestStateTransition(BOOT);
             }
             break;    
         }
 
         case ID_SYS_BOOT_ACK: { // 502
-            RCLCPP_INFO(nodeHandle->get_logger(), "Nano: Boot Acknowledged (502). Entering Handshake.");
-            // If we are booting up, this is the trigger to start asking for control
+            RCLCPP_INFO(nodeHandle->get_logger(), "Nano: Boot Acknowledged.");
             if ((systemStatus_ref == BOOT || systemStatus_ref == STANDBY) && handshakeStatus_ref != CONTROL_HANDSHAKE) {
                 handshakeStatus_ref = CONTROL_HANDSHAKE;
                 handshake_step = 0; 
-                queryControl();
             }
             break;
         }

@@ -158,7 +158,6 @@ void AegisBase::sendAuth(){
 
 // ID 101
 void AegisBase::sendAuthConfirm(){
-    if(!checkRemoteAlive()) return;
     MotorAuthPayload payload;
     for (size_t i = 0; i < MAX_MOTORS; i++) {
         payload.motor_states[i] = auth_table[i] ? 1 : 0;
@@ -231,31 +230,29 @@ void AegisBase::sendRelinquishRequest(){
 
 // ID 209
 void AegisBase::sendAcceptControl(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(209, "", 0);
 }
 
 // ID 210
 void AegisBase::sendRejectControl(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(210, "", 0);
 }
 
 // ID 211
-void AegisBase::alertSystemStatusChange(){
+void AegisBase::alertSystemStatusChange(bool verbose){
     if(!checkRemoteAlive()) return;
-    RCLCPP_INFO(nodeHandle->get_logger(), "Sending SystemStatusChange");
-    std::cout << "SystemStatus: " << (int)systemStatus_ref << std::endl;
+
+    if (verbose) {
+        RCLCPP_INFO(nodeHandle->get_logger(), "Sending SystemStatusChange");
+        std::cout << "SystemStatus: " << (int)systemStatus_ref << std::endl;
+    }
+
     uint8_t msg = systemStatus_ref;
     hb_link.send_data(211, &msg, sizeof(msg));
 }
 
 // ID 212
 void AegisBase::acknowledgeSystemStatusChange(bool error){
-    if(!checkRemoteAlive()) {
-        RCLCPP_WARN(nodeHandle->get_logger(), "Skipping 212 ACK: remote not alive");
-        return;
-    }
     uint8_t msg = (error) ? 1 : 0;
     hb_link.send_data(212, &msg, sizeof(msg));
 }
@@ -275,25 +272,21 @@ void AegisBase::sendParamData(){
 
 // ID 302
 void AegisBase::sendParamAck(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(302, "", 0);
 }
 
 // ID 303
 void AegisBase::sendParamReject(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(303, "", 0);
 }
 
 // ID 304
 void AegisBase::sendSyncComplete(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(304, "", 0);
 }
 
 // ID 305
 void AegisBase::sendReadyOp(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(305, "", 0);
 }
 
@@ -313,39 +306,29 @@ void AegisBase::sendSoftEStop(){
 
 // ID 402
 void AegisBase::alertLostMotor(uint8_t motor_id){
-    if(!motorsAuthorized)
-        enableMotorAuthorization();
+    if(!motorsAuthorized) enableMotorAuthorization();
     updateMotorAuthorization(motor_id, false);
-    MotorListPayload msg;
-    msg.count = 1;
-    msg.motor_ids[0] = motor_id;
+    MotorListPayload msg; msg.count = 1; msg.motor_ids[0] = motor_id;
     checkMotorControlStatus();
+    
     if(!checkRemoteAlive()) return;
     hb_link.send_data(402, &msg, sizeof(msg));
     sendAuth();
-    if(systemStatus_ref == PRIMARY){
-        requestStateTransition(PARTIAL_PRIMARY);
-    }
+    if(systemStatus_ref == PRIMARY) requestStateTransition(PARTIAL_PRIMARY);
     alertSystemStatusChange();
 }
 
 // ID 403
 void AegisBase::alertRegainedMotor(uint8_t motor_id){
-    if(!motorsAuthorized)
-        enableMotorAuthorization();
+    if(!motorsAuthorized) enableMotorAuthorization();
     updateMotorAuthorization(motor_id, true);
-    MotorListPayload msg;
-    msg.count = 1;
-    msg.motor_ids[0] = motor_id;
+    MotorListPayload msg; msg.count = 1; msg.motor_ids[0] = motor_id;
     checkMotorControlStatus();
+    
     if(!checkRemoteAlive()) return;
     hb_link.send_data(403, &msg, sizeof(msg));
     sendAuth();
-    if(!checkRemoteAuthStatus()){
-        if(systemStatus_ref == PARTIAL_PRIMARY){
-            requestControl();
-        }
-    }
+    if(!checkRemoteAuthStatus() && systemStatus_ref == PARTIAL_PRIMARY) requestControl();
 }
 
 // ID 404
@@ -362,7 +345,6 @@ void AegisBase::alertWifiRegained(){
 
 // ID 406
 void AegisBase::acknowledgeWifiChange(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(406, "", 0);
 }
 
@@ -414,7 +396,8 @@ void AegisBase::acknowledgeWifiChange(){
 // ID 422
 void AegisBase::alertMotorsDetected(){
     if(!checkRemoteAlive()) return;
-    
+    if(alertedRemoteMotors) return;
+
     MotorAuthPayload payload;
     for (size_t i = 0; i < MAX_MOTORS; i++) {
         payload.motor_states[i] = can0_table[i] || can1_table[i];
@@ -425,7 +408,6 @@ void AegisBase::alertMotorsDetected(){
 
 // ID 423
 void AegisBase::acknowledgeMotorsDetected(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(423, "", 0);
     if(!alertedRemoteMotors){
         alertMotorsDetected();
@@ -448,26 +430,22 @@ void AegisBase::alertRegainedNode(uint8_t node_regained){
 
 // ID 426
 void AegisBase::acknowledgeNodeChange(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(426, "", 0);
 }
 
 // --- 5xx System ---
 // ID 500
 void AegisBase::alertSystemShutdown(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(500, "", 0);
 }
 
 // ID 501
 void AegisBase::alertSystemBoot(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(501, "", 0);
 }
 
 // ID 502
 void AegisBase::alertSystemBootAck(){
-    if(!checkRemoteAlive()) return;
     hb_link.send_data(502, "", 0);
 }
 
@@ -689,36 +667,33 @@ void AegisBase::checkMotorControlStatus(){
     }
 }
 
+void AegisBase::applyRemoteAlivePolicy() {
+    bool alive = hb_link.is_remote_alive();
+    
+    remoteStatus.UP = alive;
+
+    if (!alive) {
+        if (systemStatus_ref != BOOT && systemStatus_ref != STOP && 
+            systemStatus_ref != ERROR && systemStatus_ref != SINGLE_FC) {
+            
+            std::cout << "[Watchdog] Remote Dead. Transitioning to SINGLE_FC." << std::endl;
+            requestStateTransition(SINGLE_FC);
+            if(!motorsAuthorized)
+                enableMotorAuthorization();
+        }
+    }
+}
+
 bool AegisBase::checkRemoteAlive(){
-    if (hb_link.is_remote_alive()) {
-        remoteStatus.UP = true;
-        return true;
-    }
-    remoteStatus.UP = false;
-    if (systemStatus_ref != BOOT && systemStatus_ref != STOP && systemStatus_ref != ERROR) {
-        requestStateTransition(SINGLE_FC);
-        if(!motorsAuthorized)
-            enableMotorAuthorization();
-    }
-    return false;
+    if (remote_shutdown_latched.load()) return false;
+    return hb_link.is_remote_alive();
 }
 
 bool AegisBase::isHandshakeMsg(uint16_t id){
-    if(id == 100 ||
-       id == 101 ||
-       id == 200 ||
-       id == 201 ||
-       id == 202 ||
-       id == 211 ||
-       id == 212 ||
-       id == 300 || 
-       id == 301 || 
-       id == 302 || 
-       id == 303 || 
-       id == 304 || 
-       id == 305 || 
-       id == 422 || 
-       id == 423)
+    if(id == 100 || id == 101 ||
+       id == 200 || id == 201 || id == 202 || id == 211 || id == 212 ||
+       id >= 300 && id <= 305 || 
+       id == 422 || id == 423)
         return true;
     return false;
 }
