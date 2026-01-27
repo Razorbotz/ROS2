@@ -235,97 +235,86 @@ void AegisController::processHandshakePacket(uint16_t id, const uint8_t* data) {
     
     bool step_complete = false;
 
-    // --- STAGE 1 CHECKS (Control) ---
-    if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
-        if (handshake_step == 0) { 
-            // Case: Nano says "I am Standby" (202) -> We take Primary
-            if (id == ID_STATE_STANDBY) { 
-                std::cout << "Orin: Nano yielded. Transitioning to PRIMARY." << std::endl;
-                requestStateTransition(PRIMARY);
-                handshake_step = 1;
-                retry_timer.cancel();
-                advanceHandshake();
-            } 
-            // Case: Nano says "I am Primary" (201) -> We yield
-            else if (id == ID_STATE_PRIMARY) { 
-                std::cout << "Orin: Nano claimed Primary. I am yielding to STANDBY." << std::endl;
-                if(systemStatus_ref != STANDBY) requestStateTransition(STANDBY);
-                
-                handshake_step = 1; 
-                retry_timer.cancel();
-                advanceHandshake();
-            }
-            else if (id == ID_SYS_STATUS_CHG) { // 211
-                remoteStatus.STATUS = (SystemStatus)data[0];
+    switch (handshakeStatus_ref) {
+        case CONTROL_HANDSHAKE:
+            handleControlStep(id, data, step_complete);
+            break;
 
-                acknowledgeSystemStatusChange(false); // sends 212
+        case PARAM_HANDSHAKE:
+            handleParamStep(id, step_complete);
+            break;
 
-                if (remoteStatus.STATUS == PRIMARY || remoteStatus.STATUS == PARTIAL_PRIMARY) {
-                    std::cout << "Orin: Peer asserted PRIMARY via 211. Yielding to STANDBY." << std::endl;
-                    if (systemStatus_ref != STANDBY) requestStateTransition(STANDBY);
-                }
-                else {
-                    std::cout << "Orin: Peer asserted STANDBY via 211. Taking PRIMARY." << std::endl;
-                    if (systemStatus_ref != PRIMARY) requestStateTransition(PRIMARY);
-                }
-
-                handshake_step = 1;
-                retry_timer.cancel();
-                advanceHandshake();   // sends 211
-                return;
-            }
-        } 
-        else if (handshake_step == 1 && id == ID_ACK_STATUS_CHG) { 
-            retry_timer.cancel(); 
-            handshakeStatus_ref = PARAM_HANDSHAKE;
-            handshake_step = 0;
-            advanceHandshake();
-        }
-    }
-
-    // --- STAGE 2 CHECKS (Params) ---
-    else if (handshakeStatus_ref == PARAM_HANDSHAKE) {
-        if (handshake_step == 1 && (id == ID_PARAM_ACK || id == ID_PARAM_REJECT)) {
-            std::cout << "[Handshake] Param Ack Received." << std::endl;
-            retry_timer.cancel();
-            handshake_step = 2;
-            advanceHandshake();
-            return;
-        }
-        if (handshake_step == 2 && id == ID_READY_OP) {
-            std::cout << "[Handshake] Params Synced. Moving to Motors." << std::endl;
-            retry_timer.cancel();
-            handshakeStatus_ref = MOTOR_HANDSHAKE;
-            handshake_step = 0;
-            advanceHandshake();
-            return;
-        }
-    }
-
-    // --- STAGE 3 CHECKS (Motors) ---
-    else if (handshakeStatus_ref == MOTOR_HANDSHAKE) {
-        if (handshake_step == 0 && id == ID_MOTORS_ACK) { 
-            step_complete = true; 
-        }
-        else if (handshake_step == 1 && id == ID_MOTORS_INIT) {
-            acknowledgeMotorsDetected();
-            step_complete = true;
-        }
-        else if (handshake_step == 3 && id == ID_CONFIRM_AUTH) { 
-            std::cout << "[Handshake] Complete! Entering PRIMARY." << std::endl;
-            handshakeStatus_ref = COMPLETE_HANDSHAKE;
-            retry_timer.cancel();
-            if(systemStatus_ref == STANDBY){
-                requestControl();
-            }
-            return;
-        }
+        case MOTOR_HANDSHAKE:
+            handleMotorStep(id, step_complete);
+            break;
+            
+        default:
+            break;
     }
 
     if (step_complete) {
         handshake_step++;
         retry_timer.cancel(); 
         advanceHandshake();   
+    }
+}
+
+void AegisController::handleControlStep(uint16_t id, const uint8_t* data, bool& step_complete) {
+    if (handshake_step == 0) {
+        if (id == ID_STATE_STANDBY || id == ID_STATE_PRIMARY) {
+            SystemStatus target = (id == ID_STATE_STANDBY) ? PRIMARY : STANDBY;
+            std::cout << "Orin: Nano state detected. Moving to " << (target == PRIMARY ? "PRIMARY" : "STANDBY") << std::endl;
+            
+            if (systemStatus_ref != target) requestStateTransition(target);
+            
+            step_complete = true; 
+        } 
+        else if (id == ID_SYS_STATUS_CHG) {
+            remoteStatus.STATUS = (SystemStatus)data[0];
+            acknowledgeSystemStatusChange(false);
+
+            SystemStatus target = (remoteStatus.STATUS == PRIMARY || remoteStatus.STATUS == PARTIAL_PRIMARY) ? STANDBY : PRIMARY;
+            if (systemStatus_ref != target) requestStateTransition(target);
+
+            // Special case: 211 logic triggers an immediate advance per original code
+            handshake_step = 1;
+            retry_timer.cancel();
+            advanceHandshake(); 
+        }
+    } 
+    else if (handshake_step == 1 && id == ID_ACK_STATUS_CHG) {
+        handshakeStatus_ref = PARAM_HANDSHAKE;
+        handshake_step = 0;
+        step_complete = true; // This will trigger advanceHandshake()
+    }
+}
+
+void AegisController::handleParamStep(uint16_t id, bool& step_complete) {
+    if (handshake_step == 1 && (id == ID_PARAM_ACK || id == ID_PARAM_REJECT)) {
+        step_complete = true; // Moves to step 2
+    }
+    else if (handshake_step == 2 && id == ID_READY_OP) {
+        std::cout << "[Handshake] Params Synced. Moving to Motors." << std::endl;
+        retry_timer.cancel();
+        handshakeStatus_ref = MOTOR_HANDSHAKE;
+        handshake_step = 0;
+        advanceHandshake();
+    }
+}
+
+void AegisController::handleMotorStep(uint16_t id, bool& step_complete) {
+    if (handshake_step == 0 && id == ID_MOTORS_ACK) {
+        step_complete = true;
+    }
+    else if (handshake_step == 1 && id == ID_MOTORS_INIT) {
+        acknowledgeMotorsDetected();
+        step_complete = true;
+    }
+    else if (handshake_step == 3 && id == ID_CONFIRM_AUTH) {
+        std::cout << "[Handshake] Complete!" << std::endl;
+        handshakeStatus_ref = COMPLETE_HANDSHAKE;
+        retry_timer.cancel();
+        if (systemStatus_ref == STANDBY) requestControl();
     }
 }
 

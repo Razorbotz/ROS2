@@ -18,6 +18,9 @@ public:
     SimpleTimer retry_timer; 
     void advanceHandshake();
     void processHandshakePacket(uint16_t id, const uint8_t* data);
+    void handleControlStep(uint16_t id, const uint8_t* data, bool& step_complete);
+    void handleParamStep(uint16_t id, bool& step_complete);
+    void handleMotorStep(uint16_t id, bool& step_complete);
     void checkTimers();
     void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len);
     void verifyCanStatus(const CanHeartbeatPayload& hb) override;

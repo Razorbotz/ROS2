@@ -205,45 +205,7 @@ void AegisNanoController::advanceHandshake() {
     }
 }
 
-void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* data) {
-    // ALWAYS handle + ACK system status changes, regardless of handshake stage.
-    if (id == ID_SYS_STATUS_CHG) { // 211
-        remoteStatus.STATUS = (SystemStatus)data[0];
-        acknowledgeSystemStatusChange(false); // 212
-
-        if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
-            
-            // Peer is Standby (safe to advance)
-            if (remoteStatus.STATUS == STANDBY) {
-                if (systemStatus_ref == SINGLE_FC) {
-                    requestStateTransition(PRIMARY);
-                }
-                
-                bool safe_to_advance = (systemStatus_ref == PRIMARY || 
-                                      systemStatus_ref == PARTIAL_PRIMARY || 
-                                      systemStatus_ref == BOOT ||
-                                      systemStatus_ref == SINGLE_FC);
-                                      
-                if (safe_to_advance) {
-                    handshakeStatus_ref = PARAM_HANDSHAKE;
-                    handshake_step = 0;
-                    retry_timer.cancel();
-                }
-                return;
-            }
-
-            if (remoteStatus.STATUS == PRIMARY || remoteStatus.STATUS == PARTIAL_PRIMARY) {
-                if (systemStatus_ref == STANDBY || systemStatus_ref == PARTIAL_SECONDARY || systemStatus_ref == BOOT) {
-                    handshakeStatus_ref = PARAM_HANDSHAKE;
-                    handshake_step = 0;
-                    retry_timer.cancel();
-                }
-                return;
-            }
-        }
-        return;
-    }
-    
+void AegisNanoController::initiateHandshakeState(uint16_t id){
     if (handshakeStatus_ref == IDLE_HANDSHAKE) {
         if (id == ID_QUERY_CONTROL || id == ID_SYS_STATUS_CHG || id == ID_STATE_PRIMARY || id == ID_STATE_STANDBY) {
             handshakeStatus_ref = CONTROL_HANDSHAKE;
@@ -251,68 +213,116 @@ void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* dat
         }
         else if (id == ID_PARAM_INIT || id == ID_PARAM_DATA || id == ID_SYNC_COMPLETE) {
             handshakeStatus_ref = PARAM_HANDSHAKE;
-            handshake_step = 0;
         }
         else if (id == ID_MOTORS_INIT || id == ID_MOTORS_ACK || id == ID_ASSIGN_AUTH || id == ID_CONFIRM_AUTH) {
             handshakeStatus_ref = MOTOR_HANDSHAKE;
             handshake_step = 0;
         }
     }
-    
-    // --- STAGE 1: CONTROL NEGOTIATION ---
-    if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
-        if (id == ID_QUERY_CONTROL) {
-            if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || systemStatus_ref == SINGLE_FC) {
-                alertPrimary();      // 201
+}
+
+void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* data) {
+    // 1. High-Priority Interrupts (ID 211)
+    if (id == ID_SYS_STATUS_CHG) {
+        handleSystemStatusOverride(data);
+        return; 
+    }
+
+    // 2. State Transition (from IDLE)
+    if (handshakeStatus_ref == IDLE_HANDSHAKE) {
+        initiateHandshakeState(id);
+    }
+
+    // 3. Stage-Specific Logic
+    switch (handshakeStatus_ref) {
+        case CONTROL_HANDSHAKE:
+            if (id == ID_QUERY_CONTROL) {
+                bool is_boss = (systemStatus_ref == PRIMARY || 
+                                systemStatus_ref == PARTIAL_PRIMARY || 
+                                systemStatus_ref == SINGLE_FC);
+                is_boss ? alertPrimary() : alertNotPrimary();
             }
-            else {
-                alertNotPrimary();   // 202
-            }
-            return;
+            break;
+
+        case PARAM_HANDSHAKE:
+            handleParamExchange(id);
+            break;
+
+        case MOTOR_HANDSHAKE:
+            handleMotorAuth(id, data);
+            break;
+
+        default:
+            break;
+    }
+}
+
+void AegisNanoController::handleSystemStatusOverride(const uint8_t* data) {
+    remoteStatus.STATUS = (SystemStatus)data[0];
+    acknowledgeSystemStatusChange(false); // 212
+
+    if (handshakeStatus_ref != CONTROL_HANDSHAKE) return;
+
+    bool advance_to_params = false;
+
+    if (remoteStatus.STATUS == STANDBY) {
+        if (systemStatus_ref == SINGLE_FC) requestStateTransition(PRIMARY);
+        
+        if (systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || 
+            systemStatus_ref == BOOT || systemStatus_ref == SINGLE_FC) {
+            advance_to_params = true;
+        }
+    } 
+    else if (remoteStatus.STATUS == PRIMARY || remoteStatus.STATUS == PARTIAL_PRIMARY) {
+        if (systemStatus_ref == STANDBY || systemStatus_ref == PARTIAL_SECONDARY || systemStatus_ref == BOOT) {
+            advance_to_params = true;
         }
     }
 
-    // --- STAGE 2: PARAMETER EXCHANGE ---
-    else if (handshakeStatus_ref == PARAM_HANDSHAKE) {
-        if (id == ID_PARAM_INIT) { // 300
-            // Reset param buffer logic
-        }
-        else if(id == ID_PARAM_DATA){ // 301
-            sendParamAck(); // 302
-        }
-        else if (id == ID_SYNC_COMPLETE) { // 304
-            sendReadyOp(); // 305
-            handshakeStatus_ref = MOTOR_HANDSHAKE;
-            handshake_step = 0;
-        }
+    if (advance_to_params) {
+        handshakeStatus_ref = PARAM_HANDSHAKE;
+        handshake_step = 0;
+        retry_timer.cancel();
     }
+}
 
-    // --- STAGE 3: MOTOR AUTH ---
-    else if (handshakeStatus_ref == MOTOR_HANDSHAKE) {
-        // Step 0: Receive Orin's 422
-        if (handshake_step == 0 && id == ID_MOTORS_INIT) { // 422
-            acknowledgeMotorsDetected(); // Send 423
-            
-            // Now we must send OUR motors (Step 1)
-            handshake_step = 1;
-            advanceHandshake(); // Triggers sending my 422
-        }
-        // Step 1: Waiting for Ack (423) for the 422 we just sent
-        else if (handshake_step == 1 && id == ID_MOTORS_ACK) { // 423
-            handshake_step = 2; // Ready for final Auth
-        }
-        // Step 2: Receive Final Auth Assignment
-        else if (handshake_step == 2 && id == ID_ASSIGN_AUTH) { // 100
-             const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
-             processRemoteAuth(payload->motor_states);
-             setAuthFromRemote(payload->motor_states);
-             // Send Confirmation (ID 101)
-             sendAuthConfirm();
-             std::cout << "[Handshake] Nano Complete. Entering STANDBY." << std::endl;
-             handshakeStatus_ref = COMPLETE_HANDSHAKE;
-             requestStateTransition(STANDBY);
-             retry_timer.cancel();
-        }
+void AegisNanoController::handleParamExchange(uint16_t id) {
+    if (id == ID_PARAM_INIT) {
+        // Param buffer reset logic here
+    } 
+    else if (id == ID_PARAM_DATA) {
+        sendParamAck(); // 302
+    } 
+    else if (id == ID_SYNC_COMPLETE) {
+        sendReadyOp(); // 305
+        handshakeStatus_ref = MOTOR_HANDSHAKE;
+        handshake_step = 0;
+    }
+}
+
+void AegisNanoController::handleMotorAuth(uint16_t id, const uint8_t* data) {
+    // Step 0: Orin signals its motors
+    if (handshake_step == 0 && id == ID_MOTORS_INIT) {
+        acknowledgeMotorsDetected(); // 423
+        handshake_step = 1;
+        advanceHandshake(); // Send Nano's motor status (422)
+    }
+    // Step 1: Wait for Orin to acknowledge Nano's motors
+    else if (handshake_step == 1 && id == ID_MOTORS_ACK) {
+        handshake_step = 2;
+    }
+    // Step 2: Final Authorization assignment
+    else if (handshake_step == 2 && id == ID_ASSIGN_AUTH) {
+        auto* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+        processRemoteAuth(payload->motor_states);
+        setAuthFromRemote(payload->motor_states);
+        
+        sendAuthConfirm(); // 101
+        
+        std::cout << "[Handshake] Nano Complete. Entering STANDBY." << std::endl;
+        handshakeStatus_ref = COMPLETE_HANDSHAKE;
+        requestStateTransition(STANDBY);
+        retry_timer.cancel();
     }
 }
 

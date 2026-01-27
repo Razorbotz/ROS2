@@ -18,7 +18,11 @@ public:
     int handshake_step = 0;
     SimpleTimer retry_timer; 
     void advanceHandshake();
+    void initiateHandshakeState(uint16_t id);
     void processHandshakePacket(uint16_t id, const uint8_t* data);
+    void handleSystemStatusOverride(const uint8_t* data);
+    void handleParamExchange(uint16_t id);
+    void handleMotorAuth(uint16_t id, const uint8_t* data);
     void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len);
     void checkTimers();
     void checkTakeoverTimer(); 
