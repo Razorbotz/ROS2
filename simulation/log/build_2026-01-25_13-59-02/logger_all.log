@@ -1,0 +1,281 @@
+[0.528s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build']
+[0.528s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=20, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x76280684d270>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x76280695e1a0>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x76280695e1a0>>, mixin_verb=('build',))
+[0.990s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.990s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.990s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.990s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.990s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.990s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.991s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation'
+[0.991s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.991s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.991s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.991s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.991s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.991s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.991s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.991s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.991s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[1.014s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[1.014s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[1.014s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[1.014s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[1.014s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[1.014s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[1.014s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[1.014s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[1.014s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ignore', 'ignore_ament_install']
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore'
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore_ament_install'
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_pkg']
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_pkg'
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_meta']
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_meta'
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ros']
+[1.015s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ros'
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['cmake', 'python']
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'cmake'
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python'
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['python_setup_py']
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python_setup_py'
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src/control_gui) by extensions ['ignore', 'ignore_ament_install']
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src/control_gui) by extension 'ignore'
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src/control_gui) by extension 'ignore_ament_install'
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src/control_gui) by extensions ['colcon_pkg']
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src/control_gui) by extension 'colcon_pkg'
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src/control_gui) by extensions ['colcon_meta']
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src/control_gui) by extension 'colcon_meta'
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src/control_gui) by extensions ['ros']
+[1.016s] Level 1:colcon.colcon_core.package_identification:_identify(src/control_gui) by extension 'ros'
+[1.022s] DEBUG:colcon.colcon_core.package_identification:Package 'src/control_gui' with type 'ros.ament_cmake' and name 'control_gui'
+[1.022s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extensions ['ignore', 'ignore_ament_install']
+[1.022s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extension 'ignore'
+[1.022s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extension 'ignore_ament_install'
+[1.022s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extensions ['colcon_pkg']
+[1.022s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extension 'colcon_pkg'
+[1.022s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extensions ['colcon_meta']
+[1.022s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extension 'colcon_meta'
+[1.023s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extensions ['ros']
+[1.023s] Level 1:colcon.colcon_core.package_identification:_identify(src/falcon) by extension 'ros'
+[1.023s] DEBUG:colcon.colcon_core.package_identification:Package 'src/falcon' with type 'ros.ament_cmake' and name 'falcon'
+[1.024s] Level 1:colcon.colcon_core.package_identification:_identify(src/sim) by extensions ['ignore', 'ignore_ament_install']
+[1.024s] Level 1:colcon.colcon_core.package_identification:_identify(src/sim) by extension 'ignore'
+[1.024s] Level 1:colcon.colcon_core.package_identification:_identify(src/sim) by extension 'ignore_ament_install'
+[1.024s] Level 1:colcon.colcon_core.package_identification:_identify(src/sim) by extensions ['colcon_pkg']
+[1.024s] Level 1:colcon.colcon_core.package_identification:_identify(src/sim) by extension 'colcon_pkg'
+[1.024s] Level 1:colcon.colcon_core.package_identification:_identify(src/sim) by extensions ['colcon_meta']
+[1.024s] Level 1:colcon.colcon_core.package_identification:_identify(src/sim) by extension 'colcon_meta'
+[1.024s] Level 1:colcon.colcon_core.package_identification:_identify(src/sim) by extensions ['ros']
+[1.024s] Level 1:colcon.colcon_core.package_identification:_identify(src/sim) by extension 'ros'
+[1.025s] DEBUG:colcon.colcon_core.package_identification:Package 'src/sim' with type 'ros.ament_cmake' and name 'sim'
+[1.025s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extensions ['ignore', 'ignore_ament_install']
+[1.025s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extension 'ignore'
+[1.025s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extension 'ignore_ament_install'
+[1.025s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extensions ['colcon_pkg']
+[1.025s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extension 'colcon_pkg'
+[1.025s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extensions ['colcon_meta']
+[1.026s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extension 'colcon_meta'
+[1.026s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extensions ['ros']
+[1.026s] Level 1:colcon.colcon_core.package_identification:_identify(src/talon) by extension 'ros'
+[1.027s] DEBUG:colcon.colcon_core.package_identification:Package 'src/talon' with type 'ros.ament_cmake' and name 'talon'
+[1.027s] Level 1:colcon.colcon_core.package_identification:_identify(src/teleop) by extensions ['ignore', 'ignore_ament_install']
+[1.027s] Level 1:colcon.colcon_core.package_identification:_identify(src/teleop) by extension 'ignore'
+[1.027s] Level 1:colcon.colcon_core.package_identification:_identify(src/teleop) by extension 'ignore_ament_install'
+[1.027s] Level 1:colcon.colcon_core.package_identification:_identify(src/teleop) by extensions ['colcon_pkg']
+[1.027s] Level 1:colcon.colcon_core.package_identification:_identify(src/teleop) by extension 'colcon_pkg'
+[1.027s] Level 1:colcon.colcon_core.package_identification:_identify(src/teleop) by extensions ['colcon_meta']
+[1.027s] Level 1:colcon.colcon_core.package_identification:_identify(src/teleop) by extension 'colcon_meta'
+[1.027s] Level 1:colcon.colcon_core.package_identification:_identify(src/teleop) by extensions ['ros']
+[1.027s] Level 1:colcon.colcon_core.package_identification:_identify(src/teleop) by extension 'ros'
+[1.028s] DEBUG:colcon.colcon_core.package_identification:Package 'src/teleop' with type 'ros.ament_python' and name 'teleop'
+[1.028s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[1.028s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[1.028s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[1.028s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[1.028s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[1.081s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[1.081s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[1.086s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 272 installed packages in /opt/ros/humble
+[1.087s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[1.127s] Level 5:colcon.colcon_core.verb:set package 'control_gui' build argument 'cmake_args' from command line to 'None'
+[1.127s] Level 5:colcon.colcon_core.verb:set package 'control_gui' build argument 'cmake_target' from command line to 'None'
+[1.127s] Level 5:colcon.colcon_core.verb:set package 'control_gui' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.127s] Level 5:colcon.colcon_core.verb:set package 'control_gui' build argument 'cmake_clean_cache' from command line to 'False'
+[1.127s] Level 5:colcon.colcon_core.verb:set package 'control_gui' build argument 'cmake_clean_first' from command line to 'False'
+[1.127s] Level 5:colcon.colcon_core.verb:set package 'control_gui' build argument 'cmake_force_configure' from command line to 'False'
+[1.127s] Level 5:colcon.colcon_core.verb:set package 'control_gui' build argument 'ament_cmake_args' from command line to 'None'
+[1.127s] Level 5:colcon.colcon_core.verb:set package 'control_gui' build argument 'catkin_cmake_args' from command line to 'None'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'control_gui' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.128s] DEBUG:colcon.colcon_core.verb:Building package 'control_gui' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/control_gui', 'merge_install': False, 'path': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui', 'symlink_install': False, 'test_result_base': None}
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'falcon' build argument 'cmake_args' from command line to 'None'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'falcon' build argument 'cmake_target' from command line to 'None'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'falcon' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'falcon' build argument 'cmake_clean_cache' from command line to 'False'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'falcon' build argument 'cmake_clean_first' from command line to 'False'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'falcon' build argument 'cmake_force_configure' from command line to 'False'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'falcon' build argument 'ament_cmake_args' from command line to 'None'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'falcon' build argument 'catkin_cmake_args' from command line to 'None'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'falcon' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.128s] DEBUG:colcon.colcon_core.verb:Building package 'falcon' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/falcon', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/falcon', 'merge_install': False, 'path': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/falcon', 'symlink_install': False, 'test_result_base': None}
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'sim' build argument 'cmake_args' from command line to 'None'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'sim' build argument 'cmake_target' from command line to 'None'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'sim' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.128s] Level 5:colcon.colcon_core.verb:set package 'sim' build argument 'cmake_clean_cache' from command line to 'False'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'sim' build argument 'cmake_clean_first' from command line to 'False'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'sim' build argument 'cmake_force_configure' from command line to 'False'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'sim' build argument 'ament_cmake_args' from command line to 'None'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'sim' build argument 'catkin_cmake_args' from command line to 'None'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'sim' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.129s] DEBUG:colcon.colcon_core.verb:Building package 'sim' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim', 'merge_install': False, 'path': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/sim', 'symlink_install': False, 'test_result_base': None}
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'talon' build argument 'cmake_args' from command line to 'None'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'talon' build argument 'cmake_target' from command line to 'None'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'talon' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'talon' build argument 'cmake_clean_cache' from command line to 'False'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'talon' build argument 'cmake_clean_first' from command line to 'False'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'talon' build argument 'cmake_force_configure' from command line to 'False'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'talon' build argument 'ament_cmake_args' from command line to 'None'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'talon' build argument 'catkin_cmake_args' from command line to 'None'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'talon' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.129s] DEBUG:colcon.colcon_core.verb:Building package 'talon' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/talon', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon', 'merge_install': False, 'path': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/talon', 'symlink_install': False, 'test_result_base': None}
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'teleop' build argument 'cmake_args' from command line to 'None'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'teleop' build argument 'cmake_target' from command line to 'None'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'teleop' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'teleop' build argument 'cmake_clean_cache' from command line to 'False'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'teleop' build argument 'cmake_clean_first' from command line to 'False'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'teleop' build argument 'cmake_force_configure' from command line to 'False'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'teleop' build argument 'ament_cmake_args' from command line to 'None'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'teleop' build argument 'catkin_cmake_args' from command line to 'None'
+[1.129s] Level 5:colcon.colcon_core.verb:set package 'teleop' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.130s] DEBUG:colcon.colcon_core.verb:Building package 'teleop' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop', 'merge_install': False, 'path': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/teleop', 'symlink_install': False, 'test_result_base': None}
+[1.130s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[1.132s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[1.132s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui' with build type 'ament_cmake'
+[1.133s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui'
+[1.141s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[1.141s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.141s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.146s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/falcon' with build type 'ament_cmake'
+[1.146s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/falcon'
+[1.146s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.147s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.150s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/sim' with build type 'ament_cmake'
+[1.150s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/sim'
+[1.151s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.151s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.154s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/talon' with build type 'ament_cmake'
+[1.155s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/talon'
+[1.155s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.155s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.159s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/teleop' with build type 'ament_python'
+[1.159s] Level 1:colcon.colcon_core.shell:create_environment_hook('teleop', 'ament_prefix_path')
+[1.159s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop/hook/ament_prefix_path.ps1'
+[1.162s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop/hook/ament_prefix_path.dsv'
+[1.163s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop/hook/ament_prefix_path.sh'
+[1.165s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.165s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.175s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui -DCMAKE_INSTALL_PREFIX=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/control_gui
+[1.179s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/falcon': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/falcon -DCMAKE_INSTALL_PREFIX=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/falcon
+[1.184s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/sim -DCMAKE_INSTALL_PREFIX=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim
+[1.191s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/talon': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/talon -DCMAKE_INSTALL_PREFIX=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon
+[1.467s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/teleop'
+[1.467s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.467s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[2.026s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/teleop': PYTHONPATH=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/teleop build --build-base /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build install --record /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/install.log --single-version-externally-managed install_data
+[2.413s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/teleop' returned '0': PYTHONPATH=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/teleop build --build-base /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build install --record /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/install.log --single-version-externally-managed install_data
+[2.423s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop' for CMake module files
+[2.423s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop' for CMake config files
+[2.424s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib'
+[2.425s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/bin'
+[2.425s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/pkgconfig/teleop.pc'
+[2.425s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages'
+[2.425s] Level 1:colcon.colcon_core.shell:create_environment_hook('teleop', 'pythonpath')
+[2.426s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop/hook/pythonpath.ps1'
+[2.427s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop/hook/pythonpath.dsv'
+[2.427s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop/hook/pythonpath.sh'
+[2.428s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/bin'
+[2.428s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(teleop)
+[2.429s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop/package.ps1'
+[2.431s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop/package.dsv'
+[2.432s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop/package.sh'
+[2.434s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop/package.bash'
+[2.436s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop/package.zsh'
+[2.438s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/colcon-core/packages/teleop)
+[3.261s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/sim -DCMAKE_INSTALL_PREFIX=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim
+[3.265s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim -- -j20 -l20
+[3.312s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim -- -j20 -l20
+[3.325s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim
+[3.346s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(sim)
+[3.346s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim' for CMake module files
+[3.347s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim
+[3.348s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim' for CMake config files
+[3.348s] Level 1:colcon.colcon_core.shell:create_environment_hook('sim', 'cmake_prefix_path')
+[3.348s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/hook/cmake_prefix_path.ps1'
+[3.349s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/hook/cmake_prefix_path.dsv'
+[3.350s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/hook/cmake_prefix_path.sh'
+[3.350s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/bin'
+[3.350s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/lib/pkgconfig/sim.pc'
+[3.351s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/lib/python3.10/site-packages'
+[3.351s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/bin'
+[3.352s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.ps1'
+[3.352s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.dsv'
+[3.353s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.sh'
+[3.353s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.bash'
+[3.354s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.zsh'
+[3.354s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/colcon-core/packages/sim)
+[3.355s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(sim)
+[3.356s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim' for CMake module files
+[3.358s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim' for CMake config files
+[3.358s] Level 1:colcon.colcon_core.shell:create_environment_hook('sim', 'cmake_prefix_path')
+[3.359s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/hook/cmake_prefix_path.ps1'
+[3.359s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/hook/cmake_prefix_path.dsv'
+[3.360s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/hook/cmake_prefix_path.sh'
+[3.361s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/bin'
+[3.361s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/lib/pkgconfig/sim.pc'
+[3.361s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/lib/python3.10/site-packages'
+[3.362s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/bin'
+[3.362s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.ps1'
+[3.363s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.dsv'
+[3.363s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.sh'
+[3.364s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.bash'
+[3.364s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.zsh'
+[3.365s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/colcon-core/packages/sim)
+[12.871s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/talon' returned '1': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/talon -DCMAKE_INSTALL_PREFIX=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon
+[12.888s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(talon)
+[12.889s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon' for CMake module files
+[12.889s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon' for CMake config files
+[12.889s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon/bin'
+[12.889s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon/lib/pkgconfig/talon.pc'
+[12.890s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon/lib/python3.10/site-packages'
+[12.890s] Level 1:colcon.colcon_core.environment:checking '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon/bin'
+[12.890s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon/share/talon/package.ps1'
+[12.892s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon/share/talon/package.dsv'
+[12.892s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon/share/talon/package.sh'
+[12.893s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon/share/talon/package.bash'
+[12.893s] INFO:colcon.colcon_core.shell:Creating package script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon/share/talon/package.zsh'
+[12.894s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon/share/colcon-core/packages/talon)
+[18.709s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[18.709s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[18.709s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '1'
+[18.709s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[18.912s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.notify_send': Could not find 'notify-send'
+[18.912s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[18.913s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[18.913s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[18.916s] DEBUG:colcon.colcon_notification.desktop_notification.notify2:Failed to initialize notify2: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Notifications was not provided by any .service files
+[18.917s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[18.917s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/local_setup.ps1'
+[18.922s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/_local_setup_util_ps1.py'
+[18.926s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/setup.ps1'
+[18.928s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/local_setup.sh'
+[18.930s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/_local_setup_util_sh.py'
+[18.931s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/setup.sh'
+[18.934s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/local_setup.bash'
+[18.935s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/setup.bash'
+[18.938s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/local_setup.zsh'
+[18.940s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/setup.zsh'

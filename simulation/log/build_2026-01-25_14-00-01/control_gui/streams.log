@@ -1,0 +1,19 @@
+[0.036s] Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui -- -j20 -l20
+[0.177s] [ 22%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/Speedometer.cpp.o[0m
+[0.178s] [ 22%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/InfoItem.cpp.o[0m
+[0.178s] [ 33%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/InfoFrame.cpp.o[0m
+[0.178s] [ 44%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/ConfigDefinitions.cpp.o[0m
+[0.179s] [ 55%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/control.cpp.o[0m
+[0.179s] [ 66%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/ConfigEditorWindow.cpp.o[0m
+[0.179s] [ 77%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/BinaryMessage.cpp.o[0m
+[0.181s] [ 88%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/NetworkHandler.cpp.o[0m
+[1.280s] [01m[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:[m[K In member function ‘[01m[KObject BinaryMessage::decodeObject(std::__cxx11::list<unsigned char>::iterator&)[m[K’:
+[1.280s] [01m[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:391:1:[m[K [01;35m[Kwarning: [m[Kcontrol reaches end of non-void function [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreturn-type-Wreturn-type]8;;[m[K]
+[1.280s]   391 | [01;35m[K}[m[K
+[1.280s]       | [01;35m[K^[m[K
+[1.284s] [01m[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kstd::string BinaryMessage::decodeLabel(std::__cxx11::list<unsigned char>::iterator&)[m[K’:
+[1.284s] [01m[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:410:1:[m[K [01;35m[Kwarning: [m[Kcontrol reaches end of non-void function [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreturn-type-Wreturn-type]8;;[m[K]
+[1.284s]   410 | [01;35m[K}[m[K
+[1.284s]       | [01;35m[K^[m[K
+[18.773s] [100%] [32m[1mLinking CXX executable control_gui[0m
+[22.253s] [100%] Built target control_gui

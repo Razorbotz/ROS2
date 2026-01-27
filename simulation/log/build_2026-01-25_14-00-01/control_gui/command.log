@@ -1,0 +1,1 @@
+Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui -- -j20 -l20

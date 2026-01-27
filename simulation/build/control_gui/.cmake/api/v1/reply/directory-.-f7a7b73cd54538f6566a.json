@@ -1,0 +1,455 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install",
+			"ament_index_register_resource",
+			"ament_cmake_environment_generate_package_run_dependencies_marker",
+			"include",
+			"ament_execute_extensions",
+			"ament_package",
+			"ament_cmake_environment_generate_parent_prefix_path_marker",
+			"ament_environment_hooks",
+			"ament_generate_package_environment",
+			"ament_index_register_package",
+			"_ament_package"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/index/ament_index_register_resource.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/environment/ament_cmake_environment_package_hook.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/core/ament_execute_extensions.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/environment_hooks/ament_environment_hooks.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/environment_hooks/ament_cmake_environment_hooks_package_hook.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/environment_hooks/ament_generate_package_environment.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/index/ament_index_register_package.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/index/ament_cmake_index_package_hook.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 88,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 93,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 98,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 103,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 108,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 113,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 4,
+				"line" : 66,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 3,
+				"line" : 48,
+				"parent" : 7
+			},
+			{
+				"file" : 2,
+				"parent" : 8
+			},
+			{
+				"command" : 2,
+				"file" : 2,
+				"line" : 47,
+				"parent" : 9
+			},
+			{
+				"command" : 1,
+				"file" : 2,
+				"line" : 29,
+				"parent" : 10
+			},
+			{
+				"command" : 0,
+				"file" : 1,
+				"line" : 105,
+				"parent" : 11
+			},
+			{
+				"command" : 6,
+				"file" : 2,
+				"line" : 48,
+				"parent" : 9
+			},
+			{
+				"command" : 1,
+				"file" : 2,
+				"line" : 43,
+				"parent" : 13
+			},
+			{
+				"command" : 0,
+				"file" : 1,
+				"line" : 105,
+				"parent" : 14
+			},
+			{
+				"command" : 3,
+				"file" : 3,
+				"line" : 48,
+				"parent" : 7
+			},
+			{
+				"file" : 6,
+				"parent" : 16
+			},
+			{
+				"command" : 7,
+				"file" : 6,
+				"line" : 20,
+				"parent" : 17
+			},
+			{
+				"command" : 0,
+				"file" : 5,
+				"line" : 70,
+				"parent" : 18
+			},
+			{
+				"command" : 0,
+				"file" : 5,
+				"line" : 87,
+				"parent" : 18
+			},
+			{
+				"command" : 0,
+				"file" : 5,
+				"line" : 70,
+				"parent" : 18
+			},
+			{
+				"command" : 0,
+				"file" : 5,
+				"line" : 87,
+				"parent" : 18
+			},
+			{
+				"command" : 8,
+				"file" : 6,
+				"line" : 26,
+				"parent" : 17
+			},
+			{
+				"command" : 0,
+				"file" : 7,
+				"line" : 91,
+				"parent" : 23
+			},
+			{
+				"command" : 0,
+				"file" : 7,
+				"line" : 91,
+				"parent" : 23
+			},
+			{
+				"command" : 0,
+				"file" : 7,
+				"line" : 91,
+				"parent" : 23
+			},
+			{
+				"command" : 0,
+				"file" : 7,
+				"line" : 107,
+				"parent" : 23
+			},
+			{
+				"command" : 0,
+				"file" : 7,
+				"line" : 119,
+				"parent" : 23
+			},
+			{
+				"command" : 3,
+				"file" : 3,
+				"line" : 48,
+				"parent" : 7
+			},
+			{
+				"file" : 9,
+				"parent" : 29
+			},
+			{
+				"command" : 9,
+				"file" : 9,
+				"line" : 16,
+				"parent" : 30
+			},
+			{
+				"command" : 1,
+				"file" : 8,
+				"line" : 29,
+				"parent" : 31
+			},
+			{
+				"command" : 0,
+				"file" : 1,
+				"line" : 105,
+				"parent" : 32
+			},
+			{
+				"command" : 10,
+				"file" : 4,
+				"line" : 68,
+				"parent" : 6
+			},
+			{
+				"command" : 0,
+				"file" : 4,
+				"line" : 150,
+				"parent" : 34
+			},
+			{
+				"command" : 0,
+				"file" : 4,
+				"line" : 157,
+				"parent" : 34
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "lib/control_gui",
+			"paths" : 
+			[
+				"control_gui"
+			],
+			"targetId" : "control_gui::@6890427a1f51a3e7e1df",
+			"targetIndex" : 0,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "include",
+			"paths" : 
+			[
+				{
+					"from" : "include",
+					"to" : "."
+				}
+			],
+			"type" : "directory"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui/resources",
+			"paths" : 
+			[
+				{
+					"from" : "resources",
+					"to" : "."
+				}
+			],
+			"type" : "directory"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui",
+			"paths" : 
+			[
+				"package.xml"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui",
+			"paths" : 
+			[
+				"launch"
+			],
+			"type" : "directory"
+		},
+		{
+			"backtrace" : 12,
+			"component" : "Unspecified",
+			"destination" : "share/ament_index/resource_index/package_run_dependencies",
+			"paths" : 
+			[
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/control_gui"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 15,
+			"component" : "Unspecified",
+			"destination" : "share/ament_index/resource_index/parent_prefix_path",
+			"paths" : 
+			[
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/control_gui"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 19,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui/environment",
+			"paths" : 
+			[
+				"/opt/ros/humble/share/ament_cmake_core/cmake/environment_hooks/environment/ament_prefix_path.sh"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 20,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui/environment",
+			"paths" : 
+			[
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_environment_hooks/ament_prefix_path.dsv"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 21,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui/environment",
+			"paths" : 
+			[
+				"/opt/ros/humble/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 22,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui/environment",
+			"paths" : 
+			[
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_environment_hooks/path.dsv"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 24,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui",
+			"paths" : 
+			[
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_environment_hooks/local_setup.bash"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 25,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui",
+			"paths" : 
+			[
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_environment_hooks/local_setup.sh"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 26,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui",
+			"paths" : 
+			[
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_environment_hooks/local_setup.zsh"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 27,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui",
+			"paths" : 
+			[
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_environment_hooks/local_setup.dsv"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 28,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui",
+			"paths" : 
+			[
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_environment_hooks/package.dsv"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 33,
+			"component" : "Unspecified",
+			"destination" : "share/ament_index/resource_index/packages",
+			"paths" : 
+			[
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_index/share/ament_index/resource_index/packages/control_gui"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 35,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui/cmake",
+			"paths" : 
+			[
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_core/control_guiConfig.cmake",
+				"/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/ament_cmake_core/control_guiConfig-version.cmake"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 36,
+			"component" : "Unspecified",
+			"destination" : "share/control_gui",
+			"paths" : 
+			[
+				"package.xml"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	}
+}

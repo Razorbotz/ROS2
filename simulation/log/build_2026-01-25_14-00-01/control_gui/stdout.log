@@ -1,0 +1,10 @@
+[ 22%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/Speedometer.cpp.o[0m
+[ 22%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/InfoItem.cpp.o[0m
+[ 33%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/InfoFrame.cpp.o[0m
+[ 44%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/ConfigDefinitions.cpp.o[0m
+[ 55%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/control.cpp.o[0m
+[ 66%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/ConfigEditorWindow.cpp.o[0m
+[ 77%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/BinaryMessage.cpp.o[0m
+[ 88%] [32mBuilding CXX object CMakeFiles/control_gui.dir/src/NetworkHandler.cpp.o[0m
+[100%] [32m[1mLinking CXX executable control_gui[0m
+[100%] Built target control_gui

@@ -1,0 +1,50 @@
+[0.033s] Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/falcon': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/falcon -DCMAKE_INSTALL_PREFIX=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/falcon
+[0.445s] -- The C compiler identification is GNU 11.4.0
+[1.083s] -- The CXX compiler identification is GNU 11.4.0
+[1.284s] -- Detecting C compiler ABI info
+[1.418s] -- Detecting C compiler ABI info - done
+[1.428s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.429s] -- Detecting C compile features
+[1.430s] -- Detecting C compile features - done
+[1.435s] -- Detecting CXX compiler ABI info
+[1.585s] -- Detecting CXX compiler ABI info - done
+[1.597s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.597s] -- Detecting CXX compile features
+[1.598s] -- Detecting CXX compile features - done
+[1.612s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.818s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[1.959s] -- Found rclcpp: 16.0.17 (/opt/ros/humble/share/rclcpp/cmake)
+[2.127s] -- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[2.136s] -- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[2.151s] -- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[2.180s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[2.211s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.283s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[2.288s] -- Found rmw_fastrtps_cpp: 6.2.9 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[3.432s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[4.903s] -- Found FastRTPS: /opt/ros/humble/include  
+[9.867s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[9.877s] -- Looking for pthread.h
+[10.036s] -- Looking for pthread.h - found
+[10.037s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[10.178s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[10.180s] -- Found Threads: TRUE  
+[12.146s] [31mCMake Error at CMakeLists.txt:11 (find_package):
+[12.146s]   By not providing "Findmessages.cmake" in CMAKE_MODULE_PATH this project has
+[12.146s]   asked CMake to find a package configuration file provided by "messages",
+[12.146s]   but CMake did not find one.
+[12.146s] 
+[12.146s]   Could not find a package configuration file provided by "messages" with any
+[12.146s]   of the following names:
+[12.146s] 
+[12.146s]     messagesConfig.cmake
+[12.146s]     messages-config.cmake
+[12.146s] 
+[12.146s]   Add the installation prefix of "messages" to CMAKE_PREFIX_PATH or set
+[12.146s]   "messages_DIR" to a directory containing one of the above files.  If
+[12.146s]   "messages" provides a separate development package or SDK, be sure it has
+[12.146s]   been installed.
+[12.146s] 
+[12.147s] [0m
+[12.147s] -- Configuring incomplete, errors occurred!
+[12.147s] See also "/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/falcon/CMakeFiles/CMakeOutput.log".

@@ -1,0 +1,37 @@
+[0.867s] Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/teleop': PYTHONPATH=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/teleop build --build-base /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build install --record /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/install.log --single-version-externally-managed install_data
+[1.176s] running egg_info
+[1.177s] creating ../../build/teleop/teleop.egg-info
+[1.178s] writing ../../build/teleop/teleop.egg-info/PKG-INFO
+[1.178s] writing dependency_links to ../../build/teleop/teleop.egg-info/dependency_links.txt
+[1.178s] writing entry points to ../../build/teleop/teleop.egg-info/entry_points.txt
+[1.179s] writing requirements to ../../build/teleop/teleop.egg-info/requires.txt
+[1.179s] writing top-level names to ../../build/teleop/teleop.egg-info/top_level.txt
+[1.179s] writing manifest file '../../build/teleop/teleop.egg-info/SOURCES.txt'
+[1.181s] reading manifest file '../../build/teleop/teleop.egg-info/SOURCES.txt'
+[1.182s] writing manifest file '../../build/teleop/teleop.egg-info/SOURCES.txt'
+[1.182s] running build
+[1.182s] running build_py
+[1.182s] creating /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build
+[1.183s] creating /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build/lib
+[1.183s] creating /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build/lib/teleop
+[1.183s] copying teleop/keyboard_control.py -> /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build/lib/teleop
+[1.184s] copying teleop/__init__.py -> /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build/lib/teleop
+[1.184s] running install
+[1.185s] running install_lib
+[1.186s] creating /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages/teleop
+[1.186s] copying /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build/lib/teleop/keyboard_control.py -> /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages/teleop
+[1.186s] copying /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build/lib/teleop/__init__.py -> /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages/teleop
+[1.187s] byte-compiling /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages/teleop/keyboard_control.py to keyboard_control.cpython-310.pyc
+[1.189s] byte-compiling /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages/teleop/__init__.py to __init__.cpython-310.pyc
+[1.189s] running install_data
+[1.190s] creating /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/ament_index
+[1.190s] creating /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/ament_index/resource_index
+[1.190s] creating /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/ament_index/resource_index/packages
+[1.191s] copying resource/teleop -> /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/ament_index/resource_index/packages
+[1.191s] copying package.xml -> /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/share/teleop
+[1.191s] running install_egg_info
+[1.193s] Copying ../../build/teleop/teleop.egg-info to /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages/teleop-0.0.0-py3.10.egg-info
+[1.194s] running install_scripts
+[1.221s] Installing keyboard_control script to /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/teleop
+[1.222s] writing list of installed files to '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/install.log'
+[1.254s] Invoked command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/teleop' returned '0': PYTHONPATH=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/teleop build --build-base /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build install --record /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/install.log --single-version-externally-managed install_data

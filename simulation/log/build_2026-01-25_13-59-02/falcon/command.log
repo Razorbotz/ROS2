@@ -1,0 +1,1 @@
+Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/falcon': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/falcon -DCMAKE_INSTALL_PREFIX=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/falcon

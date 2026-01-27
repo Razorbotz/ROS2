@@ -1,0 +1,10 @@
+/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/CMakeFiles/uninstall.dir
+/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/CMakeFiles/control_gui_uninstall.dir
+/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/CMakeFiles/control_gui.dir
+/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/CMakeFiles/test.dir
+/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/CMakeFiles/edit_cache.dir
+/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/CMakeFiles/rebuild_cache.dir
+/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/CMakeFiles/list_install_components.dir
+/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/CMakeFiles/install.dir
+/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/CMakeFiles/install/local.dir
+/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui/CMakeFiles/install/strip.dir

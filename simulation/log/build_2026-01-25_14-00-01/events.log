@@ -1,0 +1,369 @@
+[0.000000] (-) TimerEvent: {}
+[0.001716] (control_gui) JobQueued: {'identifier': 'control_gui', 'dependencies': OrderedDict()}
+[0.001851] (falcon) JobQueued: {'identifier': 'falcon', 'dependencies': OrderedDict()}
+[0.001950] (sim) JobQueued: {'identifier': 'sim', 'dependencies': OrderedDict()}
+[0.001998] (talon) JobQueued: {'identifier': 'talon', 'dependencies': OrderedDict()}
+[0.002018] (teleop) JobQueued: {'identifier': 'teleop', 'dependencies': OrderedDict()}
+[0.002036] (control_gui) JobStarted: {'identifier': 'control_gui'}
+[0.014537] (falcon) JobStarted: {'identifier': 'falcon'}
+[0.018589] (sim) JobStarted: {'identifier': 'sim'}
+[0.021290] (talon) JobStarted: {'identifier': 'talon'}
+[0.026633] (teleop) JobStarted: {'identifier': 'teleop'}
+[0.034598] (control_gui) JobProgress: {'identifier': 'control_gui', 'progress': 'cmake'}
+[0.036117] (control_gui) JobProgress: {'identifier': 'control_gui', 'progress': 'build'}
+[0.037430] (control_gui) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui', '--', '-j20', '-l20'], 'cwd': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'hayden'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('WT_PROFILE_ID', '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}'), ('HOME', '/home/hayden'), ('OLDPWD', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('WSL_DISTRO_NAME', 'Ubuntu-22.04'), ('WAYLAND_DISPLAY', 'wayland-0'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'hayden'), ('NAME', 'SchoolLaptop'), ('WSL_INTEROP', '/run/WSL/2891_interop'), ('PULSE_SERVER', 'unix:/mnt/wslg/PulseServer'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', '/home/hayden/SoftwareDevelopment/ROS2/shovel/src/sim/models:'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Python312/Scripts/:/mnt/c/Python312/:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/PuTTY/:/mnt/c/Program Files/nodejs/:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/mahan/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/mahan/AppData/Roaming/npm:/mnt/c/Users/mahan/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/mahan/AppData/Local/Box/Box Edit/:/snap/bin'), ('WT_SESSION', '6b149e5d-8e1e-471f-b642-c922f30ebb3a'), ('XDG_RUNTIME_DIR', '/run/user/1000/'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('PWD', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('WSL2_GUI_APPS_ENABLED', '1'), ('HOSTTYPE', 'x86_64'), ('WSLENV', 'WT_SESSION:WT_PROFILE_ID:'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.042391] (falcon) JobProgress: {'identifier': 'falcon', 'progress': 'cmake'}
+[0.044221] (falcon) Command: {'cmd': ['/usr/bin/cmake', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/falcon', '-DCMAKE_INSTALL_PREFIX=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/falcon'], 'cwd': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/falcon', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'hayden'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('WT_PROFILE_ID', '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}'), ('HOME', '/home/hayden'), ('OLDPWD', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('WSL_DISTRO_NAME', 'Ubuntu-22.04'), ('WAYLAND_DISPLAY', 'wayland-0'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'hayden'), ('NAME', 'SchoolLaptop'), ('WSL_INTEROP', '/run/WSL/2891_interop'), ('PULSE_SERVER', 'unix:/mnt/wslg/PulseServer'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', '/home/hayden/SoftwareDevelopment/ROS2/shovel/src/sim/models:'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Python312/Scripts/:/mnt/c/Python312/:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/PuTTY/:/mnt/c/Program Files/nodejs/:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/mahan/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/mahan/AppData/Roaming/npm:/mnt/c/Users/mahan/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/mahan/AppData/Local/Box/Box Edit/:/snap/bin'), ('WT_SESSION', '6b149e5d-8e1e-471f-b642-c922f30ebb3a'), ('XDG_RUNTIME_DIR', '/run/user/1000/'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('PWD', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/falcon'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('WSL2_GUI_APPS_ENABLED', '1'), ('HOSTTYPE', 'x86_64'), ('WSLENV', 'WT_SESSION:WT_PROFILE_ID:'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.046486] (sim) JobProgress: {'identifier': 'sim', 'progress': 'cmake'}
+[0.047013] (sim) JobProgress: {'identifier': 'sim', 'progress': 'build'}
+[0.048141] (sim) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim', '--', '-j20', '-l20'], 'cwd': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'hayden'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('WT_PROFILE_ID', '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}'), ('HOME', '/home/hayden'), ('OLDPWD', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('WSL_DISTRO_NAME', 'Ubuntu-22.04'), ('WAYLAND_DISPLAY', 'wayland-0'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'hayden'), ('NAME', 'SchoolLaptop'), ('WSL_INTEROP', '/run/WSL/2891_interop'), ('PULSE_SERVER', 'unix:/mnt/wslg/PulseServer'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', '/home/hayden/SoftwareDevelopment/ROS2/shovel/src/sim/models:'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Python312/Scripts/:/mnt/c/Python312/:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/PuTTY/:/mnt/c/Program Files/nodejs/:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/mahan/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/mahan/AppData/Roaming/npm:/mnt/c/Users/mahan/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/mahan/AppData/Local/Box/Box Edit/:/snap/bin'), ('WT_SESSION', '6b149e5d-8e1e-471f-b642-c922f30ebb3a'), ('XDG_RUNTIME_DIR', '/run/user/1000/'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('PWD', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('WSL2_GUI_APPS_ENABLED', '1'), ('HOSTTYPE', 'x86_64'), ('WSLENV', 'WT_SESSION:WT_PROFILE_ID:'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.054884] (talon) JobProgress: {'identifier': 'talon', 'progress': 'cmake'}
+[0.054937] (talon) Command: {'cmd': ['/usr/bin/cmake', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/talon', '-DCMAKE_INSTALL_PREFIX=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/talon'], 'cwd': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/talon', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'hayden'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('WT_PROFILE_ID', '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}'), ('HOME', '/home/hayden'), ('OLDPWD', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('WSL_DISTRO_NAME', 'Ubuntu-22.04'), ('WAYLAND_DISPLAY', 'wayland-0'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'hayden'), ('NAME', 'SchoolLaptop'), ('WSL_INTEROP', '/run/WSL/2891_interop'), ('PULSE_SERVER', 'unix:/mnt/wslg/PulseServer'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', '/home/hayden/SoftwareDevelopment/ROS2/shovel/src/sim/models:'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Python312/Scripts/:/mnt/c/Python312/:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/PuTTY/:/mnt/c/Program Files/nodejs/:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/mahan/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/mahan/AppData/Roaming/npm:/mnt/c/Users/mahan/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/mahan/AppData/Local/Box/Box Edit/:/snap/bin'), ('WT_SESSION', '6b149e5d-8e1e-471f-b642-c922f30ebb3a'), ('XDG_RUNTIME_DIR', '/run/user/1000/'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('PWD', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/talon'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('WSL2_GUI_APPS_ENABLED', '1'), ('HOSTTYPE', 'x86_64'), ('WSLENV', 'WT_SESSION:WT_PROFILE_ID:'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.100082] (-) TimerEvent: {}
+[0.126185] (falcon) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.126692] (talon) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.179172] (control_gui) StdoutLine: {'line': b'[ 22%] \x1b[32mBuilding CXX object CMakeFiles/control_gui.dir/src/Speedometer.cpp.o\x1b[0m\n'}
+[0.179564] (control_gui) StdoutLine: {'line': b'[ 22%] \x1b[32mBuilding CXX object CMakeFiles/control_gui.dir/src/InfoItem.cpp.o\x1b[0m\n'}
+[0.179826] (control_gui) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/control_gui.dir/src/InfoFrame.cpp.o\x1b[0m\n'}
+[0.180214] (control_gui) StdoutLine: {'line': b'[ 44%] \x1b[32mBuilding CXX object CMakeFiles/control_gui.dir/src/ConfigDefinitions.cpp.o\x1b[0m\n'}
+[0.180490] (control_gui) StdoutLine: {'line': b'[ 55%] \x1b[32mBuilding CXX object CMakeFiles/control_gui.dir/src/control.cpp.o\x1b[0m\n'}
+[0.180623] (control_gui) StdoutLine: {'line': b'[ 66%] \x1b[32mBuilding CXX object CMakeFiles/control_gui.dir/src/ConfigEditorWindow.cpp.o\x1b[0m\n'}
+[0.180698] (control_gui) StdoutLine: {'line': b'[ 77%] \x1b[32mBuilding CXX object CMakeFiles/control_gui.dir/src/BinaryMessage.cpp.o\x1b[0m\n'}
+[0.182500] (control_gui) StdoutLine: {'line': b'[ 88%] \x1b[32mBuilding CXX object CMakeFiles/control_gui.dir/src/NetworkHandler.cpp.o\x1b[0m\n'}
+[0.200233] (-) TimerEvent: {}
+[0.300770] (-) TimerEvent: {}
+[0.366705] (falcon) StdoutLine: {'line': b'-- Found rclcpp: 16.0.17 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[0.367062] (talon) StdoutLine: {'line': b'-- Found rclcpp: 16.0.17 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[0.400920] (-) TimerEvent: {}
+[0.438909] (sim) CommandEnded: {'returncode': 0}
+[0.440804] (sim) JobProgress: {'identifier': 'sim', 'progress': 'install'}
+[0.454403] (sim) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim'], 'cwd': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'hayden'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('WT_PROFILE_ID', '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}'), ('HOME', '/home/hayden'), ('OLDPWD', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('WSL_DISTRO_NAME', 'Ubuntu-22.04'), ('WAYLAND_DISPLAY', 'wayland-0'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'hayden'), ('NAME', 'SchoolLaptop'), ('WSL_INTEROP', '/run/WSL/2891_interop'), ('PULSE_SERVER', 'unix:/mnt/wslg/PulseServer'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', '/home/hayden/SoftwareDevelopment/ROS2/shovel/src/sim/models:'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Python312/Scripts/:/mnt/c/Python312/:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/PuTTY/:/mnt/c/Program Files/nodejs/:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/mahan/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/mahan/AppData/Roaming/npm:/mnt/c/Users/mahan/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/mahan/AppData/Local/Box/Box Edit/:/snap/bin'), ('WT_SESSION', '6b149e5d-8e1e-471f-b642-c922f30ebb3a'), ('XDG_RUNTIME_DIR', '/run/user/1000/'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('PWD', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/sim'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('WSL2_GUI_APPS_ENABLED', '1'), ('HOSTTYPE', 'x86_64'), ('WSLENV', 'WT_SESSION:WT_PROFILE_ID:'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.467539] (sim) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[0.467966] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/launch\n'}
+[0.468321] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/launch/artemis_sim.launch.py\n'}
+[0.468764] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/ament_index/resource_index/package_run_dependencies/sim\n'}
+[0.469043] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/ament_index/resource_index/parent_prefix_path/sim\n'}
+[0.469308] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/environment/ament_prefix_path.sh\n'}
+[0.469484] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/environment/ament_prefix_path.dsv\n'}
+[0.469820] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/environment/path.sh\n'}
+[0.469924] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/environment/path.dsv\n'}
+[0.470107] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/local_setup.bash\n'}
+[0.470303] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/local_setup.sh\n'}
+[0.470450] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/local_setup.zsh\n'}
+[0.470615] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/local_setup.dsv\n'}
+[0.470799] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.dsv\n'}
+[0.471164] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/ament_index/resource_index/packages/sim\n'}
+[0.471305] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/cmake/simConfig.cmake\n'}
+[0.471387] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/cmake/simConfig-version.cmake\n'}
+[0.471460] (sim) StdoutLine: {'line': b'-- Up-to-date: /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/package.xml\n'}
+[0.473181] (sim) CommandEnded: {'returncode': 0}
+[0.501078] (-) TimerEvent: {}
+[0.510448] (sim) JobEnded: {'identifier': 'sim', 'rc': 0}
+[0.554543] (falcon) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[0.554769] (talon) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[0.561063] (falcon) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[0.561383] (talon) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[0.577663] (talon) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[0.577920] (falcon) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[0.600289] (talon) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.600717] (falcon) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.601208] (-) TimerEvent: {}
+[0.629688] (talon) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.630182] (falcon) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.696936] (talon) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[0.697417] (falcon) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[0.701485] (talon) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.9 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[0.701741] (-) TimerEvent: {}
+[0.701969] (falcon) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.9 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[0.802062] (-) TimerEvent: {}
+[0.902539] (-) TimerEvent: {}
+[1.002870] (-) TimerEvent: {}
+[1.103287] (-) TimerEvent: {}
+[1.185901] (teleop) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'egg_info', '--egg-base', '../../build/teleop', 'build', '--build-base', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/build', 'install', '--record', '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/install.log', '--single-version-externally-managed', 'install_data'], 'cwd': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/teleop', 'env': {'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'hayden', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib', 'WT_PROFILE_ID': '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}', 'HOME': '/home/hayden', 'OLDPWD': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src', 'ROS_PYTHON_VERSION': '3', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'WSL_DISTRO_NAME': 'Ubuntu-22.04', 'WAYLAND_DISPLAY': 'wayland-0', 'ROS_DISTRO': 'humble', 'LOGNAME': 'hayden', 'NAME': 'SchoolLaptop', 'WSL_INTEROP': '/run/WSL/2891_interop', 'PULSE_SERVER': 'unix:/mnt/wslg/PulseServer', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'TERM': 'xterm-256color', 'GAZEBO_MODEL_PATH': '/home/hayden/SoftwareDevelopment/ROS2/shovel/src/sim/models:', 'ROS_LOCALHOST_ONLY': '0', 'PATH': '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Python312/Scripts/:/mnt/c/Python312/:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/PuTTY/:/mnt/c/Program Files/nodejs/:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/mahan/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/mahan/AppData/Roaming/npm:/mnt/c/Users/mahan/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/mahan/AppData/Local/Box/Box Edit/:/snap/bin', 'WT_SESSION': '6b149e5d-8e1e-471f-b642-c922f30ebb3a', 'XDG_RUNTIME_DIR': '/run/user/1000/', 'GDK_BACKEND': 'x11', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:', 'AMENT_PREFIX_PATH': '/opt/ros/humble', 'SHELL': '/bin/bash', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'PWD': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop', 'XDG_DATA_DIRS': '/usr/local/share:/usr/share:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages', 'COLCON': '1', 'WSL2_GUI_APPS_ENABLED': '1', 'HOSTTYPE': 'x86_64', 'WSLENV': 'WT_SESSION:WT_PROFILE_ID:'}, 'shell': False}
+[1.203425] (-) TimerEvent: {}
+[1.281342] (control_gui) StderrLine: {'line': b'\x1b[01m\x1b[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[KObject BinaryMessage::decodeObject(std::__cxx11::list<unsigned char>::iterator&)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[1.281666] (control_gui) StderrLine: {'line': b'\x1b[01m\x1b[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:391:1:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kcontrol reaches end of non-void function [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreturn-type\x07-Wreturn-type\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[1.281797] (control_gui) StderrLine: {'line': b'  391 | \x1b[01;35m\x1b[K}\x1b[m\x1b[K\n'}
+[1.281884] (control_gui) StderrLine: {'line': b'      | \x1b[01;35m\x1b[K^\x1b[m\x1b[K\n'}
+[1.285960] (control_gui) StderrLine: {'line': b'\x1b[01m\x1b[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kstd::string BinaryMessage::decodeLabel(std::__cxx11::list<unsigned char>::iterator&)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[1.286154] (control_gui) StderrLine: {'line': b'\x1b[01m\x1b[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:410:1:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kcontrol reaches end of non-void function [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreturn-type\x07-Wreturn-type\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[1.286230] (control_gui) StderrLine: {'line': b'  410 | \x1b[01;35m\x1b[K}\x1b[m\x1b[K\n'}
+[1.286277] (control_gui) StderrLine: {'line': b'      | \x1b[01;35m\x1b[K^\x1b[m\x1b[K\n'}
+[1.303567] (-) TimerEvent: {}
+[1.404023] (-) TimerEvent: {}
+[1.504567] (-) TimerEvent: {}
+[1.518317] (teleop) StdoutLine: {'line': b'running egg_info\n'}
+[1.519175] (teleop) StdoutLine: {'line': b'writing ../../build/teleop/teleop.egg-info/PKG-INFO\n'}
+[1.519492] (teleop) StdoutLine: {'line': b'writing dependency_links to ../../build/teleop/teleop.egg-info/dependency_links.txt\n'}
+[1.519795] (teleop) StdoutLine: {'line': b'writing entry points to ../../build/teleop/teleop.egg-info/entry_points.txt\n'}
+[1.520195] (teleop) StdoutLine: {'line': b'writing requirements to ../../build/teleop/teleop.egg-info/requires.txt\n'}
+[1.520552] (teleop) StdoutLine: {'line': b'writing top-level names to ../../build/teleop/teleop.egg-info/top_level.txt\n'}
+[1.522984] (teleop) StdoutLine: {'line': b"reading manifest file '../../build/teleop/teleop.egg-info/SOURCES.txt'\n"}
+[1.524718] (teleop) StdoutLine: {'line': b"writing manifest file '../../build/teleop/teleop.egg-info/SOURCES.txt'\n"}
+[1.525223] (teleop) StdoutLine: {'line': b'running build\n'}
+[1.525591] (teleop) StdoutLine: {'line': b'running build_py\n'}
+[1.525709] (teleop) StdoutLine: {'line': b'running install\n'}
+[1.526092] (teleop) StdoutLine: {'line': b'running install_lib\n'}
+[1.528236] (teleop) StdoutLine: {'line': b'running install_data\n'}
+[1.528607] (teleop) StdoutLine: {'line': b'running install_egg_info\n'}
+[1.531913] (teleop) StdoutLine: {'line': b"removing '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages/teleop-0.0.0-py3.10.egg-info' (and everything under it)\n"}
+[1.532438] (teleop) StdoutLine: {'line': b'Copying ../../build/teleop/teleop.egg-info to /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/python3.10/site-packages/teleop-0.0.0-py3.10.egg-info\n'}
+[1.534169] (teleop) StdoutLine: {'line': b'running install_scripts\n'}
+[1.571087] (teleop) StdoutLine: {'line': b'Installing keyboard_control script to /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/teleop/lib/teleop\n'}
+[1.571603] (teleop) StdoutLine: {'line': b"writing list of installed files to '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/teleop/install.log'\n"}
+[1.604706] (-) TimerEvent: {}
+[1.608640] (teleop) CommandEnded: {'returncode': 0}
+[1.621811] (teleop) JobEnded: {'identifier': 'teleop', 'rc': 0}
+[1.704888] (-) TimerEvent: {}
+[1.805379] (-) TimerEvent: {}
+[1.905845] (-) TimerEvent: {}
+[2.006307] (-) TimerEvent: {}
+[2.106788] (-) TimerEvent: {}
+[2.207352] (-) TimerEvent: {}
+[2.307886] (-) TimerEvent: {}
+[2.408356] (-) TimerEvent: {}
+[2.508884] (-) TimerEvent: {}
+[2.609389] (-) TimerEvent: {}
+[2.709916] (-) TimerEvent: {}
+[2.810337] (-) TimerEvent: {}
+[2.910770] (-) TimerEvent: {}
+[3.011244] (-) TimerEvent: {}
+[3.111686] (-) TimerEvent: {}
+[3.212121] (-) TimerEvent: {}
+[3.312657] (-) TimerEvent: {}
+[3.413139] (-) TimerEvent: {}
+[3.513552] (-) TimerEvent: {}
+[3.569660] (falcon) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[3.570645] (talon) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[3.613668] (-) TimerEvent: {}
+[3.714058] (-) TimerEvent: {}
+[3.814453] (-) TimerEvent: {}
+[3.914841] (-) TimerEvent: {}
+[4.015239] (-) TimerEvent: {}
+[4.115658] (-) TimerEvent: {}
+[4.216024] (-) TimerEvent: {}
+[4.270357] (talon) StderrLine: {'line': b'\x1b[31mCMake Error at CMakeLists.txt:15 (find_package):\n'}
+[4.270805] (talon) StderrLine: {'line': b'  By not providing "Findmessages.cmake" in CMAKE_MODULE_PATH this project has\n'}
+[4.271259] (talon) StderrLine: {'line': b'  asked CMake to find a package configuration file provided by "messages",\n'}
+[4.271367] (talon) StderrLine: {'line': b'  but CMake did not find one.\n'}
+[4.271453] (talon) StderrLine: {'line': b'\n'}
+[4.271613] (talon) StderrLine: {'line': b'  Could not find a package configuration file provided by "messages" with any\n'}
+[4.271685] (talon) StderrLine: {'line': b'  of the following names:\n'}
+[4.271741] (talon) StderrLine: {'line': b'\n'}
+[4.271797] (talon) StderrLine: {'line': b'    messagesConfig.cmake\n'}
+[4.271853] (talon) StderrLine: {'line': b'    messages-config.cmake\n'}
+[4.271911] (talon) StderrLine: {'line': b'\n'}
+[4.271969] (talon) StderrLine: {'line': b'  Add the installation prefix of "messages" to CMAKE_PREFIX_PATH or set\n'}
+[4.272025] (talon) StderrLine: {'line': b'  "messages_DIR" to a directory containing one of the above files.  If\n'}
+[4.272078] (talon) StderrLine: {'line': b'  "messages" provides a separate development package or SDK, be sure it has\n'}
+[4.272131] (talon) StderrLine: {'line': b'  been installed.\n'}
+[4.272183] (talon) StderrLine: {'line': b'\n'}
+[4.272238] (talon) StderrLine: {'line': b'\x1b[0m\n'}
+[4.272297] (talon) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[4.272380] (talon) StdoutLine: {'line': b'See also "/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/talon/CMakeFiles/CMakeOutput.log".\n'}
+[4.272476] (falcon) StderrLine: {'line': b'\x1b[31mCMake Error at CMakeLists.txt:11 (find_package):\n'}
+[4.272568] (falcon) StderrLine: {'line': b'  By not providing "Findmessages.cmake" in CMAKE_MODULE_PATH this project has\n'}
+[4.272627] (falcon) StderrLine: {'line': b'  asked CMake to find a package configuration file provided by "messages",\n'}
+[4.272684] (falcon) StderrLine: {'line': b'  but CMake did not find one.\n'}
+[4.272739] (falcon) StderrLine: {'line': b'\n'}
+[4.272800] (falcon) StderrLine: {'line': b'  Could not find a package configuration file provided by "messages" with any\n'}
+[4.272898] (falcon) StderrLine: {'line': b'  of the following names:\n'}
+[4.272968] (falcon) StderrLine: {'line': b'\n'}
+[4.273026] (falcon) StderrLine: {'line': b'    messagesConfig.cmake\n'}
+[4.273081] (falcon) StderrLine: {'line': b'    messages-config.cmake\n'}
+[4.273137] (falcon) StderrLine: {'line': b'\n'}
+[4.273194] (falcon) StderrLine: {'line': b'  Add the installation prefix of "messages" to CMAKE_PREFIX_PATH or set\n'}
+[4.273250] (falcon) StderrLine: {'line': b'  "messages_DIR" to a directory containing one of the above files.  If\n'}
+[4.273307] (falcon) StderrLine: {'line': b'  "messages" provides a separate development package or SDK, be sure it has\n'}
+[4.273382] (falcon) StderrLine: {'line': b'  been installed.\n'}
+[4.273458] (falcon) StderrLine: {'line': b'\n'}
+[4.273529] (falcon) StderrLine: {'line': b'\x1b[0m\n'}
+[4.273601] (falcon) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[4.273677] (falcon) StdoutLine: {'line': b'See also "/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/falcon/CMakeFiles/CMakeOutput.log".\n'}
+[4.280826] (falcon) CommandEnded: {'returncode': 1}
+[4.284481] (talon) CommandEnded: {'returncode': 1}
+[4.302100] (falcon) JobEnded: {'identifier': 'falcon', 'rc': 1}
+[4.303638] (talon) JobEnded: {'identifier': 'talon', 'rc': 'SIGINT'}
+[4.316089] (-) TimerEvent: {}
+[4.416476] (-) TimerEvent: {}
+[4.516969] (-) TimerEvent: {}
+[4.617407] (-) TimerEvent: {}
+[4.717777] (-) TimerEvent: {}
+[4.818146] (-) TimerEvent: {}
+[4.918522] (-) TimerEvent: {}
+[5.018918] (-) TimerEvent: {}
+[5.119286] (-) TimerEvent: {}
+[5.219737] (-) TimerEvent: {}
+[5.320257] (-) TimerEvent: {}
+[5.420824] (-) TimerEvent: {}
+[5.521237] (-) TimerEvent: {}
+[5.621718] (-) TimerEvent: {}
+[5.722279] (-) TimerEvent: {}
+[5.822740] (-) TimerEvent: {}
+[5.923171] (-) TimerEvent: {}
+[6.023635] (-) TimerEvent: {}
+[6.124311] (-) TimerEvent: {}
+[6.224751] (-) TimerEvent: {}
+[6.325363] (-) TimerEvent: {}
+[6.425888] (-) TimerEvent: {}
+[6.526331] (-) TimerEvent: {}
+[6.627202] (-) TimerEvent: {}
+[6.727580] (-) TimerEvent: {}
+[6.828104] (-) TimerEvent: {}
+[6.928684] (-) TimerEvent: {}
+[7.029171] (-) TimerEvent: {}
+[7.129636] (-) TimerEvent: {}
+[7.229994] (-) TimerEvent: {}
+[7.330441] (-) TimerEvent: {}
+[7.430864] (-) TimerEvent: {}
+[7.531242] (-) TimerEvent: {}
+[7.631681] (-) TimerEvent: {}
+[7.732087] (-) TimerEvent: {}
+[7.832453] (-) TimerEvent: {}
+[7.932905] (-) TimerEvent: {}
+[8.033352] (-) TimerEvent: {}
+[8.133786] (-) TimerEvent: {}
+[8.234208] (-) TimerEvent: {}
+[8.334680] (-) TimerEvent: {}
+[8.435087] (-) TimerEvent: {}
+[8.535462] (-) TimerEvent: {}
+[8.635810] (-) TimerEvent: {}
+[8.736177] (-) TimerEvent: {}
+[8.836632] (-) TimerEvent: {}
+[8.937160] (-) TimerEvent: {}
+[9.037745] (-) TimerEvent: {}
+[9.138302] (-) TimerEvent: {}
+[9.238790] (-) TimerEvent: {}
+[9.339317] (-) TimerEvent: {}
+[9.439861] (-) TimerEvent: {}
+[9.540332] (-) TimerEvent: {}
+[9.640987] (-) TimerEvent: {}
+[9.741576] (-) TimerEvent: {}
+[9.842103] (-) TimerEvent: {}
+[9.942620] (-) TimerEvent: {}
+[10.043199] (-) TimerEvent: {}
+[10.143664] (-) TimerEvent: {}
+[10.244106] (-) TimerEvent: {}
+[10.344719] (-) TimerEvent: {}
+[10.445174] (-) TimerEvent: {}
+[10.545586] (-) TimerEvent: {}
+[10.646036] (-) TimerEvent: {}
+[10.746539] (-) TimerEvent: {}
+[10.847237] (-) TimerEvent: {}
+[10.947783] (-) TimerEvent: {}
+[11.048174] (-) TimerEvent: {}
+[11.148553] (-) TimerEvent: {}
+[11.249085] (-) TimerEvent: {}
+[11.349419] (-) TimerEvent: {}
+[11.449809] (-) TimerEvent: {}
+[11.550308] (-) TimerEvent: {}
+[11.650845] (-) TimerEvent: {}
+[11.751435] (-) TimerEvent: {}
+[11.851941] (-) TimerEvent: {}
+[11.952579] (-) TimerEvent: {}
+[12.053780] (-) TimerEvent: {}
+[12.154303] (-) TimerEvent: {}
+[12.254909] (-) TimerEvent: {}
+[12.355460] (-) TimerEvent: {}
+[12.455938] (-) TimerEvent: {}
+[12.556311] (-) TimerEvent: {}
+[12.656889] (-) TimerEvent: {}
+[12.757294] (-) TimerEvent: {}
+[12.857731] (-) TimerEvent: {}
+[12.958092] (-) TimerEvent: {}
+[13.058530] (-) TimerEvent: {}
+[13.158946] (-) TimerEvent: {}
+[13.259366] (-) TimerEvent: {}
+[13.359715] (-) TimerEvent: {}
+[13.460067] (-) TimerEvent: {}
+[13.560375] (-) TimerEvent: {}
+[13.660903] (-) TimerEvent: {}
+[13.761296] (-) TimerEvent: {}
+[13.861641] (-) TimerEvent: {}
+[13.962016] (-) TimerEvent: {}
+[14.062437] (-) TimerEvent: {}
+[14.162958] (-) TimerEvent: {}
+[14.263384] (-) TimerEvent: {}
+[14.363850] (-) TimerEvent: {}
+[14.464499] (-) TimerEvent: {}
+[14.565037] (-) TimerEvent: {}
+[14.665412] (-) TimerEvent: {}
+[14.765828] (-) TimerEvent: {}
+[14.866187] (-) TimerEvent: {}
+[14.966534] (-) TimerEvent: {}
+[15.066924] (-) TimerEvent: {}
+[15.167299] (-) TimerEvent: {}
+[15.267672] (-) TimerEvent: {}
+[15.368124] (-) TimerEvent: {}
+[15.468796] (-) TimerEvent: {}
+[15.569242] (-) TimerEvent: {}
+[15.669702] (-) TimerEvent: {}
+[15.770159] (-) TimerEvent: {}
+[15.870663] (-) TimerEvent: {}
+[15.971177] (-) TimerEvent: {}
+[16.071635] (-) TimerEvent: {}
+[16.172388] (-) TimerEvent: {}
+[16.272934] (-) TimerEvent: {}
+[16.373363] (-) TimerEvent: {}
+[16.473741] (-) TimerEvent: {}
+[16.574233] (-) TimerEvent: {}
+[16.674726] (-) TimerEvent: {}
+[16.775110] (-) TimerEvent: {}
+[16.875471] (-) TimerEvent: {}
+[16.975766] (-) TimerEvent: {}
+[17.076815] (-) TimerEvent: {}
+[17.177252] (-) TimerEvent: {}
+[17.278090] (-) TimerEvent: {}
+[17.378568] (-) TimerEvent: {}
+[17.479158] (-) TimerEvent: {}
+[17.579650] (-) TimerEvent: {}
+[17.680033] (-) TimerEvent: {}
+[17.780525] (-) TimerEvent: {}
+[17.881002] (-) TimerEvent: {}
+[17.981512] (-) TimerEvent: {}
+[18.082212] (-) TimerEvent: {}
+[18.182674] (-) TimerEvent: {}
+[18.283200] (-) TimerEvent: {}
+[18.383666] (-) TimerEvent: {}
+[18.484138] (-) TimerEvent: {}
+[18.584701] (-) TimerEvent: {}
+[18.685179] (-) TimerEvent: {}
+[18.774682] (control_gui) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable control_gui\x1b[0m\n'}
+[18.785268] (-) TimerEvent: {}
+[18.885589] (-) TimerEvent: {}
+[18.985977] (-) TimerEvent: {}
+[19.086391] (-) TimerEvent: {}
+[19.186766] (-) TimerEvent: {}
+[19.287239] (-) TimerEvent: {}
+[19.387694] (-) TimerEvent: {}
+[19.488110] (-) TimerEvent: {}
+[19.588655] (-) TimerEvent: {}
+[19.689155] (-) TimerEvent: {}
+[19.789873] (-) TimerEvent: {}
+[19.890310] (-) TimerEvent: {}
+[19.990846] (-) TimerEvent: {}
+[20.091172] (-) TimerEvent: {}
+[20.191578] (-) TimerEvent: {}
+[20.292020] (-) TimerEvent: {}
+[20.392731] (-) TimerEvent: {}
+[20.493356] (-) TimerEvent: {}
+[20.593861] (-) TimerEvent: {}
+[20.694335] (-) TimerEvent: {}
+[20.794779] (-) TimerEvent: {}
+[20.895172] (-) TimerEvent: {}
+[20.995596] (-) TimerEvent: {}
+[21.096552] (-) TimerEvent: {}
+[21.197105] (-) TimerEvent: {}
+[21.297685] (-) TimerEvent: {}
+[21.398259] (-) TimerEvent: {}
+[21.498685] (-) TimerEvent: {}
+[21.599241] (-) TimerEvent: {}
+[21.699860] (-) TimerEvent: {}
+[21.800396] (-) TimerEvent: {}
+[21.900961] (-) TimerEvent: {}
+[22.001472] (-) TimerEvent: {}
+[22.102053] (-) TimerEvent: {}
+[22.202542] (-) TimerEvent: {}
+[22.254657] (control_gui) StdoutLine: {'line': b'[100%] Built target control_gui\n'}
+[22.269839] (control_gui) JobEnded: {'identifier': 'control_gui', 'rc': 'SIGINT'}
+[22.272054] (-) EventReactorShutdown: {}
