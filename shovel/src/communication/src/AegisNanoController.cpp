@@ -185,14 +185,22 @@ void AegisNanoController::onCanDataReceived(const CanDataPayload& payload) {
 }
 
 void AegisNanoController::advanceHandshake() {
-    // Nano is mostly reactive, but we use this to handle retries for 
-    // packets WE initiate (like the Motor Report in Stage 3)
-    retry_timer.start(50);
+    retry_timer.start(50); 
 
     if (handshakeStatus_ref == MOTOR_HANDSHAKE) {
         if (handshake_step == 1) {
             // FC2 -> FC1: 422 
             alertMotorsDetected();
+        }
+    }
+    else if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
+        if (handshake_step == 0) {
+            if (systemStatus_ref == SINGLE_FC || systemStatus_ref == PRIMARY) {
+                alertPrimary(); // ID 201
+            }
+            else {
+                queryControl(); // ID 200
+            }
         }
     }
 }
@@ -203,39 +211,38 @@ void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* dat
         remoteStatus.STATUS = (SystemStatus)data[0];
         acknowledgeSystemStatusChange(false); // 212
 
-        // Only do handshake stage transitions if we're actually in CONTROL_HANDSHAKE
         if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
-
-            if (systemStatus_ref == SINGLE_FC && remoteStatus.STATUS == STANDBY) {
-                requestStateTransition(PRIMARY);
-                handshakeStatus_ref = PARAM_HANDSHAKE;
-                handshake_step = 0;
+            
+            // Peer is Standby (safe to advance)
+            if (remoteStatus.STATUS == STANDBY) {
+                if (systemStatus_ref == SINGLE_FC) {
+                    requestStateTransition(PRIMARY);
+                }
+                
+                bool safe_to_advance = (systemStatus_ref == PRIMARY || 
+                                      systemStatus_ref == PARTIAL_PRIMARY || 
+                                      systemStatus_ref == BOOT ||
+                                      systemStatus_ref == SINGLE_FC);
+                                      
+                if (safe_to_advance) {
+                    handshakeStatus_ref = PARAM_HANDSHAKE;
+                    handshake_step = 0;
+                    retry_timer.cancel();
+                }
                 return;
             }
 
-            bool safe_to_advance =
-                (systemStatus_ref == STANDBY ||
-                systemStatus_ref == PARTIAL_SECONDARY ||
-                systemStatus_ref == BOOT ||
-                systemStatus_ref == SINGLE_FC);
-
-            if (data[0] == PRIMARY && safe_to_advance) {
-                handshakeStatus_ref = PARAM_HANDSHAKE;
-                handshake_step = 0;
-                return;
-            }
-
-            if ((data[0] == STANDBY) &&
-                (systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || systemStatus_ref == SINGLE_FC)) {
-                handshakeStatus_ref = PARAM_HANDSHAKE;
-                handshake_step = 0;
+            if (remoteStatus.STATUS == PRIMARY || remoteStatus.STATUS == PARTIAL_PRIMARY) {
+                if (systemStatus_ref == STANDBY || systemStatus_ref == PARTIAL_SECONDARY || systemStatus_ref == BOOT) {
+                    handshakeStatus_ref = PARAM_HANDSHAKE;
+                    handshake_step = 0;
+                    retry_timer.cancel();
+                }
                 return;
             }
         }
-
         return;
     }
-
     
     if (handshakeStatus_ref == IDLE_HANDSHAKE) {
         if (id == ID_QUERY_CONTROL || id == ID_SYS_STATUS_CHG || id == ID_STATE_PRIMARY || id == ID_STATE_STANDBY) {
@@ -791,7 +798,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
 
         case ID_SYS_BOOT_ACK: { // 502
             RCLCPP_INFO(nodeHandle->get_logger(), "Nano: Boot Acknowledged.");
-            if ((systemStatus_ref == BOOT || systemStatus_ref == STANDBY) && handshakeStatus_ref != CONTROL_HANDSHAKE) {
+            if ((systemStatus_ref == BOOT || systemStatus_ref == STANDBY || systemStatus_ref == SINGLE_FC) && handshakeStatus_ref != CONTROL_HANDSHAKE) {
                 handshakeStatus_ref = CONTROL_HANDSHAKE;
                 handshake_step = 0; 
             }

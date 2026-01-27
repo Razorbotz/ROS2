@@ -36,9 +36,12 @@ void AegisBase::requestStateTransition(SystemStatus new_state) {
               << " -> " << stateToString(new_state) << std::endl;
 
     onExitState(systemStatus_ref);
+    SystemStatus prev = systemStatus_ref;
     systemStatus_ref = new_state;
     onEnterState(new_state);
-    alertSystemStatusChange();
+    if((new_state != SINGLE_FC && prev != SINGLE_FC) && 
+       (new_state != STANDBY && prev != BOOT))
+        alertSystemStatusChange();
 }
 
 bool AegisBase::isValidTransition(SystemStatus from, SystemStatus to) {

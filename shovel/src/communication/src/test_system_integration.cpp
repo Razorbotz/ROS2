@@ -12,6 +12,7 @@
 #include "MockDeps.hpp"
 #include "Heartbeat.hpp"
 #include "CANHeartbeat.hpp"
+#include "EthernetHBThread.hpp"
 
 #include "AegisController.hpp"
 #include "AegisNanoController.hpp"
@@ -54,6 +55,9 @@ protected:
     std::thread nano_thread;
     std::thread orin_thread;
 
+    std::unique_ptr<EthernetHBThread> orinEthHB;
+    std::unique_ptr<EthernetHBThread> nanoEthHB;
+
     CanHeartbeatPayload orin_hb {0x01, 0, 0, 0};
     CanHeartbeatPayload nano_hb {0x02, 0, 0, 0};
 
@@ -70,6 +74,7 @@ protected:
         orinLink->set_data_callback(
             std::bind(&AegisController::on_packet_received, orinController, _1, _2, _3)
         );
+        orinEthHB = std::make_unique<EthernetHBThread>(*orinLink, std::chrono::milliseconds(10));
 
         // 2. Setup Nano (Sends to Orin)
         nanoNode = rclcpp::Node::make_shared("nano_node");
@@ -82,6 +87,7 @@ protected:
         nanoLink->set_data_callback(
             std::bind(&AegisNanoController::on_packet_received, nanoController, _1, _2, _3)
         );
+        nanoEthHB = std::make_unique<EthernetHBThread>(*nanoLink, std::chrono::milliseconds(10));
 
         // Start the boot timers
         orinController->initAegis();
@@ -93,34 +99,26 @@ protected:
         // 4. Start Communication Threads
         orin_thread = std::thread([this]() {
             while (orin_running) {
-                orinLink->spin_once();
+                while(orinLink->spin_once());
                 orinController->checkTimers();
-                orinLink->send_heartbeat();
                 orinCanLink->read_heartbeat(nano_hb);
-                if (orinHandshakeStatus != IDLE_HANDSHAKE) {
-                    std::this_thread::sleep_for(std::chrono::microseconds(10)); 
-                }
-                else {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         });
+
+        orinEthHB->start();
 
         // Nano thread
         nano_thread = std::thread([this]() {
              while (nano_running) { 
-                nanoLink->spin_once();
+                while(nanoLink->spin_once());
                 nanoController->checkTimers();
-                nanoLink->send_heartbeat();
                 nanoCanLink->read_heartbeat(orin_hb);
-                if (nanoHandshakeStatus != IDLE_HANDSHAKE) {
-                    std::this_thread::sleep_for(std::chrono::microseconds(10)); 
-                }
-                else {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         });
+
+        nanoEthHB->start();
 
         // 5. Wait for connection to stabilize
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -133,38 +131,33 @@ protected:
         if (nano_thread.joinable()) nano_thread.join();
         orinLink->close_socket();
         nanoLink->close_socket();
+
+        orinEthHB->stop();
+        nanoEthHB->stop();
     }
 
     void startOrinThread() {
         orin_running = true;
+        orinEthHB->start();
         orin_thread = std::thread([this]() {
             while (orin_running) {
-                orinLink->spin_once();
+                while(orinLink->spin_once());
                 orinController->checkTimers();
-                orinLink->send_heartbeat();
                 orinCanLink->read_heartbeat(nano_hb);
-                if (orinHandshakeStatus != IDLE_HANDSHAKE) {
-                    std::this_thread::sleep_for(std::chrono::microseconds(10)); 
-                } else {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
     }
 
     void startNanoThread() {
         nano_running = true;
+        nanoEthHB->start();
         nano_thread = std::thread([this]() {
              while (nano_running) { 
-                nanoLink->spin_once();
+                while(nanoLink->spin_once());
                 nanoController->checkTimers();
-                nanoLink->send_heartbeat();
                 nanoCanLink->read_heartbeat(orin_hb);
-                if (nanoHandshakeStatus != IDLE_HANDSHAKE) {
-                    std::this_thread::sleep_for(std::chrono::microseconds(10)); 
-                } else {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
     }
@@ -371,6 +364,7 @@ TEST_F(SystemIntegrationTest, AbnormalStart_NanoAbsent){
     // Kill Nano thread simulation
     nano_running = false; 
     if (nano_thread.joinable()) nano_thread.join();
+    nanoEthHB->stop();
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     orinController->initAegis();
@@ -384,6 +378,7 @@ TEST_F(SystemIntegrationTest, AbnormalStart_NanoAbsent){
 TEST_F(SystemIntegrationTest, AbnormalStart_OrinAbsent){
     orin_running = false; 
     if (orin_thread.joinable()) orin_thread.join();
+    orinEthHB->stop();
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     nanoController->initAegis();
@@ -397,6 +392,7 @@ TEST_F(SystemIntegrationTest, AbnormalStart_OrinAbsent){
 TEST_F(SystemIntegrationTest, AbnormalStart_NanoDelayed){
     nano_running = false;
     if (nano_thread.joinable()) nano_thread.join();
+    nanoEthHB->stop();
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     orinSysStatus = BOOT;
@@ -420,6 +416,7 @@ TEST_F(SystemIntegrationTest, AbnormalStart_NanoDelayed){
 TEST_F(SystemIntegrationTest, AbnormalStart_OrinDelayed){
     orin_running = false;
     if (orin_thread.joinable()) orin_thread.join();
+    orinEthHB->stop();
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     nanoSysStatus = BOOT;
