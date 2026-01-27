@@ -3,11 +3,15 @@ from launch.actions import ExecuteProcess, SetEnvironmentVariable, RegisterEvent
 from launch.event_handlers import OnProcessExit
 from launch_ros.actions import Node
 import os
+from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     # --- Paths ---
-    pkg_path = '/home/team/SoftwareDevelopment/ROS2/simulation/src/sim'
-    
+    try:
+        pkg_path = get_package_share_directory('sim')
+    except Exception as e:
+        print("Error: Package 'sim' not found. Did you run 'colcon build' and source your setup file?")
+        raise e
     # Configs
     config_path = os.path.join(pkg_path, 'config', 'controllers.yaml')
     urdf_path = os.path.join(pkg_path, 'urdf', 'my_robot_tf.urdf')
