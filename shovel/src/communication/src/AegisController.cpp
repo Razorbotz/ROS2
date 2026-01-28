@@ -214,6 +214,7 @@ void AegisController::advanceHandshake() {
 }
 
 void AegisController::processHandshakePacket(uint16_t id, const uint8_t* data) {
+    std::cout << "Orin: handshakeStatus_ref: " << (int)handshakeStatus_ref << " handshake_step: " << (int)handshake_step << std::endl;
     if (handshakeStatus_ref == IDLE_HANDSHAKE) {
         if (id == ID_STATE_PRIMARY || id == ID_STATE_STANDBY || id == ID_ACK_STATUS_CHG || id == ID_QUERY_CONTROL || id == ID_SYS_STATUS_CHG) {
             handshakeStatus_ref = CONTROL_HANDSHAKE;
