@@ -44,6 +44,7 @@
 #include <MessageUtils.hpp>
 #include "AegisController.hpp"
 #include "utils/utils.hpp"
+#include "EthernetHBThread.hpp"
 
 #include <iostream>
 #include <cstring>
@@ -121,10 +122,24 @@ ZedState zedState;
 DrivetrainState drivetrainState;
 SystemState systemState;
 
-RemoteStatus nanoStatus;
-SystemStatus systemStatus = PRIMARY;
-bool controlMotors = true;
-std::shared_ptr<AegisController> controller;
+std::unique_ptr<HeartbeatLink> orinLink;
+std::unique_ptr<CanLink> orinCanLink;
+std::shared_ptr<AegisController> orinController;
+std::mutex orinMutex;
+RemoteStatus orinRemoteStatus;
+bool orinRawData = false;
+SystemStatus orinSysStatus = BOOT; 
+HandshakeStatus orinHandshakeStatus = IDLE_HANDSHAKE;
+ErrorCode orinErrorCode = NO_ERROR;
+
+std::unique_ptr<EthernetHBThread> orinEthHB;
+
+CanHeartbeatPayload nano_hb {0x02, 0, 0, 0};
+
+#define ORIN_PORT 31339
+#define NANO_PORT 31340
+#define LOCAL_IP "127.0.0.1"
+#define REMOTE_IP "10.42.0.2"
 
 float voltage = 0.0f;
 float temperature = 0.0f;
@@ -587,7 +602,6 @@ void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus:
 }
 
 
-
 // 20 Hz
 /** @brief Callback function for the Talon topic
  * 
@@ -678,28 +692,26 @@ uint64_t get_time_ms() {
     return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
-HeartbeatLink hb_link(31339, "10.42.0.2", 31339);
+//HeartbeatLink hb_link(31339, "10.42.0.2", 31339);
 std::thread comms_thread;
 std::atomic<bool> node_running {true};
 
 std::mutex comms_mutex;
-bool sendRawData = false;
 
 void network_worker() {
     while (node_running) {
         // 1. Read Incoming Packets (Drain the buffer)
         // We loop until no more packets are waiting to prevent buffer overflow
-        while (hb_link.spin_once()) { 
-            // spin_once calls the callback immediately
-        }
+        while (orinLink->spin_once());
+        orinController->checkTimers();
+        orinCanLink->read_heartbeat(nano_hb);
 
         uint64_t now = get_time_ms();
         if (now - last_ros_update_time > 100) {
             // The comms thread has crashed and we need to no longer send a heartbeat
             continue; 
         }
-        hb_link.send_heartbeat();
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 
@@ -713,24 +725,29 @@ int main(int argc, char **argv){
     robotName = utils::getParameter<std::string>(nodeHandle, "robot_name", "not named");
     debug = utils::getParameter<bool>(nodeHandle, "debug", false);
 
-    nanoStatus.UP = false;
-    nanoStatus.WIFI_UP = false;
-    nanoStatus.CAN0_UP = false;
-    nanoStatus.CAN1_UP = false;
+    orinRemoteStatus.UP = false;
+    orinRemoteStatus.WIFI_UP = false;
+    orinRemoteStatus.CAN0_UP = false;
+    orinRemoteStatus.CAN1_UP = false;
+
+    orinLink = std::make_unique<HeartbeatLink>(ORIN_PORT, LOCAL_IP, NANO_PORT);
     
     // 1. Initialize Heartbeat Link
-    if (!hb_link.init()) {
+    if (!orinLink->init()) {
         RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to init Heartbeat Link!");
         return -1;
     }
-
-    controller = std::make_shared<AegisController>(
-        nodeHandle, hb_link, comms_mutex, nanoStatus, sendRawData, systemStatus
+    orinCanLink = std::make_unique<CanLink>();
+    orinController = std::make_shared<AegisController>(
+        nodeHandle, *orinLink, *orinCanLink, orinMutex, orinRemoteStatus, orinRawData, orinSysStatus, orinHandshakeStatus, orinErrorCode
     );
     using namespace std::placeholders;
-    hb_link.set_data_callback(
-        std::bind(&AegisController::on_packet_received, controller, _1, _2, _3)
+    orinLink->set_data_callback(
+        std::bind(&AegisController::on_packet_received, orinController, _1, _2, _3)
     );
+    orinEthHB = std::make_unique<EthernetHBThread>(*orinLink, std::chrono::milliseconds(10));
+    orinEthHB->start();
+    orinController->initAegis();
     comms_thread = std::thread(network_worker);
     RCLCPP_INFO(nodeHandle->get_logger(), "Comms Thread Started.");
 
@@ -869,7 +886,7 @@ int main(int argc, char **argv){
     auto previousHeartbeat = std::chrono::high_resolution_clock::now();
     
     while(rclcpp::ok()){
-        if (!hb_link.is_remote_alive()) {
+        if (!orinLink->is_remote_alive()) {
             RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 1000, "Remote Dead!");
         }
         last_ros_update_time = get_time_ms();

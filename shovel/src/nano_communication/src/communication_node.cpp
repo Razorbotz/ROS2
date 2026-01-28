@@ -39,33 +39,28 @@
 
 #include <BinaryMessage.hpp>
 #include <Heartbeat.hpp>
+#include <RobotState.hpp>
+#include <NetworkUtils.hpp>
+#include <MessageUtils.hpp>
+#include "AegisNanoController.hpp"
 #include "utils/utils.hpp"
+#include "EthernetHBThread.hpp"
 
 #include <iostream>
 #include <cstring>
 #include <net/if.h>
 #include <netdb.h>
 
-#define ETH_PORT 31339
-// Need to change this to the Nano interface name
 #define ETHERNET_IFACE "enP8p1s0"
 #define PORT 31337
 
-const std::string TARGET_IP = "10.42.0.1";
+const std::string TARGET_IP = "10.42.0.2";
 std::string robotName="unnamed";
-// Need to change this to the Nano interface name
 std::string interfaceName = "wlP1p1s0";
 bool broadcast=true;
 
-int nano_sock = -1;
-sockaddr_in nano_remote{};
-std::atomic<bool> nano_link_running{true};
-
-std::atomic<uint64_t> nano_last_hb_rx_ms{0};
-std::atomic<bool> nano_alive{false};
 std::atomic<uint32_t> global_seq{0};
-
-bool isPrimary = false;
+std::atomic<uint64_t> last_ros_update_time {0};
 
 /** @file
  * @brief Node for handling communication between the client and the rover.
@@ -112,171 +107,133 @@ int total = 0;
 int rssi = 0;
 bool usingCAN1 = false;
 bool debug = false;
+bool init = false;
 
 #define LOWER_THRESH 67
 #define UPPER_THRESH 80
 #define CRIT_THRESH 90
 
-struct Falcon {
-    uint8_t device_id;
-    uint16_t voltage;
-    uint16_t current;
-    float output_percent;
-    uint8_t temperature;
-    float sensor_position;
-    float sensor_velocity;
-    float max_current;
-    bool temp_disable;
-    bool error;
-};
 
 Falcon falcon1, falcon2, falcon3, falcon4;
-
-struct Talon {
-    uint8_t device_id;
-    uint16_t voltage;
-    uint16_t current;
-    float output_percent;
-    uint8_t temperature;
-    float sensor_position;
-    float sensor_velocity;
-    float max_current;
-    bool temp_disable;
-};
-
 Talon talon1, talon2, talon3, talon4;
-
-struct Linear {
-    uint8_t motor_number;
-    float speed;
-    uint16_t potentiometer;
-    uint8_t time_without_change;
-    uint16_t max;
-    uint16_t min;
-    std::string error;
-    bool at_min;
-    bool at_max;
-    float distance;
-    bool sensorless;
-};
-
 Linear linear1, linear2, linear3, linear4;
-
-
-struct AutonomyState {
-    std::string robot_state;
-    std::string excavation_state;
-    std::string error_state;
-    std::string diagnostics_state;
-    std::string tilt_state;
-    std::string dump_state;
-    std::string bucket_state;
-    std::string arms_state;
-    float dest_x = 0.0f;
-    float dest_z = 0.0f;
-};
-
 AutonomyState autonomyState;
-
-
-struct ZedState {
-    float x;
-    float y;
-    float z;
-    float roll;
-    float pitch;
-    float yaw;
-    bool aruco;
-};
-
 ZedState zedState;
-
-struct DrivetrainState {
-    float f1_vel;
-    float f1_rpm;
-    float f1_speed;
-    float f2_vel;
-    float f2_rpm;
-    float f2_speed;
-    float f3_vel;
-    float f3_rpm;
-    float f3_speed;
-    float f4_vel;
-    float f4_rpm;
-    float f4_speed;
-};
-
 DrivetrainState drivetrainState;
-
-struct SystemState {
-    int32_t  rssi;
-    std::string wifi;
-    std::string can_bus;
-    bool using_can1;
-    int32_t  rx_packets;
-    int32_t  tx_packets;
-    std::string can_bus2;
-    int32_t  rx_packets2;
-    int32_t  tx_packets2;
-    int32_t  first_motor;
-    int32_t  second_motor;
-    int32_t  num_breaks;
-};
-
 SystemState systemState;
 
-/** @brief Parse a byte represenation into a float.
- * 
- * @param array
- * @return value
- * */
-float parseFloat(uint8_t* array){
-    uint32_t axisYInteger=0;
-    axisYInteger|=uint32_t(array[0])<<24;    
-    axisYInteger|=uint32_t(array[1])<<16;    
-    axisYInteger|=uint32_t(array[2])<<8;    
-    axisYInteger|=uint32_t(array[3])<<0;    
-    float value=(float)*(static_cast<float*>(static_cast<void*>(&axisYInteger)));
+std::unique_ptr<HeartbeatLink> nanoLink;
+std::unique_ptr<CanLink> nanoCanLink;
+std::shared_ptr<AegisNanoController> nanoController;
+std::mutex nanoMutex;
+RemoteStatus nanoRemoteStatus;
+bool nanoRawData = false;
+SystemStatus nanoSysStatus = BOOT;
+HandshakeStatus nanoHandshakeStatus = IDLE_HANDSHAKE;
+ErrorCode nanoErrorCode = NO_ERROR;
 
-    return value;
-}
+std::unique_ptr<EthernetHBThread> nanoEthHB;
 
-int key = 0x2C;
-void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
-    uint32_t sum = 0;  // Use a wider type to avoid overflow
+CanHeartbeatPayload orin_hb {0x01, 0, 0, 0};
 
-    // Append zero byte as placeholders for the checksum
-    byteList->push_back(0x00);
+#define ORIN_PORT 31339
+#define NANO_PORT 31340
+#define LOCAL_IP "127.0.0.1"
+#define REMOTE_IP "10.42.0.1"
+
+float voltage = 0.0f;
+float temperature = 0.0f;
+std::array<float, 16> currents{};
 
 
-    //std::cout << "Bytes with placeholders: ";
-    // for (auto byte : *byteList) {
-    //     std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
-    // }
-    //std::cout << std::endl;
+/** * @brief Resets all internal state trackers to impossible values.
+ * * This forces the 'update_if_changed' logic to detect a difference 
+ * the next time a ROS2 callback fires, causing a full transmission 
+ * of all data to the newly connected client.
+ */
+void forceDataResync() {
+    // Helper lambda to reset a Falcon struct
+    auto resetFalcon = [](Falcon& f) {
+        f.device_id = 255;
+        f.voltage = 0xFFFF;
+        f.current = 0xFFFF;
+        f.output_percent = -999.0f; 
+        f.temperature = 255;
+        f.sensor_position = -999999.0f;
+        f.sensor_velocity = -999999.0f;
+        f.max_current = -1.0f;
+        f.temp_disable = !f.temp_disable;
+        f.error = !f.error;
+    };
 
-    // Sum all the bytes
-    for (uint8_t byte : *byteList) {
-        sum += byte;
-    }
+    // Helper lambda to reset a Talon struct
+    auto resetTalon = [](Talon& t) {
+        t.device_id = 255;
+        t.voltage = 0xFFFF;
+        t.current = 0xFFFF;
+        t.output_percent = -999.0f;
+        t.temperature = 255;
+        t.sensor_position = -999999.0f;
+        t.sensor_velocity = -999999.0f;
+        t.max_current = -1.0f;
+        t.temp_disable = !t.temp_disable;
+    };
 
-    // Compute Checksum
-    uint8_t checksum = sum % key;
-    //std::cout << "Simple checksum computed: 0x" << std::hex << static_cast<int>(checksum) << std::endl;
+    // Helper lambda to reset a Linear struct
+    auto resetLinear = [](Linear& l) {
+        l.motor_number = 255;
+        l.speed = -999.0f;
+        l.potentiometer = 0xFFFF;
+        l.time_without_change = 255;
+        l.max = 0xFFFF;
+        l.min = 0xFFFF;
+        l.error = "FORCE_RESYNC";
+        l.distance = -999.0f;
+    };
 
+    resetFalcon(falcon1); resetFalcon(falcon2); resetFalcon(falcon3); resetFalcon(falcon4);
+    resetTalon(talon1); resetTalon(talon2); resetTalon(talon3); resetTalon(talon4);
+    resetLinear(linear1); resetLinear(linear2); resetLinear(linear3); resetLinear(linear4);
+
+    // Reset Autonomy State
+    autonomyState.robot_state = "RESYNC";
+    autonomyState.excavation_state = "RESYNC";
+    autonomyState.error_state = "RESYNC";
+    autonomyState.diagnostics_state = "RESYNC";
+    autonomyState.tilt_state = "RESYNC";
+    autonomyState.dump_state = "RESYNC";
+    autonomyState.bucket_state = "RESYNC";
+    autonomyState.arms_state = "RESYNC";
+    autonomyState.dest_x = -99999.0f;
+    autonomyState.dest_z = -99999.0f;
+
+    // Reset Zed State
+    zedState.x = -99999.0f;
+    zedState.y = -99999.0f;
+    zedState.z = -99999.0f;
+    zedState.roll = -999.0f;
+    zedState.pitch = -999.0f;
+    zedState.yaw = -999.0f;
+    zedState.aruco = !zedState.aruco;
+
+    // Reset Drivetrain State
+    drivetrainState.f1_vel = -99999.0f; drivetrainState.f1_rpm = -99999.0f; drivetrainState.f1_speed = -99999.0f;
+    drivetrainState.f2_vel = -99999.0f; drivetrainState.f2_rpm = -99999.0f; drivetrainState.f2_speed = -99999.0f;
+    drivetrainState.f3_vel = -99999.0f; drivetrainState.f3_rpm = -99999.0f; drivetrainState.f3_speed = -99999.0f;
+    drivetrainState.f4_vel = -99999.0f; drivetrainState.f4_rpm = -99999.0f; drivetrainState.f4_speed = -99999.0f;
+
+    // Reset System State
+    systemState.rssi = -1;
+    systemState.wifi = "RESYNC";
+    systemState.can_bus = "RESYNC";
+    systemState.rx_packets = -1;
     
-    auto it = byteList->end();
-    std::advance(it, -1);
-    *it = checksum;
-
-    // std::cout << "Final byteList: ";
-    // for (auto byte : *byteList) {
-    //     std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
-    // }
-    // std::cout << std::endl;
+    // Reset Power Arrays (Global vars)
+    voltage = -1.0f;
+    temperature = -1.0f;
+    currents.fill(-1.0f);
 }
 
- 
 /**
  * @brief Serializes, checksums, and conditionally compresses a BinaryMessage before sending.
  * * This function first compresses the data. If the compressed size is smaller than
@@ -289,7 +246,6 @@ void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
  * * @param message The BinaryMessage object to be sent.
  */
 void send(BinaryMessage message) {
-    if(!isPrimary)return;
     // 1. Get the raw bytes and apply the checksum.
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     checksum_encode(byteList);
@@ -347,55 +303,6 @@ void send(BinaryMessage message) {
     }
 }
 
-void update_if_changed(BinaryMessage& msg, bool& changed, uint8_t& old_val, uint8_t new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementUInt8(label, new_val);
-        old_val = new_val;
-    }
-}
-
-void update_if_changed(BinaryMessage& msg, bool& changed, std::string& old_val, const std::string& new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementString(label, new_val);
-        old_val = new_val;
-    }
-}
-
-void update_if_changed(BinaryMessage& msg, bool& changed, uint16_t& old_val, uint16_t new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementUInt16(label, new_val);
-        old_val = new_val;
-    }
-}
-
-void update_if_changed(BinaryMessage& msg, bool& changed, float& old_val, float new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementFloat32(label, new_val);
-        old_val = new_val;
-    }
-}
-
-void update_if_changed(BinaryMessage& msg, bool& changed, bool& old_val, bool new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementBoolean(label, new_val);
-        old_val = new_val;
-    }
-}
-
-void update_if_changed(BinaryMessage& msg, bool& changed, int& old_val, int new_val, const std::string& label) {
-    if (old_val != new_val) {
-        changed = true;
-        msg.addElementInt32(label, new_val);
-        old_val = new_val;
-    }
-}
-
-
 void send(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr falconStatus, Falcon& falcon) {
     if (silentRunning) return;
 
@@ -447,11 +354,6 @@ void send(std::string messageLabel, const messages::msg::TalonStatus::SharedPtr 
         send(message);
     }
 }
-
-
-float voltage = 0.0f;
-float temperature = 0.0f;
-std::array<float, 16> currents{};
 
 void send(std::string messageLabel, const messages::msg::Power::SharedPtr power) {
     if (silentRunning) return;
@@ -648,7 +550,6 @@ void drivetrainStatusCallback(const messages::msg::DrivetrainStatus::SharedPtr s
 }
 
 
-
 // 10 Hz
 int powerCounter = 0;
 /** @brief Callback function for the power topic.
@@ -699,7 +600,6 @@ void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus:
     message.addElementFloat32("Output Percent",talonStatus->output_percent);
     send(message);
 }
-
 
 
 // 20 Hz
@@ -753,100 +653,6 @@ void autonomyStatusCallback(const messages::msg::AutonomyStatus::SharedPtr auton
 }
 
 
-/** @brief Returns the address string of the rover.
- * 
- * This function is called when the node
- * tries to setup the socket connection between the rover and client. This function
- * returns the address as a string.
- * @param family
- * @param interfaceName
- * @return addressString
- * */
-std::string getAddressString(int family, std::string interfaceName){
-    std::string addressString("");
-    ifaddrs* interfaceAddresses = nullptr;
-    for (int failed=getifaddrs(&interfaceAddresses); !failed && interfaceAddresses; interfaceAddresses=interfaceAddresses->ifa_next){
-        if(strcmp(interfaceAddresses->ifa_name,interfaceName.c_str())==0 && interfaceAddresses->ifa_addr->sa_family == family) {
-            if (interfaceAddresses->ifa_addr->sa_family == AF_INET) {
-                sockaddr_in *socketAddress = reinterpret_cast<sockaddr_in *>(interfaceAddresses->ifa_addr);
-                addressString += inet_ntoa(socketAddress->sin_addr);
-            }
-            if (interfaceAddresses->ifa_addr->sa_family == AF_INET6) {
-                sockaddr_in6 *socketAddress = reinterpret_cast<sockaddr_in6 *>(interfaceAddresses->ifa_addr);
-                for (int index = 0; index < 16; index += 2) {
-                    char bits[5];
-                    sprintf(bits,"%02x%02x", socketAddress->sin6_addr.s6_addr[index],socketAddress->sin6_addr.s6_addr[index + 1]);
-                    if (index)addressString +=":";
-                    addressString +=bits;
-                }
-            }
-            if (interfaceAddresses->ifa_addr->sa_family == AF_PACKET) {
-                sockaddr_ll *socketAddress = reinterpret_cast<sockaddr_ll *>(interfaceAddresses->ifa_addr);
-                for (int index = 0; index < socketAddress->sll_halen; index++) {
-                    char bits[3];
-                    sprintf(bits,"%02x", socketAddress->sll_addr[index]);
-                    if (index)addressString +=":";
-                    addressString +=bits;
-                }
-            }
-        }
-    }
-    freeifaddrs(interfaceAddresses);
-    return addressString;
-}
-
-
-/** @brief Prints the address
- * 
- * */
-void printAddresses() {
-    printf("Addresses\n");
-    ifaddrs* interfaceAddresses = nullptr;
-    for (int failed=getifaddrs(&interfaceAddresses); !failed && interfaceAddresses; interfaceAddresses=interfaceAddresses->ifa_next){
-        printf("%s ",interfaceAddresses->ifa_name);
-        if(interfaceAddresses->ifa_addr->sa_family == AF_INET){
-            printf("AF_INET ");
-            sockaddr_in* socketAddress=reinterpret_cast<sockaddr_in*>(interfaceAddresses->ifa_addr);
-            printf("%d ",socketAddress->sin_port);
-            printf("%s ",inet_ntoa(socketAddress->sin_addr));
-        }
-        if(interfaceAddresses->ifa_addr->sa_family == AF_INET6){
-            printf("AF_INET6 ");
-            sockaddr_in6* socketAddress=reinterpret_cast<sockaddr_in6*>(interfaceAddresses->ifa_addr);
-            printf("%d ",socketAddress->sin6_port);
-            printf("%d ",socketAddress->sin6_flowinfo); 
-            for(int index=0;index<16;index+=2) {
-                if(index)printf(":");
-                printf("%02x%02x",socketAddress->sin6_addr.s6_addr[index],socketAddress->sin6_addr.s6_addr[index+1]);
-            }
-        }
-        if(interfaceAddresses->ifa_addr->sa_family == AF_PACKET){
-            printf("AF_PACKET ");
-            sockaddr_ll* socketAddress=reinterpret_cast<sockaddr_ll*>(interfaceAddresses->ifa_addr);
-            printf("%d ",socketAddress->sll_protocol);
-            printf("%d ",socketAddress->sll_ifindex);
-            printf("%d ",socketAddress->sll_hatype);
-            printf("%d ",socketAddress->sll_pkttype);
-            for(int index=0;index<socketAddress->sll_halen;index++){
-                if(index)printf(":");
-                printf("%02x",socketAddress->sll_addr[index]);
-            }
-        }
-        printf("\n");
-    }
-    printf("Done\n");
-}
-
-
-/** @brief Reboots the rover. 
- *
- * */
-void reboot(){
-    sync();
-    reboot(LINUX_REBOOT_CMD_POWER_OFF);
-}
-
-
 /** @brief Creates socketDescriptor for socket connection.
  * 
  * This function is called when the node
@@ -881,138 +687,32 @@ void broadcastIP(){
     }
 }
 
-
-bool setup_nano_link_socket(){
-    nano_sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (nano_sock < 0) { perror("nano socket"); return false; }
-
-    int yes = 1;
-    setsockopt(nano_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
-
-    // Optional: force eth0
-    struct ifreq ifr{};
-    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", ETHERNET_IFACE);
-    if (setsockopt(nano_sock, SOL_SOCKET, SO_BINDTODEVICE, (void*)&ifr, sizeof(ifr)) < 0) {
-        perror("nano SO_BINDTODEVICE");
-    }
-
-    sockaddr_in local{};
-    local.sin_family = AF_INET;
-    local.sin_addr.s_addr = INADDR_ANY;
-    local.sin_port = htons(ETH_PORT);
-
-    if (bind(nano_sock, (sockaddr*)&local, sizeof(local)) < 0) {
-        perror("nano bind");
-        close(nano_sock);
-        nano_sock = -1;
-        return false;
-    }
-
-    nano_remote = {};
-    nano_remote.sin_family = AF_INET;
-    nano_remote.sin_port = htons(ETH_PORT);
-    if (inet_pton(AF_INET, TARGET_IP.c_str(), &nano_remote.sin_addr) != 1) {
-        perror("inet_pton nano");
-        close(nano_sock);
-        nano_sock = -1;
-        return false;
-    }
-
-    return true;
-}
-
-static uint64_t steady_ms(){
+uint64_t get_time_ms() {
     using namespace std::chrono;
     return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
-void orin_hb_tx_loop(){
-    using namespace std::chrono;
-    auto next = steady_clock::now();
+//HeartbeatLink hb_link(31339, "10.42.0.2", 31339);
+std::thread comms_thread;
+std::atomic<bool> node_running {true};
 
-    while (nano_link_running.load()) {
-        next += milliseconds(HB_INTERVAL_MS);
+std::mutex comms_mutex;
 
-        NanoHeader hb{};
-        hb.magic = HB_MAGIC;
-        hb.type = MSG_TYPE_HEARTBEAT;
-        hb.version = HB_VER;
-        hb.seq = ++global_seq;
-        hb.t_ms = steady_ms();
+void network_worker() {
+    while (node_running) {
+        // 1. Read Incoming Packets (Drain the buffer)
+        // We loop until no more packets are waiting to prevent buffer overflow
+        while (nanoLink->spin_once());
+        nanoController->checkTimers();
+        nanoCanLink->read_heartbeat(orin_hb);
 
-        if (nano_sock >= 0) {
-            sendto(nano_sock, &hb, sizeof(hb), 0,
-                   (sockaddr*)&nano_remote, sizeof(nano_remote));
+        uint64_t now = get_time_ms();
+        if (now - last_ros_update_time > 100) {
+            // The comms thread has crashed and we need to no longer send a heartbeat
+            continue; 
         }
-
-        std::this_thread::sleep_until(next);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-}
-
-void orin_hb_rx_loop(){
-    uint8_t buffer[1500]; 
-    sockaddr_in sender{};
-    socklen_t slen = sizeof(sender);
-
-    while (nano_link_running.load()) {
-        int n = recvfrom(nano_sock, buffer, sizeof(buffer), 0, (sockaddr*)&sender, &slen);
-        
-        if (n < (int)sizeof(NanoHeader)) continue;
-
-        NanoHeader* header = reinterpret_cast<NanoHeader*>(buffer);
-
-        if (header->magic != HB_MAGIC || header->version != HB_VER) continue;
-
-        nano_last_hb_rx_ms.store(steady_ms());
-        nano_alive.store(true);
-        if(isPrimary)
-            isPrimary = false;
-
-        if (header->type == MSG_TYPE_HEARTBEAT) {
-            // Don't do anything beyond updating the last time received
-        }
-        else if (header->type == MSG_TYPE_DATA) {
-            if (n < (int)(sizeof(NanoHeader) + sizeof(uint16_t)*2)) continue;
-
-            NanoDataPacket* dataParams = reinterpret_cast<NanoDataPacket*>(buffer);
-            
-            uint16_t id = dataParams->data_id;
-            uint16_t len = dataParams->payload_len;
-            uint8_t* payload = dataParams->payload;
-
-            float val; memcpy(&val, payload, 4); 
-            RCLCPP_INFO(nodeHandle->get_logger(), "Received Data: %f", val);
-        }
-    }
-}
-
-void send_nano_data(uint16_t data_id, const void* data, uint16_t len) {
-    if (nano_sock < 0 || !nano_link_running.load()) return;
-    if (len > 1024) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Packet too large!");
-        return;
-    }
-
-    NanoDataPacket packet{};
-    
-    // Fill Header
-    packet.header.magic = HB_MAGIC;
-    packet.header.type = MSG_TYPE_DATA;
-    packet.header.version = HB_VER;
-    packet.header.seq = ++global_seq;
-    packet.header.t_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now().time_since_epoch()).count();
-
-    // Fill Data
-    packet.data_id = data_id;
-    packet.payload_len = len;
-    memcpy(packet.payload, data, len);
-
-    // Calculate total size: Header + ID/Len fields + Actual Payload
-    size_t total_size = sizeof(NanoHeader) + sizeof(uint16_t) * 2 + len;
-
-    // Send
-    sendto(nano_sock, &packet, total_size, 0, (sockaddr*)&nano_remote, sizeof(nano_remote));
 }
 
 
@@ -1024,6 +724,32 @@ int main(int argc, char **argv){
 
     robotName = utils::getParameter<std::string>(nodeHandle, "robot_name", "not named");
     debug = utils::getParameter<bool>(nodeHandle, "debug", false);
+
+    nanoRemoteStatus.UP = false;
+    nanoRemoteStatus.WIFI_UP = false;
+    nanoRemoteStatus.CAN0_UP = false;
+    nanoRemoteStatus.CAN1_UP = false;
+
+    nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, LOCAL_IP, ORIN_PORT);
+    
+    // 1. Initialize Heartbeat Link
+    if (!nanoLink->init()) {
+        RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to init Heartbeat Link!");
+        return -1;
+    }
+    nanoCanLink = std::make_unique<CanLink>();
+    nanoController = std::make_shared<AegisNanoController>(
+        nodeHandle, *nanoLink, *nanoCanLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus, nanoHandshakeStatus, nanoErrorCode
+    );
+    using namespace std::placeholders;
+    nanoLink->set_data_callback(
+        std::bind(&AegisNanoController::on_packet_received, nanoController, _1, _2, _3)
+    );
+    nanoEthHB = std::make_unique<EthernetHBThread>(*nanoLink, std::chrono::milliseconds(10));
+    nanoEthHB->start();
+    nanoController->initAegis();
+    comms_thread = std::thread(network_worker);
+    RCLCPP_INFO(nodeHandle->get_logger(), "Comms Thread Started.");
 
     auto joystickAxisPublisher = nodeHandle->create_publisher<messages::msg::AxisState>("joystick_axis", 1);
     auto joystickHatPublisher = nodeHandle->create_publisher<messages::msg::HatState>("joystick_hat",1);
@@ -1114,16 +840,6 @@ int main(int argc, char **argv){
     auto systemStatusSubscriber = nodeHandle->create_subscription<messages::msg::SystemStatus>("system_status",10,systemStatusCallback);
     auto drivetrainStatusSubscriber = nodeHandle->create_subscription<messages::msg::DrivetrainStatus>("drivetrain_status",10,drivetrainStatusCallback);
 
-    if (setup_nano_link_socket()) {
-        std::thread tx(orin_hb_tx_loop);
-        std::thread rx(orin_hb_rx_loop);
-        tx.detach();
-        rx.detach();
-    }
-    else {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Nano link socket failed; heartbeats disabled");
-    }
-
     int server_fd, bytesRead; 
     int opt = 1; 
     uint8_t buffer[1024] = {0}; 
@@ -1170,6 +886,10 @@ int main(int argc, char **argv){
     auto previousHeartbeat = std::chrono::high_resolution_clock::now();
     
     while(rclcpp::ok()){
+        if (!nanoLink->is_remote_alive()) {
+            RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 1000, "Remote Dead!");
+        }
+        last_ros_update_time = get_time_ms();
         try{
             bytesRead = recvfrom(server_fd, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen);
         
@@ -1195,6 +915,7 @@ int main(int argc, char **argv){
                 sendto(server_fd, hello.c_str(), hello.length(), 0, (struct sockaddr *)&address, addrlen);
                 broadcast = false;
                 messageBytesList.clear();
+                forceDataResync();
             }
         }
         if (isClientConnected) {
@@ -1228,6 +949,8 @@ int main(int argc, char **argv){
             // 6: Joystick hat values
             // 7: GUI silent running button
             // 8: GUI reboot button
+
+            // TODO: Check if sendRawData == true, send data to Nano
             uint8_t command=message[0];
             if(debug){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Message size: %d, Command: %d", messageSize, command);
@@ -1293,22 +1016,13 @@ int main(int argc, char **argv){
             }
         }
 
-        const uint64_t timeout_ms = 500; // or 250
-        uint64_t last = nano_last_hb_rx_ms.load();
-        uint64_t now  = steady_ms();
-
-        bool alive = (last != 0) && ((now - last) <= timeout_ms);
-        nano_alive.store(alive);
-
-        if (!alive) {
-            RCLCPP_INFO(nodeHandle->get_logger(), "Orin is not connected");
-            isPrimary = true;
-        }
-
         rclcpp::spin_some(nodeHandle);
         commHeartbeatPublisher->publish(heartbeat);
         rate.sleep();
     }
 
-    broadcastThread.join(); //hopefully don't need this anymore
+    node_running = false;
+    if (comms_thread.joinable()) comms_thread.join();
+
+    broadcastThread.join();
 }

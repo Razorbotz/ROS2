@@ -22,6 +22,10 @@ include_directories(
 
 add_executable(${PROJECT_NAME}_node
 	src/BinaryMessage.cpp
+        src/Heartbeat.cpp
+        src/AegisBase.cpp
+        src/AegisNanoController.cpp
+        src/CANHeartbeat.cpp
         src/communication_node.cpp
 )
 

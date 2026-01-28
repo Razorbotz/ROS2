@@ -6,11 +6,135 @@ AegisNanoController::AegisNanoController(rclcpp::Node::SharedPtr node,
                                  std::mutex& mutex_ref, 
                                  RemoteStatus& status_ref,
                                  bool& rawData_in,
-                                 SystemStatus& sysStatus_in
+                                 SystemStatus& sysStatus_in,
+                                 HandshakeStatus& handStatus_in,
+                                 ErrorCode& errCode_in
                                  )
-    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in)
+    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in)
 {
 }
+
+void AegisNanoController::onEnterState(SystemStatus state) {
+    switch (state) {
+        case PRIMARY:{
+            if(!motorsAuthorized){
+                enableMotorAuthorization();
+            }
+            break;
+        }
+        case STANDBY:
+
+            break;
+        case PARTIAL_PRIMARY:{
+            if(!motorsAuthorized){
+                enableMotorAuthorization();
+            }
+            break;
+        }
+
+        case PARTIAL_SECONDARY:
+            // Auto-trigger the alert logic we discussed
+            // alert_pilot("System degraded");
+            break;
+
+        case SINGLE_FC:{
+            if(!motorsAuthorized){
+                enableMotorAuthorization();
+            }
+            break;
+        }
+
+        case CAN_INOP:
+        
+            break;
+
+        case ERROR:
+            // Immediate safety kill
+            // disable_all_motors();
+            // trigger_audible_alarm();
+            break;
+
+        case SAFETY_DEGRADED:
+
+            break;
+            
+        case STOP:
+            // Ensure timers are cleared
+            // takeover_timer.cancel();
+            break;
+    }
+}
+
+void AegisNanoController::onExitState(SystemStatus state) {
+    switch (state) {
+        case PRIMARY:
+
+            break;
+        case STANDBY:
+
+            break;
+        case PARTIAL_PRIMARY:
+            break;
+
+        case PARTIAL_SECONDARY:
+            // Auto-trigger the alert logic we discussed
+            // alert_pilot("System degraded");
+            break;
+
+        case CAN_INOP:
+        
+            break;
+
+        case ERROR:
+            // Immediate safety kill
+            // disable_all_motors();
+            // trigger_audible_alarm();
+            break;
+
+        case SAFETY_DEGRADED:
+
+            break;
+            
+        case STOP:
+            // Ensure timers are cleared
+            // takeover_timer.cancel();
+            break;
+    }
+}
+
+void AegisNanoController::checkTimers(){
+    AegisBase::checkBootTimer();
+    checkAuthorityTimer();
+    checkTakeoverTimer();
+
+    applyRemoteAlivePolicy();
+
+    if (handshakeStatus_ref != IDLE_HANDSHAKE && 
+        handshakeStatus_ref != COMPLETE_HANDSHAKE && 
+        retry_timer.isExpired()) 
+    {
+        advanceHandshake(); 
+        retry_timer.restart();
+    }
+}
+
+void AegisNanoController::checkAuthorityTimer(){
+    if(!relinquish_timer_active)return;
+
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - relinquish_start_time).count();
+
+    if (elapsed >= 50) {
+        if(canGiveControl()){
+            relinquish_timer_active = false;
+            sendRelinquishRequest();
+        }
+        else{
+            relinquish_start_time = now;
+        }
+    }
+}
+
 
 void AegisNanoController::checkTakeoverTimer() {
     if (!takeover_timer_active) return;
@@ -23,15 +147,11 @@ void AegisNanoController::checkTakeoverTimer() {
 
         if (systemStatus_ref == STANDBY) {
             std::cout << "Nano: Takeover Timer Expired! Switching to PRIMARY." << std::endl;
-            systemStatus_ref = PRIMARY;
-            alertSystemStatusChange();
-            alertPrimary();
+            requestStateTransition(PRIMARY);
         }
         else if (systemStatus_ref == PARTIAL_SECONDARY) {
             std::cout << "Nano: Takeover Timer Expired! Switching to PARTIAL_PRIMARY." << std::endl;
-            systemStatus_ref = PARTIAL_PRIMARY;
-            alertSystemStatusChange();
-            alertPrimary(); 
+            requestStateTransition(PARTIAL_PRIMARY);
         }
     }
 }
@@ -64,11 +184,160 @@ void AegisNanoController::onCanDataReceived(const CanDataPayload& payload) {
     }
 }
 
+void AegisNanoController::advanceHandshake() {
+    retry_timer.start(50); 
+
+    if (handshakeStatus_ref == MOTOR_HANDSHAKE) {
+        if (handshake_step == 1) {
+            // FC2 -> FC1: 422 
+            alertMotorsDetected();
+        }
+    }
+    else if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
+        if (handshake_step == 0) {
+            if (systemStatus_ref == SINGLE_FC || systemStatus_ref == PRIMARY) {
+                alertPrimary(); // ID 201
+            }
+            else {
+                queryControl(); // ID 200
+            }
+        }
+    }
+}
+
+void AegisNanoController::initiateHandshakeState(uint16_t id){
+    if (handshakeStatus_ref == IDLE_HANDSHAKE) {
+        if (id == ID_QUERY_CONTROL || id == ID_SYS_STATUS_CHG || id == ID_STATE_PRIMARY || id == ID_STATE_STANDBY) {
+            handshakeStatus_ref = CONTROL_HANDSHAKE;
+            handshake_step = 0;
+        }
+        else if (id == ID_PARAM_INIT || id == ID_PARAM_DATA || id == ID_SYNC_COMPLETE) {
+            handshakeStatus_ref = PARAM_HANDSHAKE;
+        }
+        else if (id == ID_MOTORS_INIT || id == ID_MOTORS_ACK || id == ID_ASSIGN_AUTH || id == ID_CONFIRM_AUTH) {
+            handshakeStatus_ref = MOTOR_HANDSHAKE;
+            handshake_step = 0;
+        }
+    }
+}
+
+void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* data) {
+    // 1. High-Priority Interrupts (ID 211)
+    if (id == ID_SYS_STATUS_CHG) {
+        handleSystemStatusOverride(data);
+        return; 
+    }
+
+    // 2. State Transition (from IDLE)
+    if (handshakeStatus_ref == IDLE_HANDSHAKE) {
+        initiateHandshakeState(id);
+    }
+
+    // 3. Stage-Specific Logic
+    switch (handshakeStatus_ref) {
+        case CONTROL_HANDSHAKE:
+            if (id == ID_QUERY_CONTROL) {
+                bool is_boss = (systemStatus_ref == PRIMARY || 
+                                systemStatus_ref == PARTIAL_PRIMARY || 
+                                systemStatus_ref == SINGLE_FC);
+                is_boss ? alertPrimary() : alertNotPrimary();
+            }
+            break;
+
+        case PARAM_HANDSHAKE:
+            handleParamExchange(id);
+            break;
+
+        case MOTOR_HANDSHAKE:
+            handleMotorAuth(id, data);
+            break;
+
+        default:
+            break;
+    }
+}
+
+void AegisNanoController::handleSystemStatusOverride(const uint8_t* data) {
+    remoteStatus.STATUS = (SystemStatus)data[0];
+    acknowledgeSystemStatusChange(false); // 212
+
+    if (handshakeStatus_ref != CONTROL_HANDSHAKE) return;
+
+    bool advance_to_params = false;
+
+    if (remoteStatus.STATUS == STANDBY) {
+        if (systemStatus_ref == SINGLE_FC) requestStateTransition(PRIMARY);
+        
+        if (systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || 
+            systemStatus_ref == BOOT || systemStatus_ref == SINGLE_FC) {
+            advance_to_params = true;
+        }
+    } 
+    else if (remoteStatus.STATUS == PRIMARY || remoteStatus.STATUS == PARTIAL_PRIMARY) {
+        if (systemStatus_ref == STANDBY || systemStatus_ref == PARTIAL_SECONDARY || systemStatus_ref == BOOT) {
+            advance_to_params = true;
+        }
+    }
+
+    if (advance_to_params) {
+        handshakeStatus_ref = PARAM_HANDSHAKE;
+        handshake_step = 0;
+        retry_timer.cancel();
+    }
+}
+
+void AegisNanoController::handleParamExchange(uint16_t id) {
+    if (id == ID_PARAM_INIT) {
+        // Param buffer reset logic here
+    } 
+    else if (id == ID_PARAM_DATA) {
+        sendParamAck(); // 302
+    } 
+    else if (id == ID_SYNC_COMPLETE) {
+        sendReadyOp(); // 305
+        handshakeStatus_ref = MOTOR_HANDSHAKE;
+        handshake_step = 0;
+    }
+}
+
+void AegisNanoController::handleMotorAuth(uint16_t id, const uint8_t* data) {
+    // Step 0: Orin signals its motors
+    if (handshake_step == 0 && id == ID_MOTORS_INIT) {
+        acknowledgeMotorsDetected(); // 423
+        handshake_step = 1;
+        advanceHandshake(); // Send Nano's motor status (422)
+    }
+    // Step 1: Wait for Orin to acknowledge Nano's motors
+    else if (handshake_step == 1 && id == ID_MOTORS_ACK) {
+        handshake_step = 2;
+    }
+    // Step 2: Final Authorization assignment
+    else if (handshake_step == 2 && id == ID_ASSIGN_AUTH) {
+        auto* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+        processRemoteAuth(payload->motor_states);
+        setAuthFromRemote(payload->motor_states);
+        
+        sendAuthConfirm(); // 101
+        
+        std::cout << "[Handshake] Nano Complete. Entering STANDBY." << std::endl;
+        handshakeStatus_ref = COMPLETE_HANDSHAKE;
+        requestStateTransition(STANDBY);
+        retry_timer.cancel();
+    }
+}
+
+
 void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Nano: Received Message ID: %d", id);
-    // Packet containing motor speed values
+    
+    if (isHandshakeMsg(id)) {
+        processHandshakePacket(id, data);
+        return;
+    }
+    
     switch (id) {
         // --- TELEMETRY ---
+        // Packet containing motor speed values
         case ID_SPEED_MSG: {
             MotorSpeed msg;
             if (parse_packet(data, len, msg, "MotorSpeed")) {
@@ -161,10 +430,14 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
 
             // Send Confirmation (ID 101)
             sendAuthConfirm();
+            if(!checkAuthStatus()){
+                relinquish_timer_active = true;
+                relinquish_start_time = std::chrono::steady_clock::now();
+            }
             break;
         }
         
-        case ID_CONFIRM_AUTH:{
+        case ID_CONFIRM_AUTH: {
             // Response to control request from Nano
             const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
             processRemoteAuth(payload->motor_states);
@@ -174,7 +447,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                    std::cout << "Orin Authorized for Motor ID: " << i << std::endl;
                 }
             }
-            if(checkAuth()){
+            if(checkAuthErrors()){
                 std::cout << "ERROR state, need to resolve." << std::endl;
             }
             break;
@@ -195,12 +468,12 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // Response that the sender is in control            
             // Because at most one FC can be in charge, need to transition to standby
             if(systemStatus_ref == PRIMARY){
-                systemStatus_ref = STANDBY;
+                requestStateTransition(STANDBY);
                 alertSystemStatusChange();
                 std::cout << "Nano is transitioning to STANDBY" << std::endl;
             }
             if(systemStatus_ref == PARTIAL_PRIMARY){
-                systemStatus_ref = PARTIAL_SECONDARY;
+                requestStateTransition(PARTIAL_SECONDARY);
                 std::cout << "Nano is transitioning to PARTIAL_SECONDARY" << std::endl;
                 alertSystemStatusChange();
             }
@@ -210,14 +483,13 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // Secondary is not in control, need to transition to be in charge
             // This will start a timer for 50ms. If FC1 does not transition to PRIMARY
             // within that timeframe, transition to PRIMARY. 
-            if(systemStatus_ref == STANDBY ){
-                if (!takeover_timer_active) {
-                    std::cout << "Nano: Starting 50ms takeover timer..." << std::endl;
-                    takeover_start_time = std::chrono::steady_clock::now();
-                    takeover_timer_active = true;
-                }
+
+            // Occasionally the standby response can come out of order, so if the standby is
+            // received after the other transitions to PRIMARY, double check
+            if(remoteStatus.STATUS == PRIMARY || remoteStatus.STATUS == PARTIAL_PRIMARY){
+                break;
             }
-            if(systemStatus_ref == PARTIAL_SECONDARY){
+            if(systemStatus_ref == STANDBY || systemStatus_ref == PARTIAL_SECONDARY){
                 if (!takeover_timer_active) {
                     std::cout << "Nano: Starting 50ms takeover timer..." << std::endl;
                     takeover_start_time = std::chrono::steady_clock::now();
@@ -226,9 +498,21 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             }
             break;
             
-        case ID_REQ_RETAKE:
+        case ID_REQ_RETAKE:{
             // Request from Orin to Nano to retake control
+            // TODO: This will need guards to check whether the robot is in a 
+            // mission critical phase of flight, such as motors moving or other 
+            // criteria
+            if(canGiveControl()){
+                grantControl();
+                relinquish_timer_active = false;
+            }
+            else{
+                denyControl();
+            }
             break;
+        }
+            
             
         case ID_GRANT_CONTROL:
             // Response from Nano to Orin to take control
@@ -239,11 +523,12 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // This will include a message for how many seconds to delay
             break;
             
-        case ID_LIVENESS_QUERY:
+        case ID_LIVENESS_PING:
             //  Query if the other is alive
+            sendPong();
             break;
             
-        case ID_LIVENESS_PING:
+        case ID_LIVENESS_PONG:
             // Response to alive query
             break;
             
@@ -251,22 +536,38 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // Request from Nano to Orin to relinquish control
             break;
             
-        case ID_ACCEPT_CONTROL:
+        case ID_ACCEPT_CONTROL:{
             // Accept control of system
+            if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || systemStatus_ref == PARTIAL_SECONDARY){
+                requestStateTransition(STANDBY);
+            }
             break;
+        }
         
         case ID_REJECT_CONTROL:
             // Reject control of the system
+            std::cout << "Orin rejected request to take control" << std::endl;
             break;
         
         case ID_SYS_STATUS_CHG: {
             // Change in SystemStatus
             bool error = false;
             uint8_t status = data[0];
+            remoteStatus.STATUS = (SystemStatus)status;
             if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
                 if(status == PRIMARY || status == PARTIAL_PRIMARY){
                     error = true;
-                    systemStatus_ref = ERROR;
+                    requestStateTransition(STANDBY);
+                }
+            }
+            if(systemStatus_ref == STANDBY){
+                if(status == PARTIAL_PRIMARY){
+                    requestStateTransition(PARTIAL_SECONDARY);
+                }
+            }
+            if(systemStatus_ref == PARTIAL_SECONDARY){
+                if(status == PRIMARY){
+                    requestStateTransition(STANDBY);
                 }
             }
             if(status == PRIMARY || status == PARTIAL_PRIMARY){
@@ -282,11 +583,11 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             if (len < 1) return;
             uint8_t err = data[0];
             if(err == 1){
-                systemStatus_ref = ERROR;
+                requestStateTransition(STOP);
                 std::cout << "ERROR" << std::endl;
             }
             else{
-                std::cout << "No Error" << std::endl;
+                
             }
             break;
         }
@@ -296,6 +597,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             break;
 
         case ID_PARAM_DATA:
+            sendParamAck();
             break;
         
         case ID_PARAM_ACK:
@@ -450,30 +752,68 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
         case ID_ETH_ACK_CHG:
             break; 
 
+        case ID_MOTORS_INIT:{
+            if (len != sizeof(MotorAuthPayload)) {
+                return;
+            }
+
+            const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+            processRemoteControl(payload->motor_states);
+            acknowledgeMotorsDetected();
+            if(checkControlErrors()){
+                requestStateTransition(STOP);
+            }
+
+            break;
+        }
+
+        case ID_MOTORS_ACK:{
+            if(systemStatus_ref == PRIMARY){
+                enableMotorAuthorization();
+                sendAuth();
+            }
+            break;
+        }
+        
+
         // --- System & Critical Hardware --- 
         case ID_SYS_SHUTDOWN:
             // System shutting down
+            remote_shutdown_latched.store(true);
             {
                 std::lock_guard<std::mutex> lock(comms_mutex); 
                 remoteStatus.UP = false;
             }
-            systemStatus_ref = SINGLE_FC;
+            requestStateTransition(SINGLE_FC);
             RCLCPP_WARN(nodeHandle->get_logger(), "Orin shutting down");
             break;
             
-        case ID_SYS_BOOT_OK:
-            // System functioning again
-            {
+        case ID_SYS_BOOT_OK: {
+            remote_shutdown_latched.store(false);
+            { 
                 std::lock_guard<std::mutex> lock(comms_mutex); 
-                remoteStatus.UP = true;
+                remoteStatus.UP = true; 
             }
-            
-            if(systemStatus_ref == SINGLE_FC){
-                systemStatus_ref = PRIMARY;
-            }
-            queryControl();
             RCLCPP_INFO(nodeHandle->get_logger(), "Orin Booted");
+            alertSystemBootAck(); 
+
+            if (systemStatus_ref == SINGLE_FC) {
+                std::cout << "[System] Peer Rejoining. Waiting for Orin." << std::endl;
+            }
+            else if (systemStatus_ref == STOP) {
+                requestStateTransition(BOOT);
+            }
             break;    
+        }
+
+        case ID_SYS_BOOT_ACK: { // 502
+            RCLCPP_INFO(nodeHandle->get_logger(), "Nano: Boot Acknowledged.");
+            if ((systemStatus_ref == BOOT || systemStatus_ref == STANDBY || systemStatus_ref == SINGLE_FC) && handshakeStatus_ref != CONTROL_HANDSHAKE) {
+                handshakeStatus_ref = CONTROL_HANDSHAKE;
+                handshake_step = 0; 
+            }
+            break;
+        }
     
         default:
             RCLCPP_WARN(nodeHandle->get_logger(), "Received unknown Message ID: %d", id);
