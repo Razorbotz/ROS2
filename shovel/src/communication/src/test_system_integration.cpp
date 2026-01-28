@@ -173,6 +173,17 @@ protected:
         }
     }
 
+    void RemoveMotors(int num_motors){
+        for (int id = 10; id < 10 + num_motors; id++) {
+            // Set Orin Motors
+            orinController->updateMotorCAN0State(id, false);
+            orinController->updateMotorCAN1State(id, false);
+
+            nanoController->updateMotorCAN0State(id, false);
+            nanoController->updateMotorCAN1State(id, false);
+        }
+    }
+
     void ValidateFlexibleFlow(const std::string& captured_logs, const std::vector<std::vector<std::string>>& expected_groups) {
         std::stringstream ss(captured_logs);
         std::string line;
@@ -417,6 +428,78 @@ TEST_F(SystemIntegrationTest, AbnormalStart_OrinDelayed){
     orin_running = false;
     if (orin_thread.joinable()) orin_thread.join();
     orinEthHB->stop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    nanoSysStatus = BOOT;
+    nanoController->initAegis();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+    ASSERT_EQ(nanoSysStatus, SINGLE_FC) << "Nano did not enter SINGLE_FC as expected";
+    std::cout << "[TEST] Orin Booting Late..." << std::endl;
+    
+    orinSysStatus = BOOT;
+    startOrinThread();
+    orinController->initAegis();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+
+    ASSERT_EQ(nanoSysStatus, PRIMARY) << "Nano did not enter PRIMARY as expected";
+    ASSERT_EQ(orinSysStatus, STANDBY) << "Orin did not enter STANDBY as expected";
+}
+
+TEST_F(SystemIntegrationTest, NormalStartSequence_NoMotors){
+    nanoSysStatus = BOOT; 
+    orinSysStatus = BOOT;
+
+    RemoveMotors(8);
+    
+    // Let threads establish connection
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    std::cout << "[TEST] Injecting ID 501 (System Booted)" << std::endl;
+    // Calling initAegis starts the 1s timer. Background threads handle ticks.
+    orinController->initAegis();
+    nanoController->initAegis();
+
+    // Wait for 1s boot + handshake time
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+}
+
+TEST_F(SystemIntegrationTest, AbnormalStart_NanoDelayed_NoMotors){
+    nano_running = false;
+    if (nano_thread.joinable()) nano_thread.join();
+    nanoEthHB->stop();
+
+    RemoveMotors(8);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    orinSysStatus = BOOT;
+    orinController->initAegis();
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+    ASSERT_EQ(orinSysStatus, SINGLE_FC) << "Orin did not enter SINGLE_FC as expected";
+
+    std::cout << "[TEST] Nano Booting Late..." << std::endl;
+    
+    nanoSysStatus = BOOT;
+    startNanoThread();
+    nanoController->initAegis();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+}
+
+TEST_F(SystemIntegrationTest, AbnormalStart_OrinDelayed_NoMotors){
+    orin_running = false;
+    if (orin_thread.joinable()) orin_thread.join();
+    orinEthHB->stop();
+
+    RemoveMotors(8);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     nanoSysStatus = BOOT;

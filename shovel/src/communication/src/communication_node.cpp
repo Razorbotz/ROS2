@@ -136,6 +136,11 @@ std::unique_ptr<EthernetHBThread> orinEthHB;
 
 CanHeartbeatPayload nano_hb {0x02, 0, 0, 0};
 
+#define ORIN_PORT 31339
+#define NANO_PORT 31340
+#define LOCAL_IP "127.0.0.1"
+#define REMOTE_IP "10.42.0.2"
+
 float voltage = 0.0f;
 float temperature = 0.0f;
 std::array<float, 16> currents{};
@@ -725,7 +730,7 @@ int main(int argc, char **argv){
     orinRemoteStatus.CAN0_UP = false;
     orinRemoteStatus.CAN1_UP = false;
 
-    orinLink = std::make_unique<HeartbeatLink>(31339, "127.0.0.1", 31340);
+    orinLink = std::make_unique<HeartbeatLink>(ORIN_PORT, LOCAL_IP, NANO_PORT);
     
     // 1. Initialize Heartbeat Link
     if (!orinLink->init()) {
