@@ -223,6 +223,16 @@ void AegisNanoController::initiateHandshakeState(uint16_t id){
 
 void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* data) {
     std::cout << "Nano: handshakeStatus_ref: " << (int)handshakeStatus_ref << " handshake_step: " << (int)handshake_step << std::endl;
+    
+    if (id == ID_QUERY_CONTROL) {
+        if (handshakeStatus_ref != CONTROL_HANDSHAKE && handshakeStatus_ref != IDLE_HANDSHAKE) {
+            std::cout << "[Handshake] ID 200 received while in state " << (int)handshakeStatus_ref 
+                      << ". Resetting to CONTROL_HANDSHAKE." << std::endl;
+            handshakeStatus_ref = CONTROL_HANDSHAKE;
+            handshake_step = 0;
+        }
+    }
+    
     // 1. High-Priority Interrupts (ID 211)
     if (id == ID_SYS_STATUS_CHG) {
         handleSystemStatusOverride(data);
@@ -275,6 +285,9 @@ void AegisNanoController::handleSystemStatusOverride(const uint8_t* data) {
         }
     } 
     else if (remoteStatus.STATUS == PRIMARY || remoteStatus.STATUS == PARTIAL_PRIMARY) {
+        if(remoteStatus.STATUS == PARTIAL_PRIMARY){
+            requestStateTransition(PARTIAL_SECONDARY);
+        }
         if (systemStatus_ref == STANDBY || systemStatus_ref == PARTIAL_SECONDARY || systemStatus_ref == BOOT) {
             advance_to_params = true;
         }
@@ -320,9 +333,8 @@ void AegisNanoController::handleMotorAuth(uint16_t id, const uint8_t* data) {
         
         sendAuthConfirm(); // 101
         
-        std::cout << "[Handshake] Nano Complete. Entering STANDBY." << std::endl;
+        std::cout << "[Handshake] Nano Complete. Current SystemStatus: " << (int)systemStatus_ref << std::endl;
         handshakeStatus_ref = COMPLETE_HANDSHAKE;
-        requestStateTransition(STANDBY);
         retry_timer.cancel();
     }
 }
@@ -507,6 +519,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             if(canGiveControl()){
                 grantControl();
                 relinquish_timer_active = false;
+                requestStateTransition(STANDBY);
             }
             else{
                 denyControl();
@@ -786,6 +799,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                 remoteStatus.UP = false;
             }
             requestStateTransition(SINGLE_FC);
+            alertedRemoteMotors = false;
             RCLCPP_WARN(nodeHandle->get_logger(), "Orin shutting down");
             break;
             
@@ -800,9 +814,11 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
 
             if (systemStatus_ref == SINGLE_FC) {
                 std::cout << "[System] Peer Rejoining. Waiting for Orin." << std::endl;
+                handshakeStatus_ref = IDLE_HANDSHAKE;
+                handshake_step = 0;
             }
             else if (systemStatus_ref == STOP) {
-                requestStateTransition(BOOT);
+                requestStateTransition(STANDBY);
             }
             break;    
         }

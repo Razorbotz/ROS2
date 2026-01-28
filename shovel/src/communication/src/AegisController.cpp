@@ -315,14 +315,23 @@ void AegisController::handleMotorStep(uint16_t id, bool& step_complete) {
         std::cout << "[Handshake] Complete!" << std::endl;
         handshakeStatus_ref = COMPLETE_HANDSHAKE;
         retry_timer.cancel();
-        if (systemStatus_ref == STANDBY) requestControl();
+        if (systemStatus_ref == STANDBY) {
+            if(canTakeControl()){
+                requestControl();
+            }
+        }
     }
+}
+
+bool AegisController::canTakeControl(){
+
+    return true;
 }
 
 void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint16_t len) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Orin: Received Message ID: %d", id);
     
-    if (isHandshakeMsg(id)) {
+    if (isHandshakeMsg(id) && handshakeStatus_ref != COMPLETE_HANDSHAKE) {
         processHandshakePacket(id, data);
         return;
     }
@@ -486,7 +495,10 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         case ID_GRANT_CONTROL:{
             // Response from Nano to Orin to take control
             if(systemStatus_ref == PARTIAL_PRIMARY){
-                requestStateTransition(PRIMARY);
+                
+            }
+            if(systemStatus_ref == STANDBY){
+                hasControl = true;
             }
             else{
                 std::cout << "Orin was granted control, but is currently in state " << (int)systemStatus_ref << std::endl;
@@ -529,8 +541,10 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         
         case ID_SYS_STATUS_CHG: {
             // Change in SystemStatus
+
             bool error = false;
             uint8_t status = data[0];
+            remoteStatus.STATUS = (SystemStatus)status;
             if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
                 if(status == PRIMARY || status == PARTIAL_PRIMARY){
                     error = true;
@@ -544,6 +558,13 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             if(systemStatus_ref == PARTIAL_PRIMARY && status == STANDBY){
                 acknowledgeSystemStatusChange(error);
                 requestStateTransition(PRIMARY);
+                break;
+            }
+            if(status == STANDBY && (hasControl || systemStatus_ref == STANDBY)){
+                if (hasControl) {
+                    acknowledgeSystemStatusChange(error);
+                    requestStateTransition(PRIMARY);
+                }
                 break;
             }
             acknowledgeSystemStatusChange(error);
@@ -773,6 +794,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             }
             requestStateTransition(SINGLE_FC);
             RCLCPP_WARN(nodeHandle->get_logger(), "Nano shutting down");
+            alertedRemoteMotors = false;
             break;
             
         case ID_SYS_BOOT_OK: {
@@ -792,9 +814,9 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                 advanceHandshake(); 
             }
             else if (systemStatus_ref == STOP) {
-                requestStateTransition(BOOT);
+                requestStateTransition(PARTIAL_PRIMARY);
                 handshakeStatus_ref = CONTROL_HANDSHAKE;
-                handshake_step = 0;
+                handshake_step = 1;
                 advanceHandshake();
             }
             else if (systemStatus_ref == PRIMARY) {

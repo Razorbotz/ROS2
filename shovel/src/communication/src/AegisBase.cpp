@@ -25,6 +25,13 @@ void AegisBase::requestStateTransition(SystemStatus new_state) {
         return;
     }
 
+    if(new_state == SINGLE_FC){
+        if(systemStatus_ref == PARTIAL_PRIMARY){
+            requestStateTransition(STOP);
+            return;
+        }
+    }
+
     if (!isValidTransition(systemStatus_ref, new_state)) {
         std::cerr << "[FSM] ILLEGAL TRANSITION ATTEMPT: " 
                   << stateToString(systemStatus_ref) << " -> " 
@@ -39,9 +46,11 @@ void AegisBase::requestStateTransition(SystemStatus new_state) {
     SystemStatus prev = systemStatus_ref;
     systemStatus_ref = new_state;
     onEnterState(new_state);
-    if((new_state != SINGLE_FC && prev != SINGLE_FC) && 
-       (new_state != STANDBY && prev != BOOT))
-        alertSystemStatusChange();
+    if(new_state != SINGLE_FC && prev != SINGLE_FC){
+        if(!(new_state == STANDBY && prev == BOOT)){
+            alertSystemStatusChange();
+        }
+    }
 }
 
 bool AegisBase::isValidTransition(SystemStatus from, SystemStatus to) {
@@ -67,7 +76,8 @@ bool AegisBase::isValidTransition(SystemStatus from, SystemStatus to) {
         case STOP:
             return (to == PARTIAL_PRIMARY || // Recovered FC2, still missing motor
                     to == SINGLE_FC ||       // Recovered motor, still missing FC2
-                    to == ERROR);            // Gave up
+                    to == ERROR ||           // Gave up
+                    to == STANDBY);          // Entered standby  
             
         case PARTIAL_SECONDARY:
             return (to == STANDBY ||
@@ -174,6 +184,7 @@ void AegisBase::queryControl(){
     if (!hb_link.is_remote_alive()){
         if(systemStatus_ref == STANDBY){
             requestStateTransition(SINGLE_FC);
+            alertedRemoteMotors = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
             alertSystemStatusChange();
@@ -246,7 +257,7 @@ void AegisBase::alertSystemStatusChange(bool verbose){
     if(!checkRemoteAlive()) return;
 
     if (verbose) {
-        RCLCPP_INFO(nodeHandle->get_logger(), "Sending SystemStatusChange");
+        RCLCPP_INFO(nodeHandle->get_logger(), "Sending SystemStatusChange: %d", (int)systemStatus_ref);
         std::cout << "SystemStatus: " << (int)systemStatus_ref << std::endl;
     }
 
@@ -527,6 +538,11 @@ void AegisBase::enableMotorAuthorization(){
                     requestStateTransition(PARTIAL_PRIMARY);
                     alertSystemStatusChange();
                 }
+                if(systemStatus_ref == SINGLE_FC){
+                    std::cout << "Switching to STOP" << std::endl;
+                    requestStateTransition(STOP);
+                    alertSystemStatusChange();
+                }
             }
         }
         motorsAuthorized = true;
@@ -664,6 +680,7 @@ void AegisBase::checkMotorControlStatus(){
     if(systemStatus_ref == STOP){
         if(remoteStatus.UP == false){
             requestStateTransition(SINGLE_FC);
+            alertedRemoteMotors = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
         }
@@ -680,7 +697,9 @@ void AegisBase::applyRemoteAlivePolicy() {
             systemStatus_ref != ERROR && systemStatus_ref != SINGLE_FC) {
             
             std::cout << "[Watchdog] Remote Dead. Transitioning to SINGLE_FC." << std::endl;
+            handshakeStatus_ref = IDLE_HANDSHAKE;
             requestStateTransition(SINGLE_FC);
+            alertedRemoteMotors = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
         }

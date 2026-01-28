@@ -462,7 +462,7 @@ TEST_F(SystemIntegrationTest, NormalStartSequence_NoMotors){
     nanoController->initAegis();
 
     // Wait for 1s boot + handshake time
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(2500));
     
     ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
     ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
@@ -517,6 +517,154 @@ TEST_F(SystemIntegrationTest, AbnormalStart_OrinDelayed_NoMotors){
 
     ASSERT_EQ(nanoSysStatus, PRIMARY) << "Nano did not enter PRIMARY as expected";
     ASSERT_EQ(orinSysStatus, STANDBY) << "Orin did not enter STANDBY as expected";
+}
+
+TEST_F(SystemIntegrationTest, NormalStartSequence_NanoReboot){
+    nanoSysStatus = BOOT; 
+    orinSysStatus = BOOT;
+    
+    // Let threads establish connection
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    std::cout << "[TEST] Injecting ID 501 (System Booted)" << std::endl;
+    // Calling initAegis starts the 1s timer. Background threads handle ticks.
+    orinController->initAegis();
+    nanoController->initAegis();
+
+    // Wait for 1s boot + handshake time
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+
+    nano_running = false;
+    if (nano_thread.joinable()) nano_thread.join();
+    nanoEthHB->stop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    ASSERT_EQ(orinSysStatus, SINGLE_FC) << "Orin did not enter SINGLE_FC as expected";
+    std::cout << "[TEST] Nano Rebooting..." << std::endl;
+    
+    nanoSysStatus = BOOT;
+    startNanoThread();
+    nanoController->initAegis();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+}
+
+TEST_F(SystemIntegrationTest, NormalStartSequence_OrinReboot){
+    nanoSysStatus = BOOT; 
+    orinSysStatus = BOOT;
+    
+    // Let threads establish connection
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    std::cout << "[TEST] Injecting ID 501 (System Booted)" << std::endl;
+    // Calling initAegis starts the 1s timer. Background threads handle ticks.
+    orinController->initAegis();
+    nanoController->initAegis();
+
+    // Wait for 1s boot + handshake time
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+
+    orin_running = false;
+    if (orin_thread.joinable()) orin_thread.join();
+    orinEthHB->stop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    ASSERT_EQ(nanoSysStatus, SINGLE_FC) << "Nano did not enter SINGLE_FC as expected";
+    std::cout << "[TEST] Orin Rebooting..." << std::endl;
+    
+    orinSysStatus = BOOT;
+    startOrinThread();
+    orinController->initAegis();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+}
+
+TEST_F(SystemIntegrationTest, NormalStartSequence_NanoReboot_NoMotors){
+    nanoSysStatus = BOOT; 
+    orinSysStatus = BOOT;
+
+    RemoveMotors(8);
+    
+    // Let threads establish connection
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    std::cout << "[TEST] Injecting ID 501 (System Booted)" << std::endl;
+    // Calling initAegis starts the 1s timer. Background threads handle ticks.
+    orinController->initAegis();
+    nanoController->initAegis();
+
+    // Wait for 1s boot + handshake time
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+
+    nano_running = false;
+    if (nano_thread.joinable()) nano_thread.join();
+    nanoEthHB->stop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    ASSERT_EQ(orinSysStatus, SINGLE_FC) << "Orin did not enter SINGLE_FC as expected";
+    std::cout << "[TEST] Nano Rebooting..." << std::endl;
+    
+    nanoSysStatus = BOOT;
+    startNanoThread();
+    nanoController->initAegis();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+}
+
+TEST_F(SystemIntegrationTest, NormalStartSequence_OrinReboot_NoMotors){
+    nanoSysStatus = BOOT; 
+    orinSysStatus = BOOT;
+
+    RemoveMotors(8);
+    
+    // Let threads establish connection
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    std::cout << "[TEST] Injecting ID 501 (System Booted)" << std::endl;
+    // Calling initAegis starts the 1s timer. Background threads handle ticks.
+    orinController->initAegis();
+    nanoController->initAegis();
+
+    // Wait for 1s boot + handshake time
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
+
+    orin_running = false;
+    if (orin_thread.joinable()) orin_thread.join();
+    orinEthHB->stop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    ASSERT_EQ(nanoSysStatus, SINGLE_FC) << "Nano did not enter SINGLE_FC as expected";
+    std::cout << "[TEST] Orin Rebooting..." << std::endl;
+    
+    orinSysStatus = BOOT;
+    startOrinThread();
+    orinController->initAegis();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+
+    ASSERT_EQ(orinSysStatus, PRIMARY) << "Orin did not enter PRIMARY as expected";
+    ASSERT_EQ(nanoSysStatus, STANDBY) << "Nano did not enter STANDBY as expected";
 }
 
 /*

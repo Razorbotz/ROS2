@@ -666,7 +666,7 @@ void broadcastIP(){
             std::string addressString=getAddressString(AF_INET,interfaceName);
 
             std::string message(robotName+"@"+addressString);
-            std::cout << message << std::endl << std::flush;
+            //std::cout << message << std::endl << std::flush;
 
             int socketDescriptor=socket(AF_INET, SOCK_DGRAM, 0);
             if(socketDescriptor>=0){
