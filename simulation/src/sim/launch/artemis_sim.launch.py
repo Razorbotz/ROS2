@@ -12,6 +12,7 @@ def generate_launch_description():
     except Exception as e:
         print("Error: Package 'sim' not found. Did you run 'colcon build' and source your setup file?")
         raise e
+
     # Configs
     config_path = os.path.join(pkg_path, 'config', 'controllers.yaml')
     urdf_path = os.path.join(pkg_path, 'urdf', 'my_robot_tf.urdf')

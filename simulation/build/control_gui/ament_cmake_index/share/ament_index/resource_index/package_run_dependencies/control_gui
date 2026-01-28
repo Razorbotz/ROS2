@@ -1,1 +1,0 @@
-rclcpp;sensor_msgs;cv_bridge;ament_index_cpp;gtkmm-3.0;webkit2gtk-4.0;libopencv-dev;libsdl2-dev;libcurl4-openssl-dev;libavcodec-dev;libavformat-dev;libswscale-dev;libavutil-dev;zlib1g-dev;ament_lint_auto;ament_lint_common

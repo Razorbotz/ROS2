@@ -1,8 +1,0 @@
-[01m[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:[m[K In member function ‘[01m[KObject BinaryMessage::decodeObject(std::__cxx11::list<unsigned char>::iterator&)[m[K’:
-[01m[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:391:1:[m[K [01;35m[Kwarning: [m[Kcontrol reaches end of non-void function [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreturn-type-Wreturn-type]8;;[m[K]
-  391 | [01;35m[K}[m[K
-      | [01;35m[K^[m[K
-[01m[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:[m[K In member function ‘[01m[Kstd::string BinaryMessage::decodeLabel(std::__cxx11::list<unsigned char>::iterator&)[m[K’:
-[01m[K/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui/src/BinaryMessage.cpp:410:1:[m[K [01;35m[Kwarning: [m[Kcontrol reaches end of non-void function [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreturn-type-Wreturn-type]8;;[m[K]
-  410 | [01;35m[K}[m[K
-      | [01;35m[K^[m[K

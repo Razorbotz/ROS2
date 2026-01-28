@@ -1,1 +1,0 @@
-Invoking command in '/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/build/control_gui': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/src/control_gui -DCMAKE_INSTALL_PREFIX=/home/hayden/Capstone/SoftwareDevelopment/ROS2/simulation/install/control_gui
