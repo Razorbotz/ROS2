@@ -222,6 +222,7 @@ void AegisNanoController::initiateHandshakeState(uint16_t id){
 }
 
 void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* data) {
+    std::cout << "Nano: handshakeStatus_ref: " << (int)handshakeStatus_ref << " handshake_step: " << (int)handshake_step << std::endl;
     // 1. High-Priority Interrupts (ID 211)
     if (id == ID_SYS_STATUS_CHG) {
         handleSystemStatusOverride(data);

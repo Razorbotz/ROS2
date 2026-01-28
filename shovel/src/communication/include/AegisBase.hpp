@@ -51,6 +51,7 @@ protected:
     SimpleTimer boot_timer; 
     bool boot_checks_passed = false;
     std::atomic<bool> remote_shutdown_latched{false};
+    std::array<float, MAX_MOTOR_ID> motor_speeds;
 
 public:
     AegisBase(rclcpp::Node::SharedPtr node, 
@@ -72,6 +73,7 @@ public:
             remote_auth.fill(false);
             remote_cont.fill(false);
             remoteStatus.STATUS = BOOT;
+            motor_speeds.fill(0.0);
           }
 
     virtual ~AegisBase() = default;
