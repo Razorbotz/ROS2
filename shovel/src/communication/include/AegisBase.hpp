@@ -41,7 +41,7 @@ protected:
     // Used to track which interface the motor is currently attached to
     std::array<bool, MAX_MOTOR_ID> can_table;
     // Used to track whether the motor nodes are functional
-    std::array<bool, MAX_MOTOR_ID> node_table;
+    std::array<bool, MAX_MOTOR_ID + 6> node_table;
     // Used to track whether the remote controller can control the motor
     std::array<bool, MAX_MOTOR_ID> remote_auth;
     // Used to track whether the remote controller can control the motor
@@ -52,6 +52,35 @@ protected:
     bool boot_checks_passed = false;
     std::atomic<bool> remote_shutdown_latched{false};
     std::array<float, MAX_MOTOR_ID> motor_speeds;
+
+    SimpleTimer motor10NodeTimer;
+    bool motor10NodeActive = false;
+    SimpleTimer motor11NodeTimer;
+    bool motor11NodeActive = false;
+    SimpleTimer motor12NodeTimer;
+    bool motor12NodeActive = false;
+    SimpleTimer motor13NodeTimer;
+    bool motor13NodeActive = false;
+    SimpleTimer motor14NodeTimer;
+    bool motor14NodeActive = false;
+    SimpleTimer motor15NodeTimer;
+    bool motor15NodeActive = false;
+    SimpleTimer motor16NodeTimer;
+    bool motor16NodeActive = false;
+    SimpleTimer motor17NodeTimer;
+    bool motor17NodeActive = false;
+    SimpleTimer logicNodeTimer;
+    bool logicNodeActive = false;
+    SimpleTimer autonomyNodeTimer;
+    bool autonomyNodeActive = false;
+    SimpleTimer excavationNodeTimer;
+    bool excavationNodeActive = false;
+    SimpleTimer statusMonitorNodeTimer;
+    bool statusMonitorNodeActive = false;
+    SimpleTimer videoStreamNodeTimer;
+    bool videoStreamNodeActive = false;
+    SimpleTimer zedTrackingNodeTimer;
+    bool zedTrackingNodeActive = false;
 
 public:
     AegisBase(rclcpp::Node::SharedPtr node, 
@@ -80,6 +109,7 @@ public:
 
     void initAegis();
     void checkBootTimer();
+    void checkNodeTimers();
 
     void requestStateTransition(SystemStatus new_state);
 
@@ -87,6 +117,22 @@ public:
     virtual void onEnterState(SystemStatus state) = 0;
     virtual void onExitState(SystemStatus state) = 0;
     std::string stateToString(SystemStatus state);
+
+    void receivedMotor10();
+    void receivedMotor11();
+    void receivedMotor12();
+    void receivedMotor13();
+    void receivedMotor14();
+    void receivedMotor15();
+    void receivedMotor16();
+    void receivedMotor17();
+    void receivedLogic();
+    void receivedAutonomy();
+    void receivedExcavation();
+    void receivedStatusMonitor();
+    void receivedVideoStream();
+    void receivedZedTracking();
+
     // 000s
     void sendSpeedMessage();
     void sendPositionMessage();

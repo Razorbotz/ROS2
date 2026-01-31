@@ -1062,7 +1062,7 @@ public:
         // Change this topic name to match your Gazebo camera's topic.
         // You can find it by running 'ros2 topic list' while Gazebo is running.
         // Common examples: "/camera/image_raw", "/gazebo_cam/image_raw"
-        const std::string GAZEBO_TOPIC = "/camera/image_raw"; 
+        const std::string GAZEBO_TOPIC = "/zed2i/left/image_raw"; 
 
         RCLCPP_INFO(this->get_logger(), "Subscribing to topic: %s", GAZEBO_TOPIC.c_str());
 

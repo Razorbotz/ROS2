@@ -54,7 +54,7 @@
 #define ETHERNET_IFACE "enP8p1s0"
 #define PORT 31337
 
-const std::string TARGET_IP = "10.42.0.2";
+const std::string TARGET_IP = "192.168.50.10";
 std::string robotName="unnamed";
 std::string interfaceName = "wlP1p1s0";
 bool broadcast=true;
@@ -139,7 +139,7 @@ CanHeartbeatPayload orin_hb {0x01, 0, 0, 0};
 #define ORIN_PORT 31339
 #define NANO_PORT 31340
 #define LOCAL_IP "127.0.0.1"
-#define REMOTE_IP "10.42.0.1"
+#define REMOTE_IP "192.168.50.10"
 
 float voltage = 0.0f;
 float temperature = 0.0f;
@@ -730,7 +730,7 @@ int main(int argc, char **argv){
     nanoRemoteStatus.CAN0_UP = false;
     nanoRemoteStatus.CAN1_UP = false;
 
-    nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, LOCAL_IP, ORIN_PORT);
+    nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, REMOTE_IP, ORIN_PORT);
     
     // 1. Initialize Heartbeat Link
     if (!nanoLink->init()) {
@@ -881,7 +881,7 @@ int main(int argc, char **argv){
 
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
-    rclcpp::Rate rate(90);
+    rclcpp::Rate rate(120);
     bool isClientConnected = true;
     auto previousHeartbeat = std::chrono::high_resolution_clock::now();
     

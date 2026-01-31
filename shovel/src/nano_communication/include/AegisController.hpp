@@ -16,6 +16,8 @@ public:
     
     int handshake_step = 0;
     SimpleTimer retry_timer; 
+    bool hasControl = false;
+    bool canTakeControl();
     void advanceHandshake();
     void processHandshakePacket(uint16_t id, const uint8_t* data);
     void handleControlStep(uint16_t id, const uint8_t* data, bool& step_complete);

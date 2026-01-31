@@ -110,6 +110,140 @@ std::string AegisBase::stateToString(SystemStatus state) {
     }
 }
 
+void AegisBase::receivedMotor10(){
+    motor10NodeTimer.restart();
+    motor10NodeActive = true;
+}
+
+void AegisBase::receivedMotor11(){
+    motor11NodeTimer.restart();
+    motor11NodeActive = true;
+
+}
+
+void AegisBase::receivedMotor12(){
+    motor12NodeTimer.restart();
+    motor12NodeActive = true;
+
+}
+
+void AegisBase::receivedMotor13(){
+    motor13NodeTimer.restart();
+    motor13NodeActive = true;
+
+}
+
+void AegisBase::receivedMotor14(){
+    motor14NodeTimer.restart();
+    motor14NodeActive = true;
+
+}
+
+void AegisBase::receivedMotor15(){
+    motor15NodeTimer.restart();
+    motor15NodeActive = true;
+
+}
+
+void AegisBase::receivedMotor16(){
+    motor16NodeTimer.restart();
+    motor16NodeActive = true;
+    
+}
+
+void AegisBase::receivedMotor17(){
+    motor17NodeTimer.restart();
+    motor17NodeActive = true;
+
+}
+
+void AegisBase::receivedLogic(){
+    logicNodeTimer.restart();
+    logicNodeActive = true;
+}
+
+void AegisBase::receivedAutonomy(){
+    autonomyNodeTimer.restart();
+    autonomyNodeActive = true;
+}   
+
+void AegisBase::receivedExcavation(){
+    excavationNodeTimer.restart();
+    excavationNodeActive = true;
+}
+
+void AegisBase::receivedStatusMonitor(){
+    statusMonitorNodeTimer.restart();
+    statusMonitorNodeActive = true;
+}
+
+void AegisBase::receivedVideoStream(){
+    videoStreamNodeTimer.restart();
+    videoStreamNodeActive = true;
+}
+
+void AegisBase::receivedZedTracking(){
+    zedTrackingNodeTimer.restart();
+    zedTrackingNodeActive = true;
+}
+
+void AegisBase::checkNodeTimers(){
+    if(motor10NodeTimer.isExpired()){
+        motor10NodeActive = false;
+    }
+    if(motor11NodeTimer.isExpired()){
+        motor11NodeActive = false;
+    }
+    
+    if(motor12NodeTimer.isExpired()){
+        motor12NodeActive = false;
+    }
+    
+    if(motor13NodeTimer.isExpired()){
+        motor13NodeActive = false;
+    }
+    
+    if(motor14NodeTimer.isExpired()){
+        motor14NodeActive = false;
+    }
+    
+    if(motor15NodeTimer.isExpired()){
+        motor15NodeActive = false;
+    }
+    
+    if(motor16NodeTimer.isExpired()){
+        motor16NodeActive = false;
+    }
+    
+    if(motor17NodeTimer.isExpired()){
+        motor17NodeActive = false;
+    }
+    
+    if(logicNodeTimer.isExpired()){
+        logicNodeActive = false;
+    }
+    
+    if(autonomyNodeTimer.isExpired()){
+        autonomyNodeActive = false;
+    }
+    
+    if(excavationNodeTimer.isExpired()){
+        excavationNodeActive = false;
+    }
+    
+    if(statusMonitorNodeTimer.isExpired()){
+        statusMonitorNodeActive = false;
+    }
+    
+    if(videoStreamNodeTimer.isExpired()){
+        videoStreamNodeActive = false;
+    }
+    
+    if(zedTrackingNodeTimer.isExpired()){
+        zedTrackingNodeActive = false;
+    }
+}
+
 // ID 1
 void AegisBase::sendSpeedMessage(){
     if(!checkRemoteAlive()) return;
