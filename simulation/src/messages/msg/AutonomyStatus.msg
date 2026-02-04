@@ -1,0 +1,10 @@
+string robot_state
+string excavation_state
+string error_state
+string diagnostics_state
+string tilt_state
+string dump_state
+string bucket_state
+string arms_state
+float32 dest_x
+float32 dest_z
