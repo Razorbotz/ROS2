@@ -494,6 +494,9 @@ int main(int argc, char **argv){
 
             std::string received_str(reinterpret_cast<char*>(buffer), bytesRead);
             if (received_str == "Hello Robot") {
+                std::string reply("Hello from server");
+                sendto(server_fd, reply.c_str(), reply.length(), 0, (struct sockaddr *)&client_addr, client_addr_len);
+
                 if (!client_connected) {
                     char client_ip[INET_ADDRSTRLEN];
                     inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);

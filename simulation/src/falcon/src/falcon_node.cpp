@@ -42,16 +42,16 @@ public:
         // 2. Subscribe to Drivetrain Node Outputs
         // We need individual subscriptions for each motor speed topic
         sub_10_ = this->create_subscription<std_msgs::msg::Float32>(
-            "falcon_10_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(10, msg->data); });
+            "falcon_10_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(10, msg->data); RCLCPP_INFO(this->get_logger(), "Falcon 10 data: %f", msg->data); });
         
         sub_11_ = this->create_subscription<std_msgs::msg::Float32>(
-            "falcon_11_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(11, msg->data); });
+            "falcon_11_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(11, msg->data); RCLCPP_INFO(this->get_logger(), "Falcon 11 data: %f", msg->data); });
         
         sub_12_ = this->create_subscription<std_msgs::msg::Float32>(
-            "falcon_12_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(12, msg->data); });
+            "falcon_12_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(12, msg->data); RCLCPP_INFO(this->get_logger(), "Falcon 12 data: %f", msg->data); });
         
         sub_13_ = this->create_subscription<std_msgs::msg::Float32>(
-            "falcon_13_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(13, msg->data); });
+            "falcon_13_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(13, msg->data); RCLCPP_INFO(this->get_logger(), "Falcon 13 data: %f", msg->data); });
 
         // 3. Subscribe to Gazebo Feedback
         joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(

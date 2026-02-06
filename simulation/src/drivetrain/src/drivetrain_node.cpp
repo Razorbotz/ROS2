@@ -187,17 +187,17 @@ int main(int argc, char **argv){
     falcon12Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_12_speed",1);
     falcon13Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_13_speed",1);
 
-    falcon10UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_10_user_speed",1);
-    falcon11UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_11_user_speed",1);
-    falcon12UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_12_user_speed",1);
-    falcon13UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_13_user_speed",1);
+    falcon10UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_10_speed",1);
+    falcon11UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_11_speed",1);
+    falcon12UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_12_speed",1);
+    falcon13UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_13_speed",1);
 
     drivetrainStatusPublisher = nodeHandle->create_publisher<messages::msg::DrivetrainStatus>("drivetrain_status",1);
 
     auto start = std::chrono::high_resolution_clock::now();
     auto finish = std::chrono::high_resolution_clock::now();
     int counter = 0;
-    rclcpp::Rate rate(30);
+    rclcpp::Rate rate(60);
     while(rclcpp::ok()){
         finish = std::chrono::high_resolution_clock::now();
         if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > 33){
