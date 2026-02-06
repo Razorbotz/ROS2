@@ -23,8 +23,12 @@ def generate_launch_description():
     drivetrain_launch_file = os.path.join(launch_dir, 'launch', 'launch_drivetrain.py')
 #    status_monitor_launch_file = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
 #    reset_launch_file = os.path.join(launch_dir, 'launch', 'launch_reset.py')
+    gazebo_launch_path = os.path.join(launch_dir, 'launch', 'artemis_sim.launch.py')
 
     return LaunchDescription([
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(gazebo_launch_path)
+        ),
 #        IncludeLaunchDescription(
 #            PythonLaunchDescriptionSource(motors_launch_file)
 #        )
@@ -75,6 +79,37 @@ def generate_launch_description():
             executable='falcon_node',
             name='falcon_sim_node',
             output='screen'
+        )
+        ,
+        Node(
+            package='aruco_ros',
+            executable='single',
+            name='aruco_single',
+            parameters=[{
+                'marker_id': 7,
+                'marker_size': 0.3,
+                'ref_frame': 'zed2i_left_optical_frame',
+                'marker_frame': 'aruco_marker_frame',
+                'camera_frame': 'zed2i_left_optical_frame',
+            }],
+            output='screen',
+            remappings=[
+                ('/image', '/zed2i/left/image_raw'),
+                ('/camera_info', '/zed2i/left/camera_info'),
+            ]
+        )
+        ,
+        Node(
+            package='aruco',
+            executable='aruco_main',
+            name='aruco_pose_localization',
+            output='screen',
+            parameters=[{
+                'pose_topic': '/aruco_single/pose',
+                'map_frame': 'map',
+                'base_frame': 'base_link',
+                'known_marker_frame': 'wall_marker_7',
+            }]
         )
     ]
 )

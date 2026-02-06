@@ -530,6 +530,7 @@ int drivetrainCounter = 0;
 void drivetrainStatusCallback(const messages::msg::DrivetrainStatus::SharedPtr status){
     if(silentRunning)return;
     drivetrainCounter++;
+    if(drivetrainCounter % 10 != 0 )return;
     bool message_changed = false;
     BinaryMessage message("Drivetrain");
 
@@ -890,7 +891,7 @@ int main(int argc, char **argv){
     
     while(rclcpp::ok()){
         if (!orinLink->is_remote_alive()) {
-            RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 1000, "Remote Dead!");
+            RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 10000, "Remote Dead!");
         }
         last_ros_update_time = get_time_ms();
         try{
