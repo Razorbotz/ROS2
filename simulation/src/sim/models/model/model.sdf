@@ -555,7 +555,7 @@
     </joint>
     
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <parameters>/home/team/SoftwareDevelopment/ROS2/simulation/src/sim/config/controllers.yaml</parameters>
+      <parameters>REPLACE_WITH_CONTROLLER_YAML</parameters>
     </plugin>
 
     <static>0</static>
