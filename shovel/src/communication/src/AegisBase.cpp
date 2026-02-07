@@ -563,22 +563,43 @@ void AegisBase::acknowledgeMotorsDetected(){
 }
 
 // ID 424
-void AegisBase::alertLostNode(uint8_t node_lost){
+void AegisBase::alertNodesDetected(){
     if(!checkRemoteAlive()) return;
-    uint8_t msg = node_lost;
-    hb_link.send_data(424, &msg, sizeof(msg));
+    if(alertedRemoteNodes) return;
+
+    NodeAuthPayload payload;
+    for (size_t i = 0; i < MAX_NODES; i++) {
+        payload.node_states[i] = false;
+    }
+    hb_link.send_data(424, &payload, sizeof(payload));
+    alertedRemoteNodes = true;
 }
 
 // ID 425
-void AegisBase::alertRegainedNode(uint8_t node_regained){
-    if(!checkRemoteAlive()) return;
-    uint8_t msg = node_regained;
-    hb_link.send_data(425, &node_regained, sizeof(node_regained));
+void AegisBase::acknowledgeNodesDetected(){
+    hb_link.send_data(425, "", 0);
+    if(!alertedRemoteNodes){
+        alertNodesDetected();
+    }
 }
 
 // ID 426
+void AegisBase::alertLostNode(uint8_t node_lost){
+    if(!checkRemoteAlive()) return;
+    uint8_t msg = node_lost;
+    hb_link.send_data(426, &msg, sizeof(msg));
+}
+
+// ID 427
+void AegisBase::alertRegainedNode(uint8_t node_regained){
+    if(!checkRemoteAlive()) return;
+    uint8_t msg = node_regained;
+    hb_link.send_data(427, &node_regained, sizeof(node_regained));
+}
+
+// ID 428
 void AegisBase::acknowledgeNodeChange(){
-    hb_link.send_data(426, "", 0);
+    hb_link.send_data(428, "", 0);
 }
 
 // --- 5xx System ---
@@ -849,7 +870,7 @@ bool AegisBase::isHandshakeMsg(uint16_t id){
     if(id == 100 || id == 101 ||
        id == 200 || id == 201 || id == 202 || id == 211 || id == 212 ||
        id >= 300 && id <= 305 || 
-       id == 422 || id == 423)
+       id == 422 || id == 423 || id == 424 || id == 425)
         return true;
     return false;
 }

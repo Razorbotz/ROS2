@@ -201,13 +201,17 @@ void AegisController::advanceHandshake() {
             if (handshake_step == 0) {
                 alertMotorsDetected();
             }
-            if (handshake_step == 2) {
+            if(handshake_step == 2){
+                alertNodesDetected();
+            }
+            if (handshake_step == 4) {
                 enableMotorAuthorization();
                 sendAuth();
-                handshake_step = 3;
+                handshake_step = 5;
                 retry_timer.cancel();
                 retry_timer.start(50);
             }
+
             break;
 
     }
@@ -311,7 +315,14 @@ void AegisController::handleMotorStep(uint16_t id, bool& step_complete) {
         acknowledgeMotorsDetected();
         step_complete = true;
     }
-    else if (handshake_step == 3 && id == ID_CONFIRM_AUTH) {
+    else if (handshake_step == 2 && id == ID_NODES_ACK) {
+        step_complete = true;
+    }
+    else if (handshake_step == 3 && id == ID_NODES_INIT) {
+        acknowledgeNodesDetected();
+        step_complete = true;
+    }
+    else if (handshake_step == 5 && id == ID_CONFIRM_AUTH) {
         std::cout << "[Handshake] Complete!" << std::endl;
         handshakeStatus_ref = COMPLETE_HANDSHAKE;
         retry_timer.cancel();
@@ -323,6 +334,7 @@ void AegisController::handleMotorStep(uint16_t id, bool& step_complete) {
     }
 }
 
+// TODO: Add check for whether or not any motors are running
 bool AegisController::canTakeControl(){
 
     return true;

@@ -47,6 +47,7 @@ protected:
     // Used to track whether the remote controller can control the motor
     std::array<bool, MAX_MOTOR_ID> remote_cont;
     bool alertedRemoteMotors = false;
+    bool alertedRemoteNodes = false;
     bool motorsAuthorized = false;
     SimpleTimer boot_timer; 
     bool boot_checks_passed = false;
@@ -179,6 +180,8 @@ public:
     void acknowledgeWifiChange();
     void alertMotorsDetected();
     void acknowledgeMotorsDetected();
+    void alertNodesDetected();
+    void acknowledgeNodesDetected();
     void alertLostNode(uint8_t node_lost);
     void alertRegainedNode(uint8_t node_regained);
     void acknowledgeNodeChange();

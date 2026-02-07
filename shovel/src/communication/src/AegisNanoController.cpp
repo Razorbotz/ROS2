@@ -192,6 +192,9 @@ void AegisNanoController::advanceHandshake() {
             // FC2 -> FC1: 422 
             alertMotorsDetected();
         }
+        if (handshake_step == 3){
+            alertNodesDetected();
+        }
     }
     else if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
         if (handshake_step == 0) {
@@ -325,8 +328,13 @@ void AegisNanoController::handleMotorAuth(uint16_t id, const uint8_t* data) {
     else if (handshake_step == 1 && id == ID_MOTORS_ACK) {
         handshake_step = 2;
     }
-    // Step 2: Final Authorization assignment
-    else if (handshake_step == 2 && id == ID_ASSIGN_AUTH) {
+    else if(handshake_step == 2 && id == ID_NODES_INIT){
+        acknowledgeNodesDetected();
+        handshake_step = 3;
+        advanceHandshake();
+    }
+    // Step 3: Final Authorization assignment
+    else if (handshake_step == 3 && id == ID_ASSIGN_AUTH) {
         auto* payload = reinterpret_cast<const MotorAuthPayload*>(data);
         processRemoteAuth(payload->motor_states);
         setAuthFromRemote(payload->motor_states);
