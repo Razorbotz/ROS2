@@ -1,0 +1,11 @@
+int32 rssi
+string can_message
+int32 rx_packets
+int32 tx_packets
+string can2_message
+int32 rx2_packets
+int32 tx2_packets
+bool using_can1
+int32 first_motor
+int32 second_motor
+int32 num_breaks

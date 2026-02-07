@@ -1,0 +1,349 @@
+#pragma once
+#include <cstdint>
+#include <vector>
+#include <atomic>
+#include <netinet/in.h>
+#include <functional>
+
+// --- PROTOCOL CONSTANTS ---
+static constexpr uint16_t HB_MAGIC = 0xBEEF;
+static constexpr uint8_t  HB_VER   = 1;
+
+// 10ms interval / 50ms timeout
+static constexpr uint32_t HB_INTERVAL_MS = 10; 
+static constexpr uint32_t HB_TIMEOUT_MS  = 50;
+
+// --- MESSAGE TYPES ---
+static constexpr uint8_t MSG_TYPE_HEARTBEAT = 0x01;
+static constexpr uint8_t MSG_TYPE_DATA      = 0x02;
+
+#pragma pack(push, 1)
+
+/**
+ * @brief Common Header.
+ *
+ * Every packet sent over this protocol MUST start with this structure.
+ * This allows the receiver to peek at the `type` field before deciding
+ * how much more data to read.
+ */
+struct NanoHeader {
+    /**
+     * @brief Integrity Check.
+     * Must match HB_MAGIC. Used to reject garbage traffic on the port.
+     */
+    uint16_t magic;
+
+    /**
+     * @brief Discriminator.
+     * 0x01 = Heartbeat (Stop reading here).
+     * 0x02 = Data (Read NanoDataPacket fields).
+     */
+    uint8_t  type;
+
+    /**
+     * @brief Compatibility version.
+     * Packets with mismatched versions should be discarded.
+     */
+    uint8_t  version;
+
+    /**
+     * @brief Packet Sequence Number.
+     * Monotonically increasing. Used to detect packet loss (gaps in sequence)
+     * or out-of-order delivery.
+     */
+    uint32_t seq;
+
+    /**
+     * @brief Sender Timestamp (ms).
+     * Used to calculate one-way latency (receiver_time - t_ms).
+     */
+    uint64_t t_ms;
+};
+
+/**
+ * @brief Data Packet.
+ * Extends the header to include a variable length payload.
+ * 0xx: Telemetry & Setpoints
+ * 001: Motor speed values
+ *    - This will have motor ID and speed value (float 32)
+ * 002: Motor position value
+ *     - This will have motor ID and position (int32) 
+ * 
+ * 1xx: Resource Ownership & Delegation
+ * Commands to change the configuration of the robot.
+ * NOTE: This DOES NOT change the control status, only individual motor status
+ * 100: Message from the Orin to the Nano to control motors
+ *     - This will include a message with the motors to control
+ *     - This will be a list of motor IDs to control
+ * 101: Confirmation of motor control from Nano to Orin
+ * 
+ * 2xx: State & Handshake
+ * Negotiating who is in charge.
+ * 200: Query about who is in control
+ * 201: Response that the sender is in control
+ * 202: Response that the sender is not in control
+ * 203: Request from Orin to Nano to retake control
+ * 204: Response from Nano to Orin to take control
+ * 205: Response from Nano to Orin to not take control
+ *     - This will include a message for how many seconds to delay
+ * 206: Query if the other is alive
+ * 207: Response to alive query
+ * 208: Request from Nano to Orin to relinquish control
+ * 209: Accept control of system
+ * 210: Reject control of the system
+ * 211: Change in SystemStatus
+ * 212: Acknowledge change in SystemStatus
+
+ * 4xx: Operational Faults & Stops
+ * Interface issues
+ * 400: Message to force stop immediately
+ * 401: Message to stop gracefully
+ * 402: Message from the sender that it lost control of motors
+ *     - Include a list of lost motor IDs
+ * 403: Message from sender that it has regained control
+ *     - Include list of regained motor IDs
+ * 404: Lost Wi-Fi connection
+ * 405: Regained Wi-Fi connection
+ * 406: Wi-Fi Mode Change Confirm
+ * 407: CAN Bus is down
+ * 408: CAN Bus is up
+ * 409: CAN Bus Mode Change Confirm
+
+ * 5xx: System & Critical Hardware
+ * System level errors and shutdown commands
+ * 500: System shutting down
+ * 501: System functioning again
+ * 
+ */
+struct NanoDataPacket {
+    NanoHeader header;
+    uint16_t   data_id;      // specific ID for the data
+    uint16_t   payload_len;  // Length of the following data
+    uint8_t    payload[1024];// Max payload buffer
+};
+
+enum MessageIDs : uint16_t {
+    // --- 0xx Telemetry & Setpoints ---
+    ID_SPEED_MSG        = 1,
+    ID_POS_MSG          = 2,
+    ID_JAXIS_MSG        = 10,
+    ID_JBTN_MSG         = 11,
+    ID_JHAT_MSG         = 12,
+    ID_KEY_MSG          = 13,
+    ID_BM_MSG           = 20,
+
+    // --- 1xx Control Configuration ---
+    ID_ASSIGN_AUTH      = 100,
+    ID_CONFIRM_AUTH     = 101,
+
+    // --- 2xx State & Handshake ---
+    ID_QUERY_CONTROL    = 200,
+    ID_STATE_PRIMARY    = 201,
+    ID_STATE_STANDBY    = 202,
+    ID_REQ_RETAKE       = 203,
+    ID_GRANT_CONTROL    = 204,
+    ID_DENY_CONTROL     = 205, 
+    ID_LIVENESS_PING    = 206, 
+    ID_LIVENESS_PONG    = 207, 
+    ID_REQ_RELINQUISH   = 208, 
+    ID_ACCEPT_CONTROL   = 209, 
+    ID_REJECT_CONTROL   = 210, 
+    ID_SYS_STATUS_CHG   = 211, 
+    ID_ACK_STATUS_CHG   = 212, 
+
+    // --- 3xx Parameter Exchange ---
+    ID_PARAM_INIT       = 300,
+    ID_PARAM_DATA       = 301,
+    ID_PARAM_ACK        = 302,
+    ID_PARAM_REJECT     = 303,
+    ID_SYNC_COMPLETE    = 304,
+    ID_READY_OP         = 305,
+
+    // --- 4xx Operational Faults ---
+    ID_ESTOP_HARD       = 400,
+    ID_ESTOP_SOFT       = 401, 
+    ID_LOST_MOTORS      = 402,
+    ID_REGAINED_MOTORS  = 403, 
+    ID_WIFI_LOST        = 404,
+    ID_WIFI_REGAINED    = 405, 
+    ID_WIFI_CONFIRM     = 406, 
+    ID_CAN_DOWN         = 407, 
+    ID_CAN_UP           = 408,
+    ID_CAN_CONFIRM      = 409, 
+    ID_SAFE_VIOL_SPD    = 410, 
+    ID_SAFE_VIOL_POS    = 411, 
+    ID_SAFE_CONFIRM     = 412, 
+    ID_CAN_HB_LOST      = 413,
+    ID_CAN_HB_REGAINED  = 414,
+    ID_CAN_ACK_CHG      = 415,
+    ID_ETH_HB_LOST      = 416,
+    ID_ETH_HB_REGAINED  = 417,
+    ID_ETH_ACK_HB_CHG   = 418,
+    ID_ETH_LOST         = 419,
+    ID_ETH_REGAINED     = 420,
+    ID_ETH_ACK_CHG      = 421,
+    ID_MOTORS_INIT      = 422,
+    ID_MOTORS_ACK       = 423,
+    ID_NODE_LOST        = 424,
+    ID_NODE_REGAINED    = 425,
+    ID_NODE_ACK_CHG     = 426,
+
+    // --- 5xx System ---
+    ID_SYS_SHUTDOWN     = 500,
+    ID_SYS_BOOT_OK      = 501,
+    ID_SYS_BOOT_ACK     = 502
+};
+
+struct MotorListPayload {
+    uint8_t count;
+    uint8_t motor_ids[16]; // Variable length based on count
+};
+
+constexpr size_t MAX_MOTORS = 8; 
+
+struct MotorAuthPayload {
+    uint8_t motor_states[MAX_MOTORS]; 
+};
+
+struct MotorSpeed {
+    uint8_t motor_id;
+    float speed;
+};
+
+struct MotorPosition {
+    uint8_t motor_id;
+    int32_t position;
+};
+
+struct CanBusPayload {
+    uint8_t interface_id; // 0 = CAN0, 1 = CAN1, etc.
+    uint8_t error_code;   // Optional specific CAN error
+};
+
+struct JoystickAxis {
+    uint8_t joystick_id;
+    uint8_t axis_id;
+    float   value;
+};
+
+struct JoystickButton {
+    uint8_t joystick_id;
+    uint8_t button_id;
+    uint8_t state; // 0=Release, 1=Press
+};
+
+struct JoystickHat {
+    uint8_t joystick_id;
+    uint8_t hat_id;
+    uint8_t value; // Hat direction code
+};
+
+struct KeyboardEvent {
+    uint32_t key_code;
+    uint8_t  state; // 0=Release, 1=Press
+};
+
+enum SystemStatus : uint8_t {
+    BOOT,
+    PRIMARY, // Should control all motors and send data to client
+    STANDBY, // Should act as safety monitor and backup
+    SINGLE_FC, // Only acting FC, should be more careful
+    PARTIAL_PRIMARY, // Should send data to client, controls part of motors
+    PARTIAL_SECONDARY, // Controls part of motors, only send those motors to client,
+    CAN_INOP, // 
+    ERROR, // 
+    SAFETY_DEGRADED,
+    STOP // STOP
+};
+
+enum HandshakeStatus : uint8_t {
+    IDLE_HANDSHAKE,
+    CONTROL_HANDSHAKE,
+    PARAM_HANDSHAKE,
+    MOTOR_HANDSHAKE,
+    COMPLETE_HANDSHAKE
+};
+
+struct RemoteStatus {
+    bool UP;
+    bool WIFI_UP;
+    bool CAN0_UP;
+    bool CAN1_UP;
+    SystemStatus STATUS;
+};
+
+enum ErrorCode : uint8_t {
+    NO_ERROR,
+    MISSING_MOTOR_CAN,
+    MISSING_MOTOR_NODE,
+    MISSING_MOTOR_BOTH
+};
+
+enum Nodes : uint8_t {
+    MOTOR_10,
+    MOTOR_11,
+    MOTOR_12,
+    MOTOR_13,
+    MOTOR_14,
+    MOTOR_15,
+    MOTOR_16,
+    MOTOR_17,
+    DRIVETRAIN,
+    EXCAVATION,
+    LOGIC,
+    AUTONOMY
+};
+
+enum ParameterCode : uint8_t {
+    MAX_MOTOR_SPEED,
+    MAX_MOTOR_POSITION
+};
+
+struct OperatingParameter {
+    ParameterCode code;
+    uint8_t len;
+    uint8_t data[16];
+};
+
+#pragma pack(pop)
+
+class HeartbeatLink {
+public:
+    // Callback signature: (Data ID, Pointer to Payload, Length)
+    using DataCallback = std::function<void(uint16_t, const uint8_t*, uint16_t)>;
+
+    HeartbeatLink(uint16_t local_port, const char* remote_ip, uint16_t remote_port);
+    ~HeartbeatLink();
+
+    bool init();
+    void close_socket();
+
+    // Set the function to call when DATA packets arrive
+    void set_data_callback(DataCallback cb);
+
+    void send_heartbeat();
+    void send_data(uint16_t id, const void* payload, uint16_t len);
+    
+    bool spin_once(); 
+
+    // Returns true if valid packets received within HB_TIMEOUT_MS
+    bool is_remote_alive() const;
+    
+    // Returns one-way latency (ms) based on last packet
+    uint64_t get_last_latency_ms() const;
+
+private:
+    int sockfd = -1;
+    uint16_t local_port;
+    struct sockaddr_in remote_addr;
+    
+    std::atomic<uint64_t> last_rx_time {0};
+    std::atomic<uint64_t> last_latency {0};
+    std::atomic<uint32_t> tx_seq {0};
+    
+    DataCallback on_data_received;
+
+    // Helpers
+    void process_packet(const uint8_t* buffer, size_t len);
+    uint64_t current_time_ms() const;
+};

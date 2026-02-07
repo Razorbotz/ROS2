@@ -25,6 +25,13 @@ void AegisBase::requestStateTransition(SystemStatus new_state) {
         return;
     }
 
+    if(new_state == SINGLE_FC){
+        if(systemStatus_ref == PARTIAL_PRIMARY){
+            requestStateTransition(STOP);
+            return;
+        }
+    }
+
     if (!isValidTransition(systemStatus_ref, new_state)) {
         std::cerr << "[FSM] ILLEGAL TRANSITION ATTEMPT: " 
                   << stateToString(systemStatus_ref) << " -> " 
@@ -39,9 +46,11 @@ void AegisBase::requestStateTransition(SystemStatus new_state) {
     SystemStatus prev = systemStatus_ref;
     systemStatus_ref = new_state;
     onEnterState(new_state);
-    if((new_state != SINGLE_FC && prev != SINGLE_FC) && 
-       (new_state != STANDBY && prev != BOOT))
-        alertSystemStatusChange();
+    if(new_state != SINGLE_FC && prev != SINGLE_FC){
+        if(!(new_state == STANDBY && prev == BOOT)){
+            alertSystemStatusChange();
+        }
+    }
 }
 
 bool AegisBase::isValidTransition(SystemStatus from, SystemStatus to) {
@@ -67,7 +76,8 @@ bool AegisBase::isValidTransition(SystemStatus from, SystemStatus to) {
         case STOP:
             return (to == PARTIAL_PRIMARY || // Recovered FC2, still missing motor
                     to == SINGLE_FC ||       // Recovered motor, still missing FC2
-                    to == ERROR);            // Gave up
+                    to == ERROR ||           // Gave up
+                    to == STANDBY);          // Entered standby  
             
         case PARTIAL_SECONDARY:
             return (to == STANDBY ||
@@ -97,6 +107,140 @@ std::string AegisBase::stateToString(SystemStatus state) {
         case SAFETY_DEGRADED:   return "SAFETY_DEGRADED";
         case STOP:              return "STOP";
         default:                return "UNKNOWN_STATE (" + std::to_string(state) + ")";
+    }
+}
+
+void AegisBase::receivedMotor10(){
+    motor10NodeTimer.restart();
+    motor10NodeActive = true;
+}
+
+void AegisBase::receivedMotor11(){
+    motor11NodeTimer.restart();
+    motor11NodeActive = true;
+
+}
+
+void AegisBase::receivedMotor12(){
+    motor12NodeTimer.restart();
+    motor12NodeActive = true;
+
+}
+
+void AegisBase::receivedMotor13(){
+    motor13NodeTimer.restart();
+    motor13NodeActive = true;
+
+}
+
+void AegisBase::receivedMotor14(){
+    motor14NodeTimer.restart();
+    motor14NodeActive = true;
+
+}
+
+void AegisBase::receivedMotor15(){
+    motor15NodeTimer.restart();
+    motor15NodeActive = true;
+
+}
+
+void AegisBase::receivedMotor16(){
+    motor16NodeTimer.restart();
+    motor16NodeActive = true;
+    
+}
+
+void AegisBase::receivedMotor17(){
+    motor17NodeTimer.restart();
+    motor17NodeActive = true;
+
+}
+
+void AegisBase::receivedLogic(){
+    logicNodeTimer.restart();
+    logicNodeActive = true;
+}
+
+void AegisBase::receivedAutonomy(){
+    autonomyNodeTimer.restart();
+    autonomyNodeActive = true;
+}   
+
+void AegisBase::receivedExcavation(){
+    excavationNodeTimer.restart();
+    excavationNodeActive = true;
+}
+
+void AegisBase::receivedStatusMonitor(){
+    statusMonitorNodeTimer.restart();
+    statusMonitorNodeActive = true;
+}
+
+void AegisBase::receivedVideoStream(){
+    videoStreamNodeTimer.restart();
+    videoStreamNodeActive = true;
+}
+
+void AegisBase::receivedZedTracking(){
+    zedTrackingNodeTimer.restart();
+    zedTrackingNodeActive = true;
+}
+
+void AegisBase::checkNodeTimers(){
+    if(motor10NodeTimer.isExpired()){
+        motor10NodeActive = false;
+    }
+    if(motor11NodeTimer.isExpired()){
+        motor11NodeActive = false;
+    }
+    
+    if(motor12NodeTimer.isExpired()){
+        motor12NodeActive = false;
+    }
+    
+    if(motor13NodeTimer.isExpired()){
+        motor13NodeActive = false;
+    }
+    
+    if(motor14NodeTimer.isExpired()){
+        motor14NodeActive = false;
+    }
+    
+    if(motor15NodeTimer.isExpired()){
+        motor15NodeActive = false;
+    }
+    
+    if(motor16NodeTimer.isExpired()){
+        motor16NodeActive = false;
+    }
+    
+    if(motor17NodeTimer.isExpired()){
+        motor17NodeActive = false;
+    }
+    
+    if(logicNodeTimer.isExpired()){
+        logicNodeActive = false;
+    }
+    
+    if(autonomyNodeTimer.isExpired()){
+        autonomyNodeActive = false;
+    }
+    
+    if(excavationNodeTimer.isExpired()){
+        excavationNodeActive = false;
+    }
+    
+    if(statusMonitorNodeTimer.isExpired()){
+        statusMonitorNodeActive = false;
+    }
+    
+    if(videoStreamNodeTimer.isExpired()){
+        videoStreamNodeActive = false;
+    }
+    
+    if(zedTrackingNodeTimer.isExpired()){
+        zedTrackingNodeActive = false;
     }
 }
 
@@ -174,6 +318,7 @@ void AegisBase::queryControl(){
     if (!hb_link.is_remote_alive()){
         if(systemStatus_ref == STANDBY){
             requestStateTransition(SINGLE_FC);
+            alertedRemoteMotors = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
             alertSystemStatusChange();
@@ -246,7 +391,7 @@ void AegisBase::alertSystemStatusChange(bool verbose){
     if(!checkRemoteAlive()) return;
 
     if (verbose) {
-        RCLCPP_INFO(nodeHandle->get_logger(), "Sending SystemStatusChange");
+        RCLCPP_INFO(nodeHandle->get_logger(), "Sending SystemStatusChange: %d", (int)systemStatus_ref);
         std::cout << "SystemStatus: " << (int)systemStatus_ref << std::endl;
     }
 
@@ -418,22 +563,43 @@ void AegisBase::acknowledgeMotorsDetected(){
 }
 
 // ID 424
-void AegisBase::alertLostNode(uint8_t node_lost){
+void AegisBase::alertNodesDetected(){
     if(!checkRemoteAlive()) return;
-    uint8_t msg = node_lost;
-    hb_link.send_data(424, &msg, sizeof(msg));
+    if(alertedRemoteNodes) return;
+
+    NodeAuthPayload payload;
+    for (size_t i = 0; i < MAX_NODES; i++) {
+        payload.node_states[i] = false;
+    }
+    hb_link.send_data(424, &payload, sizeof(payload));
+    alertedRemoteNodes = true;
 }
 
 // ID 425
-void AegisBase::alertRegainedNode(uint8_t node_regained){
-    if(!checkRemoteAlive()) return;
-    uint8_t msg = node_regained;
-    hb_link.send_data(425, &node_regained, sizeof(node_regained));
+void AegisBase::acknowledgeNodesDetected(){
+    hb_link.send_data(425, "", 0);
+    if(!alertedRemoteNodes){
+        alertNodesDetected();
+    }
 }
 
 // ID 426
+void AegisBase::alertLostNode(uint8_t node_lost){
+    if(!checkRemoteAlive()) return;
+    uint8_t msg = node_lost;
+    hb_link.send_data(426, &msg, sizeof(msg));
+}
+
+// ID 427
+void AegisBase::alertRegainedNode(uint8_t node_regained){
+    if(!checkRemoteAlive()) return;
+    uint8_t msg = node_regained;
+    hb_link.send_data(427, &node_regained, sizeof(node_regained));
+}
+
+// ID 428
 void AegisBase::acknowledgeNodeChange(){
-    hb_link.send_data(426, "", 0);
+    hb_link.send_data(428, "", 0);
 }
 
 // --- 5xx System ---
@@ -525,6 +691,11 @@ void AegisBase::enableMotorAuthorization(){
                 if(systemStatus_ref == PRIMARY){
                     std::cout << "Switching to PARTIAL_PRIMARY" << std::endl;
                     requestStateTransition(PARTIAL_PRIMARY);
+                    alertSystemStatusChange();
+                }
+                if(systemStatus_ref == SINGLE_FC){
+                    std::cout << "Switching to STOP" << std::endl;
+                    requestStateTransition(STOP);
                     alertSystemStatusChange();
                 }
             }
@@ -664,6 +835,7 @@ void AegisBase::checkMotorControlStatus(){
     if(systemStatus_ref == STOP){
         if(remoteStatus.UP == false){
             requestStateTransition(SINGLE_FC);
+            alertedRemoteMotors = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
         }
@@ -680,7 +852,9 @@ void AegisBase::applyRemoteAlivePolicy() {
             systemStatus_ref != ERROR && systemStatus_ref != SINGLE_FC) {
             
             std::cout << "[Watchdog] Remote Dead. Transitioning to SINGLE_FC." << std::endl;
+            handshakeStatus_ref = IDLE_HANDSHAKE;
             requestStateTransition(SINGLE_FC);
+            alertedRemoteMotors = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
         }
@@ -696,7 +870,7 @@ bool AegisBase::isHandshakeMsg(uint16_t id){
     if(id == 100 || id == 101 ||
        id == 200 || id == 201 || id == 202 || id == 211 || id == 212 ||
        id >= 300 && id <= 305 || 
-       id == 422 || id == 423)
+       id == 422 || id == 423 || id == 424 || id == 425)
         return true;
     return false;
 }

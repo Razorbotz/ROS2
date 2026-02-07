@@ -54,7 +54,7 @@
 #define ETHERNET_IFACE "enP8p1s0"
 #define PORT 31337
 
-const std::string TARGET_IP = "10.42.0.2";
+const std::string TARGET_IP = "192.168.50.11";
 std::string robotName="unnamed";
 std::string interfaceName = "wlP1p1s0";
 bool broadcast=true;
@@ -139,7 +139,7 @@ CanHeartbeatPayload nano_hb {0x02, 0, 0, 0};
 #define ORIN_PORT 31339
 #define NANO_PORT 31340
 #define LOCAL_IP "127.0.0.1"
-#define REMOTE_IP "10.42.0.2"
+#define REMOTE_IP "192.168.50.11"
 
 float voltage = 0.0f;
 float temperature = 0.0f;
@@ -456,6 +456,7 @@ int zedCounter = 0;
  * @param zedPosition 
  */
 void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
+    orinController->receivedZedTracking();
     if(silentRunning)return;
     if(rssi > UPPER_THRESH)
         return;
@@ -482,6 +483,7 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
 // 10 Hz
 int systemCounter = 0;
 void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status) {
+    orinController->receivedStatusMonitor();
     if (silentRunning) return;
 
     systemCounter++;
@@ -528,6 +530,7 @@ int drivetrainCounter = 0;
 void drivetrainStatusCallback(const messages::msg::DrivetrainStatus::SharedPtr status){
     if(silentRunning)return;
     drivetrainCounter++;
+    if(drivetrainCounter % 10 != 0 )return;
     bool message_changed = false;
     BinaryMessage message("Drivetrain");
 
@@ -645,6 +648,7 @@ void linearStatusCallback(const std::string& name, const messages::msg::LinearSt
 // 30 Hz
 int autonomyCounter = 0;
 void autonomyStatusCallback(const messages::msg::AutonomyStatus::SharedPtr autonomyStatus){
+    orinController->receivedAutonomy();
     //RCLCPP_INFO(nodeHandle->get_logger(), "autonomy callback");
     autonomyCounter++;
     if(autonomyCounter % 15 == 0)
@@ -666,7 +670,7 @@ void broadcastIP(){
             std::string addressString=getAddressString(AF_INET,interfaceName);
 
             std::string message(robotName+"@"+addressString);
-            std::cout << message << std::endl << std::flush;
+            //std::cout << message << std::endl << std::flush;
 
             int socketDescriptor=socket(AF_INET, SOCK_DGRAM, 0);
             if(socketDescriptor>=0){
@@ -730,7 +734,7 @@ int main(int argc, char **argv){
     orinRemoteStatus.CAN0_UP = false;
     orinRemoteStatus.CAN1_UP = false;
 
-    orinLink = std::make_unique<HeartbeatLink>(ORIN_PORT, LOCAL_IP, NANO_PORT);
+    orinLink = std::make_unique<HeartbeatLink>(ORIN_PORT, REMOTE_IP, NANO_PORT);
     
     // 1. Initialize Heartbeat Link
     if (!orinLink->init()) {
@@ -881,13 +885,13 @@ int main(int argc, char **argv){
 
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
-    rclcpp::Rate rate(90);
+    rclcpp::Rate rate(120);
     bool isClientConnected = true;
     auto previousHeartbeat = std::chrono::high_resolution_clock::now();
     
     while(rclcpp::ok()){
         if (!orinLink->is_remote_alive()) {
-            RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 1000, "Remote Dead!");
+            RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 10000, "Remote Dead!");
         }
         last_ros_update_time = get_time_ms();
         try{

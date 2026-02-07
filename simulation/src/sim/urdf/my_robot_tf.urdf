@@ -1,15 +1,16 @@
 <?xml version="1.0"?>
 <robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <link name="odom"/>
   <link name="base_link"/>
   <link name="lidar_link"/>
   <link name="zed2i_base_link"/>
   <link name="d455i_base_link"/>
 
-  <joint name="odom_to_base_link" type="fixed">
-    <parent link="odom"/>
-    <child link="base_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+  <link name="zed2i_left_optical_frame"/>
+
+  <joint name="zed2i_optical_joint" type="fixed">
+    <parent link="zed2i_base_link"/>
+    <child link="zed2i_left_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
   </joint>
 
   <joint name="base_to_lidar" type="fixed">
