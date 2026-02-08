@@ -9,9 +9,10 @@ AegisController::AegisController(rclcpp::Node::SharedPtr node,
                                  bool& rawData_in,
                                  SystemStatus& sysStatus_in,
                                  HandshakeStatus& handStatus_in,
-                                 ErrorCode& errCode_in
+                                 ErrorCode& errCode_in,
+                                 std::function<void(bool)> callback
                                  )
-    : AegisBase(node, link_ref,  can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in)
+    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in, callback) // [Added] Pass to Base
 {
 }
 
@@ -56,6 +57,9 @@ void AegisController::onCanDataReceived(const CanDataPayload& payload) {
 void AegisController::onEnterState(SystemStatus state) {
     switch (state) {
         case PRIMARY:{
+            if (this->update_primary_state) {
+                this->update_primary_state(true); 
+            }
             if(checkAllMotorsInit()){
                 if(!motorsAuthorized){
                     enableMotorAuthorization();
@@ -64,9 +68,14 @@ void AegisController::onEnterState(SystemStatus state) {
             break;
         }
         case STANDBY:
-
+            if (this->update_primary_state) {
+                this->update_primary_state(false); 
+            }
             break;
         case PARTIAL_PRIMARY:{
+            if (this->update_primary_state) {
+                this->update_primary_state(true); 
+            }
             if(checkAllMotorsInit()){
                 if(!motorsAuthorized){
                     enableMotorAuthorization();
@@ -76,11 +85,17 @@ void AegisController::onEnterState(SystemStatus state) {
         }
 
         case PARTIAL_SECONDARY:
+            if (this->update_primary_state) {
+                this->update_primary_state(false); 
+            }
             // Auto-trigger the alert logic we discussed
             // alert_pilot("System degraded");
             break;
 
         case SINGLE_FC:{
+            if (this->update_primary_state) {
+                this->update_primary_state(true); 
+            }
             if(!motorsAuthorized){
                 enableMotorAuthorization();
             }

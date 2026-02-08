@@ -140,6 +140,7 @@ CanHeartbeatPayload orin_hb {0x01, 0, 0, 0};
 #define NANO_PORT 31340
 #define LOCAL_IP "127.0.0.1"
 #define REMOTE_IP "192.168.50.10"
+std::atomic<bool> is_primary {false};
 
 float voltage = 0.0f;
 float temperature = 0.0f;
@@ -234,6 +235,23 @@ void forceDataResync() {
     currents.fill(-1.0f);
 }
 
+void updatePrimaryState(bool state) {
+    RCLCPP_INFO(nodeHandle->get_logger(), "updatePrimaryState");
+    if (is_primary != state) {
+        if (state) {
+            RCLCPP_INFO(nodeHandle->get_logger(), "Role Switched: PRIMARY (Publishing enabled)");
+        }
+        else {
+            RCLCPP_INFO(nodeHandle->get_logger(), "Role Switched: SECONDARY (Publishing disabled)");
+        }
+        is_primary = state;
+    }
+}
+
+void primaryStateCallback(const std_msgs::msg::Bool::SharedPtr msg) {
+    updatePrimaryState(msg->data);
+}
+
 /**
  * @brief Serializes, checksums, and conditionally compresses a BinaryMessage before sending.
  * * This function first compresses the data. If the compressed size is smaller than
@@ -246,6 +264,8 @@ void forceDataResync() {
  * * @param message The BinaryMessage object to be sent.
  */
 void send(BinaryMessage message) {
+    if (!is_primary.load()) return;
+
     // 1. Get the raw bytes and apply the checksum.
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     checksum_encode(byteList);
@@ -724,13 +744,17 @@ int main(int argc, char **argv){
 
     robotName = utils::getParameter<std::string>(nodeHandle, "robot_name", "not named");
     debug = utils::getParameter<bool>(nodeHandle, "debug", false);
+    bool useLocal = utils::getParameter<bool>(nodeHandle, "local", false);
 
     nanoRemoteStatus.UP = false;
     nanoRemoteStatus.WIFI_UP = false;
     nanoRemoteStatus.CAN0_UP = false;
     nanoRemoteStatus.CAN1_UP = false;
 
-    nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, REMOTE_IP, ORIN_PORT);
+    if(useLocal)
+        nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, LOCAL_IP, ORIN_PORT);
+    else
+        nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, REMOTE_IP, ORIN_PORT);
     
     // 1. Initialize Heartbeat Link
     if (!nanoLink->init()) {
@@ -739,7 +763,7 @@ int main(int argc, char **argv){
     }
     nanoCanLink = std::make_unique<CanLink>();
     nanoController = std::make_shared<AegisNanoController>(
-        nodeHandle, *nanoLink, *nanoCanLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus, nanoHandshakeStatus, nanoErrorCode
+        nodeHandle, *nanoLink, *nanoCanLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus, nanoHandshakeStatus, nanoErrorCode, updatePrimaryState
     );
     using namespace std::placeholders;
     nanoLink->set_data_callback(
@@ -862,7 +886,7 @@ int main(int argc, char **argv){
 
     // Be open to the client's connection no matter what
     address.sin_family = AF_INET; 
-    address.sin_addr.s_addr = INADDR_ANY; 
+    inet_pton(AF_INET, "127.0.0.2", &address.sin_addr);
     address.sin_port = htons( PORT ); 
 
     // Bind the socket to the address, handling errors
@@ -877,7 +901,6 @@ int main(int argc, char **argv){
     broadcast=false;
 
     fcntl(server_fd, F_SETFL, O_NONBLOCK);
-
 
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
@@ -973,12 +996,34 @@ int main(int argc, char **argv){
                 messages::msg::KeyState keyState;
                 keyState.key=((uint16_t)message[1])<<8 | ((uint16_t)message[2]);
                 keyState.state=message[3];
+                RCLCPP_INFO(nodeHandle->get_logger(), "Current state: %d", (int)message[3]);
                 keyPublisher->publish(keyState);
-                if(keyState.key == 2){
-                    goPublisher->publish(empty);
-                }
-                if(keyState.key == 49 && keyState.state == 1){
-                    return 0;
+
+                // 0xFF52 = Up, 0xFF54 = Down, 0xFF51 = Left, 0xFF53 = Right
+                if (keyState.key == 105 || keyState.key == 107 || keyState.key == 106 || keyState.key == 108) {
+                    messages::msg::AxisState jkliAxis;
+                    jkliAxis.joystick = 0; // Simulate Joystick 0
+
+                    float val = (keyState.state != 0) ? 1.0f : 0.0f;
+
+                    if (keyState.key == 105) { // 'i' -> Forward (+Y)
+                        jkliAxis.axis = 1; 
+                        jkliAxis.state = val;
+                    } 
+                    else if (keyState.key == 107) { // 'k' -> Backward (-Y)
+                        jkliAxis.axis = 1;
+                        jkliAxis.state = -val;
+                    } 
+                    else if (keyState.key == 108) { // 'l' -> Right (+X)
+                        jkliAxis.axis = 0;
+                        jkliAxis.state = val;
+                    } 
+                    else if (keyState.key == 106) { // 'j' -> Left (-X)
+                        jkliAxis.axis = 0;
+                        jkliAxis.state = -val;
+                    }
+
+                    joystickAxisPublisher->publish(jkliAxis);
                 }
 		        //RCLCPP_INFO(nodeHandle->get_logger(),"key %d %d ", keyState.key , keyState.state);
             }

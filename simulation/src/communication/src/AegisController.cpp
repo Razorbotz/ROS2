@@ -9,9 +9,10 @@ AegisController::AegisController(rclcpp::Node::SharedPtr node,
                                  bool& rawData_in,
                                  SystemStatus& sysStatus_in,
                                  HandshakeStatus& handStatus_in,
-                                 ErrorCode& errCode_in
+                                 ErrorCode& errCode_in,
+                                 std::function<void(bool)> callback
                                  )
-    : AegisBase(node, link_ref,  can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in)
+    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in, callback) // [Added] Pass to Base
 {
 }
 
@@ -56,6 +57,9 @@ void AegisController::onCanDataReceived(const CanDataPayload& payload) {
 void AegisController::onEnterState(SystemStatus state) {
     switch (state) {
         case PRIMARY:{
+            if (this->update_primary_state) {
+                this->update_primary_state(true); 
+            }
             if(checkAllMotorsInit()){
                 if(!motorsAuthorized){
                     enableMotorAuthorization();
@@ -64,9 +68,14 @@ void AegisController::onEnterState(SystemStatus state) {
             break;
         }
         case STANDBY:
-
+            if (this->update_primary_state) {
+                this->update_primary_state(false); 
+            }
             break;
         case PARTIAL_PRIMARY:{
+            if (this->update_primary_state) {
+                this->update_primary_state(true); 
+            }
             if(checkAllMotorsInit()){
                 if(!motorsAuthorized){
                     enableMotorAuthorization();
@@ -76,11 +85,17 @@ void AegisController::onEnterState(SystemStatus state) {
         }
 
         case PARTIAL_SECONDARY:
+            if (this->update_primary_state) {
+                this->update_primary_state(false); 
+            }
             // Auto-trigger the alert logic we discussed
             // alert_pilot("System degraded");
             break;
 
         case SINGLE_FC:{
+            if (this->update_primary_state) {
+                this->update_primary_state(true); 
+            }
             if(!motorsAuthorized){
                 enableMotorAuthorization();
             }
@@ -201,13 +216,17 @@ void AegisController::advanceHandshake() {
             if (handshake_step == 0) {
                 alertMotorsDetected();
             }
-            if (handshake_step == 2) {
+            if(handshake_step == 2){
+                alertNodesDetected();
+            }
+            if (handshake_step == 4) {
                 enableMotorAuthorization();
                 sendAuth();
-                handshake_step = 3;
+                handshake_step = 5;
                 retry_timer.cancel();
                 retry_timer.start(50);
             }
+
             break;
 
     }
@@ -311,7 +330,14 @@ void AegisController::handleMotorStep(uint16_t id, bool& step_complete) {
         acknowledgeMotorsDetected();
         step_complete = true;
     }
-    else if (handshake_step == 3 && id == ID_CONFIRM_AUTH) {
+    else if (handshake_step == 2 && id == ID_NODES_ACK) {
+        step_complete = true;
+    }
+    else if (handshake_step == 3 && id == ID_NODES_INIT) {
+        acknowledgeNodesDetected();
+        step_complete = true;
+    }
+    else if (handshake_step == 5 && id == ID_CONFIRM_AUTH) {
         std::cout << "[Handshake] Complete!" << std::endl;
         handshakeStatus_ref = COMPLETE_HANDSHAKE;
         retry_timer.cancel();
@@ -323,6 +349,7 @@ void AegisController::handleMotorStep(uint16_t id, bool& step_complete) {
     }
 }
 
+// TODO: Add check for whether or not any motors are running
 bool AegisController::canTakeControl(){
 
     return true;

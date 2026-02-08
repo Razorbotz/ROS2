@@ -5,14 +5,15 @@
 class AegisNanoController : public AegisBase {
 public:
     AegisNanoController(rclcpp::Node::SharedPtr node, 
-                    HeartbeatLink& link_ref,  
+                    HeartbeatLink& link_ref, 
                     CanLink& can_ref,
                     std::mutex& mutex_ref, 
                     RemoteStatus& status_ref,
                     bool& sendRawData_ref,
                     SystemStatus& systemStatus_ref,
                     HandshakeStatus& handshakeStatus_ref,
-                    ErrorCode& errorCode_ref
+                    ErrorCode& errorCode_ref,
+                    std::function<void(bool)> callback = nullptr
                     );
 
     int handshake_step = 0;

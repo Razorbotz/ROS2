@@ -184,9 +184,11 @@ enum MessageIDs : uint16_t {
     ID_ETH_ACK_CHG      = 421,
     ID_MOTORS_INIT      = 422,
     ID_MOTORS_ACK       = 423,
-    ID_NODE_LOST        = 424,
-    ID_NODE_REGAINED    = 425,
-    ID_NODE_ACK_CHG     = 426,
+    ID_NODES_INIT       = 424,
+    ID_NODES_ACK        = 425,
+    ID_NODE_LOST        = 426,
+    ID_NODE_REGAINED    = 427,
+    ID_NODE_ACK_CHG     = 428,
 
     // --- 5xx System ---
     ID_SYS_SHUTDOWN     = 500,
@@ -200,9 +202,14 @@ struct MotorListPayload {
 };
 
 constexpr size_t MAX_MOTORS = 8; 
+constexpr size_t MAX_NODES = 12; 
 
 struct MotorAuthPayload {
     uint8_t motor_states[MAX_MOTORS]; 
+};
+
+struct NodeAuthPayload {
+    uint8_t node_states[MAX_NODES]; 
 };
 
 struct MotorSpeed {

@@ -140,6 +140,7 @@ CanHeartbeatPayload orin_hb {0x01, 0, 0, 0};
 #define NANO_PORT 31340
 #define LOCAL_IP "127.0.0.1"
 #define REMOTE_IP "192.168.50.10"
+std::atomic<bool> is_primary {false};
 
 float voltage = 0.0f;
 float temperature = 0.0f;
@@ -234,6 +235,23 @@ void forceDataResync() {
     currents.fill(-1.0f);
 }
 
+void updatePrimaryState(bool state) {
+    RCLCPP_INFO(nodeHandle->get_logger(), "updatePrimaryState");
+    if (is_primary != state) {
+        if (state) {
+            RCLCPP_INFO(nodeHandle->get_logger(), "Role Switched: PRIMARY (Publishing enabled)");
+        }
+        else {
+            RCLCPP_INFO(nodeHandle->get_logger(), "Role Switched: SECONDARY (Publishing disabled)");
+        }
+        is_primary = state;
+    }
+}
+
+void primaryStateCallback(const std_msgs::msg::Bool::SharedPtr msg) {
+    updatePrimaryState(msg->data);
+}
+
 /**
  * @brief Serializes, checksums, and conditionally compresses a BinaryMessage before sending.
  * * This function first compresses the data. If the compressed size is smaller than
@@ -246,6 +264,8 @@ void forceDataResync() {
  * * @param message The BinaryMessage object to be sent.
  */
 void send(BinaryMessage message) {
+    if (!is_primary.load()) return;
+
     // 1. Get the raw bytes and apply the checksum.
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     checksum_encode(byteList);
@@ -724,13 +744,17 @@ int main(int argc, char **argv){
 
     robotName = utils::getParameter<std::string>(nodeHandle, "robot_name", "not named");
     debug = utils::getParameter<bool>(nodeHandle, "debug", false);
+    bool useLocal = utils::getParameter<bool>(nodeHandle, "local", false);
 
     nanoRemoteStatus.UP = false;
     nanoRemoteStatus.WIFI_UP = false;
     nanoRemoteStatus.CAN0_UP = false;
     nanoRemoteStatus.CAN1_UP = false;
 
-    nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, REMOTE_IP, ORIN_PORT);
+    if(useLocal)
+        nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, LOCAL_IP, ORIN_PORT);
+    else
+        nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, REMOTE_IP, ORIN_PORT);
     
     // 1. Initialize Heartbeat Link
     if (!nanoLink->init()) {
@@ -739,7 +763,7 @@ int main(int argc, char **argv){
     }
     nanoCanLink = std::make_unique<CanLink>();
     nanoController = std::make_shared<AegisNanoController>(
-        nodeHandle, *nanoLink, *nanoCanLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus, nanoHandshakeStatus, nanoErrorCode
+        nodeHandle, *nanoLink, *nanoCanLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus, nanoHandshakeStatus, nanoErrorCode, updatePrimaryState
     );
     using namespace std::placeholders;
     nanoLink->set_data_callback(

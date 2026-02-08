@@ -8,24 +8,33 @@ AegisNanoController::AegisNanoController(rclcpp::Node::SharedPtr node,
                                  bool& rawData_in,
                                  SystemStatus& sysStatus_in,
                                  HandshakeStatus& handStatus_in,
-                                 ErrorCode& errCode_in
+                                 ErrorCode& errCode_in,
+                                 std::function<void(bool)> callback
                                  )
-    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in)
+    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in, callback) // [Added] Pass to Base
 {
 }
 
 void AegisNanoController::onEnterState(SystemStatus state) {
     switch (state) {
         case PRIMARY:{
+            if (this->update_primary_state) {
+                this->update_primary_state(true); 
+            }
             if(!motorsAuthorized){
                 enableMotorAuthorization();
             }
             break;
         }
         case STANDBY:
-
+            if (this->update_primary_state) {
+                this->update_primary_state(false); 
+            }
             break;
         case PARTIAL_PRIMARY:{
+            if (this->update_primary_state) {
+                this->update_primary_state(true); 
+            }
             if(!motorsAuthorized){
                 enableMotorAuthorization();
             }
@@ -33,11 +42,17 @@ void AegisNanoController::onEnterState(SystemStatus state) {
         }
 
         case PARTIAL_SECONDARY:
+            if (this->update_primary_state) {
+                this->update_primary_state(false); 
+            }
             // Auto-trigger the alert logic we discussed
             // alert_pilot("System degraded");
             break;
 
         case SINGLE_FC:{
+            if (this->update_primary_state) {
+                this->update_primary_state(true); 
+            }
             if(!motorsAuthorized){
                 enableMotorAuthorization();
             }
@@ -192,6 +207,9 @@ void AegisNanoController::advanceHandshake() {
             // FC2 -> FC1: 422 
             alertMotorsDetected();
         }
+        if (handshake_step == 3){
+            alertNodesDetected();
+        }
     }
     else if (handshakeStatus_ref == CONTROL_HANDSHAKE) {
         if (handshake_step == 0) {
@@ -325,8 +343,13 @@ void AegisNanoController::handleMotorAuth(uint16_t id, const uint8_t* data) {
     else if (handshake_step == 1 && id == ID_MOTORS_ACK) {
         handshake_step = 2;
     }
-    // Step 2: Final Authorization assignment
-    else if (handshake_step == 2 && id == ID_ASSIGN_AUTH) {
+    else if(handshake_step == 2 && id == ID_NODES_INIT){
+        acknowledgeNodesDetected();
+        handshake_step = 3;
+        advanceHandshake();
+    }
+    // Step 3: Final Authorization assignment
+    else if (handshake_step == 3 && id == ID_ASSIGN_AUTH) {
         auto* payload = reinterpret_cast<const MotorAuthPayload*>(data);
         processRemoteAuth(payload->motor_states);
         setAuthFromRemote(payload->motor_states);
