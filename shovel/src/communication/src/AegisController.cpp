@@ -822,6 +822,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             requestStateTransition(SINGLE_FC);
             RCLCPP_WARN(nodeHandle->get_logger(), "Nano shutting down");
             alertedRemoteMotors = false;
+            alertedRemoteNodes = false;
             break;
             
         case ID_SYS_BOOT_OK: {

@@ -823,6 +823,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             }
             requestStateTransition(SINGLE_FC);
             alertedRemoteMotors = false;
+            alertedRemoteNodes = false;
             RCLCPP_WARN(nodeHandle->get_logger(), "Orin shutting down");
             break;
             

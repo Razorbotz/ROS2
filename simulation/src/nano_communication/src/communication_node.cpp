@@ -61,6 +61,12 @@ bool broadcast=true;
 
 std::atomic<uint32_t> global_seq{0};
 std::atomic<uint64_t> last_ros_update_time {0};
+std::atomic<uint64_t> last_client_tx_time_ms {0};
+
+uint64_t get_time_ms() {
+    using namespace std::chrono;
+    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
+}
 
 /** @file
  * @brief Node for handling communication between the client and the rover.
@@ -112,7 +118,6 @@ bool init = false;
 #define LOWER_THRESH 67
 #define UPPER_THRESH 80
 #define CRIT_THRESH 90
-
 
 Falcon falcon1, falcon2, falcon3, falcon4;
 Talon talon1, talon2, talon3, talon4;
@@ -266,6 +271,8 @@ void primaryStateCallback(const std_msgs::msg::Bool::SharedPtr msg) {
 void send(BinaryMessage message) {
     if (!is_primary.load()) return;
 
+    RCLCPP_INFO(nodeHandle->get_logger(), "Sending message");
+
     // 1. Get the raw bytes and apply the checksum.
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     checksum_encode(byteList);
@@ -318,9 +325,18 @@ void send(BinaryMessage message) {
     try {
         if (payload.empty()) return;
         sendto(new_socket, payload.data(), payload.size(), 0, (struct sockaddr *)&address, addrlen);
+        last_client_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed);
     } catch (...) {
         RCLCPP_ERROR(nodeHandle->get_logger(), "ERROR: Exception when trying to send data to client");
     }
+}
+
+static void sendClientHeartbeat() {
+    if (new_socket <= 0) return;
+    if (broadcast) return;
+    const uint8_t hb[1] = {0};
+    sendto(new_socket, hb, sizeof(hb), 0, (struct sockaddr *)&address, addrlen);
+    last_client_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed);
 }
 
 void send(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr falconStatus, Falcon& falcon) {
@@ -707,11 +723,6 @@ void broadcastIP(){
     }
 }
 
-uint64_t get_time_ms() {
-    using namespace std::chrono;
-    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
-}
-
 //HeartbeatLink hb_link(31339, "10.42.0.2", 31339);
 std::thread comms_thread;
 std::atomic<bool> node_running {true};
@@ -899,6 +910,7 @@ int main(int argc, char **argv){
     sendto(server_fd, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
     silentRunning=true;
     broadcast=false;
+    last_client_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed); 
 
     fcntl(server_fd, F_SETFL, O_NONBLOCK);
 
@@ -907,6 +919,7 @@ int main(int argc, char **argv){
     rclcpp::Rate rate(120);
     bool isClientConnected = true;
     auto previousHeartbeat = std::chrono::high_resolution_clock::now();
+    auto previousReset = std::chrono::high_resolution_clock::now();
     
     while(rclcpp::ok()){
         if (!nanoLink->is_remote_alive()) {
@@ -937,6 +950,7 @@ int main(int argc, char **argv){
                 std::string hello("Hello from server");
                 sendto(server_fd, hello.c_str(), hello.length(), 0, (struct sockaddr *)&address, addrlen);
                 broadcast = false;
+                last_client_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed);
                 messageBytesList.clear();
                 forceDataResync();
             }
@@ -951,6 +965,17 @@ int main(int argc, char **argv){
                 silentRunning = true;
                 broadcast = true;
                 std::cout << "silentRunning " << silentRunning << std::endl;
+            }
+            elapsed = now - previousReset;
+            if(elapsed.count() > 5){
+                forceDataResync();
+                previousReset = now;
+            }
+            uint64_t now_ms = get_time_ms();
+            uint64_t last_tx = last_client_tx_time_ms.load(std::memory_order_relaxed);
+            if (last_tx == 0) last_client_tx_time_ms.store(now_ms, std::memory_order_relaxed);
+            if (now_ms - last_tx > 500) {
+                sendClientHeartbeat();
             }
         }
 
@@ -996,7 +1021,6 @@ int main(int argc, char **argv){
                 messages::msg::KeyState keyState;
                 keyState.key=((uint16_t)message[1])<<8 | ((uint16_t)message[2]);
                 keyState.state=message[3];
-                RCLCPP_INFO(nodeHandle->get_logger(), "Current state: %d", (int)message[3]);
                 keyPublisher->publish(keyState);
 
                 // 0xFF52 = Up, 0xFF54 = Down, 0xFF51 = Left, 0xFF53 = Right

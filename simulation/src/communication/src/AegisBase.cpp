@@ -319,6 +319,7 @@ void AegisBase::queryControl(){
         if(systemStatus_ref == STANDBY){
             requestStateTransition(SINGLE_FC);
             alertedRemoteMotors = false;
+            alertedRemoteNodes = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
             alertSystemStatusChange();
@@ -836,6 +837,7 @@ void AegisBase::checkMotorControlStatus(){
         if(remoteStatus.UP == false){
             requestStateTransition(SINGLE_FC);
             alertedRemoteMotors = false;
+            alertedRemoteNodes = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
         }
@@ -855,6 +857,7 @@ void AegisBase::applyRemoteAlivePolicy() {
             handshakeStatus_ref = IDLE_HANDSHAKE;
             requestStateTransition(SINGLE_FC);
             alertedRemoteMotors = false;
+            alertedRemoteNodes = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
         }
