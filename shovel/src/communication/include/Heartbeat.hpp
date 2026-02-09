@@ -189,6 +189,8 @@ enum MessageIDs : uint16_t {
     ID_NODE_LOST        = 426,
     ID_NODE_REGAINED    = 427,
     ID_NODE_ACK_CHG     = 428,
+    ID_CONN_CHG         = 429,
+    ID_CONN_CHG_ACK     = 430,
 
     // --- 5xx System ---
     ID_SYS_SHUTDOWN     = 500,
@@ -276,6 +278,7 @@ struct RemoteStatus {
     bool WIFI_UP;
     bool CAN0_UP;
     bool CAN1_UP;
+    bool CONNECTED;
     SystemStatus STATUS;
 };
 

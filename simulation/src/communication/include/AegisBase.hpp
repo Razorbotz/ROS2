@@ -31,7 +31,7 @@ protected:
     HandshakeStatus& handshakeStatus_ref;
     ErrorCode& errorCode_ref;
     std::atomic<uint64_t> last_can_rx_time {0};
-    std::function<void(bool)> update_primary_state;
+    std::function<void(bool)> update_sender_state;
     
     // This is used to track whether the controller has authorization
     // to control the motor
@@ -55,6 +55,7 @@ protected:
     bool boot_checks_passed = false;
     std::atomic<bool> remote_shutdown_latched{false};
     std::array<float, MAX_MOTOR_ID> motor_speeds;
+    bool connectedToClient = false;
 
     SimpleTimer motor10NodeTimer;
     bool motor10NodeActive = false;
@@ -98,7 +99,7 @@ public:
               std::function<void(bool)> callback = nullptr)
             : nodeHandle(node), hb_link(link), can_link(c_link), comms_mutex(mutex), remoteStatus(r_status),
             sendRawData_ref(raw_data), systemStatus_ref(sys_status), handshakeStatus_ref(hand_status), 
-            errorCode_ref(error_code), update_primary_state(callback){
+            errorCode_ref(error_code), update_sender_state(callback){
             auth_table.fill(false);
             can0_table.fill(false);
             can1_table.fill(false);
@@ -137,6 +138,7 @@ public:
     void receivedStatusMonitor();
     void receivedVideoStream();
     void receivedZedTracking();
+    void updateConnectionStatus(bool connected);
 
     // 000s
     void sendSpeedMessage();
@@ -189,6 +191,8 @@ public:
     void alertLostNode(uint8_t node_lost);
     void alertRegainedNode(uint8_t node_regained);
     void acknowledgeNodeChange();
+    void alertConnectionChange();
+    void acknowledgeConnectionChange();
 
     // 500s
     void alertSystemShutdown();

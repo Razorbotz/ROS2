@@ -57,8 +57,13 @@ void AegisController::onCanDataReceived(const CanDataPayload& payload) {
 void AegisController::onEnterState(SystemStatus state) {
     switch (state) {
         case PRIMARY:{
-            if (this->update_primary_state) {
-                this->update_primary_state(true); 
+            if (this->update_sender_state) {
+                if(remoteStatus.CONNECTED && !connectedToClient){
+                    this->update_sender_state(false);
+                }
+                else{
+                    this->update_sender_state(true); 
+                }
             }
             if(checkAllMotorsInit()){
                 if(!motorsAuthorized){
@@ -68,13 +73,23 @@ void AegisController::onEnterState(SystemStatus state) {
             break;
         }
         case STANDBY:
-            if (this->update_primary_state) {
-                this->update_primary_state(false); 
+            if (this->update_sender_state) {
+                if(remoteStatus.CONNECTED){
+                    this->update_sender_state(false); 
+                }
+                else{
+                    this->update_sender_state(true); 
+                }
             }
             break;
         case PARTIAL_PRIMARY:{
-            if (this->update_primary_state) {
-                this->update_primary_state(true); 
+            if (this->update_sender_state) {
+                if(remoteStatus.CONNECTED && !connectedToClient){
+                    this->update_sender_state(false);
+                }
+                else{
+                    this->update_sender_state(true); 
+                }
             }
             if(checkAllMotorsInit()){
                 if(!motorsAuthorized){
@@ -85,16 +100,21 @@ void AegisController::onEnterState(SystemStatus state) {
         }
 
         case PARTIAL_SECONDARY:
-            if (this->update_primary_state) {
-                this->update_primary_state(false); 
+            if (this->update_sender_state) {
+                if(remoteStatus.CONNECTED){
+                    this->update_sender_state(false); 
+                }
+                else{
+                    this->update_sender_state(true); 
+                }
             }
             // Auto-trigger the alert logic we discussed
             // alert_pilot("System degraded");
             break;
 
         case SINGLE_FC:{
-            if (this->update_primary_state) {
-                this->update_primary_state(true); 
+            if (this->update_sender_state) {
+                this->update_sender_state(true); 
             }
             if(!motorsAuthorized){
                 enableMotorAuthorization();
@@ -808,6 +828,27 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         }
 
         case ID_NODE_ACK_CHG: {
+            break;
+        }
+
+        case ID_CONN_CHG: {
+            const bool* payload = reinterpret_cast<const bool*>(data);
+            remoteStatus.CONNECTED = payload;
+            if(this->update_sender_state){
+                if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY 
+                || systemStatus_ref == SINGLE_FC){
+                    this->update_sender_state(true);
+                }
+                else{
+                    this->update_sender_state(false);
+                }
+            }
+            acknowledgeConnectionChange();
+            break;
+        }
+
+        case ID_CONN_CHG_ACK: {
+            
             break;
         }
 

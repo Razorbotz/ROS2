@@ -141,7 +141,7 @@ CanHeartbeatPayload nano_hb {0x02, 0, 0, 0};
 #define NANO_PORT 31340
 #define LOCAL_IP "127.0.0.1"
 #define REMOTE_IP "192.168.50.11"
-std::atomic<bool> is_primary {true};
+std::atomic<bool> is_sender {false};
 
 float voltage = 0.0f;
 float temperature = 0.0f;
@@ -240,20 +240,20 @@ void forceDataResync() {
     currents.fill(-1.0f);
 }
 
-void updatePrimaryState(bool state) {
-    if (is_primary != state) {
+void updateSenderState(bool state) {
+    if (is_sender != state) {
         if (state) {
             RCLCPP_INFO(nodeHandle->get_logger(), "Role Switched: PRIMARY (Publishing enabled)");
         }
         else {
             RCLCPP_INFO(nodeHandle->get_logger(), "Role Switched: SECONDARY (Publishing disabled)");
         }
-        is_primary = state;
+        is_sender = state;
     }
 }
 
 void primaryStateCallback(const std_msgs::msg::Bool::SharedPtr msg) {
-    updatePrimaryState(msg->data);
+    updateSenderState(msg->data);
 }
 
 /**
@@ -268,7 +268,7 @@ void primaryStateCallback(const std_msgs::msg::Bool::SharedPtr msg) {
  * * @param message The BinaryMessage object to be sent.
  */
 void send(BinaryMessage message) {
-    if (!is_primary.load()) return;
+    if (!is_sender.load()) return;
 
     // 1. Get the raw bytes and apply the checksum.
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
@@ -775,7 +775,7 @@ int main(int argc, char **argv){
     }
     orinCanLink = std::make_unique<CanLink>();
     orinController = std::make_shared<AegisController>(
-        nodeHandle, *orinLink, *orinCanLink, orinMutex, orinRemoteStatus, orinRawData, orinSysStatus, orinHandshakeStatus, orinErrorCode, updatePrimaryState
+        nodeHandle, *orinLink, *orinCanLink, orinMutex, orinRemoteStatus, orinRawData, orinSysStatus, orinHandshakeStatus, orinErrorCode, updateSenderState
     );
     using namespace std::placeholders;
     orinLink->set_data_callback(
@@ -919,7 +919,7 @@ int main(int argc, char **argv){
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
     rclcpp::Rate rate(120);
-    bool isClientConnected = true;
+    bool isClientConnected = false;
     auto previousHeartbeat = std::chrono::high_resolution_clock::now();
     auto previousReset = std::chrono::high_resolution_clock::now();
     
@@ -948,6 +948,7 @@ int main(int argc, char **argv){
             if (!isClientConnected) {
                 RCLCPP_INFO(nodeHandle->get_logger(), "New client connected. Sending greeting.");
                 isClientConnected = true;
+                orinController->updateConnectionStatus(isClientConnected);
                 previousHeartbeat = std::chrono::high_resolution_clock::now();
                 std::string hello("Hello from server");
                 sendto(server_fd, hello.c_str(), hello.length(), 0, (struct sockaddr *)&address, addrlen);
@@ -963,6 +964,7 @@ int main(int argc, char **argv){
 
             if (elapsed.count() > 5.0) {
                 isClientConnected = false;
+                orinController->updateConnectionStatus(isClientConnected);
                 RCLCPP_INFO(nodeHandle->get_logger(), "Client disconnected");
                 silentRunning = true;
                 broadcast = true;
