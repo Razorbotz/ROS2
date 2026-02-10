@@ -20,3 +20,8 @@ shovel/install
 shovel/build
 shovel/log
 shovel/launch/__pycache__
+
+simulation/build
+simulation/install
+simulation/log
+simulation/launch/__pycache__
