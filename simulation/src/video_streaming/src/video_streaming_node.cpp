@@ -74,6 +74,14 @@ rclcpp::Time last_zed_stamp, last_rs_stamp;
 bool showIntel = false;
 static const int INTEL_THRESHOLD = 400;
 
+std::atomic<uint64_t> last_video_tx_time_ms {0};
+static std::atomic<bool> force_idr_next{false};
+
+uint64_t get_time_ms() {
+    using namespace std::chrono;
+    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
+}
+
 // -------------------- UDP Chunking Helper --------------------
 
 bool send_udp_frame_chunked(int sock,
@@ -105,6 +113,7 @@ bool send_udp_frame_chunked(int sock,
         memcpy(packet, &header, sizeof(header));
         memcpy(packet + sizeof(header), data + offset, bytes_to_send);
 
+        last_video_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed);
         sendto(sock, packet, sizeof(header) + bytes_to_send, 0, dest_addr, addrlen);
 
         offset += bytes_to_send;
@@ -160,6 +169,8 @@ bool initialize_h264_encoder(int width, int height)
     av_opt_set_int(h264_ctx->priv_data, "crf", 26, 0);
     av_opt_set_int(h264_ctx->priv_data, "slice-max-size", 1200, 0);
     av_opt_set_int(h264_ctx->priv_data, "forced-idr", 1, 0);
+    av_opt_set_int(h264_ctx->priv_data, "repeat-headers", 1, 0); // SPS/PPS before keyframes
+    av_opt_set_int(h264_ctx->priv_data, "aud", 1, 0);
 
     if (avcodec_open2(h264_ctx, codec, nullptr) < 0) {
         RCLCPP_ERROR(nodeHandle->get_logger(), "Could not open H.264 codec.");
@@ -315,6 +326,15 @@ void send_zed_frame()
 
         video_frame->pts = frame_pts++;
 
+        // Force an IDR immediately after a client (re)connect so decoding can start cleanly.
+        if (force_idr_next.exchange(false, std::memory_order_relaxed)) {
+            video_frame->pict_type = AV_PICTURE_TYPE_I;
+            video_frame->key_frame = 1;
+        } else {
+            video_frame->pict_type = AV_PICTURE_TYPE_NONE;
+            video_frame->key_frame = 0;
+        }
+
         if (avcodec_send_frame(h264_ctx, video_frame) < 0) {
             RCLCPP_WARN(nodeHandle->get_logger(), "H.264 send_frame error.");
             return;
@@ -416,6 +436,12 @@ void broadcastIP() {
     close(socketDescriptor);
 }
 
+static void sendVideoHeartbeat(int sock, const struct sockaddr* dest_addr, socklen_t addrlen) {
+    const uint8_t hb[1] = {0};
+    sendto(sock, hb, sizeof(hb), 0, dest_addr, addrlen);
+    last_video_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed);
+}
+
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
 
@@ -495,6 +521,15 @@ int main(int argc, char **argv){
             if (received_str == "Hello Robot") {
                 std::string reply("Hello from server");
                 sendto(server_fd, reply.c_str(), reply.length(), 0, (struct sockaddr *)&client_addr, client_addr_len);
+
+                {
+                    std::lock_guard<std::mutex> enc_lk(encoder_mutex);
+                    cleanup_h264_encoder();
+                    frame_pts = 0;
+                    force_idr_next.store(true, std::memory_order_relaxed);
+                }
+
+                last_video_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed);
                 if (!client_connected) {
                     char client_ip[INET_ADDRSTRLEN];
                     inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
@@ -519,6 +554,15 @@ int main(int argc, char **argv){
            client_connected = false;
            videoStreaming = false;
            broadcast = true;
+        }
+
+        if (client_connected) {
+            uint64_t now_ms = get_time_ms();
+            uint64_t last_tx = last_video_tx_time_ms.load(std::memory_order_relaxed);
+            if (last_tx == 0) last_video_tx_time_ms.store(now_ms, std::memory_order_relaxed);
+            if (now_ms - last_tx > 500) {
+                sendVideoHeartbeat(server_fd, (struct sockaddr *)&client_addr, client_addr_len);
+            }
         }
 
         while(messageBytesList.size()>0 && messageBytesList.front()<=messageBytesList.size()){

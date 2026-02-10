@@ -18,6 +18,7 @@ find_package(ZLIB REQUIRED)
 
 include_directories(
         include
+        ../communication/include
 )
 
 add_executable(${PROJECT_NAME}_node
