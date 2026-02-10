@@ -410,8 +410,16 @@ void AegisBase::alertSystemStatusChange(bool verbose){
         std::cout << "SystemStatus: " << (int)systemStatus_ref << std::endl;
     }
 
-    uint8_t msg = systemStatus_ref;
-    hb_link.send_data(211, &msg, sizeof(msg));
+    RemoteStatus status; 
+
+    status.UP = true;
+    status.WIFI_UP = wifi_up;
+    status.CAN0_UP = can0_up;
+    status.CAN1_UP = can1_up;
+    status.CONNECTED = connectedToClient;
+    status.STATUS = systemStatus_ref;
+
+    hb_link.send_data(211, &status, sizeof(status));
 }
 
 // ID 212

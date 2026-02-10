@@ -55,6 +55,10 @@ protected:
     bool boot_checks_passed = false;
     std::atomic<bool> remote_shutdown_latched{false};
     std::array<float, MAX_MOTOR_ID> motor_speeds;
+
+    bool wifi_up = true;
+    bool can0_up = false;
+    bool can1_up = false;
     bool connectedToClient = false;
 
     SimpleTimer motor10NodeTimer;
