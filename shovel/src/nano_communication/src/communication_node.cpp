@@ -61,6 +61,7 @@ bool broadcast=true;
 
 std::atomic<uint32_t> global_seq{0};
 std::atomic<uint64_t> last_ros_update_time {0};
+std::atomic<uint64_t> last_client_tx_time_ms {0};
 
 /** @file
  * @brief Node for handling communication between the client and the rover.
@@ -140,11 +141,16 @@ CanHeartbeatPayload orin_hb {0x01, 0, 0, 0};
 #define NANO_PORT 31340
 #define LOCAL_IP "127.0.0.1"
 #define REMOTE_IP "192.168.50.10"
+std::atomic<bool> is_sender {false};
 
 float voltage = 0.0f;
 float temperature = 0.0f;
 std::array<float, 16> currents{};
 
+uint64_t get_time_ms() {
+    using namespace std::chrono;
+    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
+}
 
 /** * @brief Resets all internal state trackers to impossible values.
  * * This forces the 'update_if_changed' logic to detect a difference 
@@ -234,6 +240,23 @@ void forceDataResync() {
     currents.fill(-1.0f);
 }
 
+void updateSenderState(bool state) {
+    RCLCPP_INFO(nodeHandle->get_logger(), "updateSenderState");
+    if (is_sender != state) {
+        if (state) {
+            RCLCPP_INFO(nodeHandle->get_logger(), "Role Switched: PRIMARY (Publishing enabled)");
+        }
+        else {
+            RCLCPP_INFO(nodeHandle->get_logger(), "Role Switched: SECONDARY (Publishing disabled)");
+        }
+        is_sender = state;
+    }
+}
+
+void primaryStateCallback(const std_msgs::msg::Bool::SharedPtr msg) {
+    updateSenderState(msg->data);
+}
+
 /**
  * @brief Serializes, checksums, and conditionally compresses a BinaryMessage before sending.
  * * This function first compresses the data. If the compressed size is smaller than
@@ -246,6 +269,8 @@ void forceDataResync() {
  * * @param message The BinaryMessage object to be sent.
  */
 void send(BinaryMessage message) {
+    if (!is_sender.load()) return;
+
     // 1. Get the raw bytes and apply the checksum.
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
     checksum_encode(byteList);
@@ -298,9 +323,18 @@ void send(BinaryMessage message) {
     try {
         if (payload.empty()) return;
         sendto(new_socket, payload.data(), payload.size(), 0, (struct sockaddr *)&address, addrlen);
+        last_client_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed);
     } catch (...) {
         RCLCPP_ERROR(nodeHandle->get_logger(), "ERROR: Exception when trying to send data to client");
     }
+}
+
+static void sendClientHeartbeat() {
+    if (new_socket <= 0) return;
+    if (broadcast) return;
+    const uint8_t hb[1] = {0};
+    sendto(new_socket, hb, sizeof(hb), 0, (struct sockaddr *)&address, addrlen);
+    last_client_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed);
 }
 
 void send(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr falconStatus, Falcon& falcon) {
@@ -687,11 +721,6 @@ void broadcastIP(){
     }
 }
 
-uint64_t get_time_ms() {
-    using namespace std::chrono;
-    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
-}
-
 //HeartbeatLink hb_link(31339, "10.42.0.2", 31339);
 std::thread comms_thread;
 std::atomic<bool> node_running {true};
@@ -724,13 +753,17 @@ int main(int argc, char **argv){
 
     robotName = utils::getParameter<std::string>(nodeHandle, "robot_name", "not named");
     debug = utils::getParameter<bool>(nodeHandle, "debug", false);
+    bool useLocal = utils::getParameter<bool>(nodeHandle, "local", false);
 
     nanoRemoteStatus.UP = false;
     nanoRemoteStatus.WIFI_UP = false;
     nanoRemoteStatus.CAN0_UP = false;
     nanoRemoteStatus.CAN1_UP = false;
 
-    nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, REMOTE_IP, ORIN_PORT);
+    if(useLocal)
+        nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, LOCAL_IP, ORIN_PORT);
+    else
+        nanoLink = std::make_unique<HeartbeatLink>(NANO_PORT, REMOTE_IP, ORIN_PORT);
     
     // 1. Initialize Heartbeat Link
     if (!nanoLink->init()) {
@@ -739,7 +772,7 @@ int main(int argc, char **argv){
     }
     nanoCanLink = std::make_unique<CanLink>();
     nanoController = std::make_shared<AegisNanoController>(
-        nodeHandle, *nanoLink, *nanoCanLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus, nanoHandshakeStatus, nanoErrorCode
+        nodeHandle, *nanoLink, *nanoCanLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus, nanoHandshakeStatus, nanoErrorCode, updateSenderState
     );
     using namespace std::placeholders;
     nanoLink->set_data_callback(
@@ -875,6 +908,7 @@ int main(int argc, char **argv){
     sendto(server_fd, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
     silentRunning=true;
     broadcast=false;
+    last_client_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed); 
 
     fcntl(server_fd, F_SETFL, O_NONBLOCK);
 
@@ -882,8 +916,9 @@ int main(int argc, char **argv){
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
     rclcpp::Rate rate(120);
-    bool isClientConnected = true;
+    bool isClientConnected = false;
     auto previousHeartbeat = std::chrono::high_resolution_clock::now();
+    auto previousReset = std::chrono::high_resolution_clock::now();
     
     while(rclcpp::ok()){
         if (!nanoLink->is_remote_alive()) {
@@ -910,9 +945,11 @@ int main(int argc, char **argv){
             if (!isClientConnected) {
                 RCLCPP_INFO(nodeHandle->get_logger(), "New client connected. Sending greeting.");
                 isClientConnected = true;
+                nanoController->updateConnectionStatus(isClientConnected);
                 previousHeartbeat = std::chrono::high_resolution_clock::now();
                 std::string hello("Hello from server");
                 sendto(server_fd, hello.c_str(), hello.length(), 0, (struct sockaddr *)&address, addrlen);
+                last_client_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed);
                 broadcast = false;
                 messageBytesList.clear();
                 forceDataResync();
@@ -924,10 +961,22 @@ int main(int argc, char **argv){
 
             if (elapsed.count() > 5.0) {
                 isClientConnected = false;
+                nanoController->updateConnectionStatus(isClientConnected);
                 RCLCPP_INFO(nodeHandle->get_logger(), "Client disconnected");
                 silentRunning = true;
                 broadcast = true;
                 std::cout << "silentRunning " << silentRunning << std::endl;
+            }
+            elapsed = now - previousReset;
+            if(elapsed.count() > 5){
+                forceDataResync();
+                previousReset = now;
+            }
+            uint64_t now_ms = get_time_ms();
+            uint64_t last_tx = last_client_tx_time_ms.load(std::memory_order_relaxed);
+            if (last_tx == 0) last_client_tx_time_ms.store(now_ms, std::memory_order_relaxed);
+            if (now_ms - last_tx > 500) {
+                sendClientHeartbeat();
             }
         }
 

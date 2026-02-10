@@ -8,24 +8,43 @@ AegisNanoController::AegisNanoController(rclcpp::Node::SharedPtr node,
                                  bool& rawData_in,
                                  SystemStatus& sysStatus_in,
                                  HandshakeStatus& handStatus_in,
-                                 ErrorCode& errCode_in
+                                 ErrorCode& errCode_in,
+                                 std::function<void(bool)> callback
                                  )
-    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in)
+    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in, callback) // [Added] Pass to Base
 {
 }
 
 void AegisNanoController::onEnterState(SystemStatus state) {
     switch (state) {
         case PRIMARY:{
+            if (this->update_sender_state) {
+                this->update_sender_state(true); 
+            }
             if(!motorsAuthorized){
                 enableMotorAuthorization();
             }
             break;
         }
         case STANDBY:
-
+            if (this->update_sender_state) {
+                if(remoteStatus.CONNECTED){
+                    this->update_sender_state(false); 
+                }
+                else{
+                    this->update_sender_state(true); 
+                }
+            }
             break;
         case PARTIAL_PRIMARY:{
+            if (this->update_sender_state) {
+                if(remoteStatus.CONNECTED && !connectedToClient){
+                    this->update_sender_state(false);
+                }
+                else{
+                    this->update_sender_state(true); 
+                }
+            }
             if(!motorsAuthorized){
                 enableMotorAuthorization();
             }
@@ -33,11 +52,27 @@ void AegisNanoController::onEnterState(SystemStatus state) {
         }
 
         case PARTIAL_SECONDARY:
+            if (this->update_sender_state) {
+                if(remoteStatus.CONNECTED){
+                    this->update_sender_state(false); 
+                }
+                else{
+                    this->update_sender_state(true); 
+                }
+            }
             // Auto-trigger the alert logic we discussed
             // alert_pilot("System degraded");
             break;
 
         case SINGLE_FC:{
+            if (this->update_sender_state) {
+                this->update_sender_state(true); 
+            }
+            remoteStatus.CONNECTED = false;
+            remoteStatus.UP = false;
+            remoteStatus.WIFI_UP = false;
+            remoteStatus.CAN0_UP = false;
+            remoteStatus.CAN1_UP = false;
             if(!motorsAuthorized){
                 enableMotorAuthorization();
             }
@@ -272,7 +307,9 @@ void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* dat
 }
 
 void AegisNanoController::handleSystemStatusOverride(const uint8_t* data) {
-    remoteStatus.STATUS = (SystemStatus)data[0];
+    RemoteStatus remoteStatus{};
+    std::memcpy(&remoteStatus, data, sizeof(RemoteStatus));
+    uint8_t status = remoteStatus.STATUS;
     acknowledgeSystemStatusChange(false); // 212
 
     if (handshakeStatus_ref != CONTROL_HANDSHAKE) return;
@@ -574,8 +611,22 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
         case ID_SYS_STATUS_CHG: {
             // Change in SystemStatus
             bool error = false;
-            uint8_t status = data[0];
-            remoteStatus.STATUS = (SystemStatus)status;
+            RemoteStatus remoteStatus{};
+            if (len < sizeof(RemoteStatus)) {
+                RCLCPP_WARN(nodeHandle->get_logger(),
+                            "SYS_STATUS_CHG payload too small: %zu < %zu",
+                            len, sizeof(RemoteStatus));
+                break;
+            }
+            std::memcpy(&remoteStatus, data, sizeof(RemoteStatus));
+            uint8_t status = remoteStatus.STATUS;
+
+            RCLCPP_INFO(nodeHandle->get_logger(), "remoteStatus.STATUS: %d", remoteStatus.STATUS);
+            RCLCPP_INFO(nodeHandle->get_logger(), "remoteStatus.WIFI_UP: %d", remoteStatus.WIFI_UP);
+            RCLCPP_INFO(nodeHandle->get_logger(), "remoteStatus.CAN0_UP: %d", remoteStatus.CAN0_UP);
+            RCLCPP_INFO(nodeHandle->get_logger(), "remoteStatus.CAN1_UP: %d", remoteStatus.CAN1_UP);
+            RCLCPP_INFO(nodeHandle->get_logger(), "remoteStatus.CONNECTED: %d", remoteStatus.CONNECTED);
+
             if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
                 if(status == PRIMARY || status == PARTIAL_PRIMARY){
                     error = true;
@@ -796,7 +847,52 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             }
             break;
         }
+
+        case ID_NODES_INIT: {
+
+            break;
+        }
+
+        case ID_NODES_ACK: {
+            break;
+        }
         
+        case ID_NODE_LOST: {
+
+            break;
+        }
+
+        case ID_NODE_REGAINED: {
+
+            break;
+        }
+
+        case ID_NODE_ACK_CHG: {
+
+            break;
+        }
+        
+        case ID_CONN_CHG: {
+            bool value;
+            std::memcpy(&value, data, sizeof(bool));
+            remoteStatus.CONNECTED = value;
+            if(this->update_sender_state){
+                if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY 
+                || systemStatus_ref == SINGLE_FC || !remoteStatus.CONNECTED){
+                    this->update_sender_state(true);
+                }
+                else{
+                    this->update_sender_state(false);
+                }
+            }
+            acknowledgeConnectionChange();
+            break;
+        }
+
+        case ID_CONN_CHG_ACK: {
+            
+            break;
+        }
 
         // --- System & Critical Hardware --- 
         case ID_SYS_SHUTDOWN:
@@ -808,6 +904,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             }
             requestStateTransition(SINGLE_FC);
             alertedRemoteMotors = false;
+            alertedRemoteNodes = false;
             RCLCPP_WARN(nodeHandle->get_logger(), "Orin shutting down");
             break;
             

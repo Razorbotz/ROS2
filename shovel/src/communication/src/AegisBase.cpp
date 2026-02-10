@@ -187,6 +187,20 @@ void AegisBase::receivedZedTracking(){
     zedTrackingNodeActive = true;
 }
 
+void AegisBase::updateConnectionStatus(bool connected){
+    connectedToClient = connected;
+    if(this->update_sender_state){
+        if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY 
+        || systemStatus_ref == SINGLE_FC){
+            this->update_sender_state(true);
+        }
+        else{
+            this->update_sender_state(false);
+        }
+    }
+    alertConnectionChange();
+}
+
 void AegisBase::checkNodeTimers(){
     if(motor10NodeTimer.isExpired()){
         motor10NodeActive = false;
@@ -319,6 +333,7 @@ void AegisBase::queryControl(){
         if(systemStatus_ref == STANDBY){
             requestStateTransition(SINGLE_FC);
             alertedRemoteMotors = false;
+            alertedRemoteNodes = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
             alertSystemStatusChange();
@@ -395,8 +410,16 @@ void AegisBase::alertSystemStatusChange(bool verbose){
         std::cout << "SystemStatus: " << (int)systemStatus_ref << std::endl;
     }
 
-    uint8_t msg = systemStatus_ref;
-    hb_link.send_data(211, &msg, sizeof(msg));
+    RemoteStatus status; 
+
+    status.UP = true;
+    status.WIFI_UP = wifi_up;
+    status.CAN0_UP = can0_up;
+    status.CAN1_UP = can1_up;
+    status.CONNECTED = connectedToClient;
+    status.STATUS = systemStatus_ref;
+
+    hb_link.send_data(211, &status, sizeof(status));
 }
 
 // ID 212
@@ -594,12 +617,22 @@ void AegisBase::alertLostNode(uint8_t node_lost){
 void AegisBase::alertRegainedNode(uint8_t node_regained){
     if(!checkRemoteAlive()) return;
     uint8_t msg = node_regained;
-    hb_link.send_data(427, &node_regained, sizeof(node_regained));
+    hb_link.send_data(427, &msg, sizeof(msg));
 }
 
 // ID 428
 void AegisBase::acknowledgeNodeChange(){
     hb_link.send_data(428, "", 0);
+}
+
+void AegisBase::alertConnectionChange(){
+    if(!checkRemoteAlive()) return;
+    bool msg = connectedToClient;
+    hb_link.send_data(429, &msg, sizeof(msg));
+}
+
+void AegisBase::acknowledgeConnectionChange(){
+    hb_link.send_data(430, "", 0);
 }
 
 // --- 5xx System ---
@@ -836,6 +869,7 @@ void AegisBase::checkMotorControlStatus(){
         if(remoteStatus.UP == false){
             requestStateTransition(SINGLE_FC);
             alertedRemoteMotors = false;
+            alertedRemoteNodes = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
         }
@@ -855,6 +889,7 @@ void AegisBase::applyRemoteAlivePolicy() {
             handshakeStatus_ref = IDLE_HANDSHAKE;
             requestStateTransition(SINGLE_FC);
             alertedRemoteMotors = false;
+            alertedRemoteNodes = false;
             if(!motorsAuthorized)
                 enableMotorAuthorization();
         }

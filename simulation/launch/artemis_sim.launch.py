@@ -3,6 +3,7 @@ from launch.actions import ExecuteProcess, SetEnvironmentVariable, RegisterEvent
 from launch.event_handlers import OnProcessExit
 from launch_ros.actions import Node
 import os
+import tempfile
 from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
@@ -18,11 +19,18 @@ def generate_launch_description():
     model_sdf_path = os.path.join(pkg_path, 'models', 'model', 'model.sdf')
     world_path = os.path.join(pkg_path, 'worlds', 'high_resolution', 'artemis', 'artemis_arena.world')
 
+    with open(model_sdf_path, 'r') as f:
+        sdf_content = f.read()
     # --- Environment Variables ---
     env_model_path = SetEnvironmentVariable(
         name='GAZEBO_MODEL_PATH',
         value='/usr/share/gazebo-11/models:' + os.path.join(pkg_path, 'models')
     )
+    
+    processed_sdf = sdf_content.replace('REPLACE_WITH_CONTROLLER_YAML', config_path)
+    temp_sdf_path = os.path.join(tempfile.gettempdir(), 'processed_robot.sdf')
+    with open(temp_sdf_path, 'w') as f:
+        f.write(processed_sdf)
     
     env_resource_path = SetEnvironmentVariable(
         name='GAZEBO_RESOURCE_PATH',
@@ -75,9 +83,8 @@ def generate_launch_description():
         executable='spawn_entity.py',
         arguments=[
             '-entity', 'my_robot',
-            '-file', model_sdf_path,
-            '-x', '1.5', '-y', '1.5', '-z', '0.2',
-            '-timeout', '120'
+            '-file', temp_sdf_path,
+            '-x', '1.5', '-y', '1.5', '-z', '0.2'
         ],
         output='screen',
     )

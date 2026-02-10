@@ -11,7 +11,8 @@ public:
                     bool& sendRawData_ref,
                     SystemStatus& systemStatus_ref,
                     HandshakeStatus& handshakeStatus_ref,
-                    ErrorCode& errorCode_ref
+                    ErrorCode& errorCode_ref,
+                    std::function<void(bool)> callback = nullptr
                     );
     
     int handshake_step = 0;

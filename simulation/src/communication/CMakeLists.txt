@@ -18,14 +18,15 @@ find_package(ZLIB REQUIRED)
 
 include_directories(
         include
+        ../../../shovel/src/communication/include
 )
 
 add_executable(${PROJECT_NAME}_node
-	src/BinaryMessage.cpp
-        src/Heartbeat.cpp
-        src/AegisBase.cpp
-        src/AegisController.cpp
-        src/CANHeartbeat.cpp
+	../../../shovel/src/communication/src/BinaryMessage.cpp
+        ../../../shovel/src/communication/src/Heartbeat.cpp
+        ../../../shovel/src/communication/src/AegisBase.cpp
+        ../../../shovel/src/communication/src/AegisController.cpp
+        ../../../shovel/src/communication/src/CANHeartbeat.cpp
         src/communication_node.cpp
 )
 
