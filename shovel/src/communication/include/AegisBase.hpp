@@ -266,6 +266,38 @@ public:
     bool checkRemoteAlive();
     bool isHandshakeMsg(uint16_t id);
 
+    /**
+     * @brief Called by the status monitor node to report the CAN detection
+     * state of each motor. Updates can0_table and can1_table, then
+     * evaluates whether this FC should self-authorize any unowned motors.
+     *
+     * @param can0_states Array of booleans indicating CAN0 detection per motor index (0-7).
+     * @param can1_states Array of booleans indicating CAN1 detection per motor index (0-7).
+     */
+    void processStatusMonitorCANReport(const uint8_t can0_states[MAX_MOTORS],
+                                       const uint8_t can1_states[MAX_MOTORS]);
+
+    /**
+     * @brief Common helper called when a motor node message is received.
+     * Confirms the node is alive and evaluates whether this FC should
+     * self-authorize for the motor if the remote hasn't claimed it.
+     *
+     * @param motor_id The raw motor ID (10-17).
+     */
+    void onMotorNodeMessageReceived(uint8_t motor_id);
+    
+    /**
+     * @brief Evaluates a single motor and self-authorizes if:
+     *   1. The motor is visible on at least one CAN bus.
+     *   2. The corresponding node is alive.
+     *   3. The remote FC has NOT authorized itself for this motor.
+     * If authorization changes, alerts the remote FC.
+     *
+     * @param motor_index The 0-based motor index (0-7).
+     * @return true if an authorization change was made.
+     */
+    bool evaluateAndSelfAuthorize(uint8_t motor_index);
+
     std::chrono::steady_clock::time_point init_start_time;
     bool init_timer_active = false;
 

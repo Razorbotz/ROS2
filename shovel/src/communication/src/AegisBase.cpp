@@ -113,49 +113,49 @@ std::string AegisBase::stateToString(SystemStatus state) {
 void AegisBase::receivedMotor10(){
     motor10NodeTimer.restart();
     motor10NodeActive = true;
-
+    onMotorNodeMessageReceived(10);
 }
 
 void AegisBase::receivedMotor11(){
     motor11NodeTimer.restart();
     motor11NodeActive = true;
-    
+    onMotorNodeMessageReceived(11);
 }
 
 void AegisBase::receivedMotor12(){
     motor12NodeTimer.restart();
     motor12NodeActive = true;
-
+    onMotorNodeMessageReceived(12);
 }
 
 void AegisBase::receivedMotor13(){
     motor13NodeTimer.restart();
     motor13NodeActive = true;
-
+    onMotorNodeMessageReceived(13);
 }
 
 void AegisBase::receivedMotor14(){
     motor14NodeTimer.restart();
     motor14NodeActive = true;
-
+    onMotorNodeMessageReceived(14);
 }
 
 void AegisBase::receivedMotor15(){
     motor15NodeTimer.restart();
     motor15NodeActive = true;
-
+    onMotorNodeMessageReceived(15);
 }
 
 void AegisBase::receivedMotor16(){
     motor16NodeTimer.restart();
     motor16NodeActive = true;
-    
+    onMotorNodeMessageReceived(16);
 }
 
 void AegisBase::receivedMotor17(){
     motor17NodeTimer.restart();
     motor17NodeActive = true;
-
+    onMotorNodeMessageReceived(17);
 }
 
 void AegisBase::receivedLogic(){
@@ -192,10 +192,12 @@ void AegisBase::updateConnectionStatus(bool connected){
     connectedToClient = connected;
     if(this->update_sender_state){
         if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY 
-        || systemStatus_ref == SINGLE_FC){
+        || systemStatus_ref == SINGLE_FC || !remoteStatus.CONNECTED){
+            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 1");
             this->update_sender_state(true);
         }
         else{
+            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 2");
             this->update_sender_state(false);
         }
     }
@@ -909,4 +911,130 @@ bool AegisBase::isHandshakeMsg(uint16_t id){
        id == 422 || id == 423 || id == 424 || id == 425)
         return true;
     return false;
+}
+
+void AegisBase::processStatusMonitorCANReport(const uint8_t can0_states[MAX_MOTORS],
+                                               const uint8_t can1_states[MAX_MOTORS]) 
+{
+    bool any_changed = false;
+
+    for (size_t i = 0; i < MAX_MOTORS; i++) {
+        bool old_can0 = can0_table[i];
+        bool old_can1 = can1_table[i];
+        bool new_can0 = can0_states[i] != 0;
+        bool new_can1 = can1_states[i] != 0;
+
+        can0_table[i] = new_can0;
+        can1_table[i] = new_can1;
+
+        bool was_visible = old_can0 || old_can1;
+        bool now_visible = new_can0 || new_can1;
+
+        if (was_visible != now_visible) {
+            any_changed = true;
+
+            if (now_visible) {
+                // Motor appeared on CAN  attempt self-authorization
+                RCLCPP_INFO(nodeHandle->get_logger(), "[StatusMonitor] Motor %d now visible on CAN. ", i + 10);
+                std::cout << "[StatusMonitor] Motor " << (i + 10) 
+                          << " now visible on CAN." << std::endl;
+                evaluateAndSelfAuthorize(static_cast<uint8_t>(i));
+            }
+            else {
+                // Motor disappeared from CAN  revoke authorization
+                std::cout << "[StatusMonitor] Motor " << (i + 10) 
+                          << " lost from CAN." << std::endl;
+                if (auth_table[i]) {
+                    auth_table[i] = false;
+                    std::cout << "[Auth] Revoked authorization for motor " 
+                              << (i + 10) << " (CAN lost)." << std::endl;
+
+                    // Alert remote to the change
+                    if (checkRemoteAlive()) {
+                        alertLostMotor(static_cast<uint8_t>(i + 10));
+                    }
+                }
+            }
+        }
+    }
+
+    if (any_changed) {
+        checkMotorControlStatus();
+    }
+}
+
+void AegisBase::onMotorNodeMessageReceived(uint8_t motor_id) {
+    // Convert raw motor ID (10-17) to 0-based index
+    uint8_t idx;
+    if (motor_id >= 10) {
+        idx = motor_id - 10;
+    }
+    else {
+        idx = motor_id;
+    }
+
+    if (idx >= MAX_MOTOR_ID) {
+        std::cerr << "[Auth] onMotorNodeMessageReceived: motor_id " 
+                  << (int)motor_id << " out of range." << std::endl;
+        return;
+    }
+
+    // Mark the node as alive in the node table
+    node_table[idx] = true;
+
+    // Only attempt self-authorization if we're in a state that should control motors
+    if (systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || 
+        systemStatus_ref == SINGLE_FC || systemStatus_ref == STOP) {
+        evaluateAndSelfAuthorize(idx);
+    }
+}
+
+bool AegisBase::evaluateAndSelfAuthorize(uint8_t motor_index) {
+    if (motor_index >= MAX_MOTOR_ID) return false;
+
+    // Already authorized — nothing to do
+    if (auth_table[motor_index]) return false;
+
+    // Check that the motor is visible on at least one CAN bus
+    bool can_visible = can0_table[motor_index] || can1_table[motor_index];
+    if (!can_visible) {
+        return false;
+    }
+
+    // Check that the node for this motor is alive
+    // We use the per-motor node active flags for motors 10-17
+    bool node_alive = false;
+    switch (motor_index) {
+        case 0: node_alive = motor10NodeActive; break;
+        case 1: node_alive = motor11NodeActive; break;
+        case 2: node_alive = motor12NodeActive; break;
+        case 3: node_alive = motor13NodeActive; break;
+        case 4: node_alive = motor14NodeActive; break;
+        case 5: node_alive = motor15NodeActive; break;
+        case 6: node_alive = motor16NodeActive; break;
+        case 7: node_alive = motor17NodeActive; break;
+        default: return false;
+    }
+
+    if (!node_alive) {
+        return false;
+    }
+
+    // Check that the remote FC has NOT claimed this motor
+    if (remote_auth[motor_index]) {
+        // Remote already has it, don't double-authorize
+        return false;
+    }
+
+    // All conditions met: self-authorize
+    auth_table[motor_index] = true;
+    std::cout << "[Auth] Self-authorized motor " << (int)(motor_index + 10) 
+              << " (CAN visible, node alive, remote not authorized)." << std::endl;
+
+    // Alert the remote FC about our updated authorization
+    if (checkRemoteAlive()) {
+        sendAuth();  // Sends ID 100 with full auth_table
+    }
+
+    return true;
 }

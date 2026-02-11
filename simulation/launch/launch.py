@@ -21,14 +21,15 @@ def generate_launch_description():
 #    excav_launch_file = os.path.join(launch_dir, 'launch', 'launch_excav.py')
     cam_launch_file = os.path.join(launch_dir, 'launch', 'launch_cam.py')
     drivetrain_launch_file = os.path.join(launch_dir, 'launch', 'launch_drivetrain.py')
-#    status_monitor_launch_file = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
+    status_monitor_launch_file = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
 #    reset_launch_file = os.path.join(launch_dir, 'launch', 'launch_reset.py')
     gazebo_launch_path = os.path.join(launch_dir, 'launch', 'artemis_sim.launch.py')
 
     return LaunchDescription([
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(gazebo_launch_path)
-        ),
+        )
+        ,
 #        IncludeLaunchDescription(
 #            PythonLaunchDescriptionSource(motors_launch_file)
 #        )
@@ -41,10 +42,10 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(logic_launch_file)
         )
         ,
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(comm_launch_file)
-        )
-        ,
+#        IncludeLaunchDescription(
+#            PythonLaunchDescriptionSource(comm_launch_file)
+#        )
+#        ,
 #        IncludeLaunchDescription(
 #            PythonLaunchDescriptionSource(excav_launch_file)
 #        )
@@ -60,10 +61,10 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(drivetrain_launch_file)
         )
-#        ,
-#        IncludeLaunchDescription(
-#            PythonLaunchDescriptionSource(status_monitor_launch_file)
-#        )
+        ,
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(status_monitor_launch_file)
+        )
         #,
         #ExecuteProcess(
         #   cmd=['ros2', 'bag', 'record', '-a'],

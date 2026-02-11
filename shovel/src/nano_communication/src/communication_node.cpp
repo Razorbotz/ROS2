@@ -348,16 +348,16 @@ void send(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr
     uint8_t new_temperature = (uint8_t)falconStatus->temperature;
     uint8_t new_device_id = (uint8_t)falconStatus->device_id;
 
-    update_if_changed(message, message_changed, falcon.device_id,      new_device_id,                 "Device ID");
-    update_if_changed(message, message_changed, falcon.voltage,         new_voltage,                   "Bus Voltage");
-    update_if_changed(message, message_changed, falcon.current,         new_current,                   "Output Current");
-    update_if_changed(message, message_changed, falcon.output_percent,  falconStatus->output_percent,  "Output Percent");
-    update_if_changed(message, message_changed, falcon.temperature,     new_temperature,               "Temperature");
-    update_if_changed(message, message_changed, falcon.sensor_position, falconStatus->sensor_position, "Sensor Position");
-    update_if_changed(message, message_changed, falcon.sensor_velocity, falconStatus->sensor_velocity, "Sensor Velocity");
-    update_if_changed(message, message_changed, falcon.max_current,     falconStatus->max_current,     "Max Current");
-    update_if_changed(message, message_changed, falcon.temp_disable,    falconStatus->temp_disable,    "Temp Disable");
-    update_if_changed(message, message_changed, falcon.error,           falconStatus->error,           "Error");
+    update_if_changed(message, message_changed, falcon.device_id,      new_device_id,                 Field_Strings::DeviceID);
+    update_if_changed(message, message_changed, falcon.voltage,         new_voltage,                   Field_Strings::BusVoltage);
+    update_if_changed(message, message_changed, falcon.current,         new_current,                   Field_Strings::OutputCurrent);
+    update_if_changed(message, message_changed, falcon.output_percent,  falconStatus->output_percent,  Field_Strings::OutputPercent);
+    update_if_changed(message, message_changed, falcon.temperature,     new_temperature,               Field_Strings::Temperature);
+    update_if_changed(message, message_changed, falcon.sensor_position, falconStatus->sensor_position, Field_Strings::SensorPosition);
+    update_if_changed(message, message_changed, falcon.sensor_velocity, falconStatus->sensor_velocity, Field_Strings::SensorVelocity);
+    update_if_changed(message, message_changed, falcon.max_current,     falconStatus->max_current,     Field_Strings::MaxCurrent);
+    update_if_changed(message, message_changed, falcon.temp_disable,    falconStatus->temp_disable,    Field_Strings::TempDisable);
+    update_if_changed(message, message_changed, falcon.error,           falconStatus->error,           Field_Strings::Error);
 
     if (message_changed) {
         send(message);
@@ -375,14 +375,14 @@ void send(std::string messageLabel, const messages::msg::TalonStatus::SharedPtr 
     uint16_t new_current = talonStatus->output_current * 100.0;
     float new_sensor_pos = talonStatus->sensor_position; 
 
-    update_if_changed(message, message_changed, talon.voltage,        new_voltage,                  "Bus Voltage");
-    update_if_changed(message, message_changed, talon.current,        new_current,                  "Output Current");
-    update_if_changed(message, message_changed, talon.output_percent, talonStatus->output_percent,  "Output Percent");
-    update_if_changed(message, message_changed, talon.temperature,    (uint8_t)talonStatus->temperature, "Temperature");
-    update_if_changed(message, message_changed, talon.sensor_position,new_sensor_pos,               "Sensor Position");
-    update_if_changed(message, message_changed, talon.sensor_velocity,talonStatus->sensor_velocity, "Sensor Velocity");
-    update_if_changed(message, message_changed, talon.max_current,    talonStatus->max_current,     "Max Current");
-    update_if_changed(message, message_changed, talon.temp_disable,   talonStatus->temp_disable,    "Temp Disable");
+    update_if_changed(message, message_changed, talon.voltage,        new_voltage,                  Field_Strings::BusVoltage);
+    update_if_changed(message, message_changed, talon.current,        new_current,                  Field_Strings::OutputCurrent);
+    update_if_changed(message, message_changed, talon.output_percent, talonStatus->output_percent,  Field_Strings::OutputPercent);
+    update_if_changed(message, message_changed, talon.temperature,    (uint8_t)talonStatus->temperature, Field_Strings::Temperature);
+    update_if_changed(message, message_changed, talon.sensor_position,new_sensor_pos,               Field_Strings::SensorPosition);
+    update_if_changed(message, message_changed, talon.sensor_velocity,talonStatus->sensor_velocity, Field_Strings::SensorVelocity);
+    update_if_changed(message, message_changed, talon.max_current,    talonStatus->max_current,     Field_Strings::MaxCurrent);
+    update_if_changed(message, message_changed, talon.temp_disable,   talonStatus->temp_disable,    Field_Strings::TempDisable);
 
     if (message_changed) {
         send(message);
@@ -402,8 +402,8 @@ void send(std::string messageLabel, const messages::msg::Power::SharedPtr power)
     bool message1_changed = false;
     BinaryMessage message1(messageLabel);
 
-    update_if_changed(message1, message1_changed, voltage, power->voltage, "Voltage");
-    update_if_changed(message1, message1_changed, temperature, power->temperature, "Temp");
+    update_if_changed(message1, message1_changed, voltage, power->voltage, Field_Strings::Voltage);
+    update_if_changed(message1, message1_changed, temperature, power->temperature, Field_Strings::Temp);
 
     for (int i = 0; i <= 6; ++i) {
         update_if_changed(message1, message1_changed, currents[i], power_currents[i], "Current " + std::to_string(i));
@@ -438,17 +438,17 @@ void send(std::string messageLabel, const messages::msg::LinearStatus::SharedPtr
     uint16_t new_max = (uint16_t)linearStatus->max;
     uint16_t new_min = (uint16_t)linearStatus->min;
 
-    update_if_changed(message, message_changed, linear.motor_number,       new_motor_number,            "Motor Number");
-    update_if_changed(message, message_changed, linear.speed,              linearStatus->speed,         "Speed");
-    update_if_changed(message, message_changed, linear.potentiometer,      new_potentiometer,           "Potentiometer");
-    update_if_changed(message, message_changed, linear.time_without_change,new_time_without_change,     "Time Without Change");
-    update_if_changed(message, message_changed, linear.max,                new_max,                     "Max");
-    update_if_changed(message, message_changed, linear.min,                new_min,                     "Min");
-    update_if_changed(message, message_changed, linear.error,              linearStatus->error,         "Error");
-    update_if_changed(message, message_changed, linear.at_min,             linearStatus->at_min,        "At Min");
-    update_if_changed(message, message_changed, linear.at_max,             linearStatus->at_max,        "At Max");
-    update_if_changed(message, message_changed, linear.distance,           linearStatus->distance,      "Distance");
-    update_if_changed(message, message_changed, linear.sensorless,         linearStatus->sensorless,    "Sensorless");
+    update_if_changed(message, message_changed, linear.motor_number,       new_motor_number,            Field_Strings::MotorNumber);
+    update_if_changed(message, message_changed, linear.speed,              linearStatus->speed,         Field_Strings::Speed);
+    update_if_changed(message, message_changed, linear.potentiometer,      new_potentiometer,           Field_Strings::Potentiometer);
+    update_if_changed(message, message_changed, linear.time_without_change,new_time_without_change,     Field_Strings::TimeWithoutChange);
+    update_if_changed(message, message_changed, linear.max,                new_max,                     Field_Strings::Max);
+    update_if_changed(message, message_changed, linear.min,                new_min,                     Field_Strings::Min);
+    update_if_changed(message, message_changed, linear.error,              linearStatus->error,         Field_Strings::Error);
+    update_if_changed(message, message_changed, linear.at_min,             linearStatus->at_min,        Field_Strings::AtMin);
+    update_if_changed(message, message_changed, linear.at_max,             linearStatus->at_max,        Field_Strings::AtMax);
+    update_if_changed(message, message_changed, linear.distance,           linearStatus->distance,      Field_Strings::Distance);
+    update_if_changed(message, message_changed, linear.sensorless,         linearStatus->sensorless,    Field_Strings::Sensorless);
 
     if (message_changed) {
         send(message);
@@ -462,16 +462,16 @@ void send(std::string messageLabel, const messages::msg::AutonomyStatus::SharedP
     bool message_changed = false;
     BinaryMessage message(messageLabel);
 
-    update_if_changed(message, message_changed, autonomyState.robot_state,      autonomy->robot_state,      "Robot State");
-    update_if_changed(message, message_changed, autonomyState.excavation_state, autonomy->excavation_state, "Excavation State");
-    update_if_changed(message, message_changed, autonomyState.error_state,      autonomy->error_state,      "Error State");
-    update_if_changed(message, message_changed, autonomyState.diagnostics_state,autonomy->diagnostics_state,"Diagnostics State");
-    update_if_changed(message, message_changed, autonomyState.tilt_state,       autonomy->tilt_state,       "Tilt State");
-    update_if_changed(message, message_changed, autonomyState.dump_state,       autonomy->dump_state,       "Dump State");
-    update_if_changed(message, message_changed, autonomyState.bucket_state,     autonomy->bucket_state,     "Level Bucket");
-    update_if_changed(message, message_changed, autonomyState.arms_state,       autonomy->arms_state,       "Level Arms");
-    update_if_changed(message, message_changed, autonomyState.dest_x,           autonomy->dest_x,           "Dest X");
-    update_if_changed(message, message_changed, autonomyState.dest_z,           autonomy->dest_z,           "Dest Z");
+    update_if_changed(message, message_changed, autonomyState.robot_state,      autonomy->robot_state,      Field_Strings::RobotState);
+    update_if_changed(message, message_changed, autonomyState.excavation_state, autonomy->excavation_state, Field_Strings::ExcavationState);
+    update_if_changed(message, message_changed, autonomyState.error_state,      autonomy->error_state,      Field_Strings::ErrorState);
+    update_if_changed(message, message_changed, autonomyState.diagnostics_state,autonomy->diagnostics_state,Field_Strings::DiagnosticsState);
+    update_if_changed(message, message_changed, autonomyState.tilt_state,       autonomy->tilt_state,       Field_Strings::TiltState);
+    update_if_changed(message, message_changed, autonomyState.dump_state,       autonomy->dump_state,       Field_Strings::DumpState);
+    update_if_changed(message, message_changed, autonomyState.bucket_state,     autonomy->bucket_state,     Field_Strings::LevelBucket);
+    update_if_changed(message, message_changed, autonomyState.arms_state,       autonomy->arms_state,       Field_Strings::LevelArms);
+    update_if_changed(message, message_changed, autonomyState.dest_x,           autonomy->dest_x,           Field_Strings::DestX);
+    update_if_changed(message, message_changed, autonomyState.dest_z,           autonomy->dest_z,           Field_Strings::DestZ);
 
     if (message_changed) {
         RCLCPP_INFO(nodeHandle->get_logger(), "Sending message");
@@ -490,6 +490,7 @@ int zedCounter = 0;
  * @param zedPosition 
  */
 void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
+    nanoController->receivedZedTracking();
     if(silentRunning)return;
     if(rssi > UPPER_THRESH)
         return;
@@ -500,13 +501,13 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     bool message_changed = false;
     BinaryMessage message("Zed");
 
-    update_if_changed(message, message_changed, zedState.x,     zedPosition->x,             "X");
-    update_if_changed(message, message_changed, zedState.y,     zedPosition->y,             "Y");
-    update_if_changed(message, message_changed, zedState.z,     zedPosition->z,             "Z");
-    update_if_changed(message, message_changed, zedState.roll,  zedPosition->roll,          "roll");
-    update_if_changed(message, message_changed, zedState.pitch, zedPosition->pitch,         "pitch");
-    update_if_changed(message, message_changed, zedState.yaw,   zedPosition->yaw,           "yaw");
-    update_if_changed(message, message_changed, zedState.aruco, zedPosition->aruco_visible, "aruco");
+    update_if_changed(message, message_changed, zedState.x,     zedPosition->x,             Field_Strings::X);
+    update_if_changed(message, message_changed, zedState.y,     zedPosition->y,             Field_Strings::Y);
+    update_if_changed(message, message_changed, zedState.z,     zedPosition->z,             Field_Strings::Z);
+    update_if_changed(message, message_changed, zedState.roll,  zedPosition->roll,          Field_Strings::Roll);
+    update_if_changed(message, message_changed, zedState.pitch, zedPosition->pitch,         Field_Strings::Pitch);
+    update_if_changed(message, message_changed, zedState.yaw,   zedPosition->yaw,           Field_Strings::Yaw);
+    update_if_changed(message, message_changed, zedState.aruco, zedPosition->aruco_visible, Field_Strings::Aruco);
 
     if(message_changed){
         send(message);
@@ -516,6 +517,7 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
 // 10 Hz
 int systemCounter = 0;
 void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status) {
+    nanoController->receivedStatusMonitor();
     if (silentRunning) return;
 
     systemCounter++;
@@ -538,18 +540,18 @@ void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status) {
         new_wifi_status = "NON-FUNCTIONAL";
     }
 
-    update_if_changed(message, message_changed, systemState.rssi,         status->rssi,          "RSSI");
-    update_if_changed(message, message_changed, systemState.wifi,         new_wifi_status,       "Wi-Fi");
-    update_if_changed(message, message_changed, systemState.can_bus,      status->can_message,   "CAN Bus");
-    update_if_changed(message, message_changed, systemState.using_can1,   status->using_can1,    "Using CAN1");
-    update_if_changed(message, message_changed, systemState.rx_packets,   status->rx_packets,    "RX packets");
-    update_if_changed(message, message_changed, systemState.tx_packets,   status->tx_packets,    "TX packets");
-    update_if_changed(message, message_changed, systemState.can_bus2,     status->can2_message,  "CAN Bus2");
-    update_if_changed(message, message_changed, systemState.rx_packets2,  status->rx2_packets,   "RX2 packets");
-    update_if_changed(message, message_changed, systemState.tx_packets2,  status->tx2_packets,   "TX2 packets");
-    update_if_changed(message, message_changed, systemState.first_motor,  status->first_motor,   "First Motor");
-    update_if_changed(message, message_changed, systemState.second_motor, status->second_motor,  "Second Motor");
-    update_if_changed(message, message_changed, systemState.num_breaks,   status->num_breaks,    "Num Breaks");
+    update_if_changed(message, message_changed, systemState.rssi,         status->rssi,          Field_Strings::RSSI);
+    update_if_changed(message, message_changed, systemState.wifi,         new_wifi_status,       Field_Strings::WiFi);
+    update_if_changed(message, message_changed, systemState.can_bus,      status->can_message,   Field_Strings::CANBus);
+    update_if_changed(message, message_changed, systemState.using_can1,   status->using_can1,    Field_Strings::UsingCan1);
+    update_if_changed(message, message_changed, systemState.rx_packets,   status->rx_packets,    Field_Strings::RXPackets);
+    update_if_changed(message, message_changed, systemState.tx_packets,   status->tx_packets,    Field_Strings::TXPackets);
+    update_if_changed(message, message_changed, systemState.can_bus2,     status->can2_message,  Field_Strings::CANBus2);
+    update_if_changed(message, message_changed, systemState.rx_packets2,  status->rx2_packets,   Field_Strings::RX2Packets);
+    update_if_changed(message, message_changed, systemState.tx_packets2,  status->tx2_packets,   Field_Strings::TX2Packets);
+    update_if_changed(message, message_changed, systemState.first_motor,  status->first_motor,   Field_Strings::FirstMotor);
+    update_if_changed(message, message_changed, systemState.second_motor, status->second_motor,  Field_Strings::SecondMotor);
+    update_if_changed(message, message_changed, systemState.num_breaks,   status->num_breaks,    Field_Strings::NumBreaks);
 
     if (message_changed) {
         send(message);
@@ -562,21 +564,22 @@ int drivetrainCounter = 0;
 void drivetrainStatusCallback(const messages::msg::DrivetrainStatus::SharedPtr status){
     if(silentRunning)return;
     drivetrainCounter++;
+    if(drivetrainCounter % 10 != 0 )return;
     bool message_changed = false;
     BinaryMessage message("Drivetrain");
 
-    update_if_changed(message, message_changed, drivetrainState.f1_vel,   status->falcon1_velocity,      "F1 Vel");
-    update_if_changed(message, message_changed, drivetrainState.f1_rpm,   status->falcon1_rpm,           "F1 RPM");
-    update_if_changed(message, message_changed, drivetrainState.f1_speed, status->falcon1_ground_speed,  "F1 Speed");
-    update_if_changed(message, message_changed, drivetrainState.f2_vel,   status->falcon2_velocity,      "F2 Vel");
-    update_if_changed(message, message_changed, drivetrainState.f2_rpm,   status->falcon2_rpm,           "F2 RPM");
-    update_if_changed(message, message_changed, drivetrainState.f2_speed, status->falcon2_ground_speed,  "F2 Speed");
-    update_if_changed(message, message_changed, drivetrainState.f3_vel,   status->falcon3_velocity,      "F3 Vel");
-    update_if_changed(message, message_changed, drivetrainState.f3_rpm,   status->falcon3_rpm,           "F3 RPM");
-    update_if_changed(message, message_changed, drivetrainState.f3_speed, status->falcon3_ground_speed,  "F3 Speed");
-    update_if_changed(message, message_changed, drivetrainState.f4_vel,   status->falcon4_velocity,      "F4 Vel");
-    update_if_changed(message, message_changed, drivetrainState.f4_rpm,   status->falcon4_rpm,           "F4 RPM");
-    update_if_changed(message, message_changed, drivetrainState.f4_speed, status->falcon4_ground_speed,  "F4 Speed");
+    update_if_changed(message, message_changed, drivetrainState.f1_vel,   status->falcon1_velocity,      Field_Strings::F1Vel);
+    update_if_changed(message, message_changed, drivetrainState.f1_rpm,   status->falcon1_rpm,           Field_Strings::F1RPM);
+    update_if_changed(message, message_changed, drivetrainState.f1_speed, status->falcon1_ground_speed,  Field_Strings::F1Speed);
+    update_if_changed(message, message_changed, drivetrainState.f2_vel,   status->falcon2_velocity,      Field_Strings::F2Vel);
+    update_if_changed(message, message_changed, drivetrainState.f2_rpm,   status->falcon2_rpm,           Field_Strings::F2RPM);
+    update_if_changed(message, message_changed, drivetrainState.f2_speed, status->falcon2_ground_speed,  Field_Strings::F2Speed);
+    update_if_changed(message, message_changed, drivetrainState.f3_vel,   status->falcon3_velocity,      Field_Strings::F3Vel);
+    update_if_changed(message, message_changed, drivetrainState.f3_rpm,   status->falcon3_rpm,           Field_Strings::F3RPM);
+    update_if_changed(message, message_changed, drivetrainState.f3_speed, status->falcon3_ground_speed,  Field_Strings::F3Speed);
+    update_if_changed(message, message_changed, drivetrainState.f4_vel,   status->falcon4_velocity,      Field_Strings::F4Vel);
+    update_if_changed(message, message_changed, drivetrainState.f4_rpm,   status->falcon4_rpm,           Field_Strings::F4RPM);
+    update_if_changed(message, message_changed, drivetrainState.f4_speed, status->falcon4_ground_speed,  Field_Strings::F4Speed);
     
     if (message_changed) {
         send(message);

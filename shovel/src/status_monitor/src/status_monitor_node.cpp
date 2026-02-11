@@ -51,13 +51,13 @@ bool usingCAN1 = false;
 int downCounter = 0;
 std::string interfaceName = "wlan0";
 
-constexpr size_t NUM_MOTORS = 6;
+constexpr size_t NUM_MOTORS = 8;
 
-int motors0[NUM_MOTORS] = {0, 0, 0, 0, 0, 0};
-int motors1[NUM_MOTORS] = {0, 0, 0, 0, 0, 0};
+int motors0[NUM_MOTORS] = {0, 0, 0, 0, 0, 0, 0, 0};
+int motors1[NUM_MOTORS] = {0, 0, 0, 0, 0, 0, 0, 0};
 int copy0[NUM_MOTORS] = {0};
 int copy1[NUM_MOTORS] = {0};
-int interfaces[NUM_MOTORS] = {0, 0, 0, 0, 0, 0};
+int interfaces[NUM_MOTORS] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 const std::array<uint32_t, NUM_MOTORS> MOTOR_IDS = {0xA, 0XB, 0xD, 0xC, 0x10, 0xE};
 
@@ -91,6 +91,9 @@ void publishStatus(){
     systemStatus.first_motor = firstMotor;
     systemStatus.second_motor = secondMotor;
     systemStatus.num_breaks = numBreaks;
+    std::copy(std::begin(motors0), std::end(motors0), systemStatus.motors0.begin());
+    std::copy(std::begin(motors1), std::end(motors1), systemStatus.motors1.begin());
+    std::copy(std::begin(interfaces), std::end(interfaces), systemStatus.interfaces.begin());
     systemStatusPublisher->publish(systemStatus);
 }
 

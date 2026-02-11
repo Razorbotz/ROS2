@@ -9,3 +9,6 @@ bool using_can1
 int32 first_motor
 int32 second_motor
 int32 num_breaks
+int32[8] motors0
+int32[8] motors1
+int32[8] interfaces

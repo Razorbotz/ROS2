@@ -59,9 +59,12 @@ void AegisController::onEnterState(SystemStatus state) {
         case PRIMARY:{
             if (this->update_sender_state) {
                 if(remoteStatus.CONNECTED && !connectedToClient){
+                    RCLCPP_INFO(nodeHandle->get_logger(), "HERE 3");
+                    
                     this->update_sender_state(false);
                 }
                 else{
+                    RCLCPP_INFO(nodeHandle->get_logger(), "HERE 4");
                     this->update_sender_state(true); 
                 }
             }
@@ -75,9 +78,11 @@ void AegisController::onEnterState(SystemStatus state) {
         case STANDBY:
             if (this->update_sender_state) {
                 if(remoteStatus.CONNECTED){
+            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 5");
                     this->update_sender_state(false); 
                 }
                 else{
+            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 6");
                     this->update_sender_state(true); 
                 }
             }
@@ -85,9 +90,11 @@ void AegisController::onEnterState(SystemStatus state) {
         case PARTIAL_PRIMARY:{
             if (this->update_sender_state) {
                 if(remoteStatus.CONNECTED && !connectedToClient){
+            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 7");
                     this->update_sender_state(false);
                 }
                 else{
+            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 8");
                     this->update_sender_state(true); 
                 }
             }
@@ -102,9 +109,11 @@ void AegisController::onEnterState(SystemStatus state) {
         case PARTIAL_SECONDARY:
             if (this->update_sender_state) {
                 if(remoteStatus.CONNECTED){
+            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 9");
                     this->update_sender_state(false); 
                 }
                 else{
+            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 10");
                     this->update_sender_state(true); 
                 }
             }
@@ -113,7 +122,10 @@ void AegisController::onEnterState(SystemStatus state) {
             break;
 
         case SINGLE_FC:{
+
             if (this->update_sender_state) {
+                RCLCPP_INFO(nodeHandle->get_logger(), "SINGLE_FC enable send state");
+            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 11");
                 this->update_sender_state(true); 
             }
             remoteStatus.CONNECTED = false;
@@ -857,11 +869,15 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             remoteStatus.CONNECTED = value;
             if(this->update_sender_state){
                 if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY 
-                || systemStatus_ref == SINGLE_FC){
+                || systemStatus_ref == SINGLE_FC || !remoteStatus.CONNECTED){
+            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 12");
+
                     this->update_sender_state(true);
                 }
                 else{
                     this->update_sender_state(false);
+            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 13");
+
                 }
             }
             acknowledgeConnectionChange();
