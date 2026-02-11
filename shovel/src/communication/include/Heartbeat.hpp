@@ -136,6 +136,8 @@ enum MessageIDs : uint16_t {
     // --- 1xx Control Configuration ---
     ID_ASSIGN_AUTH      = 100,
     ID_CONFIRM_AUTH     = 101,
+    ID_REQ_AUTH         = 102,   // Request authorization for specific motors from peer
+    ID_AUTH_RESPONSE    = 103,
 
     // --- 2xx State & Handshake ---
     ID_QUERY_CONTROL    = 200,
@@ -213,6 +215,11 @@ struct MotorState {
     bool usingCAN0;
     bool nodeActive;
     SimpleTimer timer;  
+};
+
+struct AuthRequestPayload {
+    uint8_t motor_states[MAX_MOTORS];  // Which motors this request pertains to
+    uint8_t granted;                   // 0 = denied, 1 = granted (only used in 103)
 };
 
 struct MotorAuthPayload {

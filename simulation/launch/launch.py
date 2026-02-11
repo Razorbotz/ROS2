@@ -83,6 +83,13 @@ def generate_launch_description():
         )
         ,
         Node(
+            package='talon', 
+            executable='talon_node',
+            name='talon_sim_node',
+            output='screen'
+        )
+        ,
+        Node(
             package='aruco_ros',
             executable='single',
             name='aruco_single',

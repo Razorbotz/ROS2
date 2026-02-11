@@ -207,6 +207,7 @@ void AegisController::checkTimers() {
     AegisBase::checkBootTimer();
 
     applyRemoteAlivePolicy(); 
+    checkAuthRequestTimer();
 
     if (handshakeStatus_ref != IDLE_HANDSHAKE && 
         handshakeStatus_ref != COMPLETE_HANDSHAKE && 
@@ -215,6 +216,47 @@ void AegisController::checkTimers() {
         advanceHandshake(); 
         retry_timer.restart();
     }
+}
+
+void AegisController::checkAuthRequestTimer() {
+    if (!auth_request_pending) return;
+
+    if (auth_request_timer.isExpired()) {
+        // Check if we still need the motors
+        bool still_needed = false;
+        for (size_t i = 0; i < MAX_MOTORS; i++) {
+            bool can_visible = can0_table[i] || can1_table[i];
+            bool node_alive = isMotorNodeAlive(static_cast<uint8_t>(i));
+            if (can_visible && node_alive && remote_auth[i] && !auth_table[i]) {
+                still_needed = true;
+                break;
+            }
+        }
+
+        if (!still_needed) {
+            // No longer need to request — remote released or conditions changed
+            auth_request_pending = false;
+            auth_request_attempts = 0;
+            return;
+        }
+
+        // Retry the request
+        std::cout << "[Auth] Retrying auth request (attempt " 
+                  << (auth_request_attempts + 1) << ")" << std::endl;
+        sendAuthRequest();
+        auth_request_attempts++;
+        auth_request_timer.start(getAuthRequestDelay());
+    }
+}
+
+int AegisController::getAuthRequestDelay() const {
+    if (auth_request_attempts < AUTH_REQUEST_BACKOFF_THRESHOLD) {
+        return AUTH_REQUEST_BASE_MS;
+    }
+    // Exponential backoff: 200, 200, 200, 400, 800, 1600, 3200, 5000, 5000...
+    int backoff_level = auth_request_attempts - AUTH_REQUEST_BACKOFF_THRESHOLD;
+    int delay = AUTH_REQUEST_BASE_MS * (1 << backoff_level);
+    return std::min(delay, AUTH_REQUEST_MAX_BACKOFF_MS);
 }
 
 void AegisController::advanceHandshake() {
@@ -515,6 +557,78 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             if(!checkRemoteAuthStatus() && systemStatus_ref != PRIMARY){
                 if(!test)
                     requestControl();
+            }
+            break;
+        }
+
+        case ID_REQ_AUTH: {
+            // Remote is requesting authorization for motors it can now control
+            if (len != sizeof(AuthRequestPayload)) {
+                RCLCPP_WARN(nodeHandle->get_logger(), "ID_REQ_AUTH: bad payload size");
+                break;
+            }
+            const AuthRequestPayload* payload = reinterpret_cast<const AuthRequestPayload*>(data);
+
+            // Check if we can release the requested motors
+            bool can_release = canGiveControl();
+
+            if (can_release) {
+                // Release the requested motors
+                for (size_t i = 0; i < MAX_MOTORS; i++) {
+                    if (payload->motor_states[i] && auth_table[i]) {
+                        auth_table[i] = false;
+                        std::cout << "[Auth] Orin releasing motor " << (i + 10) 
+                                  << " to Nano per request." << std::endl;
+                    }
+                }
+                sendAuthResponse(true);
+                sendAuth();  // Send updated full auth table
+            }
+            else {
+                // Can't release right now
+                std::cout << "[Auth] Orin denying auth request (not safe to release)." 
+                          << std::endl;
+                sendAuthResponse(false);
+            }
+            break;
+        }
+
+        case ID_AUTH_RESPONSE: {
+            // Response to our auth request
+            if (len != sizeof(AuthRequestPayload)) {
+                RCLCPP_WARN(nodeHandle->get_logger(), "ID_AUTH_RESPONSE: bad payload size");
+                break;
+            }
+            const AuthRequestPayload* payload = reinterpret_cast<const AuthRequestPayload*>(data);
+
+            if (payload->granted) {
+                // Remote released motors — authorize ourselves for them
+                for (size_t i = 0; i < MAX_MOTORS; i++) {
+                    if (payload->motor_states[i]) {
+                        bool can_visible = can0_table[i] || can1_table[i];
+                        bool node_alive = isMotorNodeAlive(static_cast<uint8_t>(i));
+                        if (can_visible && node_alive) {
+                            auth_table[i] = true;
+                            remote_auth[i] = false;
+                            std::cout << "[Auth] Orin authorized for motor " << (i + 10) 
+                                      << " (granted by Nano)." << std::endl;
+                        }
+                    }
+                }
+                // Request complete
+                auth_request_pending = false;
+                auth_request_attempts = 0;
+                sendAuth();  // Notify remote of our updated auth
+                checkMotorControlStatus();
+            }
+            else {
+                // Denied — start/continue retry with backoff
+                std::cout << "[Auth] Auth request denied by Nano. Will retry." << std::endl;
+                if (!auth_request_pending) {
+                    auth_request_pending = true;
+                    auth_request_attempts = 1;
+                }
+                auth_request_timer.start(getAuthRequestDelay());
             }
             break;
         }

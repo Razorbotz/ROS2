@@ -16,6 +16,10 @@ public:
                     std::function<void(bool)> callback = nullptr
                     );
 
+    std::array<bool, MAX_MOTOR_ID> deferred_release;
+    bool has_deferred_release = false;
+
+    void checkDeferredRelease();
     int handshake_step = 0;
     SimpleTimer retry_timer; 
     void advanceHandshake();

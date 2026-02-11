@@ -13,6 +13,7 @@ AegisNanoController::AegisNanoController(rclcpp::Node::SharedPtr node,
                                  )
     : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in, callback) // [Added] Pass to Base
 {
+    deferred_release.fill(false);
 }
 
 void AegisNanoController::onEnterState(SystemStatus state) {
@@ -143,6 +144,7 @@ void AegisNanoController::checkTimers(){
     checkTakeoverTimer();
 
     applyRemoteAlivePolicy();
+    checkDeferredRelease();
 
     if (handshakeStatus_ref != IDLE_HANDSHAKE && 
         handshakeStatus_ref != COMPLETE_HANDSHAKE && 
@@ -189,6 +191,28 @@ void AegisNanoController::checkTakeoverTimer() {
             requestStateTransition(PARTIAL_PRIMARY);
         }
     }
+}
+
+void AegisNanoController::checkDeferredRelease() {
+    if (!has_deferred_release) return;
+    if (!canGiveControl()) return;
+
+    // We can now safely release — grant the deferred motors
+    std::cout << "[Auth] Nano entering safe state. Releasing deferred motors." << std::endl;
+
+    for (size_t i = 0; i < MAX_MOTORS; i++) {
+        if (deferred_release[i] && auth_table[i]) {
+            auth_table[i] = false;
+            std::cout << "[Auth] Nano released motor " << (i + 10) << std::endl;
+        }
+        deferred_release[i] = false;
+    }
+    has_deferred_release = false;
+
+    // Send the grant response and updated auth table
+    sendAuthResponse(true);
+    sendAuth();
+    checkMotorControlStatus();
 }
 
 void AegisNanoController::verifyCanStatus(const CanHeartbeatPayload& hb) {
@@ -507,6 +531,71 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             }
             if(checkAuthErrors()){
                 std::cout << "ERROR state, need to resolve." << std::endl;
+            }
+            break;
+        }
+
+        case ID_REQ_AUTH: {
+            // Orin is requesting authorization for motors it can now control
+            if (len != sizeof(AuthRequestPayload)) {
+                RCLCPP_WARN(nodeHandle->get_logger(), "ID_REQ_AUTH: bad payload size");
+                break;
+            }
+            const AuthRequestPayload* payload = reinterpret_cast<const AuthRequestPayload*>(data);
+
+            if (canGiveControl()) {
+                // Safe to release immediately
+                for (size_t i = 0; i < MAX_MOTORS; i++) {
+                    if (payload->motor_states[i] && auth_table[i]) {
+                        auth_table[i] = false;
+                        std::cout << "[Auth] Nano releasing motor " << (i + 10) 
+                                  << " to Orin per request." << std::endl;
+                    }
+                }
+                sendAuthResponse(true);
+                sendAuth();
+                checkMotorControlStatus();
+            }
+            else {
+                // Not safe — defer the release
+                std::cout << "[Auth] Nano deferring auth release (not safe)." << std::endl;
+                for (size_t i = 0; i < MAX_MOTORS; i++) {
+                    if (payload->motor_states[i] && auth_table[i]) {
+                        deferred_release[i] = true;
+                        has_deferred_release = true;
+                    }
+                }
+                sendAuthResponse(false);
+            }
+            break;
+        }
+
+        case ID_AUTH_RESPONSE: {
+            // Response to Nano's auth request (if Nano ever requests from Orin)
+            if (len != sizeof(AuthRequestPayload)) {
+                RCLCPP_WARN(nodeHandle->get_logger(), "ID_AUTH_RESPONSE: bad payload size");
+                break;
+            }
+            const AuthRequestPayload* payload = reinterpret_cast<const AuthRequestPayload*>(data);
+
+            if (payload->granted) {
+                for (size_t i = 0; i < MAX_MOTORS; i++) {
+                    if (payload->motor_states[i]) {
+                        bool can_visible = can0_table[i] || can1_table[i];
+                        bool node_alive = isMotorNodeAlive(static_cast<uint8_t>(i));
+                        if (can_visible && node_alive) {
+                            auth_table[i] = true;
+                            remote_auth[i] = false;
+                            std::cout << "[Auth] Nano authorized for motor " << (i + 10) 
+                                      << " (granted by Orin)." << std::endl;
+                        }
+                    }
+                }
+                sendAuth();
+                checkMotorControlStatus();
+            }
+            else {
+                std::cout << "[Auth] Auth request denied by Orin." << std::endl;
             }
             break;
         }

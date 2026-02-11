@@ -15,6 +15,15 @@ public:
                     std::function<void(bool)> callback = nullptr
                     );
     
+    SimpleTimer auth_request_timer;
+    int auth_request_attempts = 0;
+    static constexpr int AUTH_REQUEST_BASE_MS = 200;
+    static constexpr int AUTH_REQUEST_MAX_BACKOFF_MS = 5000;
+    static constexpr int AUTH_REQUEST_BACKOFF_THRESHOLD = 3;
+    bool auth_request_pending = false;
+
+    void checkAuthRequestTimer();
+    int getAuthRequestDelay() const;
     int handshake_step = 0;
     SimpleTimer retry_timer; 
     bool hasControl = false;
