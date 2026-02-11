@@ -10,10 +10,10 @@
 
 // Map internal IDs to Gazebo Controller Topics
 const std::map<int, std::string> ID_TO_GAZEBO_TOPIC = {
-    {10, "/falcon_10_controller/commands"},
-    {11, "/falcon_11_controller/commands"},
-    {12, "/falcon_12_controller/commands"},
-    {13, "/falcon_13_controller/commands"}
+    {11, "/falcon_10_controller/commands"},
+    {10, "/falcon_11_controller/commands"},
+    {13, "/falcon_12_controller/commands"},
+    {12, "/falcon_13_controller/commands"}
 };
 
 // Map Gazebo Joint Names to IDs (for feedback)
@@ -24,6 +24,8 @@ const std::map<std::string, int> JOINT_NAME_TO_ID = {
     {"BR_Wheel_Joint", 13}
 };
 
+double falcon10Speed, falcon11Speed, falcon12Speed, falcon13Speed;
+
 class FalconSimNode : public rclcpp::Node {
 public:
     FalconSimNode() : Node("falcon_sim_node") {
@@ -32,15 +34,11 @@ public:
             // Gazebo Command Publisher
             gazebo_publishers_[id] = this->create_publisher<std_msgs::msg::Float64MultiArray>(topic, 10);
             
-            // Client Status Publisher (e.g. "talon_10_info" to match your code conventions if needed)
-            // Your communication node listens to "talon_10_info" or "falcon_10_status"? 
-            // Based on communication_node.cpp, it listens to "talon_10_info" for Falcon 1
             std::string status_topic = "talon_" + std::to_string(id) + "_info"; 
             status_publishers_[id] = this->create_publisher<messages::msg::FalconStatus>(status_topic, 10);
         }
 
         // 2. Subscribe to Drivetrain Node Outputs
-        // We need individual subscriptions for each motor speed topic
         sub_10_ = this->create_subscription<std_msgs::msg::Float32>(
             "falcon_10_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(10, msg->data); RCLCPP_INFO(this->get_logger(), "Falcon 10 data: %f", msg->data); });
         
@@ -85,6 +83,15 @@ private:
     void send_command(int id, float speed_percent) {
         // Convert Percentage (-1.0 to 1.0) to Rad/s
         // Assuming max speed is roughly 10 rad/s (approx 100 RPM)
+        if(id == 10)
+            falcon10Speed = speed_percent;
+        if(id == 11)
+            falcon11Speed = speed_percent;
+        if(id == 12)
+            falcon12Speed = speed_percent;
+        if(id == 13)
+            falcon13Speed = speed_percent;
+
         double target_velocity = speed_percent * 10.0; 
 
         std_msgs::msg::Float64MultiArray gazebo_cmd;
@@ -113,7 +120,15 @@ private:
         for (auto const& [id, pub] : status_publishers_) {
             messages::msg::FalconStatus status;
             status.device_id = id;
-            
+            if(id == 10)
+                status.output_percent = falcon10Speed;
+            if(id == 11)
+                status.output_percent = falcon11Speed;
+            if(id == 12)
+                status.output_percent = falcon12Speed;
+            if(id == 13)
+                status.output_percent = falcon13Speed;
+        
             // Conversions to match Real Hardware units
             status.sensor_position = motor_states_[id].position * (2048.0 / (2.0 * M_PI)); // Ticks
             status.sensor_velocity = (motor_states_[id].velocity * (2048.0 / (2.0 * M_PI))) / 10.0; // Ticks/100ms

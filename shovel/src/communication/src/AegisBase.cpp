@@ -113,12 +113,13 @@ std::string AegisBase::stateToString(SystemStatus state) {
 void AegisBase::receivedMotor10(){
     motor10NodeTimer.restart();
     motor10NodeActive = true;
+
 }
 
 void AegisBase::receivedMotor11(){
     motor11NodeTimer.restart();
     motor11NodeActive = true;
-
+    
 }
 
 void AegisBase::receivedMotor12(){

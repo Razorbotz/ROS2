@@ -649,7 +649,18 @@ void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus:
  * @return void
  * */
 void falconStatusCallback(const std::string& name, const messages::msg::FalconStatus::SharedPtr talonStatus, int& counter, Falcon& falcon){
-    //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
+    if(name == "Falcon 1"){
+        orinController->receivedMotor10();
+    }
+    if(name == "Falcon 2"){
+        orinController->receivedMotor11();
+    }
+    if(name == "Falcon 3"){
+        orinController->receivedMotor12();
+    }
+    if(name == "Falcon 4"){
+        orinController->receivedMotor13();
+    }
     counter++;
     if(counter % 20 == 0){
         if(rssi < CRIT_THRESH)

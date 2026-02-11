@@ -4,6 +4,7 @@
 #include <atomic>
 #include <netinet/in.h>
 #include <functional>
+#include "SimpleTimer.hpp"
 
 // --- PROTOCOL CONSTANTS ---
 static constexpr uint16_t HB_MAGIC = 0xBEEF;
@@ -205,6 +206,14 @@ struct MotorListPayload {
 
 constexpr size_t MAX_MOTORS = 8; 
 constexpr size_t MAX_NODES = 12; 
+
+struct MotorState {
+    bool can0_up;
+    bool can1_up;
+    bool usingCAN0;
+    bool nodeActive;
+    SimpleTimer timer;  
+};
 
 struct MotorAuthPayload {
     uint8_t motor_states[MAX_MOTORS]; 

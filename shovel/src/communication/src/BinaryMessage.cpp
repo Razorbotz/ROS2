@@ -1049,38 +1049,143 @@ uint64_t BinaryMessage::decodeSizeBytes(std::list<uint8_t>::iterator& currentByt
     return size;
 }
 
+//Lookup table
+static const char* FieldNames[64] = {
+    "",                 // 0
+    "Device ID",        // 1
+    "Bus Voltage",      // 2
+    "Output Current",   // 3
+    "Output Percent",   // 4
+    "Temperature",      // 5
+    "Sensor Position",  // 6
+    "Sensor Velocity",  // 7
+    "Max Current",      // 8
+    "Temp Disable",     // 9
+    "Error",            // 10
+    "Voltage",          // 11
+    "Motor Number",     // 12
+    "Speed",            // 13
+    "Potentiometer",    // 14
+    "Time Without Change", // 15
+    "Max",              // 16
+    "Min",              // 17
+    "At Min",           // 18
+    "At Max",           // 19
+    "Distance",         // 20
+    "Sensorless",       // 21
+    "Robot State",      // 22
+    "Excavation State", // 23
+    "Error State",      // 24
+    "Diagnostics State",// 25
+    "Tilt State",       // 26
+    "Dump State",       // 27
+    "Level Bucket",     // 28
+    "Level Arms",       // 29
+    "Dest X",           // 30
+    "Dest Z",           // 31
+    "X",                // 32
+    "Y",                // 33
+    "Z",                // 34
+    "roll",             // 35
+    "pitch",            // 36
+    "yaw",              // 37
+    "aruco",            // 38
+    "RSSI",             // 39
+    "Wi-Fi",            // 40
+    "CAN Bus",          // 41
+    "Using Can1",       // 42
+    "RX Packets",       // 43
+    "TX Packets",       // 44
+    "CAN Bus2",         // 45
+    "RX2 Packets",      // 46
+    "TX2 Packets",      // 47
+    "First Motor",      // 48
+    "Second Motor",     // 49
+    "Num Breaks",       // 50
+    "F1 Vel",           // 51
+    "F1 RPM",           // 52
+    "F1 Speed",         // 53
+    "F2 Vel",           // 54
+    "F2 RPM",           // 55
+    "F2 Speed",         // 56
+    "F3 Vel",           // 57
+    "F3 RPM",           // 58
+    "F3 Speed",         // 59
+    "F4 Vel",           // 60
+    "F4 RPM",           // 61
+    "F4 Speed",         // 62
+    "Temp"              // 63
+};
+
+std::string BinaryMessage::decodeFieldValue(Field_Strings field)
+{
+    const uint8_t idx = static_cast<uint8_t>(field);
+    if (idx < 64) return FieldNames[idx];
+    return "Unknown";
+}
+
+
 
 void BinaryMessage::addElementBoolean(std::string label, bool boolean){
     addElementBoolean(this->topObject,label, boolean);
 }
 
+void BinaryMessage::addElementBoolean(Field_Strings field, bool boolean){
+    std::string label = decodeFieldValue(field);
+    addElementBoolean(this->topObject,label, boolean);
+}
 
 void BinaryMessage::addElementCharacter(std::string label, char character){
     addElementCharacter(this->topObject,label, character);
 }
 
+void BinaryMessage::addElementCharacter(Field_Strings field, char character){
+    std::string label = decodeFieldValue(field);
+    addElementCharacter(this->topObject,label, character);
+}
 
 void BinaryMessage::addElementInt8(std::string label, int8_t int8){
     addElementInt8(this->topObject,label, int8);
 }
 
+void BinaryMessage::addElementInt8(Field_Strings field, int8_t int8){
+    std::string label = decodeFieldValue(field);
+    addElementInt8(this->topObject,label, int8);
+}
 
 void BinaryMessage::addElementInt16(std::string label, int16_t int16){
     addElementInt16(this->topObject,label, int16);
 }
 
+void BinaryMessage::addElementInt16(Field_Strings field, int16_t int16){
+    std::string label = decodeFieldValue(field);
+    addElementInt16(this->topObject,label, int16);
+}
 
 void BinaryMessage::addElementInt32(std::string label, int32_t int32){
     addElementInt32(this->topObject,label, int32);
 }
 
+void BinaryMessage::addElementInt32(Field_Strings field, int32_t int32){
+    std::string label = decodeFieldValue(field);
+    addElementInt32(this->topObject,label, int32);
+}
 
 void BinaryMessage::addElementInt64(std::string label, int64_t int64){
     addElementInt64(this->topObject,label, int64);
 }
 
+void BinaryMessage::addElementInt64(Field_Strings field, int64_t int64){
+    std::string label = decodeFieldValue(field);
+    addElementInt64(this->topObject,label, int64);
+}
 
 void BinaryMessage::addElementUInt8(std::string label, uint8_t uint8){
+    addElementUInt8(this->topObject,label, uint8);
+}
+
+void BinaryMessage::addElementUInt8(Field_Strings field, uint8_t uint8){
+    std::string label = decodeFieldValue(field);
     addElementUInt8(this->topObject,label, uint8);
 }
 
@@ -1089,13 +1194,27 @@ void BinaryMessage::addElementUInt16(std::string label, uint16_t uint16){
     addElementUInt16(this->topObject,label, uint16);
 }
 
+void BinaryMessage::addElementUInt16(Field_Strings field, uint16_t uint16){
+    std::string label = decodeFieldValue(field);
+    addElementUInt16(this->topObject,label, uint16);
+}
+
 
 void BinaryMessage::addElementUInt32(std::string label, uint32_t uint32){
     addElementUInt32(this->topObject,label, uint32);
 }
 
+void BinaryMessage::addElementUInt32(Field_Strings field, uint32_t uint32){
+    std::string label = decodeFieldValue(field);
+    addElementUInt32(this->topObject,label, uint32);
+}
 
 void BinaryMessage::addElementUInt64(std::string label, uint64_t uint64){
+    addElementUInt64(this->topObject,label, uint64);
+}
+
+void BinaryMessage::addElementUInt64(Field_Strings field, uint64_t uint64){
+    std::string label = decodeFieldValue(field);
     addElementUInt64(this->topObject,label, uint64);
 }
 
@@ -1104,8 +1223,18 @@ void BinaryMessage::addElementFloat32(std::string label, float float32){
     addElementFloat32(this->topObject,label, float32);
 }
 
+void BinaryMessage::addElementFloat32(Field_Strings field, float float32){
+    std::string label = decodeFieldValue(field);
+    addElementFloat32(this->topObject,label, float32);
+}
+
 
 void BinaryMessage::addElementFloat64(std::string label, double float64){
+    addElementFloat64(this->topObject,label, float64);
+}
+
+void BinaryMessage::addElementFloat64(Field_Strings field, double float64){
+    std::string label = decodeFieldValue(field);
     addElementFloat64(this->topObject,label, float64);
 }
 
@@ -1114,8 +1243,18 @@ void BinaryMessage::addElementString(std::string label, std::string string){
     addElementString(this->topObject,label, string);
 }
 
+void BinaryMessage::addElementString(Field_Strings field, std::string string){
+    std::string label = decodeFieldValue(field);
+    addElementString(this->topObject,label, string);
+}
+
 
 void BinaryMessage::addElementBooleanArray(std::string label, std::vector<bool> booleanList, size_t dimensionCount, std::vector<size_t> sizeList){
+    addElementBooleanArray(this->topObject, label, booleanList, dimensionCount, sizeList);
+}
+
+void BinaryMessage::addElementBooleanArray(Field_Strings field, std::vector<bool> booleanList, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
     addElementBooleanArray(this->topObject, label, booleanList, dimensionCount, sizeList);
 }
 
@@ -1124,8 +1263,18 @@ void BinaryMessage::addElementCharacterArray(std::string label, std::vector<char
     addElementCharacterArray(this->topObject, label, characterList, dimensionCount, sizeList);
 }
 
+void BinaryMessage::addElementCharacterArray(Field_Strings field, std::vector<char> characterList, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
+    addElementCharacterArray(this->topObject, label, characterList, dimensionCount, sizeList);
+}
+
 
 void BinaryMessage::addElementInt8Array(std::string label, std::vector<int8_t> int8List, size_t dimensionCount, std::vector<size_t> sizeList){
+    addElementInt8Array(this->topObject, label, int8List, dimensionCount, sizeList);
+}
+
+void BinaryMessage::addElementInt8Array(Field_Strings field, std::vector<int8_t> int8List, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
     addElementInt8Array(this->topObject, label, int8List, dimensionCount, sizeList);
 }
 
@@ -1134,8 +1283,18 @@ void BinaryMessage::addElementInt16Array(std::string label, std::vector<int16_t>
     addElementInt16Array(this->topObject, label, int16List, dimensionCount, sizeList);
 }
 
+void BinaryMessage::addElementInt16Array(Field_Strings field, std::vector<int16_t> int16List, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
+    addElementInt16Array(this->topObject, label, int16List, dimensionCount, sizeList);
+}
+
 
 void BinaryMessage::addElementInt32Array(std::string label, std::vector<int32_t> int32List, size_t dimensionCount, std::vector<size_t> sizeList){
+    addElementInt32Array(this->topObject, label, int32List, dimensionCount, sizeList);
+}
+
+void BinaryMessage::addElementInt32Array(Field_Strings field, std::vector<int32_t> int32List, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
     addElementInt32Array(this->topObject, label, int32List, dimensionCount, sizeList);
 }
 
@@ -1144,8 +1303,18 @@ void BinaryMessage::addElementInt64Array(std::string label, std::vector<int64_t>
     addElementInt64Array(this->topObject, label, int64List, dimensionCount, sizeList);
 }
 
+void BinaryMessage::addElementInt64Array(Field_Strings field, std::vector<int64_t> int64List, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
+    addElementInt64Array(this->topObject, label, int64List, dimensionCount, sizeList);
+}
+
 
 void BinaryMessage::addElementUInt8Array(std::string label, std::vector<uint8_t> uint8List, size_t dimensionCount, std::vector<size_t> sizeList){
+    addElementUInt8Array(this->topObject, label, uint8List, dimensionCount, sizeList);
+}
+
+void BinaryMessage::addElementUInt8Array(Field_Strings field, std::vector<uint8_t> uint8List, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
     addElementUInt8Array(this->topObject, label, uint8List, dimensionCount, sizeList);
 }
 
@@ -1154,8 +1323,18 @@ void BinaryMessage::addElementUInt16Array(std::string label, std::vector<uint16_
     addElementUInt16Array(this->topObject, label, uint16List, dimensionCount, sizeList);
 }
 
+void BinaryMessage::addElementUInt16Array(Field_Strings field, std::vector<uint16_t> uint16List, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
+    addElementUInt16Array(this->topObject, label, uint16List, dimensionCount, sizeList);
+}
+
 
 void BinaryMessage::addElementUInt32Array(std::string label, std::vector<uint32_t> uint32List, size_t dimensionCount, std::vector<size_t> sizeList){
+    addElementUInt32Array(this->topObject, label, uint32List, dimensionCount, sizeList);
+}
+
+void BinaryMessage::addElementUInt32Array(Field_Strings field, std::vector<uint32_t> uint32List, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
     addElementUInt32Array(this->topObject, label, uint32List, dimensionCount, sizeList);
 }
 
@@ -1164,13 +1343,28 @@ void BinaryMessage::addElementUInt64Array(std::string label, std::vector<uint64_
     addElementUInt64Array(this->topObject, label, uint64List, dimensionCount, sizeList);
 }
 
+void BinaryMessage::addElementUInt64Array(Field_Strings field, std::vector<uint64_t> uint64List, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
+    addElementUInt64Array(this->topObject, label, uint64List, dimensionCount, sizeList);
+}
+
 
 void BinaryMessage::addElementFloat32Array(std::string label, std::vector<float> floatList, size_t dimensionCount, std::vector<size_t> sizeList){
     addElementFloat32Array(this->topObject, label, floatList, dimensionCount, sizeList);
 }
 
+void BinaryMessage::addElementFloat32Array(Field_Strings field, std::vector<float> floatList, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
+    addElementFloat32Array(this->topObject, label, floatList, dimensionCount, sizeList);
+}
+
 
 void BinaryMessage::addElementFloat64Array(std::string label, std::vector<double> doubleList, size_t dimensionCount, std::vector<size_t> sizeList){
+    addElementFloat64Array(this->topObject, label, doubleList, dimensionCount, sizeList);
+}
+
+void BinaryMessage::addElementFloat64Array(Field_Strings field, std::vector<double> doubleList, size_t dimensionCount, std::vector<size_t> sizeList){
+    std::string label = decodeFieldValue(field);
     addElementFloat64Array(this->topObject, label, doubleList, dimensionCount, sizeList);
 }
 
