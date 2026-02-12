@@ -10,9 +10,10 @@ AegisController::AegisController(rclcpp::Node::SharedPtr node,
                                  SystemStatus& sysStatus_in,
                                  HandshakeStatus& handStatus_in,
                                  ErrorCode& errCode_in,
-                                 std::function<void(bool)> callback
+                                 std::function<void(bool)> callback,
+                                 std::function<void(uint8_t motor_index, bool authorized)> auth_callback
                                  )
-    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in, callback) // [Added] Pass to Base
+    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in, callback, auth_callback) // [Added] Pass to Base
 {
 }
 
@@ -133,9 +134,7 @@ void AegisController::onEnterState(SystemStatus state) {
             remoteStatus.WIFI_UP = false;
             remoteStatus.CAN0_UP = false;
             remoteStatus.CAN1_UP = false;
-            if(!motorsAuthorized){
-                enableMotorAuthorization();
-            }
+            enableMotorAuthorization();
             // When transitioning to the SINGLE_FC, need to remove any 
             // authorization that the peer has
             //clearRemoteAuth();
@@ -208,6 +207,39 @@ void AegisController::checkTimers() {
 
     applyRemoteAlivePolicy(); 
     checkAuthRequestTimer();
+    if(systemStatus_ref == PARTIAL_PRIMARY && handshakeStatus_ref == COMPLETE_HANDSHAKE){
+        // Only request control if we actually have all motors authorized
+        bool all_authorized = true;
+        for(size_t i = 0; i < MAX_MOTORS; i++){
+            if(!auth_table[i]){
+                all_authorized = false;
+                break;
+            }
+        }
+        
+        if(all_authorized && !checkRemoteAuthStatus()){
+            if(!request_control_timer.isActive()){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Requesting control (all motors authorized)");
+                request_control_timer.start(100);
+                requestControl();
+            }
+            else if(request_control_timer.isExpired()){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Retrying request control");
+                request_control_timer.restart();
+                requestControl();
+            }
+        }
+        else if(!all_authorized){
+            // We're in PARTIAL_PRIMARY but don't have all motors
+            // Wait for motor authorization to complete
+            request_control_timer.cancel();
+        }
+    }
+    else{
+        if(request_control_timer.isActive()){
+            request_control_timer.cancel();
+        }
+    }
 
     if (handshakeStatus_ref != IDLE_HANDSHAKE && 
         handshakeStatus_ref != COMPLETE_HANDSHAKE && 
@@ -673,11 +705,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         }
             
         case ID_GRANT_CONTROL:{
-            // Response from Nano to Orin to take control
-            if(systemStatus_ref == PARTIAL_PRIMARY){
-                
-            }
-            if(systemStatus_ref == STANDBY){
+            if(systemStatus_ref == PARTIAL_PRIMARY || systemStatus_ref == STANDBY){
                 hasControl = true;
             }
             else{
@@ -1034,6 +1062,11 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                 advanceHandshake(); 
             }
             else if (systemStatus_ref == STOP) {
+                // Peer joined while in STOP — start handshake but 
+                // don't transition yet. Motor auth evaluation after
+                // handshake completion will determine the right state.
+                std::cout << "[System] Peer Rejoining from STOP. Starting handshake." << std::endl;
+                // Need a valid dual-FC state to handshake from.
                 requestStateTransition(PARTIAL_PRIMARY);
                 handshakeStatus_ref = CONTROL_HANDSHAKE;
                 handshake_step = 1;

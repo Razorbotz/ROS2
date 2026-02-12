@@ -8,8 +8,6 @@ void AegisBase::initAegis(){
     boot_timer.start(1000); 
 }
 
-// You likely need to add this logic to a check function called by your main loop
-// Since AegisBase doesn't have a main loop, ensure your Controller's checkTimers calls this logic.
 void AegisBase::checkBootTimer() {
     if (systemStatus_ref == BOOT) {
         if (boot_timer.isExpired()) {
@@ -71,7 +69,8 @@ bool AegisBase::isValidTransition(SystemStatus from, SystemStatus to) {
         case STANDBY:
             return (to == SINGLE_FC ||       // Peer died, need to take over
                     to == PRIMARY   ||       // Normal handover
-                    to == PARTIAL_SECONDARY);
+                    to == PARTIAL_SECONDARY ||
+                    to == STOP);
             
         case STOP:
             return (to == PARTIAL_PRIMARY || // Recovered FC2, still missing motor
@@ -193,11 +192,9 @@ void AegisBase::updateConnectionStatus(bool connected){
     if(this->update_sender_state){
         if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY 
         || systemStatus_ref == SINGLE_FC || !remoteStatus.CONNECTED){
-            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 1");
             this->update_sender_state(true);
         }
         else{
-            RCLCPP_INFO(nodeHandle->get_logger(), "HERE 2");
             this->update_sender_state(false);
         }
     }
@@ -401,7 +398,9 @@ void AegisBase::alertNotPrimary(){
 
 // ID 203
 void AegisBase::requestControl(){
+    RCLCPP_INFO(nodeHandle->get_logger(), "Requesting control");
     if(!checkRemoteAlive()) return;
+    RCLCPP_INFO(nodeHandle->get_logger(), "Sending request control");
     hb_link.send_data(203, "", 0);
 }
 
@@ -703,6 +702,9 @@ void AegisBase::updateMotorAuthorization(uint8_t motor_id, bool authorized) {
         adj_id = motor_id;
     if (adj_id < MAX_MOTOR_ID) {
         auth_table[adj_id] = authorized;
+        if (update_motor_auth) {
+            update_motor_auth(adj_id, authorized);
+        }
     }
     else {
         std::cout << "Motor ID out of bounds: " << (int)motor_id << std::endl;
@@ -756,22 +758,39 @@ bool AegisBase::isMotorAuthorized(uint8_t motor_id) const {
 }
 
 void AegisBase::enableMotorAuthorization(){
-    if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || systemStatus_ref == SINGLE_FC){
+    if (handshakeStatus_ref == CONTROL_HANDSHAKE && handshakeStatus_ref == PARAM_HANDSHAKE) {
+        std::cout << "[Auth] Deferring motor check (Handshake in progress)" << std::endl;
+        return;
+    }
+    if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || 
+       systemStatus_ref == SINGLE_FC || systemStatus_ref == PARTIAL_SECONDARY){
         std::cout << "Enabling motor authorization" << std::endl;
         for(int i = 0; i < MAX_MOTOR_ID; i++){
             if(can0_table[i] || can1_table[i]){
                 auth_table[i] = true;
+                if (update_motor_auth) update_motor_auth(i, true);
             }
             else{
-                std::cout << "Motor " << i << "not authorized" << std::endl;
+                std::cout << "Motor " << i << " not authorized" << std::endl;
                 auth_table[i] = false;
+                if (update_motor_auth) update_motor_auth(i, false);
                 if(systemStatus_ref == PRIMARY){
                     std::cout << "Switching to PARTIAL_PRIMARY" << std::endl;
                     requestStateTransition(PARTIAL_PRIMARY);
                     alertSystemStatusChange();
                 }
-                if(systemStatus_ref == SINGLE_FC){
+                else if(systemStatus_ref == SINGLE_FC){
                     std::cout << "Switching to STOP" << std::endl;
+                    requestStateTransition(STOP);
+                    alertSystemStatusChange();
+                }
+                else if(systemStatus_ref == PARTIAL_PRIMARY){
+                    std::cout << "Switching to STOP (from PARTIAL_PRIMARY)" << std::endl;
+                    requestStateTransition(STOP);
+                    alertSystemStatusChange();
+                }
+                else if(systemStatus_ref == PARTIAL_SECONDARY){
+                    std::cout << "Switching to STOP (from PARTIAL_SECONDARY)" << std::endl;
                     requestStateTransition(STOP);
                     alertSystemStatusChange();
                 }
@@ -783,10 +802,17 @@ void AegisBase::enableMotorAuthorization(){
 
 bool AegisBase::processRemoteAuth(const uint8_t motor_states[MAX_MOTORS]){
     for (size_t i = 0; i < MAX_MOTORS; i++) {
+        // Only one computer can have authorization for any motor
         if(auth_table[i] == motor_states[i] && auth_table[i] == 1){
             auth_table[i] = !motor_states[i];
+            if (update_motor_auth) update_motor_auth(i, false);
+            std::cout << "MOTOR " << i + 10 << " not authorized" << std::endl;
         }
         remote_auth[i] = motor_states[i];
+        if(remote_auth[i])
+            std::cout << "REMOTE MOTOR " << i + 10 << " authorized" << std::endl;
+        else
+            std::cout << "REMOTE MOTOR " << i + 10 << " not authorized" << std::endl;
     }
     return true;
 }
@@ -796,10 +822,20 @@ void AegisBase::setAuthFromRemote(const uint8_t motor_states[MAX_MOTORS]){
         if(!motor_states[i]){
             if(can0_table[i] || can1_table[i]){
                 auth_table[i] = true;
+                if (update_motor_auth) update_motor_auth(i, true);
+                std::cout << "MOTOR " << i + 10 << " authorized" << std::endl;
+            }
+            else{
+                auth_table[i] = false;
+                if (update_motor_auth) update_motor_auth(i, false);
+                std::cout << "MOTOR " << i + 10 << " not authorized" << std::endl;
             }
         }
         else{
             auth_table[i] = false;
+            if (update_motor_auth) update_motor_auth(i, false);
+            std::cout << "MOTOR " << i + 10 << " not authorized" << std::endl;
+
         }
     }
 }
@@ -833,6 +869,7 @@ bool AegisBase::checkAuthStatus(){
 bool AegisBase::checkRemoteAuthStatus(){
     for (size_t i = 0; i < MAX_MOTORS; i++) {
         if(remote_auth[i]){
+            RCLCPP_INFO(nodeHandle->get_logger(), "remote_auth[%d] true", i);
             return true;
         }
     }
@@ -883,6 +920,13 @@ bool AegisBase::canGiveControl(){
     return true;
 }
 
+bool AegisBase::inControl(){
+    if(systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY){
+        return true;
+    }
+    return false;
+}
+
 bool AegisBase::canAcceptControl(){
     return true;
 }
@@ -897,40 +941,76 @@ bool AegisBase::checkControlErrors(){
 }
 
 void AegisBase::checkMotorControlStatus(){
+    bool all_motors_ok = true;
     for (size_t i = 0; i < MAX_MOTORS; i++) {
-        std::cout << "!can0_table[" << i << "]: " << !can0_table[i] << "!can1_table[i]: " << !can1_table[i] << 
-        "!auth_table[i]: " << !auth_table[i] << std::endl;
         if((!can0_table[i] && !can1_table[i]) || !auth_table[i]){
-            std::cout << "Here" << std::endl;
+            all_motors_ok = false;
             if(systemStatus_ref == SINGLE_FC){
                 std::cout << "Entering Stop state" << std::endl;
                 requestStateTransition(STOP);
+                return;
             }
-            return;
+            // Don't return early for other states — we need to check
+            // if we should stay in current state
         }
     }
-    if(systemStatus_ref == STOP){
-        if(remoteStatus.UP == false){
-            requestStateTransition(SINGLE_FC);
-            alertedRemoteMotors = false;
-            alertedRemoteNodes = false;
-            if(!motorsAuthorized)
-                enableMotorAuthorization();
+
+    if(all_motors_ok){
+        if(systemStatus_ref == STOP){
+            if(!remoteStatus.UP){
+                // No peer — go to SINGLE_FC
+                requestStateTransition(SINGLE_FC);
+                alertedRemoteMotors = false;
+                alertedRemoteNodes = false;
+                if(!motorsAuthorized)
+                    enableMotorAuthorization();
+            }
+            else{
+                // Peer is alive — go to PARTIAL_PRIMARY
+                // (will transition to PRIMARY after Nano grants control)
+                requestStateTransition(PARTIAL_PRIMARY);
+                alertSystemStatusChange();
+            }
+        }
+        else if(systemStatus_ref == PARTIAL_PRIMARY){
+            // All motors recovered while in partial state
+            // Request takeover if remote has no auth
+            if(!checkRemoteAuthStatus()){
+                requestControl();
+            }
         }
     }
 }
-
 void AegisBase::applyRemoteAlivePolicy() {
     bool alive = hb_link.is_remote_alive();
     
     remoteStatus.UP = alive;
 
-    if (!alive) {
-        if (systemStatus_ref != BOOT && systemStatus_ref != STOP && 
+    if (alive) {
+        clearedRemoteAuth = false;
+    }
+    else {
+        if (systemStatus_ref == STOP) {
+            if (!clearedRemoteAuth) {
+                std::cout << "[Watchdog] Remote Dead. Removing remote authorization" << std::endl;
+                for (size_t i = 0; i < MAX_MOTORS; i++) {
+                    remote_auth[i] = 0;
+                }
+                alertedRemoteMotors = false;
+                alertedRemoteNodes = false;
+                clearedRemoteAuth = true; 
+            }
+            return;
+        }
+        if (systemStatus_ref != BOOT && 
             systemStatus_ref != ERROR && systemStatus_ref != SINGLE_FC) {
             
             std::cout << "[Watchdog] Remote Dead. Transitioning to SINGLE_FC." << std::endl;
             handshakeStatus_ref = IDLE_HANDSHAKE;
+            RCLCPP_INFO(nodeHandle->get_logger(), "Removing remote authorization");
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                remote_auth[i] = 0;
+            }
             requestStateTransition(SINGLE_FC);
             alertedRemoteMotors = false;
             alertedRemoteNodes = false;
@@ -1004,8 +1084,11 @@ void AegisBase::processStatusMonitorCANReport(const uint8_t can0_states[MAX_MOTO
         }
     }
 
-    if (any_auth_changed && checkRemoteAlive()) {
-        sendAuth();
+    if (any_auth_changed) {
+        if (checkRemoteAlive()) {
+            sendAuth();
+        }
+        checkMotorControlStatus();
     }
 }
 
@@ -1025,7 +1108,7 @@ void AegisBase::onMotorNodeMessageReceived(uint8_t motor_id) {
 
     // Only attempt self-authorization if we're in a controlling state
     if (systemStatus_ref != PRIMARY && systemStatus_ref != PARTIAL_PRIMARY && 
-        systemStatus_ref != SINGLE_FC) {
+        systemStatus_ref != SINGLE_FC && systemStatus_ref != STOP) {
         return;
     }
 
@@ -1042,8 +1125,11 @@ void AegisBase::onMotorNodeMessageReceived(uint8_t motor_id) {
             if (checkRemoteAlive()) {
                 sendAuth();
             }
+            // Check if this authorization completes the set
+            checkMotorControlStatus();
         }
-    } else {
+    }
+    else {
         // Remote owns it — need to request it via 102
         std::cout << "[Auth] Motor " << (int)(idx + 10) 
                   << " node alive and CAN visible, but remote has auth. Sending 102."

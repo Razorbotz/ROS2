@@ -9,9 +9,10 @@ AegisNanoController::AegisNanoController(rclcpp::Node::SharedPtr node,
                                  SystemStatus& sysStatus_in,
                                  HandshakeStatus& handStatus_in,
                                  ErrorCode& errCode_in,
-                                 std::function<void(bool)> callback
+                                 std::function<void(bool)> callback,
+                                 std::function<void(uint8_t motor_index, bool authorized)> auth_callback
                                  )
-    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in, callback) // [Added] Pass to Base
+    : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in, callback, auth_callback) // [Added] Pass to Base
 {
     deferred_release.fill(false);
 }
@@ -162,7 +163,7 @@ void AegisNanoController::checkAuthorityTimer(){
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - relinquish_start_time).count();
 
     if (elapsed >= 50) {
-        if(canGiveControl()){
+        if(canGiveControl() && inControl()){
             relinquish_timer_active = false;
             sendRelinquishRequest();
         }
@@ -315,6 +316,12 @@ void AegisNanoController::processHandshakePacket(uint16_t id, const uint8_t* dat
                                 systemStatus_ref == SINGLE_FC);
                 is_boss ? alertPrimary() : alertNotPrimary();
             }
+            else if (id == ID_PARAM_INIT || id == ID_PARAM_DATA) {
+                std::cout << "[Handshake] Peer advanced to PARAM. Catching up." << std::endl;
+                handshakeStatus_ref = PARAM_HANDSHAKE;
+                handshake_step = 0;
+                handleParamExchange(id);
+            }
             break;
 
         case PARAM_HANDSHAKE:
@@ -405,6 +412,21 @@ void AegisNanoController::handleMotorAuth(uint16_t id, const uint8_t* data) {
         std::cout << "[Handshake] Nano Complete. Current SystemStatus: " << (int)systemStatus_ref << std::endl;
         handshakeStatus_ref = COMPLETE_HANDSHAKE;
         retry_timer.cancel();
+
+        // After handshake, check if any motors are authorized anywhere.
+        // If neither FC has a motor, transition to STOP.
+        bool missing_motor = false;
+        for (size_t i = 0; i < MAX_MOTORS; i++) {
+            if(!auth_table[i] && !remote_auth[i]) missing_motor = true;
+        }
+        
+        if (missing_motor) {
+            std::cout << "[Handshake] No motors authorized on either FC. Entering STOP." << std::endl;
+            if (systemStatus_ref == PARTIAL_SECONDARY || systemStatus_ref == STANDBY) {
+                requestStateTransition(STOP);
+                alertSystemStatusChange();
+            }
+        }
     }
 }
 
@@ -414,6 +436,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
     
     if (isHandshakeMsg(id)) {
         processHandshakePacket(id, data);
+        if(id != ID_ASSIGN_AUTH && handshakeStatus_ref != COMPLETE_HANDSHAKE)
         return;
     }
     
@@ -503,6 +526,20 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
             processRemoteAuth(payload->motor_states);
             setAuthFromRemote(payload->motor_states);
+            bool authorized = true;
+            bool localAuth = false;
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                if(!(auth_table[i] || remote_auth[i]))
+                    authorized = false;
+                if(auth_table[i])
+                    localAuth = true;
+            }
+            if(authorized && systemStatus_ref == STOP){
+                if(remoteStatus.STATUS == PARTIAL_PRIMARY || localAuth)
+                    requestStateTransition(PARTIAL_SECONDARY);
+                else
+                    requestStateTransition(STANDBY);
+            }
             for (size_t i = 0; i < MAX_MOTORS; i++) {
                 bool is_authorized = auth_table[i];
                 if (is_authorized) {
@@ -650,10 +687,12 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             // TODO: This will need guards to check whether the robot is in a 
             // mission critical phase of flight, such as motors moving or other 
             // criteria
+
             if(canGiveControl()){
                 grantControl();
                 relinquish_timer_active = false;
-                requestStateTransition(STANDBY);
+                if(systemStatus_ref != STOP)
+                    requestStateTransition(STANDBY);
             }
             else{
                 denyControl();
@@ -1012,7 +1051,9 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                 handshake_step = 0;
             }
             else if (systemStatus_ref == STOP) {
-                requestStateTransition(STANDBY);
+                std::cout << "[System] Peer Rejoining while in STOP. Initiating Handshake." << std::endl;
+                handshakeStatus_ref = IDLE_HANDSHAKE; 
+                handshake_step = 0;
             }
             break;    
         }

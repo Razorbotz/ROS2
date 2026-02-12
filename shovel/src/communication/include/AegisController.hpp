@@ -12,7 +12,8 @@ public:
                     SystemStatus& systemStatus_ref,
                     HandshakeStatus& handshakeStatus_ref,
                     ErrorCode& errorCode_ref,
-                    std::function<void(bool)> callback = nullptr
+                    std::function<void(bool)> callback = nullptr,
+                    std::function<void(uint8_t motor_index, bool authorized)> update_motor_auth = nullptr
                     );
     
     SimpleTimer auth_request_timer;
@@ -21,6 +22,8 @@ public:
     static constexpr int AUTH_REQUEST_MAX_BACKOFF_MS = 5000;
     static constexpr int AUTH_REQUEST_BACKOFF_THRESHOLD = 3;
     bool auth_request_pending = false;
+
+    SimpleTimer request_control_timer;
 
     void checkAuthRequestTimer();
     int getAuthRequestDelay() const;

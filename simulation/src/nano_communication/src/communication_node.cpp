@@ -146,6 +146,7 @@ CanHeartbeatPayload orin_hb {0x01, 0, 0, 0};
 #define LOCAL_IP "127.0.0.1"
 #define REMOTE_IP "192.168.50.10"
 std::atomic<bool> is_sender {false};
+std::array<std::atomic<bool>, 8> motor_publish_allowed = {false};
 
 float voltage = 0.0f;
 float temperature = 0.0f;
@@ -255,6 +256,18 @@ void updateSenderState(bool state) {
 
 void primaryStateCallback(const std_msgs::msg::Bool::SharedPtr msg) {
     updateSenderState(msg->data);
+}
+
+void updateMotorAuthCallback(uint8_t motor_index, bool authorized) {
+    if (motor_index < 8) {
+        motor_publish_allowed[motor_index].store(authorized);
+        if (authorized) {
+            RCLCPP_INFO(nodeHandle->get_logger(), "Enabled Publisher for Motor %d", motor_index + 10);
+        }
+        else {
+            RCLCPP_INFO(nodeHandle->get_logger(), "Disabled Publisher for Motor %d", motor_index + 10);
+        }
+    }
 }
 
 /**
@@ -785,7 +798,8 @@ int main(int argc, char **argv){
     }
     nanoCanLink = std::make_unique<CanLink>();
     nanoController = std::make_shared<AegisNanoController>(
-        nodeHandle, *nanoLink, *nanoCanLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus, nanoHandshakeStatus, nanoErrorCode, updateSenderState
+        nodeHandle, *nanoLink, *nanoCanLink, nanoMutex, nanoRemoteStatus, nanoRawData, nanoSysStatus,
+         nanoHandshakeStatus, nanoErrorCode, updateSenderState, updateMotorAuthCallback
     );
     using namespace std::placeholders;
     nanoLink->set_data_callback(

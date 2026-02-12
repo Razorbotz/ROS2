@@ -32,6 +32,7 @@ protected:
     ErrorCode& errorCode_ref;
     std::atomic<uint64_t> last_can_rx_time {0};
     std::function<void(bool)> update_sender_state;
+    std::function<void(uint8_t motor_index, bool authorized)> update_motor_auth;
     
     // This is used to track whether the controller has authorization
     // to control the motor
@@ -51,6 +52,7 @@ protected:
     bool alertedRemoteMotors = false;
     bool alertedRemoteNodes = false;
     bool motorsAuthorized = false;
+    bool clearedRemoteAuth = false;
     SimpleTimer boot_timer; 
     bool boot_checks_passed = false;
     std::atomic<bool> remote_shutdown_latched{false};
@@ -100,10 +102,11 @@ public:
               SystemStatus& sys_status,
               HandshakeStatus& hand_status,
               ErrorCode& error_code,
-              std::function<void(bool)> callback = nullptr)
+              std::function<void(bool)> callback = nullptr,
+              std::function<void(uint8_t motor_index, bool authorized)> auth_callback = nullptr)
             : nodeHandle(node), hb_link(link), can_link(c_link), comms_mutex(mutex), remoteStatus(r_status),
             sendRawData_ref(raw_data), systemStatus_ref(sys_status), handshakeStatus_ref(hand_status), 
-            errorCode_ref(error_code), update_sender_state(callback){
+            errorCode_ref(error_code), update_sender_state(callback), update_motor_auth(auth_callback){
             auth_table.fill(false);
             can0_table.fill(false);
             can1_table.fill(false);
@@ -261,6 +264,7 @@ public:
 
     bool canAcceptControl();
     bool canGiveControl();
+    bool inControl();
 
     bool checkControlErrors();
     void checkMotorControlStatus();

@@ -13,7 +13,8 @@ public:
                     SystemStatus& systemStatus_ref,
                     HandshakeStatus& handshakeStatus_ref,
                     ErrorCode& errorCode_ref,
-                    std::function<void(bool)> callback = nullptr
+                    std::function<void(bool)> callback = nullptr,
+                    std::function<void(uint8_t motor_index, bool authorized)> update_motor_auth = nullptr
                     );
 
     std::array<bool, MAX_MOTOR_ID> deferred_release;
