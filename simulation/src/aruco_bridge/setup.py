@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'aruco'
+package_name = 'aruco_bridge'
 
 setup(
     name=package_name,
@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-                'aruco_main = aruco.aruco_node:main',
+                'aruco_main = aruco_bridge.aruco_bridge_node:main',
             ],
     },
 )
