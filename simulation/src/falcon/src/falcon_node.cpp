@@ -25,6 +25,7 @@ const std::map<std::string, int> JOINT_NAME_TO_ID = {
 };
 
 double falcon10Speed, falcon11Speed, falcon12Speed, falcon13Speed;
+bool publishFalcon10, publishFalcon11, publishFalcon12, publishFalcon13;
 
 class FalconSimNode : public rclcpp::Node {
 public:

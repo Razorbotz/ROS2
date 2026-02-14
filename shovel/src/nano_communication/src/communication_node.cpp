@@ -143,6 +143,14 @@ CanHeartbeatPayload orin_hb {0x01, 0, 0, 0};
 #define REMOTE_IP "192.168.50.10"
 std::atomic<bool> is_sender {false};
 std::array<std::atomic<bool>, 8> motor_publish_allowed = {false};
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > falcon10StopPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > falcon11StopPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > falcon12StopPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > falcon13StopPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > talon14StopPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > talon15StopPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > talon16StopPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool_<std::allocator<void> >, std::allocator<void> > > talon17StopPublisher;
 
 float voltage = 0.0f;
 float temperature = 0.0f;
@@ -259,13 +267,40 @@ void primaryStateCallback(const std_msgs::msg::Bool::SharedPtr msg) {
 }
 
 void updateMotorAuthCallback(uint8_t motor_index, bool authorized) {
+    std_msgs::msg::Bool publish;
     if (motor_index < 8) {
         motor_publish_allowed[motor_index].store(authorized);
         if (authorized) {
+            publish.data = true;
             RCLCPP_INFO(nodeHandle->get_logger(), "Enabled Publisher for Motor %d", motor_index + 10);
         }
         else {
+            publish.data = false;
             RCLCPP_INFO(nodeHandle->get_logger(), "Disabled Publisher for Motor %d", motor_index + 10);
+        }
+        if(motor_index == 0){
+            falcon10StopPublisher->publish(publish);
+        }
+        if(motor_index == 1){
+            falcon11StopPublisher->publish(publish);
+        }
+        if(motor_index == 2){
+            falcon12StopPublisher->publish(publish);
+        }
+        if(motor_index == 3){
+            falcon13StopPublisher->publish(publish);
+        }
+        if(motor_index == 4){
+            talon14StopPublisher->publish(publish);
+        }
+        if(motor_index == 5){
+            talon15StopPublisher->publish(publish);
+        }
+        if(motor_index == 6){
+            talon16StopPublisher->publish(publish);
+        }
+        if(motor_index == 7){
+            talon17StopPublisher->publish(publish);
         }
     }
 }
@@ -889,6 +924,15 @@ int main(int argc, char **argv){
     auto autonomyStatusSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyStatus>("autonomy_status", 10, autonomyStatusCallback);
     auto systemStatusSubscriber = nodeHandle->create_subscription<messages::msg::SystemStatus>("system_status",10,systemStatusCallback);
     auto drivetrainStatusSubscriber = nodeHandle->create_subscription<messages::msg::DrivetrainStatus>("drivetrain_status",10,drivetrainStatusCallback);
+
+    falcon10Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_10_stop",1);
+    falcon11Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_11_stop",1);
+    falcon12Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_12_stop",1);
+    falcon13Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_13_stop",1);
+    talon14Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_14_stop",1);
+    talon15Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_15_stop",1);
+    talon16Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_16_stop",1);
+    talon17Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_17_stop",1);
 
     int server_fd, bytesRead; 
     int opt = 1; 

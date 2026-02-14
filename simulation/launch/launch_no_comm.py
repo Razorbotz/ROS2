@@ -108,8 +108,8 @@ def generate_launch_description():
         )
         ,
         Node(
-            package='aruco',
-            executable='aruco_main',
+            package='aruco_bridge',
+            executable='aruco_bridge_main',
             name='aruco_pose_localization',
             output='screen',
             parameters=[{

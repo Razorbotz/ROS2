@@ -338,7 +338,8 @@ void AegisBase::sendAuthRequest(){
         bool node_alive = isMotorNodeAlive(static_cast<uint8_t>(i));
         if (can_visible && node_alive && remote_auth[i] && !auth_table[i]) {
             payload.motor_states[i] = 1;
-        } else {
+        }
+        else {
             payload.motor_states[i] = 0;
         }
     }

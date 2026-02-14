@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-                'aruco_main = aruco_bridge.aruco_bridge_node:main',
+                'aruco_bridge_main = aruco_bridge.aruco_bridge_node:main',
             ],
     },
 )
