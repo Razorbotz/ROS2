@@ -925,14 +925,14 @@ int main(int argc, char **argv){
     auto systemStatusSubscriber = nodeHandle->create_subscription<messages::msg::SystemStatus>("system_status",10,systemStatusCallback);
     auto drivetrainStatusSubscriber = nodeHandle->create_subscription<messages::msg::DrivetrainStatus>("drivetrain_status",10,drivetrainStatusCallback);
 
-    falcon10Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_10_stop",1);
-    falcon11Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_11_stop",1);
-    falcon12Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_12_stop",1);
-    falcon13Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_13_stop",1);
-    talon14Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_14_stop",1);
-    talon15Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_15_stop",1);
-    talon16Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_16_stop",1);
-    talon17Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_17_stop",1);
+    falcon10StopPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_10_stop",1);
+    falcon11StopPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_11_stop",1);
+    falcon12StopPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_12_stop",1);
+    falcon13StopPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_13_stop",1);
+    talon14StopPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_14_stop",1);
+    talon15StopPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_15_stop",1);
+    talon16StopPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_16_stop",1);
+    talon17StopPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_17_stop",1);
 
     int server_fd, bytesRead; 
     int opt = 1; 

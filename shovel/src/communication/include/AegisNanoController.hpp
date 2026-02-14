@@ -30,6 +30,14 @@ public:
     void handleParamExchange(uint16_t id);
     void handleMotorAuth(uint16_t id, const uint8_t* data);
     void on_packet_received(uint16_t id, const uint8_t* data, uint16_t len);
+    
+    /**
+     * @brief Returns true if the Nano is in a state where it should
+     * process motor authorization changes from message 100 (ASSIGN_AUTH).
+     * Guards against auth changes while in STOP or other non-operational states.
+     */
+    bool canProcessAuthAssignment() const;
+    
     void checkTimers();
     void checkTakeoverTimer(); 
     void checkAuthorityTimer();

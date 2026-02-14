@@ -76,7 +76,8 @@ bool AegisBase::isValidTransition(SystemStatus from, SystemStatus to) {
             return (to == PARTIAL_PRIMARY || // Recovered FC2, still missing motor
                     to == SINGLE_FC ||       // Recovered motor, still missing FC2
                     to == ERROR ||           // Gave up
-                    to == STANDBY);          // Entered standby  
+                    to == STANDBY ||         // Entered standby 
+                    to == PARTIAL_SECONDARY); 
             
         case PARTIAL_SECONDARY:
             return (to == STANDBY ||
@@ -803,8 +804,14 @@ void AegisBase::enableMotorAuthorization(){
 
 bool AegisBase::processRemoteAuth(const uint8_t motor_states[MAX_MOTORS]){
     for (size_t i = 0; i < MAX_MOTORS; i++) {
+        // If remote is claiming this motor, cancel any pending self-auth
+        if (motor_states[i]) {
+            cancelPendingSelfAuth(static_cast<uint8_t>(i));
+        }
         // Only one computer can have authorization for any motor
         if(auth_table[i] == motor_states[i] && auth_table[i] == 1){
+            // Orin-wins tiebreaker: if remote (Orin) claims a motor we have,
+            // we yield. The Orin is the primary authority.
             auth_table[i] = !motor_states[i];
             if (update_motor_auth) update_motor_auth(i, false);
             std::cout << "MOTOR " << i + 10 << " not authorized" << std::endl;
@@ -842,16 +849,26 @@ void AegisBase::setAuthFromRemote(const uint8_t motor_states[MAX_MOTORS]){
 }
 
 bool AegisBase::checkAuthErrors(){
+    bool has_duplicate = false;
+    bool has_unowned = false;
+    
     for (size_t i = 0; i < MAX_MOTORS; i++) {
-        if(auth_table[i] == remote_auth[i]){
-            if(auth_table[i] == 1){
-                std::cout << "ERROR: Duplicate auth." << std::endl;
-            }
-            else{
-                std::cout << "ERROR: Both motors failed to auth" << std::endl;
-            }
-            return true;
+        if(auth_table[i] && remote_auth[i]){
+            has_duplicate = true;
+            std::cout << "ERROR: Duplicate auth for motor " << (i + 10) << std::endl;
         }
+        else if(!auth_table[i] && !remote_auth[i]){
+            has_unowned = true;
+        }
+    }
+    
+    if (has_duplicate) {
+        std::cout << "ERROR: Duplicate authorization detected." << std::endl;
+        return true;
+    }
+    if (has_unowned) {
+        std::cout << "WARNING: Unowned motors detected." << std::endl;
+        return true;
     }
     return false;
 }
@@ -993,13 +1010,19 @@ void AegisBase::applyRemoteAlivePolicy() {
     else {
         if (systemStatus_ref == STOP) {
             if (!clearedRemoteAuth) {
-                std::cout << "[Watchdog] Remote Dead. Removing remote authorization" << std::endl;
+                std::cout << "[Watchdog] Remote Dead while in STOP. Removing remote auth and transitioning to SINGLE_FC." << std::endl;
+                handshakeStatus_ref = IDLE_HANDSHAKE;
                 for (size_t i = 0; i < MAX_MOTORS; i++) {
                     remote_auth[i] = 0;
                 }
+                cancelAllPendingSelfAuth();
                 alertedRemoteMotors = false;
                 alertedRemoteNodes = false;
-                clearedRemoteAuth = true; 
+                clearedRemoteAuth = true;
+                // Transition to SINGLE_FC so the FC can self-authorize motors
+                requestStateTransition(SINGLE_FC);
+                if(!motorsAuthorized)
+                    enableMotorAuthorization();
             }
             return;
         }
@@ -1012,6 +1035,8 @@ void AegisBase::applyRemoteAlivePolicy() {
             for (size_t i = 0; i < MAX_MOTORS; i++) {
                 remote_auth[i] = 0;
             }
+            // Commit any pending self-auths immediately since remote is gone
+            cancelAllPendingSelfAuth();
             requestStateTransition(SINGLE_FC);
             alertedRemoteMotors = false;
             alertedRemoteNodes = false;
@@ -1052,7 +1077,7 @@ bool AegisBase::isMotorNodeAlive(uint8_t motor_index) const {
 void AegisBase::processStatusMonitorCANReport(const uint8_t can0_states[MAX_MOTORS],
                                                const uint8_t can1_states[MAX_MOTORS]) 
 {
-    bool any_auth_changed = false;
+    bool any_change = false;
 
     for (size_t i = 0; i < MAX_MOTORS; i++) {
         bool old_can0 = can0_table[i];
@@ -1069,27 +1094,51 @@ void AegisBase::processStatusMonitorCANReport(const uint8_t can0_states[MAX_MOTO
         if (!was_visible && now_visible) {
             std::cout << "[StatusMonitor] Motor " << (i + 10) 
                       << " now visible on CAN." << std::endl;
-
-            if (systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || 
-                systemStatus_ref == SINGLE_FC || systemStatus_ref == STOP) 
-            {
-                if (evaluateAndSelfAuthorize(static_cast<uint8_t>(i))) {
-                    any_auth_changed = true;
-                }
-            }
+            // Mark dirty so checkPendingSelfAuth / evaluateAndSelfAuthorize
+            // will be triggered on the next timer cycle
+            auth_eval_dirty = true;
+            any_change = true;
         } 
         else if (was_visible && !now_visible) {
             std::cout << "[StatusMonitor] Motor " << (i + 10) 
                       << " lost from CAN." << std::endl;
+            // Cancel any pending self-auth for this motor
+            cancelPendingSelfAuth(static_cast<uint8_t>(i));
             alertLostMotor(static_cast<uint8_t>(i + 10));
+            any_change = true;
         }
     }
 
-    if (any_auth_changed) {
-        if (checkRemoteAlive()) {
-            sendAuth();
+    // Only trigger evaluations if something actually changed
+    if (any_change && auth_eval_dirty) {
+        bool should_evaluate = false;
+        if (systemStatus_ref == PRIMARY || systemStatus_ref == PARTIAL_PRIMARY || 
+            systemStatus_ref == SINGLE_FC) {
+            should_evaluate = true;
+        } else if (systemStatus_ref == STOP) {
+            // In STOP: Orin always evaluates, Nano only if remote is dead
+            if (is_primary_fc || !hb_link.is_remote_alive()) {
+                should_evaluate = true;
+            }
         }
-        checkMotorControlStatus();
+
+        if (should_evaluate) {
+            bool any_new_auth = false;
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                if (evaluateAndSelfAuthorize(static_cast<uint8_t>(i))) {
+                    any_new_auth = true;
+                }
+            }
+            auth_eval_dirty = false;
+
+            // If Orin committed immediately, send the auth update now
+            if (any_new_auth && is_primary_fc) {
+                if (checkRemoteAlive()) {
+                    sendAuth();
+                }
+                checkMotorControlStatus();
+            }
+        }
     }
 }
 
@@ -1108,42 +1157,52 @@ void AegisBase::onMotorNodeMessageReceived(uint8_t motor_id) {
     }
 
     // Only attempt self-authorization if we're in a controlling state
+    // For Nano (is_primary_fc == false): don't self-authorize in STOP when remote is alive
+    // — the Orin should be the one to claim and assign motors
     if (systemStatus_ref != PRIMARY && systemStatus_ref != PARTIAL_PRIMARY && 
-        systemStatus_ref != SINGLE_FC && systemStatus_ref != STOP) {
-        return;
+        systemStatus_ref != SINGLE_FC) {
+        if (is_primary_fc && systemStatus_ref == STOP) {
+            // Orin in STOP: allowed to self-authorize
+        } else if (!is_primary_fc && systemStatus_ref == STOP && !hb_link.is_remote_alive()) {
+            // Nano in STOP with dead remote: allowed to self-authorize
+        } else {
+            return;
+        }
     }
 
-    // If we're already authorized, nothing to do
+    // If we're already authorized or pending, nothing to do
     if (auth_table[idx]) return;
+    if (pending_self_auth[idx]) return;
 
     // Check if CAN is visible for this motor
     bool can_visible = can0_table[idx] || can1_table[idx];
     if (!can_visible) return;
 
     if (!remote_auth[idx]) {
-        // Nobody owns it — claim it
-        if (evaluateAndSelfAuthorize(idx)) {
+        // Nobody owns it — evaluate self-auth
+        if (evaluateAndSelfAuthorize(idx) && is_primary_fc) {
+            // Orin committed immediately — send auth update now
             if (checkRemoteAlive()) {
                 sendAuth();
             }
-            // Check if this authorization completes the set
             checkMotorControlStatus();
         }
+        // For Nano, checkPendingSelfAuth() commits after hold-off
     }
-    else {
-        // Remote owns it — need to request it via 102
-        std::cout << "[Auth] Motor " << (int)(idx + 10) 
-                  << " node alive and CAN visible, but remote has auth. Sending 102."
-                  << std::endl;
-        sendAuthRequest();
+    else if (is_primary_fc) {
+        // Only Orin requests auth from Nano (via 102)
+        // Nano never sends 102 — it waits for Orin to assign via 100
+        // This is handled by the auth_request_timer in AegisController::checkAuthRequestTimer
     }
+    // If Nano and remote has auth: do nothing (Nano defers to Orin)
 }
 
 bool AegisBase::evaluateAndSelfAuthorize(uint8_t motor_index) {
     if (motor_index >= MAX_MOTOR_ID) return false;
 
-    // Already authorized
+    // Already authorized or already pending
     if (auth_table[motor_index]) return false;
+    if (pending_self_auth[motor_index]) return false;
 
     // Must be visible on at least one CAN bus
     bool can_visible = can0_table[motor_index] || can1_table[motor_index];
@@ -1152,13 +1211,76 @@ bool AegisBase::evaluateAndSelfAuthorize(uint8_t motor_index) {
     // Node must be alive
     if (!isMotorNodeAlive(motor_index)) return false;
 
-    // Remote must NOT have it
+    // Remote must NOT have it (Orin-wins tiebreaker: if remote has auth, we yield)
     if (remote_auth[motor_index]) return false;
 
-    // All conditions met
-    auth_table[motor_index] = true;
-    std::cout << "[Auth] Self-authorized motor " << (int)(motor_index + 10) 
-              << " (CAN visible, node alive, remote not authorized)." << std::endl;
+    if (is_primary_fc) {
+        // Orin: authorize immediately — no hold-off needed since Orin always wins
+        auth_table[motor_index] = true;
+        if (update_motor_auth) update_motor_auth(motor_index, true);
+        std::cout << "[Auth] Orin immediately self-authorized motor " << (int)(motor_index + 10) 
+                  << " (CAN visible, node alive, remote not authorized)." << std::endl;
+        return true;
+    } else {
+        // Nano: defer authorization for SELF_AUTH_HOLDOFF_MS to give Orin time to claim first
+        pending_self_auth[motor_index] = true;
+        pending_auth_time[motor_index] = std::chrono::steady_clock::now();
+        std::cout << "[Auth] Nano pending self-auth for motor " << (int)(motor_index + 10) 
+                  << " (hold-off " << SELF_AUTH_HOLDOFF_MS << "ms)." << std::endl;
+        return true;
+    }
+}
 
-    return true;
+void AegisBase::checkPendingSelfAuth() {
+    auto now = std::chrono::steady_clock::now();
+    bool any_committed = false;
+
+    for (size_t i = 0; i < MAX_MOTOR_ID; i++) {
+        if (!pending_self_auth[i]) continue;
+
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            now - pending_auth_time[i]).count();
+
+        if (elapsed >= SELF_AUTH_HOLDOFF_MS) {
+            // Hold-off expired — check conditions still valid before committing
+            bool can_visible = can0_table[i] || can1_table[i];
+            bool node_alive = isMotorNodeAlive(static_cast<uint8_t>(i));
+
+            if (can_visible && node_alive && !remote_auth[i] && !auth_table[i]) {
+                // Commit the authorization
+                auth_table[i] = true;
+                if (update_motor_auth) update_motor_auth(i, true);
+                std::cout << "[Auth] Self-authorized motor " << (int)(i + 10) 
+                          << " (hold-off expired, CAN visible, node alive, remote not authorized)." 
+                          << std::endl;
+                any_committed = true;
+            } else {
+                std::cout << "[Auth] Pending self-auth for motor " << (int)(i + 10) 
+                          << " cancelled (conditions no longer met)." << std::endl;
+            }
+            pending_self_auth[i] = false;
+        }
+    }
+
+    if (any_committed) {
+        if (checkRemoteAlive()) {
+            sendAuth();
+        }
+        checkMotorControlStatus();
+    }
+}
+
+void AegisBase::cancelPendingSelfAuth(uint8_t motor_index) {
+    if (motor_index >= MAX_MOTOR_ID) return;
+    if (pending_self_auth[motor_index]) {
+        pending_self_auth[motor_index] = false;
+        std::cout << "[Auth] Cancelled pending self-auth for motor " << (int)(motor_index + 10) 
+                  << " (remote claimed it)." << std::endl;
+    }
+}
+
+void AegisBase::cancelAllPendingSelfAuth() {
+    for (size_t i = 0; i < MAX_MOTOR_ID; i++) {
+        pending_self_auth[i] = false;
+    }
 }

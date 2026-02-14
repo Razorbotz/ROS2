@@ -49,6 +49,24 @@ protected:
     std::array<bool, MAX_MOTOR_ID> remote_auth;
     // Used to track whether the remote controller can control the motor
     std::array<bool, MAX_MOTOR_ID> remote_cont;
+
+    // --- Pending Self-Authorization (50ms hold-off) ---
+    // When evaluateAndSelfAuthorize conditions are met, we don't commit
+    // immediately. Instead we set pending_self_auth[i] = true and record
+    // the timestamp. If the remote claims the motor within the hold-off
+    // window, we cancel. Only after the window expires do we commit.
+    std::array<bool, MAX_MOTOR_ID> pending_self_auth;
+    std::array<std::chrono::steady_clock::time_point, MAX_MOTOR_ID> pending_auth_time;
+    static constexpr int SELF_AUTH_HOLDOFF_MS = 50;
+
+    // --- Dirty flag for CAN/node change tracking ---
+    // Only re-evaluate self-authorization when something actually changed
+    bool auth_eval_dirty = false;
+    
+    // --- FC Role flag ---
+    // true = Orin (primary FC, authorizes immediately)
+    // false = Nano (secondary FC, defers 50ms for Orin to claim first)
+    bool is_primary_fc = false;
     bool alertedRemoteMotors = false;
     bool alertedRemoteNodes = false;
     bool motorsAuthorized = false;
@@ -114,6 +132,7 @@ public:
             node_table.fill(false);
             remote_auth.fill(false);
             remote_cont.fill(false);
+            pending_self_auth.fill(false);
             remoteStatus.STATUS = BOOT;
             motor_speeds.fill(0.0);
           }
@@ -123,6 +142,27 @@ public:
     void initAegis();
     void checkBootTimer();
     void checkNodeTimers();
+
+    /**
+     * @brief Check all pending self-authorization timers and commit
+     * any that have expired without being cancelled by the remote.
+     */
+    void checkPendingSelfAuth();
+
+    /**
+     * @brief Cancel any pending self-authorization for a motor
+     * because the remote has claimed it. Called when processing
+     * remote auth messages (100, 101).
+     * 
+     * @param motor_index The 0-based motor index (0-7).
+     */
+    void cancelPendingSelfAuth(uint8_t motor_index);
+
+    /**
+     * @brief Cancel ALL pending self-authorizations. Used when
+     * receiving a full auth state update from the remote.
+     */
+    void cancelAllPendingSelfAuth();
 
     void requestStateTransition(SystemStatus new_state);
 
@@ -331,14 +371,17 @@ protected:
 
 private:
     /**
-     * @brief Evaluates a single motor and self-authorizes if:
+     * @brief Evaluates a single motor and begins pending self-authorization if:
      *   1. The motor is visible on at least one CAN bus.
      *   2. The corresponding node is alive.
      *   3. The remote FC has NOT authorized itself for this motor.
-     * If authorization changes, returns true so the caller can batch-notify.
+     *   4. No pending auth is already in progress for this motor.
+     * Sets pending_self_auth[motor_index] = true and records timestamp.
+     * Actual authorization is committed after SELF_AUTH_HOLDOFF_MS expires
+     * in checkPendingSelfAuth(), unless cancelled by remote claim.
      *
      * @param motor_index The 0-based motor index (0-7).
-     * @return true if an authorization change was made.
+     * @return true if a NEW pending authorization was started.
      */
     bool evaluateAndSelfAuthorize(uint8_t motor_index);
 };

@@ -146,6 +146,9 @@ void AegisNanoController::checkTimers(){
 
     applyRemoteAlivePolicy();
     checkDeferredRelease();
+    
+    // Check pending self-authorization timers (50ms hold-off)
+    checkPendingSelfAuth();
 
     if (handshakeStatus_ref != IDLE_HANDSHAKE && 
         handshakeStatus_ref != COMPLETE_HANDSHAKE && 
@@ -204,6 +207,7 @@ void AegisNanoController::checkDeferredRelease() {
     for (size_t i = 0; i < MAX_MOTORS; i++) {
         if (deferred_release[i] && auth_table[i]) {
             auth_table[i] = false;
+            if (update_motor_auth) update_motor_auth(i, false);
             std::cout << "[Auth] Nano released motor " << (i + 10) << std::endl;
         }
         deferred_release[i] = false;
@@ -214,6 +218,20 @@ void AegisNanoController::checkDeferredRelease() {
     sendAuthResponse(true);
     sendAuth();
     checkMotorControlStatus();
+}
+
+bool AegisNanoController::canProcessAuthAssignment() const {
+    // Allow auth assignments in all operational states.
+    // STOP is included because receiving auth from the remote is how
+    // we transition OUT of STOP (e.g., STOP -> PARTIAL_SECONDARY).
+    // The race condition fix (hold-off + Orin-wins) prevents oscillation
+    // on self-authorization, not on receiving remote assignments.
+    return (systemStatus_ref == STANDBY || 
+            systemStatus_ref == PARTIAL_SECONDARY ||
+            systemStatus_ref == PARTIAL_PRIMARY ||
+            systemStatus_ref == PRIMARY ||
+            systemStatus_ref == SINGLE_FC ||
+            systemStatus_ref == STOP);
 }
 
 void AegisNanoController::verifyCanStatus(const CanHeartbeatPayload& hb) {
@@ -524,6 +542,25 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
             }
 
             const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+            
+            // Guard: Don't process auth assignments while in STOP
+            // The FSM must transition us out of STOP first
+            if (!canProcessAuthAssignment()) {
+                std::cout << "[Auth] Ignoring ASSIGN_AUTH while in state " 
+                          << stateToString(systemStatus_ref) << std::endl;
+                // Still acknowledge so the Orin knows we received it
+                sendAuthConfirm();
+                break;
+            }
+
+            // Cancel any pending self-authorizations that conflict with
+            // what the remote is claiming (Orin-wins tiebreaker)
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                if (payload->motor_states[i]) {
+                    cancelPendingSelfAuth(static_cast<uint8_t>(i));
+                }
+            }
+            
             processRemoteAuth(payload->motor_states);
             setAuthFromRemote(payload->motor_states);
             bool authorized = true;
@@ -559,6 +596,12 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
         case ID_CONFIRM_AUTH: {
             // Response to control request from Nano
             const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+            // Cancel pending self-auths for any motor the remote claims
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                if (payload->motor_states[i]) {
+                    cancelPendingSelfAuth(static_cast<uint8_t>(i));
+                }
+            }
             processRemoteAuth(payload->motor_states);
             for (size_t i = 0; i < MAX_MOTORS; i++) {
                 bool is_authorized = remote_auth[i];
@@ -585,6 +628,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                 for (size_t i = 0; i < MAX_MOTORS; i++) {
                     if (payload->motor_states[i] && auth_table[i]) {
                         auth_table[i] = false;
+                        if (update_motor_auth) update_motor_auth(i, false);
                         std::cout << "[Auth] Nano releasing motor " << (i + 10) 
                                   << " to Orin per request." << std::endl;
                     }

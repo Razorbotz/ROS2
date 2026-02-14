@@ -15,6 +15,7 @@ AegisController::AegisController(rclcpp::Node::SharedPtr node,
                                  )
     : AegisBase(node, link_ref, can_ref, mutex_ref, status_ref, rawData_in, sysStatus_in, handStatus_in, errCode_in, callback, auth_callback) // [Added] Pass to Base
 {
+    is_primary_fc = true;  // Orin authorizes immediately (no hold-off)
 }
 
 void AegisController::verifyCanStatus(const CanHeartbeatPayload& hb) {
@@ -169,12 +170,15 @@ void AegisController::onEnterState(SystemStatus state) {
 void AegisController::onExitState(SystemStatus state) {
     switch (state) {
         case PRIMARY:
-
+            hasControl = false;
             break;
         case STANDBY:
 
             break;
         case PARTIAL_PRIMARY:
+            // If we're leaving PARTIAL_PRIMARY without reaching PRIMARY,
+            // clear the control flag so it doesn't persist into STOP
+            hasControl = false;
             break;
 
         case PARTIAL_SECONDARY:
@@ -207,6 +211,10 @@ void AegisController::checkTimers() {
 
     applyRemoteAlivePolicy(); 
     checkAuthRequestTimer();
+    
+    // Check pending self-authorization timers (50ms hold-off)
+    checkPendingSelfAuth();
+    
     if(systemStatus_ref == PARTIAL_PRIMARY && handshakeStatus_ref == COMPLETE_HANDSHAKE){
         // Only request control if we actually have all motors authorized
         bool all_authorized = true;
@@ -217,7 +225,7 @@ void AegisController::checkTimers() {
             }
         }
         
-        if(all_authorized && !checkRemoteAuthStatus()){
+        if(all_authorized && !checkRemoteAuthStatus() && !hasControl){
             if(!request_control_timer.isActive()){
                 RCLCPP_INFO(nodeHandle->get_logger(), "Requesting control (all motors authorized)");
                 request_control_timer.start(100);
@@ -560,8 +568,17 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             }
 
             const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+            // Cancel pending self-auths for any motor the remote claims
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                if (payload->motor_states[i]) {
+                    cancelPendingSelfAuth(static_cast<uint8_t>(i));
+                }
+            }
+            // Only track remote auth — do NOT auto-assign ourselves motors
+            // the Nano didn't claim (that's setAuthFromRemote's job, which is
+            // for the secondary FC only). The Orin authorizes itself through
+            // evaluateAndSelfAuthorize / enableMotorAuthorization.
             processRemoteAuth(payload->motor_states);
-            setAuthFromRemote(payload->motor_states);
             for (size_t i = 0; i < MAX_MOTORS; i++) {
                 bool is_authorized = auth_table[i];
                 if (is_authorized) {
@@ -576,6 +593,12 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         case ID_CONFIRM_AUTH:{
             // Response to control request from Nano
             const MotorAuthPayload* payload = reinterpret_cast<const MotorAuthPayload*>(data);
+            // Cancel pending self-auths for any motor the remote claims
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                if (payload->motor_states[i]) {
+                    cancelPendingSelfAuth(static_cast<uint8_t>(i));
+                }
+            }
             processRemoteAuth(payload->motor_states);
             for (size_t i = 0; i < MAX_MOTORS; i++) {
                 bool is_authorized = remote_auth[i];
@@ -707,6 +730,10 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
         case ID_GRANT_CONTROL:{
             if(systemStatus_ref == PARTIAL_PRIMARY || systemStatus_ref == STANDBY){
                 hasControl = true;
+                std::cout << "[Control] Orin granted control. Transitioning to PRIMARY." << std::endl;
+                requestStateTransition(PRIMARY);
+                // Stop the retry timer since we got what we needed
+                request_control_timer.cancel();
             }
             else{
                 std::cout << "Orin was granted control, but is currently in state " << (int)systemStatus_ref << std::endl;
