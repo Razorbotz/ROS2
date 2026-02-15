@@ -120,6 +120,18 @@ def generate_launch_description():
         arguments=["falcon_13_controller", "--param-file", config_path]
     )
 
+    spawn_arm = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["arm_position_controller", "--param-file", config_path]
+    )
+
+    spawn_bucket = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["bucket_position_controller", "--param-file", config_path]
+    )
+
     # --- Event Handlers ---
     load_controllers = RegisterEventHandler(
         event_handler=OnProcessExit(
@@ -129,7 +141,9 @@ def generate_launch_description():
                 spawn_falcon_10,
                 spawn_falcon_11,
                 spawn_falcon_12,
-                spawn_falcon_13
+                spawn_falcon_13,
+                spawn_arm,
+                spawn_bucket
             ],
         )
     )

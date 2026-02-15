@@ -1,144 +1,240 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float32.hpp>
-#include <std_msgs/msg/float64.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
-#include <messages/msg/talon_status.hpp> 
+#include <messages/msg/talon_status.hpp>
 #include <map>
 #include <string>
 #include <cmath>
+#include <algorithm>
 
-// Map internal IDs to Gazebo Controller Topics
+static double clampd(double v, double lo, double hi) {
+    return std::max(lo, std::min(hi, v));
+}
+
+static constexpr int ARM_ID    = 14;  // "Talon 14" -> Arm actuator
+static constexpr int BUCKET_ID = 15;  // "Talon 15" -> Bucket actuator
+
+// Publish to Gazebo ros2_control position controllers
 const std::map<int, std::string> ID_TO_GAZEBO_TOPIC = {
-    {14, "/talon_14_controller/commands"},
-    {15, "/talon_15_controller/commands"},
-    {16, "/talon_16_controller/commands"},
-    {17, "/talon_17_controller/commands"}
+    {ARM_ID,    "/arm_position_controller/commands"},
+    {BUCKET_ID, "/bucket_position_controller/commands"},
 };
 
-// Map Gazebo Joint Names to IDs (for feedback)
+// Joint names in /joint_states to associate feedback with IDs
 const std::map<std::string, int> JOINT_NAME_TO_ID = {
-    {"FL_Wheel_Joint", 14},
-    {"FR_Wheel_Joint", 15},
-    {"BL_Wheel_Joint", 16},
-    {"BR_Wheel_Joint", 17}
+    {"Arm_Joint", ARM_ID},
+    {"Bucket_Joint", BUCKET_ID},
 };
 
-double talon14Speed, talon15Speed, talon16Speed, talon17Speed;
+// Input topics (from drivetrain/teleop layer)
+// Keep your existing conventions: talon_14_speed etc.
+// Interpret as "percent output" in [-1, 1]
+static const std::string ARM_INPUT_TOPIC    = "talon_14_speed";
+static const std::string BUCKET_INPUT_TOPIC = "talon_15_speed";
+
+// --------------------------
+// Actuator + joint constraints
+// --------------------------
+struct JointConfig {
+    double lower_rad;
+    double upper_rad;
+
+    double stroke_in;              // inches
+    double speed_in_per_s;         // inches/sec (max at |percent|=1)
+};
+
+static const JointConfig ARM_CFG{
+    .lower_rad = -0.6,
+    .upper_rad =  0.3,
+    .stroke_in = 10.0,
+    .speed_in_per_s = 0.5,
+};
+
+static const JointConfig BUCKET_CFG{
+    .lower_rad = -1.25,
+    .upper_rad =  0.45,
+    .stroke_in = 4.0,
+    .speed_in_per_s = 0.5,
+};
 
 class TalonSimNode : public rclcpp::Node {
 public:
     TalonSimNode() : Node("talon_sim_node") {
-        // 1. Setup Publishers to Gazebo & Status Publishers for Client
+        // 1) Publishers (Gazebo + Status)
         for (auto const& [id, topic] : ID_TO_GAZEBO_TOPIC) {
-            // Gazebo Command Publisher
             gazebo_publishers_[id] = this->create_publisher<std_msgs::msg::Float64MultiArray>(topic, 10);
-            
-            // Client Status Publisher (e.g. "talon_14_info" to match your code conventions if needed)
-            // Your communication node listens to "talon_14_info" or "talon_10_status"? 
-            // Based on communication_node.cpp, it listens to "talon_14_info" for Talon 1
-            std::string status_topic = "talon_" + std::to_string(id) + "_info"; 
+
+            std::string status_topic = "talon_" + std::to_string(id) + "_info";
             status_publishers_[id] = this->create_publisher<messages::msg::TalonStatus>(status_topic, 10);
         }
 
-        // 2. Subscribe to Drivetrain Node Outputs
-        // We need individual subscriptions for each motor speed topic
-        sub_10_ = this->create_subscription<std_msgs::msg::Float32>(
-            "talon_14_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(14, msg->data); RCLCPP_INFO(this->get_logger(), "Talon 14 data: %f", msg->data); });
-        
-        sub_11_ = this->create_subscription<std_msgs::msg::Float32>(
-            "talon_15_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(15, msg->data); RCLCPP_INFO(this->get_logger(), "Talon 15 data: %f", msg->data); });
-        
-        sub_12_ = this->create_subscription<std_msgs::msg::Float32>(
-            "talon_16_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(16, msg->data); RCLCPP_INFO(this->get_logger(), "Talon 16 data: %f", msg->data); });
-        
-        sub_13_ = this->create_subscription<std_msgs::msg::Float32>(
-            "talon_17_speed", 10, [this](const std_msgs::msg::Float32::SharedPtr msg) { send_command(17, msg->data); RCLCPP_INFO(this->get_logger(), "Talon 17 data: %f", msg->data); });
+        // Initialize commanded positions at the LOWER limit (retracted)
+        cmd_pos_rad_[ARM_ID]    = ARM_CFG.lower_rad;
+        cmd_pos_rad_[BUCKET_ID] = BUCKET_CFG.lower_rad;
 
-        // 3. Subscribe to Gazebo Feedback
+        // 2) Subscribe to user/teleop outputs (percent -1..1)
+        sub_arm_ = this->create_subscription<std_msgs::msg::Float32>(
+            ARM_INPUT_TOPIC, 10,
+            [this](const std_msgs::msg::Float32::SharedPtr msg) {
+                arm_percent_ = clampd(msg->data, -1.0, 1.0);
+            });
+
+        sub_bucket_ = this->create_subscription<std_msgs::msg::Float32>(
+            BUCKET_INPUT_TOPIC, 10,
+            [this](const std_msgs::msg::Float32::SharedPtr msg) {
+                bucket_percent_ = clampd(msg->data, -1.0, 1.0);
+            });
+
+        // 3) Subscribe to joint feedback (optional but useful)
         joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
-            "/joint_states", 10, 
+            "/joint_states", 10,
             std::bind(&TalonSimNode::joint_state_callback, this, std::placeholders::_1));
 
-        // 4. Status Update Timer (100Hz)
+        // 4) Update loop (50 Hz feels good for actuators)
+        last_update_time_ = now();
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(10), 
-            std::bind(&TalonSimNode::publish_status, this));
-            
-        RCLCPP_INFO(this->get_logger(), "Talon Simulation Bridge Started");
+            std::chrono::milliseconds(20),
+            std::bind(&TalonSimNode::update_and_publish, this));
+
+        RCLCPP_INFO(this->get_logger(), "Talon Arm/Bucket Simulation Bridge Started");
     }
 
 private:
     struct SimMotorState {
         double position = 0.0;
         double velocity = 0.0;
-        double effort = 0.0;
+        double effort   = 0.0;
     };
+
+    // Feedback state from /joint_states
     std::map<int, SimMotorState> motor_states_;
+
+    // Commanded position state (what we publish)
+    std::map<int, double> cmd_pos_rad_;
+
+    // Current “percent output” commands
+    double arm_percent_ = 0.0;
+    double bucket_percent_ = 0.0;
+
+    rclcpp::Time last_update_time_;
 
     std::map<int, rclcpp::Publisher<messages::msg::TalonStatus>::SharedPtr> status_publishers_;
     std::map<int, rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr> gazebo_publishers_;
-    
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_10_, sub_11_, sub_12_, sub_13_;
+
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_arm_, sub_bucket_;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
     rclcpp::TimerBase::SharedPtr timer_;
 
-    // Helper to send command to Gazebo
-    void send_command(int id, float speed_percent) {
-        // Convert Percentage (-1.0 to 1.0) to Rad/s
-        // Assuming max speed is roughly 10 rad/s (approx 100 RPM)
-        double target_velocity = speed_percent * 10.0; 
+    // Convert actuator percent to delta angle using linear mapping:
+    // inches/sec -> (rad/in) -> rad/sec, then integrate.
+    static double rad_per_in(const JointConfig& cfg) {
+        const double range = (cfg.upper_rad - cfg.lower_rad);
+        return (cfg.stroke_in > 1e-9) ? (range / cfg.stroke_in) : 0.0;
+    }
 
-        if(id == 14)
-            talon14Speed = speed_percent;
-        if(id == 15)
-            talon15Speed = speed_percent;
-        if(id == 16)
-            talon16Speed = speed_percent;
-        if(id == 17)
-            talon17Speed = speed_percent;
+    static int pot_from_angle(double angle_rad, const JointConfig& cfg,
+                          int pot_min = 20, int pot_max = 950) {
+        const double range = (cfg.upper_rad - cfg.lower_rad);
+        double u = 0.0;
+        if (std::abs(range) > 1e-9) {
+            u = (angle_rad - cfg.lower_rad) / range;
+        }
+        u = clampd(u, 0.0, 1.0);
 
-        std_msgs::msg::Float64MultiArray gazebo_cmd;
-        gazebo_cmd.data.push_back(target_velocity);
-        
-        if (gazebo_publishers_.count(id)) {
-            gazebo_publishers_[id]->publish(gazebo_cmd);
+        const double pot_f = pot_min + u * (pot_max - pot_min);
+        int pot = static_cast<int>(std::lround(pot_f));
+        pot = std::max(0, std::min(1024, pot));
+        return pot;
+    }
+
+
+    void publish_joint_position_cmd(int id, double pos_rad) {
+        std_msgs::msg::Float64MultiArray cmd;
+        cmd.data = {pos_rad};
+        auto it = gazebo_publishers_.find(id);
+        if (it != gazebo_publishers_.end()) {
+            it->second->publish(cmd);
         }
     }
 
-    // Read Sim Feedback from Gazebo
     void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg) {
         for (size_t i = 0; i < msg->name.size(); ++i) {
-            std::string name = msg->name[i];
-            if (JOINT_NAME_TO_ID.count(name)) {
-                int id = JOINT_NAME_TO_ID.at(name);
-                motor_states_[id].position = msg->position[i];
-                motor_states_[id].velocity = msg->velocity[i];
-                if (msg->effort.size() > i) motor_states_[id].effort = msg->effort[i]; 
-            }
+            auto it = JOINT_NAME_TO_ID.find(msg->name[i]);
+            if (it == JOINT_NAME_TO_ID.end()) continue;
+
+            int id = it->second;
+            motor_states_[id].position = msg->position[i];
+
+            if (i < msg->velocity.size()) motor_states_[id].velocity = msg->velocity[i];
+            if (i < msg->effort.size())   motor_states_[id].effort   = msg->effort[i];
         }
     }
 
-    // Publish Status to Control Client (Mirrors the physical Talon node)
+    void update_and_publish() {
+        const rclcpp::Time t = now();
+        double dt = (t - last_update_time_).seconds();
+        if (dt <= 0.0) dt = 0.02;
+        last_update_time_ = t;
+
+        // --- Arm actuator integration ---
+        step_actuator(ARM_ID, ARM_CFG, arm_percent_, dt);
+
+        // --- Bucket actuator integration ---
+        step_actuator(BUCKET_ID, BUCKET_CFG, bucket_percent_, dt);
+
+        // Publish joint commands
+        publish_joint_position_cmd(ARM_ID, cmd_pos_rad_[ARM_ID]);
+        publish_joint_position_cmd(BUCKET_ID, cmd_pos_rad_[BUCKET_ID]);
+
+        // Publish status at the same rate (or you can split timers if you want)
+        publish_status();
+    }
+
+    void step_actuator(int id, const JointConfig& cfg, double percent, double dt) {
+        // inches/sec limited by actuator speed
+        const double v_in_s = percent * cfg.speed_in_per_s;
+
+        // convert to rad/sec (linear mapping)
+        const double w_rad_s = v_in_s * rad_per_in(cfg);
+
+        // integrate commanded joint angle
+        double next = cmd_pos_rad_[id] + w_rad_s * dt;
+
+        // clamp to joint limits
+        next = clampd(next, cfg.lower_rad, cfg.upper_rad);
+        cmd_pos_rad_[id] = next;
+    }
+
     void publish_status() {
         for (auto const& [id, pub] : status_publishers_) {
             messages::msg::TalonStatus status;
             status.device_id = id;
 
-            if(id == 14)
-                status.output_percent = talon14Speed;
-            if(id == 15)
-                status.output_percent = talon15Speed;
-            if(id == 16)
-                status.output_percent = talon16Speed;
-            if(id == 17)
-                status.output_percent = talon17Speed;
-            
-            // Conversions to match Real Hardware units
-            status.sensor_position = 100; // Ticks
-            status.sensor_velocity = 0; // Ticks/100ms
-            status.output_current = 0.5; 
-            status.bus_voltage = 16.0; 
+            double output_percent = 0.0;
+            if (id == ARM_ID) output_percent = arm_percent_;
+            if (id == BUCKET_ID) output_percent = bucket_percent_;
+            status.output_percent = static_cast<float>(output_percent);
+
+            const double pos = motor_states_.count(id) ? motor_states_[id].position : cmd_pos_rad_[id];
+            const double vel = motor_states_.count(id) ? motor_states_[id].velocity : 0.0;
+
+            if (id == ARM_ID) {
+                status.sensor_position = pot_from_angle(pos, ARM_CFG);   // 0..1024, working 20..950
+            }
+            else if (id == BUCKET_ID) {
+                status.sensor_position = pot_from_angle(pos, BUCKET_CFG);
+            }
+            else {
+                status.sensor_position = 0;
+            }
+
+            status.sensor_velocity = 0;
+            if(output_percent != 0.0)
+                status.output_current = 1.0;
+            else
+                status.output_current = 0.0;
+            status.bus_voltage = 16.0;
             status.temperature = 45.0;
 
             pub->publish(status);

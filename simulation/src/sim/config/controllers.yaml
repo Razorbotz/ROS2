@@ -17,6 +17,12 @@ controller_manager:
     falcon_13_controller:
       type: forward_command_controller/ForwardCommandController
 
+    arm_position_controller:
+      type: position_controllers/JointGroupPositionController
+
+    bucket_position_controller:
+      type: position_controllers/JointGroupPositionController
+
 falcon_10_controller:
   ros__parameters:
     joints:
@@ -40,3 +46,14 @@ falcon_13_controller:
     joints:
       - BR_Wheel_Joint
     interface_name: velocity
+
+arm_position_controller:
+  ros__parameters:
+    joints: 
+      - Arm_Joint
+
+# NEW
+bucket_position_controller:
+  ros__parameters:
+    joints: 
+      - Bucket_Joint

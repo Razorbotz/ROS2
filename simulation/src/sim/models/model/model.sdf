@@ -527,14 +527,21 @@
     <joint name='Arm_Joint' type='revolute'>
       <parent>base_link</parent>
       <child>Arm</child>
+
+      <pose>0 0 0 0 0 0</pose>
+
       <axis>
         <xyz>0 0 -1</xyz>
         <limit>
-          <lower>-0.000001</lower>
-          <upper>0.0000001</upper>
-          <effort>20</effort>
-          <velocity>0.00001</velocity>
+          <lower>-0.7</lower>
+          <upper>0.3</upper>
+          <effort>120</effort>
+          <velocity>1.5</velocity>
         </limit>
+        <dynamics>
+          <damping>2.0</damping>
+          <friction>0.2</friction>
+        </dynamics>
       </axis>
     </joint>
 
@@ -542,15 +549,21 @@
     <joint name='Bucket_Joint' type='revolute'>
       <parent>Arm</parent>
       <child>Bucket</child>
+
       <pose>0 0 0 0 0 0</pose>
+
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
-          <lower>0</lower>
-          <upper>0</upper>
-          <effort>10</effort>
-          <velocity>0</velocity>
+          <lower>-1.25</lower>
+          <upper>0.45</upper>
+          <effort>80</effort>
+          <velocity>2.0</velocity>
         </limit>
+        <dynamics>
+          <damping>1.5</damping>
+          <friction>0.15</friction>
+        </dynamics>
       </axis>
     </joint>
     
