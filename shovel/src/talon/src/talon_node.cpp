@@ -28,6 +28,7 @@
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <std_msgs/msg/empty.hpp>
 #include <std_msgs/msg/string.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <messages/msg/key_state.hpp>
 
 #include <sys/ioctl.h>
@@ -94,10 +95,10 @@ std::chrono::time_point<std::chrono::high_resolution_clock> logicPrevious;
 bool printData = false;
 std::string resetString = "";
 int motorNumber = 0;
-float curr_speed = 0.0;
-int numSleep = 0;
-int N = 0;
 bool usePosition = false;
+float currentSpeed = 0.0;
+int currentPosition = 0;
+bool publish = false;
 
 bool can_socket_bind_ok(const std::string& ifname) {
     int s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
@@ -168,6 +169,19 @@ bool TEMP_DISABLE = false;
 int op_mode = 0;
 int killKey = 0;
 
+
+void publishCallback(std_msgs::msg::Bool::SharedPtr pub){
+	publish = pub->data;
+	if(publish){
+		if(usePosition){
+			talonSRX->Set(ControlMode::Position, currentSpeed);
+		}
+		else{
+			talonSRX->Set(ControlMode::PercentOutput, currentSpeed);
+		}
+	}
+}
+
 /** @brief Speed Callback Function
  * 
  * Callback function triggered when the node receives
@@ -181,7 +195,9 @@ int killKey = 0;
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
-	talonSRX->Set(ControlMode::PercentOutput, speed->data);
+	if(publish)
+		talonSRX->Set(ControlMode::PercentOutput, speed->data);
+	currentSpeed = speed->data;
 	usePosition = false;
 }
 
@@ -189,7 +205,9 @@ void positionCallback(const std_msgs::msg::Int32::SharedPtr position){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"Position---------->>> %d ", position->data);
 	//std::cout << "---------->>>  " << speed->data << std::endl;
-	talonSRX->Set(ControlMode::Position, position->data);
+	if(publish)
+		talonSRX->Set(ControlMode::Position, position->data);
+	currentPosition = position->data;
 	usePosition = true;
 }
 
@@ -235,6 +253,7 @@ int main(int argc,char** argv){
 	std::string potentiometerTopic = utils::getParameter<std::string>(nodeHandle, "potentiometer_topic", "unset");
 	std::string speedTopic = utils::getParameter<std::string>(nodeHandle, "speed_topic", "unset");
 	std::string positionTopic = utils::getParameter<std::string>(nodeHandle, "position_topic", "unset");
+	std::string stopTopic = utils::getParameter<std::string>(nodeHandle, "stop_topic", "unset");
 
 	bool invertMotor = utils::getParameter<bool>(nodeHandle, "invert_motor", false);
 	double kP = utils::getParameter<double>(nodeHandle, "kP", 1.0);
@@ -304,6 +323,7 @@ int main(int argc,char** argv){
 	auto commHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("comm_heartbeat",1,commHeartbeatCallback);
 	auto logicHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("logic_heartbeat",1,logicHeartbeatCallback);
 	auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
+	auto publishSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>(stopTopic.c_str(),1,publishCallback);
 	
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
@@ -316,7 +336,7 @@ int main(int argc,char** argv){
 	int counter = 0;
 
 	while(rclcpp::ok()){
-		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
+		if(GO && publish)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
 
 		if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){

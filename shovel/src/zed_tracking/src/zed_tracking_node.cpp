@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
     std::string resolution = utils::getParameter<std::string>(nodeHandle, "resolution", "VGA");
     double xOffset = utils::getParameter<double>(nodeHandle, "xOffset", 0.0);
 	killKey = utils::getParameter<int>(nodeHandle, "kill_key", 0);
-    printData = utils::getParameter<bool>(nodeHandle, "print_Data", false);
+    printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
 
     messages::msg::ZedPosition zedPosition;
     auto zedPositionPublisher=nodeHandle->create_publisher<messages::msg::ZedPosition>("zed_position",1);

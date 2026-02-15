@@ -33,7 +33,8 @@ def generate_launch_description():
                 {"kill_key": 50},
                 {"op_mode": 0},
                 {"print_data": False},
-                {"can_interface": "can0"}
+                {"can_interface": "can0"},
+                {"stop_topic", "talon_14_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -58,7 +59,8 @@ def generate_launch_description():
                 {"kill_key": 51},
                 {"op_mode": 0},
                 {"print_data": False},
-                {"can_interface": "can0"}
+                {"can_interface": "can0"},
+                {"stop_topic", "talon_15_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -83,7 +85,8 @@ def generate_launch_description():
                 {"kill_key": 52},
                 {"op_mode": 0},
                 {"print_data": False},
-                {"can_interface": "can0"}
+                {"can_interface": "can0"},
+                {"stop_topic", "talon_16_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -108,7 +111,8 @@ def generate_launch_description():
                 {"kill_key": 53},
                 {"op_mode": 0},
                 {"print_data": False},
-                {"can_interface": "can0"}
+                {"can_interface": "can0"},
+                {"stop_topic", "talon_17_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -134,7 +138,8 @@ def generate_launch_description():
                 {"kill_key": 54},
                 {"op_mode": 0},
                 {"print_data": False},
-                {"can_interface": "can0"}
+                {"can_interface": "can0"},
+                {"stop_topic", "falcon_10_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -160,7 +165,8 @@ def generate_launch_description():
                 {"kill_key": 55},
                 {"op_mode": 0},
                 {"print_data": False},
-                {"can_interface": "can0"}
+                {"can_interface": "can0"},
+                {"stop_topic", "falcon_11_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -186,7 +192,8 @@ def generate_launch_description():
                 {"kill_key": 56},
                 {"op_mode": 0},
                 {"print_data": False},
-                {"can_interface": "can0"}
+                {"can_interface": "can0"},
+                {"stop_topic", "falcon_12_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -212,7 +219,8 @@ def generate_launch_description():
                 {"kill_key": 57},
                 {"op_mode": 0},
                 {"print_data": False},
-                {"can_interface": "can0"}
+                {"can_interface": "can0"},
+                {"stop_topic", "falcon_13_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True

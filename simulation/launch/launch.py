@@ -42,10 +42,10 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(logic_launch_file)
         )
         ,
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(comm_launch_file)
-        )
-        ,
+#        IncludeLaunchDescription(
+#            PythonLaunchDescriptionSource(comm_launch_file)
+#        )
+#        ,
 #        IncludeLaunchDescription(
 #            PythonLaunchDescriptionSource(excav_launch_file)
 #        )

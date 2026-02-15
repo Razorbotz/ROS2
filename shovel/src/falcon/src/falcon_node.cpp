@@ -29,6 +29,7 @@
 #include <std_msgs/msg/empty.hpp>
 #include <messages/msg/key_state.hpp>
 #include <std_msgs/msg/string.hpp>
+#include <std_msgs/msg/bool.hpp>
 
 #include <sys/ioctl.h>
 #include <net/if.h>
@@ -92,6 +93,7 @@ bool TEMP_DISABLE = false;
 float Speed = 0.0;
 bool error = false;
 bool restarted = false;
+bool publish = false;
 
 // Operating modes:
 // 0 - Normal
@@ -138,7 +140,8 @@ void stopCallback(std_msgs::msg::Empty::SharedPtr empty){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"STOP");
 	GO=false;
-	talonFX->Set(ControlMode::PercentOutput, 0.0);
+	if(publish)
+		talonFX->Set(ControlMode::PercentOutput, 0.0);
 	Speed = 0.0;
 } 
 
@@ -165,6 +168,13 @@ void logicHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
 	logicPrevious = std::chrono::high_resolution_clock::now();
 }
 
+void publishCallback(std_msgs::msg::Bool::SharedPtr pub){
+	publish = pub->data;
+	if(publish){
+		talonFX->Set(ControlMode::PercentOutput, Speed);
+	}
+}
+
 /** @brief Speed Callback Function
  * 
  * Callback function triggered when the node receives
@@ -179,7 +189,8 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 	if(printData)
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	if(speed->data != Speed){
-		talonFX->Set(ControlMode::PercentOutput, speed->data);
+		if(publish)
+			talonFX->Set(ControlMode::PercentOutput, speed->data);
 		Speed = speed->data;
 	}
 }
@@ -189,7 +200,8 @@ void userSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 		RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
 	if(speed->data != Speed){
 		double targetVelocity_RPM = 6000 * speed->data; 
-		talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
+		if(publish)
+			talonFX->Set(ControlMode::Velocity, targetVelocity_RPM * 2048 / 600.0);
 		Speed = speed->data;
 	}
 }
@@ -234,6 +246,7 @@ int main(int argc,char** argv){
 	std::string speedTopic = utils::getParameter<std::string>(nodeHandle, "speed_topic", "unset");
 	std::string userTopic = utils::getParameter<std::string>(nodeHandle, "user_topic", "unset");
 	resetString = utils::getParameter<std::string>(nodeHandle, "reset_topic", "1");
+	std::string stopTopic = utils::getParameter<std::string>(nodeHandle, "stop_topic", "unset");
 	bool invertMotor = utils::getParameter<bool>(nodeHandle, "invert_motor", false);
 	double kP = utils::getParameter<double>(nodeHandle, "kP", 1.0);
 	double kI = utils::getParameter<double>(nodeHandle, "kI", 0.0);
@@ -307,6 +320,7 @@ int main(int argc,char** argv){
 	auto commHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("comm_heartbeat",1,commHeartbeatCallback);
 	auto logicHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("logic_heartbeat",1,logicHeartbeatCallback);
 	auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
+	auto publishSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>(stopTopic.c_str(),1,publishCallback);
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
@@ -316,7 +330,7 @@ int main(int argc,char** argv){
 	float maxCurrent = 0.0;
 	double busVoltage = 0.0;
 	while(rclcpp::ok()){
-		if(GO)ctre::phoenix::unmanaged::FeedEnable(100);
+		if(GO && publish)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
 
 		if(error){
