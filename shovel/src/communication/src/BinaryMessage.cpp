@@ -167,7 +167,7 @@ void BinaryMessage::addElementString(Object& object, Field_Strings field, std::s
         Data d; d.character = c;
         list.push_back(d);
     }
-    Element element(field, list, TYPE::STRING);
+    Element element(field, list, TYPE::STRING, 1, string.size());
     object.elementList.push_back(element);
 }
 
@@ -621,33 +621,28 @@ Object BinaryMessage::decodeObject(std::list<uint8_t>::iterator& currentByte){
     }
 }
 
-
-std::string BinaryMessage::decodeLabel(std::list<uint8_t>::iterator& currentByte){
-    int dataType = *currentByte;
-    currentByte++;
-
-    if (dataType == TYPE::STRING){
-        uint64_t size = decodeSizeBytes(currentByte);
-        std::string label;
-        label.reserve(size);
-        for(uint64_t i = 0; i < size; i++){
-            label += *(currentByte);
-            currentByte++;
+std::string BinaryMessage::decodeLabel(std::list<uint8_t>::iterator& it) {
+    const uint8_t type = *it++;
+    
+    if (type == TYPE::STRING) {
+        const uint64_t n = decodeSizeBytes(it);   // your iterator-based size decode
+        std::string s;
+        s.reserve((size_t)n);
+        for (uint64_t i = 0; i < n; ++i) {
+            s.push_back((char)*it++);
         }
-        return label;
+        return s;
     }
 
-    if (dataType == TYPE::UINT8){
-        uint8_t id = *currentByte;
-        currentByte++;
-        return decodeFieldValue(static_cast<Field_Strings>(id));
+    if (type == TYPE::UINT8) { // compact FieldStrings label id
+        const uint8_t id = *it++;
+        return decodeFieldValue((Field_Strings)id);
     }
 
-    std::cout << "data not in sync LABEL" << std::endl;
-    std::cout << "Label of type: " << dataType << std::endl;
+    std::cout << "data not in sync LABEL\n";
+    std::cout << "Label of type: " << (int)type << "\n";
     return "Unknown";
 }
-
 
 uint8_t BinaryMessage::decodeType(std::list<uint8_t>::iterator& currentByte){
     uint8_t type = *currentByte;
@@ -1287,74 +1282,6 @@ uint64_t BinaryMessage::decodeSizeBytes(std::list<uint8_t>::iterator& currentByt
 
     return size;
 }
-
-//Lookup table
-static const char* FieldNames[64] = {
-    "",                 // 0
-    "Device ID",        // 1
-    "Bus Voltage",      // 2
-    "Output Current",   // 3
-    "Output Percent",   // 4
-    "Temperature",      // 5
-    "Sensor Position",  // 6
-    "Sensor Velocity",  // 7
-    "Max Current",      // 8
-    "Temp Disable",     // 9
-    "Error",            // 10
-    "Voltage",          // 11
-    "Motor Number",     // 12
-    "Speed",            // 13
-    "Potentiometer",    // 14
-    "Time Without Change", // 15
-    "Max",              // 16
-    "Min",              // 17
-    "At Min",           // 18
-    "At Max",           // 19
-    "Distance",         // 20
-    "Sensorless",       // 21
-    "Robot State",      // 22
-    "Excavation State", // 23
-    "Error State",      // 24
-    "Diagnostics State",// 25
-    "Tilt State",       // 26
-    "Dump State",       // 27
-    "Level Bucket",     // 28
-    "Level Arms",       // 29
-    "Dest X",           // 30
-    "Dest Z",           // 31
-    "X",                // 32
-    "Y",                // 33
-    "Z",                // 34
-    "roll",             // 35
-    "pitch",            // 36
-    "yaw",              // 37
-    "aruco",            // 38
-    "RSSI",             // 39
-    "Wi-Fi",            // 40
-    "CAN Bus",          // 41
-    "Using Can1",       // 42
-    "RX Packets",       // 43
-    "TX Packets",       // 44
-    "CAN Bus2",         // 45
-    "RX2 Packets",      // 46
-    "TX2 Packets",      // 47
-    "First Motor",      // 48
-    "Second Motor",     // 49
-    "Num Breaks",       // 50
-    "F1 Vel",           // 51
-    "F1 RPM",           // 52
-    "F1 Speed",         // 53
-    "F2 Vel",           // 54
-    "F2 RPM",           // 55
-    "F2 Speed",         // 56
-    "F3 Vel",           // 57
-    "F3 RPM",           // 58
-    "F3 Speed",         // 59
-    "F4 Vel",           // 60
-    "F4 RPM",           // 61
-    "F4 Speed",         // 62
-    "Temp"              // 63
-};
 
 std::string BinaryMessage::decodeFieldValue(Field_Strings field)
 {
