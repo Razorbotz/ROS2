@@ -9,6 +9,7 @@ def generate_launch_description():
             executable='communication_node',
             parameters=[
                 {"robot_name": "Shovel"},
+                {"debug": False},
                 {"local": True}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},

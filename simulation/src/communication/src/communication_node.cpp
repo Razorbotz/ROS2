@@ -284,7 +284,8 @@ void updateMotorAuthCallback(uint8_t motor_index, bool authorized) {
 void send(BinaryMessage message) {
     if (!is_sender.load()) return;
 
-    RCLCPP_INFO(nodeHandle->get_logger(), "Sending Message");
+    if(debug)
+        RCLCPP_INFO(nodeHandle->get_logger(), "Sending Message");
 
     // 1. Get the raw bytes and apply the checksum.
     std::shared_ptr<std::list<uint8_t>> byteList = message.getBytes();
@@ -489,7 +490,6 @@ void send(std::string messageLabel, const messages::msg::AutonomyStatus::SharedP
     update_if_changed(message, message_changed, autonomyState.dest_z,           autonomy->dest_z,           Field_Strings::DestZ);
 
     if (message_changed) {
-        RCLCPP_INFO(nodeHandle->get_logger(), "Sending message");
         send(message);
     }
 }
@@ -843,6 +843,8 @@ int main(int argc, char **argv){
     auto stopPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("STOP",1);
     auto goPublisher=nodeHandle->create_publisher<std_msgs::msg::Empty>("GO",1);
     auto commHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat",1);
+    auto talon14Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_14_speed",1);
+    auto talon15Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_15_speed",1);
 
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
     int talon1Counter = 0, talon2Counter = 0, talon3Counter = 0, talon4Counter = 0;
@@ -1082,6 +1084,33 @@ int main(int argc, char **argv){
                 keyState.state=message[3];
                 keyPublisher->publish(keyState);
 
+                if(keyState.key == 51 || keyState.key == 52 || keyState.key == 53 || keyState.key == 54){
+                    std_msgs::msg::Float32 speed;
+                    if(keyState.state == 1){
+                        if(keyState.key == 51){
+                            speed.data = -1;
+                            talon14Publisher->publish(speed);
+                        }
+                        if(keyState.key == 52){
+                            speed.data = 1;
+                            talon14Publisher->publish(speed);
+                        }
+                        if(keyState.key == 53){
+                            speed.data = -1;
+                            talon15Publisher->publish(speed);
+                        }
+                        if(keyState.key == 54){
+                            speed.data = 1;
+                            talon15Publisher->publish(speed);
+                        }
+                    }
+                    else{
+                        speed.data = 0;
+                        talon14Publisher->publish(speed);
+                        talon15Publisher->publish(speed);
+                    }
+                }
+
                 // 0xFF52 = Up, 0xFF54 = Down, 0xFF51 = Left, 0xFF53 = Right
                 if (keyState.key == 105 || keyState.key == 107 || keyState.key == 106 || keyState.key == 108) {
                     messages::msg::AxisState jkliAxis;
@@ -1099,11 +1128,11 @@ int main(int argc, char **argv){
                     } 
                     else if (keyState.key == 108) { // 'l' -> Right (+X)
                         jkliAxis.axis = 0;
-                        jkliAxis.state = val;
+                        jkliAxis.state = -val;
                     } 
                     else if (keyState.key == 106) { // 'j' -> Left (-X)
                         jkliAxis.axis = 0;
-                        jkliAxis.state = -val;
+                        jkliAxis.state = val;
                     }
 
                     joystickAxisPublisher->publish(jkliAxis);
