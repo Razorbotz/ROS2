@@ -843,8 +843,8 @@ int main(int argc, char **argv){
     auto stopPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("STOP",1);
     auto goPublisher=nodeHandle->create_publisher<std_msgs::msg::Empty>("GO",1);
     auto commHeartbeatPublisher = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat",1);
-    auto talon14Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_14_speed",1);
-    auto talon15Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_15_speed",1);
+    auto armSpeedPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("arm_speed",1);
+    auto bucketSpeedPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("bucket_speed",1);
 
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power",1,powerCallback);
     int talon1Counter = 0, talon2Counter = 0, talon3Counter = 0, talon4Counter = 0;
@@ -1088,26 +1088,30 @@ int main(int argc, char **argv){
                     std_msgs::msg::Float32 speed;
                     if(keyState.state == 1){
                         if(keyState.key == 51){
+                            RCLCPP_INFO(nodeHandle->get_logger(), "Here 1");
                             speed.data = -1;
-                            talon14Publisher->publish(speed);
+                            armSpeedPublisher->publish(speed);
                         }
                         if(keyState.key == 52){
+                            RCLCPP_INFO(nodeHandle->get_logger(), "Here 2");
                             speed.data = 1;
-                            talon14Publisher->publish(speed);
+                            armSpeedPublisher->publish(speed);
                         }
                         if(keyState.key == 53){
+                            RCLCPP_INFO(nodeHandle->get_logger(), "Here 3");
                             speed.data = -1;
-                            talon15Publisher->publish(speed);
+                            bucketSpeedPublisher->publish(speed);
                         }
                         if(keyState.key == 54){
+                            RCLCPP_INFO(nodeHandle->get_logger(), "Here 4");
                             speed.data = 1;
-                            talon15Publisher->publish(speed);
+                            bucketSpeedPublisher->publish(speed);
                         }
                     }
                     else{
                         speed.data = 0;
-                        talon14Publisher->publish(speed);
-                        talon15Publisher->publish(speed);
+                        armSpeedPublisher->publish(speed);
+                        bucketSpeedPublisher->publish(speed);
                     }
                 }
 

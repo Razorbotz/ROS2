@@ -856,10 +856,7 @@ int Automation::checkBucketPosition(int thresh){
 
 
 /*
-This function is designed to move the arms to a specific point. It
-currently uses a while loop to run for a specified amount of time,
-which is bad practice because it will block other thread executions.
-This should probably be rewritten to use an if statement instead.
+This function is designed to move the arms to a specific point. 
 */
 void Automation::setArmPosition(int potent){
     target1 = potent;
@@ -871,10 +868,7 @@ void Automation::setArmPosition(int potent){
 
 
 /*
-This function is designed to move the bucket to a specific point. It
-currently uses a while loop to run for a specified amount of time,
-which is bad practice because it will block other thread executions.
-This should probably be rewritten to use an if statement instead.
+This function is designed to move the bucket to a specific point. 
 */
 void Automation::setBucketPosition(int potent){
     if(potent > 700)

@@ -26,12 +26,14 @@ void Automation1::automate(){
         auto start = std::chrono::high_resolution_clock::now();
         setStartTime(start);
         setGo();
-        //setArmPosition(400);
-        //setBucketPosition(100);
-        //if(checkArmPosition(10)){
+        setArmPosition(400);
+        setBucketPosition(750);
+        int result = checkArmPosition(10);
+        RCLCPP_INFO(this->node->get_logger(), "result: %d", result);
+        if(result){
             robotState = LOCATE;
             this->search.printMap();
-        //}
+        }
     }
 
     if(robotState==DIAGNOSTICS){

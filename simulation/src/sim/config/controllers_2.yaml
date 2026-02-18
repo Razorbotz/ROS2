@@ -1,0 +1,42 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+
+    joint_state_broadcaster_2:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    falcon_10_controller_2:
+      type: forward_command_controller/ForwardCommandController
+    
+    falcon_11_controller_2:
+      type: forward_command_controller/ForwardCommandController
+
+    falcon_12_controller_2:
+      type: forward_command_controller/ForwardCommandController
+
+    falcon_13_controller_2:
+      type: forward_command_controller/ForwardCommandController
+
+falcon_10_controller_2:
+  ros__parameters:
+    joints:
+      - FL_Wheel_Joint_2
+    interface_name: velocity
+
+falcon_11_controller_2:
+  ros__parameters:
+    joints:
+      - FR_Wheel_Joint_2
+    interface_name: velocity
+
+falcon_12_controller_2:
+  ros__parameters:
+    joints:
+      - BL_Wheel_Joint_2
+    interface_name: velocity
+
+falcon_13_controller_2:
+  ros__parameters:
+    joints:
+      - BR_Wheel_Joint_2
+    interface_name: velocity

@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<robot name="second_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <link name="base_link"/>
+  <link name="lidar_link"/>
+  <link name="zed2i_base_link"/>
+  <link name="d455i_base_link"/>
+
+  <link name="zed2i_left_optical_frame"/>
+
+  <joint name="zed2i_optical_joint" type="fixed">
+    <parent link="zed2i_base_link"/>
+    <child link="zed2i_left_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+
+  <joint name="base_to_lidar" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin xyz="0.85 -0.55 0.7" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="base_to_zed2i" type="fixed">
+    <parent link="base_link"/>
+    <child link="zed2i_base_link"/>
+    <origin xyz="0.76 -0.10 0.53" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="base_to_d455i" type="fixed">
+    <parent link="base_link"/>
+    <child link="d455i_base_link"/>
+    <origin xyz="0.85 -0.55 0.5" rpy="0 0 0"/>
+  </joint>
+
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control_2/GazeboSystem</plugin>
+    </hardware>
+    
+    <joint name="FL_Wheel_Joint_2">
+      <command_interface name="velocity">
+        <param name="min">-20</param>
+        <param name="max">20</param>
+      </command_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="position"/>
+    </joint>
+
+    <joint name="FR_Wheel_Joint_2">
+      <command_interface name="velocity">
+        <param name="min">-20</param>
+        <param name="max">20</param>
+      </command_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="position"/>
+    </joint>
+
+    <joint name="BL_Wheel_Joint_2">
+      <command_interface name="velocity">
+        <param name="min">-20</param>
+        <param name="max">20</param>
+      </command_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="position"/>
+    </joint>
+
+    <joint name="BR_Wheel_Joint_2">
+      <command_interface name="velocity">
+        <param name="min">-20</param>
+        <param name="max">20</param>
+      </command_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="position"/>
+    </joint>
+  </ros2_control>
+</robot>

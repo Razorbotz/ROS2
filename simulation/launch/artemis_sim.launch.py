@@ -84,7 +84,7 @@ def generate_launch_description():
         arguments=[
             '-entity', 'my_robot',
             '-file', temp_sdf_path,
-            '-x', '1.5', '-y', '1.5', '-z', '0.2'
+            '-x', '1.9', '-y', '1.75', '-z', '0.2'
         ],
         output='screen',
     )

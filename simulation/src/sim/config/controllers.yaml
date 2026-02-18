@@ -52,7 +52,6 @@ arm_position_controller:
     joints: 
       - Arm_Joint
 
-# NEW
 bucket_position_controller:
   ros__parameters:
     joints: 

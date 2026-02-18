@@ -1,6 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
+#include <std_msgs/msg/int32.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <messages/msg/talon_status.hpp>
 #include <map>
@@ -13,7 +14,9 @@ static double clampd(double v, double lo, double hi) {
 }
 
 static constexpr int ARM_ID    = 14;  // "Talon 14" -> Arm actuator
-static constexpr int BUCKET_ID = 15;  // "Talon 15" -> Bucket actuator
+static constexpr int BUCKET_ID = 16;  // "Talon 16" -> Bucket actuator
+
+bool usePosition = false;
 
 // Publish to Gazebo ros2_control position controllers
 const std::map<int, std::string> ID_TO_GAZEBO_TOPIC = {
@@ -31,7 +34,10 @@ const std::map<std::string, int> JOINT_NAME_TO_ID = {
 // Keep your existing conventions: talon_14_speed etc.
 // Interpret as "percent output" in [-1, 1]
 static const std::string ARM_INPUT_TOPIC    = "talon_14_speed";
-static const std::string BUCKET_INPUT_TOPIC = "talon_15_speed";
+static const std::string BUCKET_INPUT_TOPIC = "talon_16_speed";
+
+static const std::string ARM_POSITION_TOPIC    = "talon_14_position";
+static const std::string BUCKET_POSITION_TOPIC = "talon_16_position";
 
 // --------------------------
 // Actuator + joint constraints
@@ -70,20 +76,36 @@ public:
         }
 
         // Initialize commanded positions at the LOWER limit (retracted)
-        cmd_pos_rad_[ARM_ID]    = ARM_CFG.lower_rad;
-        cmd_pos_rad_[BUCKET_ID] = BUCKET_CFG.lower_rad;
+        cmd_pos_rad_[ARM_ID]    = 0;
+        cmd_pos_rad_[BUCKET_ID] = 0;
 
         // 2) Subscribe to user/teleop outputs (percent -1..1)
         sub_arm_ = this->create_subscription<std_msgs::msg::Float32>(
             ARM_INPUT_TOPIC, 10,
             [this](const std_msgs::msg::Float32::SharedPtr msg) {
                 arm_percent_ = clampd(msg->data, -1.0, 1.0);
+                usePosition = false;
             });
 
+        sub_arm_pos_ = this->create_subscription<std_msgs::msg::Int32>(
+            ARM_POSITION_TOPIC, 10,
+            [this](const std_msgs::msg::Int32::SharedPtr msg) {
+                arm_position_ = std::clamp(msg->data, 20, 950);
+                usePosition = true;
+            });
+        
         sub_bucket_ = this->create_subscription<std_msgs::msg::Float32>(
             BUCKET_INPUT_TOPIC, 10,
             [this](const std_msgs::msg::Float32::SharedPtr msg) {
                 bucket_percent_ = clampd(msg->data, -1.0, 1.0);
+                usePosition = false;
+            });
+        
+        sub_bucket_pos_ = this->create_subscription<std_msgs::msg::Int32>(
+            BUCKET_POSITION_TOPIC, 10,
+            [this](const std_msgs::msg::Int32::SharedPtr msg) {
+                bucket_position_ = std::clamp(msg->data, 20, 950);
+                usePosition = true;
             });
 
         // 3) Subscribe to joint feedback (optional but useful)
@@ -117,12 +139,16 @@ private:
     double arm_percent_ = 0.0;
     double bucket_percent_ = 0.0;
 
+    int arm_position_ = 0;
+    int bucket_position_ = 0;
+
     rclcpp::Time last_update_time_;
 
     std::map<int, rclcpp::Publisher<messages::msg::TalonStatus>::SharedPtr> status_publishers_;
     std::map<int, rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr> gazebo_publishers_;
 
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_arm_, sub_bucket_;
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr sub_arm_pos_, sub_bucket_pos_;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
     rclcpp::TimerBase::SharedPtr timer_;
 
@@ -134,6 +160,21 @@ private:
     }
 
     static int pot_from_angle(double angle_rad, const JointConfig& cfg,
+                          int pot_min = 20, int pot_max = 950) {
+        const double range = (cfg.upper_rad - cfg.lower_rad);
+        double u = 0.0;
+        if (std::abs(range) > 1e-9) {
+            u = (angle_rad - cfg.lower_rad) / range;
+        }
+        u = clampd(u, 0.0, 1.0);
+
+        const double pot_f = pot_max - u * (pot_max - pot_min);
+        int pot = static_cast<int>(std::lround(pot_f));
+        pot = std::max(0, std::min(1024, pot));
+        return pot;
+    }
+
+    static int bucket_pot_from_angle(double angle_rad, const JointConfig& cfg,
                           int pot_min = 20, int pot_max = 950) {
         const double range = (cfg.upper_rad - cfg.lower_rad);
         double u = 0.0;
@@ -176,6 +217,45 @@ private:
         double dt = (t - last_update_time_).seconds();
         if (dt <= 0.0) dt = 0.02;
         last_update_time_ = t;
+
+        if(usePosition){
+            const double arm_angle = motor_states_.count(ARM_ID) ? motor_states_[ARM_ID].position : cmd_pos_rad_[ARM_ID];
+            const double bucket_angle = motor_states_.count(BUCKET_ID) ? motor_states_[BUCKET_ID].position : cmd_pos_rad_[BUCKET_ID];
+
+            auto percent_from_error = [](int error, bool invert) -> double {
+                const int mag = std::abs(error);
+                if(!invert){
+                    // stop inside ±5
+                    if (mag <= 5) return 0.0;
+
+                    // slow down as you approach
+                    if (mag <= 20)  return (error > 0) ? 0.5  : -0.5;
+                    if (mag <= 50)  return (error > 0) ? 0.75 : -0.75;
+                    /* mag > 50 */  return (error > 0) ? 1.0  : -1.0;
+                }
+                else{
+                    // stop inside ±5
+                    if (mag <= 5) return 0.0;
+
+                    // slow down as you approach
+                    if (mag <= 20)  return (error > 0) ? -0.5  : 0.5;
+                    if (mag <= 50)  return (error > 0) ? -0.75 : 0.75;
+                    /* mag > 50 */  return (error > 0) ? -1.0  : 1.0;
+                }
+            };
+
+            // current pot readings (from angles)
+            int armPos    = pot_from_angle(arm_angle, ARM_CFG);
+            int bucketPos = bucket_pot_from_angle(bucket_angle, BUCKET_CFG);
+
+            // define error as target - current
+            int arm_err    = arm_position_    - armPos;
+            int bucket_err = bucket_position_ - bucketPos;
+
+            arm_percent_    = percent_from_error(arm_err, true);
+            bucket_percent_ = percent_from_error(bucket_err, false);
+
+        }
 
         // --- Arm actuator integration ---
         step_actuator(ARM_ID, ARM_CFG, arm_percent_, dt);
@@ -223,7 +303,7 @@ private:
                 status.sensor_position = pot_from_angle(pos, ARM_CFG);   // 0..1024, working 20..950
             }
             else if (id == BUCKET_ID) {
-                status.sensor_position = pot_from_angle(pos, BUCKET_CFG);
+                status.sensor_position = bucket_pot_from_angle(pos, BUCKET_CFG);
             }
             else {
                 status.sensor_position = 0;

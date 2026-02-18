@@ -457,7 +457,7 @@
     </model>
 
     <model name='tag_36_11_00011'>
-      <pose>2.5 2.5 0.4 1.58 0 0</pose>
+      <pose>2.5 2.5 0.4 1.58 1.58 0</pose>
       <static>1</static>
       <link name='link'>
         <visual name='tag_36_11_00011'>
@@ -483,5 +483,53 @@
         </collision>
       </link>
     </model>
+    
+    <model name="arena_zone_lines">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+
+      <link name="lines">
+        <pose>0 0 0.01 0 0 0</pose>
+
+        <visual name="zone_split_vertical">
+          <pose>0.94 0 0 0 0 0</pose>
+          <cast_shadows>false</cast_shadows>
+          <geometry><box><size>0.02 5.0 0.05</size></box></geometry>
+          <material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse><emissive>1 1 1 1</emissive></material>
+        </visual>
+
+        
+
+        <visual name="starting_box_horizontal">
+          <pose>2.61 0.67 0 0 0 0</pose>
+          <cast_shadows>false</cast_shadows>
+          <geometry><box><size>2 0.02 0.05</size></box></geometry>
+          <material><ambient>0 1 1 1</ambient><diffuse>1 1 1 1</diffuse><emissive>1 1 1 1</emissive></material>
+        </visual>
+
+        <visual name="starting_box_vertical">
+          <pose>1.61 1.67 0 0 0 0</pose>
+          <cast_shadows>false</cast_shadows>
+          <geometry><box><size>0.02 2.0 0.05</size></box></geometry>
+          <material><ambient>1 1 0 1</ambient><diffuse>1 1 1 1</diffuse><emissive>1 1 1 1</emissive></material>
+        </visual>
+
+        <visual name="excavation_box_vertical">
+          <pose>-.5 1.7 0 0 0 0</pose>
+          <cast_shadows>false</cast_shadows>
+          <geometry><box><size>0.02 1.5 0.05</size></box></geometry>
+          <material><ambient>1 1 0 1</ambient><diffuse>1 1 1 1</diffuse><emissive>1 1 1 1</emissive></material>
+        </visual>
+
+        <visual name="excavation_box_horizontal">
+          <pose>-2 0.95 0 0 0 0</pose>
+          <cast_shadows>false</cast_shadows>
+          <geometry><box><size>3 0.02 0.05</size></box></geometry>
+          <material><ambient>0 1 1 1</ambient><diffuse>1 1 1 1</diffuse><emissive>1 1 1 1</emissive></material>
+        </visual>
+
+      </link>
+    </model>
+
   </world>
 </sdf>

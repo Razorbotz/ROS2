@@ -18,7 +18,7 @@ def generate_launch_description():
     autonomy_launch_file = os.path.join(launch_dir, 'launch', 'launch_autonomy.py')
     logic_launch_file = os.path.join(launch_dir, 'launch', 'launch_logic.py')
     comm_launch_file = os.path.join(launch_dir, 'launch', 'launch_comm.py')
-#    excav_launch_file = os.path.join(launch_dir, 'launch', 'launch_excav.py')
+    excav_launch_file = os.path.join(launch_dir, 'launch', 'launch_excav.py')
     cam_launch_file = os.path.join(launch_dir, 'launch', 'launch_cam.py')
     drivetrain_launch_file = os.path.join(launch_dir, 'launch', 'launch_drivetrain.py')
     status_monitor_launch_file = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
@@ -46,10 +46,10 @@ def generate_launch_description():
 #            PythonLaunchDescriptionSource(comm_launch_file)
 #        )
 #        ,
-#        IncludeLaunchDescription(
-#            PythonLaunchDescriptionSource(excav_launch_file)
-#        )
-#        ,
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(excav_launch_file)
+        )
+        ,
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(cam_launch_file)
         )
