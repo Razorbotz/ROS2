@@ -208,10 +208,11 @@ void AegisController::onExitState(SystemStatus state) {
 
 void AegisController::checkTimers() {
     AegisBase::checkBootTimer();
+    AegisBase::checkNodeTimers();
 
     applyRemoteAlivePolicy(); 
     checkAuthRequestTimer();
-    
+        
     // Check pending self-authorization timers (50ms hold-off)
     checkPendingSelfAuth();
     

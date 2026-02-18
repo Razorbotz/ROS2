@@ -463,7 +463,7 @@ int main(int argc, char **argv){
     //std::thread can0_thread(can_read_loop, "can0", std::ref(motors0), std::ref(mutex0));
     //std::thread can1_thread(can_read_loop, "can1", std::ref(motors1), std::ref(mutex1));
 
-    rclcpp::Rate rate(10);
+    rclcpp::Rate rate(20);
     while(rclcpp::ok()){
 
         rclcpp::spin_some(nodeHandle);

@@ -106,7 +106,7 @@ int main(int argc, char **argv){
     systemStatusPublisher = nodeHandle->create_publisher<messages::msg::SystemStatus>("system_status",1);
     printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
 
-    rclcpp::Rate rate(10);
+    rclcpp::Rate rate(20);
     while(rclcpp::ok()){
         publishStatus();
         rclcpp::spin_some(nodeHandle);

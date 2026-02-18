@@ -111,81 +111,151 @@ std::string AegisBase::stateToString(SystemStatus state) {
 }
 
 void AegisBase::receivedMotor10(){
-    motor10NodeTimer.restart();
-    motor10NodeActive = true;
+    if(!motor10NodeActive){
+        motor10NodeActive = true;
+        motor10NodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        motor10NodeTimer.restart();
+    }
     onMotorNodeMessageReceived(10);
 }
 
 void AegisBase::receivedMotor11(){
-    motor11NodeTimer.restart();
-    motor11NodeActive = true;
+    if(!motor11NodeActive){
+        motor11NodeActive = true;
+        motor11NodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        motor11NodeTimer.restart();
+    }
     onMotorNodeMessageReceived(11);
 }
 
 void AegisBase::receivedMotor12(){
-    motor12NodeTimer.restart();
-    motor12NodeActive = true;
+    if(!motor12NodeActive){
+        motor12NodeActive = true;
+        motor12NodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        motor12NodeTimer.restart();
+    }
     onMotorNodeMessageReceived(12);
 }
 
 void AegisBase::receivedMotor13(){
-    motor13NodeTimer.restart();
-    motor13NodeActive = true;
+    if(!motor13NodeActive){
+        motor13NodeActive = true;
+        motor13NodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        motor13NodeTimer.restart();
+    }
     onMotorNodeMessageReceived(13);
 }
 
 void AegisBase::receivedMotor14(){
-    motor14NodeTimer.restart();
-    motor14NodeActive = true;
+    if(!motor14NodeActive){
+        motor14NodeActive = true;
+        motor14NodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        motor14NodeTimer.restart();
+    }
     onMotorNodeMessageReceived(14);
 }
 
 void AegisBase::receivedMotor15(){
-    motor15NodeTimer.restart();
-    motor15NodeActive = true;
+    if(!motor15NodeActive){
+        motor15NodeActive = true;
+        motor15NodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        motor15NodeTimer.restart();
+    }
     onMotorNodeMessageReceived(15);
 }
 
 void AegisBase::receivedMotor16(){
-    motor16NodeTimer.restart();
-    motor16NodeActive = true;
+    if(!motor16NodeActive){
+        motor16NodeActive = true;
+        motor16NodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        motor16NodeTimer.restart();
+    }
     onMotorNodeMessageReceived(16);
 }
 
 void AegisBase::receivedMotor17(){
-    motor17NodeTimer.restart();
-    motor17NodeActive = true;
+    if(!motor17NodeActive){
+        motor17NodeActive = true;
+        motor17NodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        motor17NodeTimer.restart();
+    }
     onMotorNodeMessageReceived(17);
 }
 
 void AegisBase::receivedLogic(){
-    logicNodeTimer.restart();
-    logicNodeActive = true;
+    if(!logicNodeActive){
+        logicNodeActive = true;
+        logicNodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        logicNodeTimer.restart();
+    }
 }
 
 void AegisBase::receivedAutonomy(){
-    autonomyNodeTimer.restart();
-    autonomyNodeActive = true;
+    if(!autonomyNodeActive){
+        autonomyNodeActive = true;
+        autonomyNodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        autonomyNodeTimer.restart();
+    }
 }   
 
 void AegisBase::receivedExcavation(){
-    excavationNodeTimer.restart();
-    excavationNodeActive = true;
+    if(!excavationNodeActive){
+        excavationNodeActive = true;
+        excavationNodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        excavationNodeTimer.restart();
+    }
 }
 
 void AegisBase::receivedStatusMonitor(){
-    statusMonitorNodeTimer.restart();
-    statusMonitorNodeActive = true;
+    if(!statusMonitorNodeActive){
+        statusMonitorNodeActive = true;
+        statusMonitorNodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        statusMonitorNodeTimer.restart();
+    }
 }
 
 void AegisBase::receivedVideoStream(){
-    videoStreamNodeTimer.restart();
-    videoStreamNodeActive = true;
+    if(!videoStreamNodeActive){
+        videoStreamNodeActive = true;
+        videoStreamNodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        videoStreamNodeTimer.restart();
+    }
 }
 
 void AegisBase::receivedZedTracking(){
-    zedTrackingNodeTimer.restart();
-    zedTrackingNodeActive = true;
+    if(!zedTrackingNodeActive){
+        zedTrackingNodeActive = true;
+        zedTrackingNodeTimer.start(NODE_TIMEOUT_MS);
+    }
+    else{
+        zedTrackingNodeTimer.restart();
+    }
 }
 
 void AegisBase::updateConnectionStatus(bool connected){
@@ -204,34 +274,58 @@ void AegisBase::updateConnectionStatus(bool connected){
 
 void AegisBase::checkNodeTimers(){
     if(motor10NodeTimer.isExpired()){
-        motor10NodeActive = false;
+        if(motor10NodeActive){
+            motor10NodeActive = false;
+            updateMotorAuthorization(10, false);
+        }
     }
     if(motor11NodeTimer.isExpired()){
-        motor11NodeActive = false;
+        if(motor11NodeActive){
+            motor11NodeActive = false;
+            updateMotorAuthorization(11, false);
+        }
     }
     
     if(motor12NodeTimer.isExpired()){
-        motor12NodeActive = false;
+        if(motor12NodeActive){
+            motor12NodeActive = false;
+            updateMotorAuthorization(12, false);
+        }
     }
     
     if(motor13NodeTimer.isExpired()){
-        motor13NodeActive = false;
+        if(motor13NodeActive){
+            motor13NodeActive = false;
+            updateMotorAuthorization(13, false);
+        }
     }
     
     if(motor14NodeTimer.isExpired()){
-        motor14NodeActive = false;
+        if(motor14NodeActive){
+            motor14NodeActive = false;
+            updateMotorAuthorization(14, false);
+        }
     }
     
     if(motor15NodeTimer.isExpired()){
-        motor15NodeActive = false;
+        if(motor15NodeActive){
+            motor15NodeActive = false;
+            updateMotorAuthorization(15, false);
+        }
     }
     
     if(motor16NodeTimer.isExpired()){
-        motor16NodeActive = false;
+        if(motor16NodeActive){
+            motor16NodeActive = false;
+            updateMotorAuthorization(16, false);
+        }
     }
     
     if(motor17NodeTimer.isExpired()){
-        motor17NodeActive = false;
+        if(motor17NodeActive){
+            motor17NodeActive = false;
+            updateMotorAuthorization(17, false);
+        }
     }
     
     if(logicNodeTimer.isExpired()){
@@ -247,7 +341,25 @@ void AegisBase::checkNodeTimers(){
     }
     
     if(statusMonitorNodeTimer.isExpired()){
-        statusMonitorNodeActive = false;
+        if(statusMonitorNodeActive){
+            statusMonitorNodeActive = false;
+            std::cout << "[StatusMonitor] Status monitor node timed out. "
+                      << "CAN detection data is stale — clearing CAN tables "
+                      << "and revoking motor authorization." << std::endl;
+
+            // CAN detection data is no longer trustworthy without the
+            // status monitor reporting. Clear the tables and revoke
+            // authorization for every motor we had authorized, since we
+            // can no longer confirm CAN visibility.
+            for (size_t i = 0; i < MAX_MOTOR_ID; i++) {
+                can0_table[i] = false;
+                can1_table[i] = false;
+                cancelPendingSelfAuth(static_cast<uint8_t>(i));
+                if (auth_table[i]) {
+                    updateMotorAuthorization(static_cast<uint8_t>(i + 10), false);
+                }
+            }
+        }
     }
     
     if(videoStreamNodeTimer.isExpired()){

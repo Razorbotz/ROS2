@@ -58,6 +58,7 @@ protected:
     std::array<bool, MAX_MOTOR_ID> pending_self_auth;
     std::array<std::chrono::steady_clock::time_point, MAX_MOTOR_ID> pending_auth_time;
     static constexpr int SELF_AUTH_HOLDOFF_MS = 50;
+    static constexpr int NODE_TIMEOUT_MS = 100;
 
     // --- Dirty flag for CAN/node change tracking ---
     // Only re-evaluate self-authorization when something actually changed

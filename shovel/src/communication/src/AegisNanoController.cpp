@@ -141,6 +141,7 @@ void AegisNanoController::onExitState(SystemStatus state) {
 
 void AegisNanoController::checkTimers(){
     AegisBase::checkBootTimer();
+    AegisBase::checkNodeTimers();
     checkAuthorityTimer();
     checkTakeoverTimer();
 
