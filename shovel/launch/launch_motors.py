@@ -34,7 +34,7 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"},
-                {"stop_topic", "talon_14_stop"}
+                {"stop_topic": "talon_14_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -60,7 +60,7 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"},
-                {"stop_topic", "talon_15_stop"}
+                {"stop_topic": "talon_15_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -86,7 +86,7 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"},
-                {"stop_topic", "talon_16_stop"}
+                {"stop_topic": "talon_16_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -112,7 +112,7 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"},
-                {"stop_topic", "talon_17_stop"}
+                {"stop_topic": "talon_17_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -139,7 +139,7 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"},
-                {"stop_topic", "falcon_10_stop"}
+                {"stop_topic": "falcon_10_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -166,7 +166,7 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"},
-                {"stop_topic", "falcon_11_stop"}
+                {"stop_topic": "falcon_11_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -193,7 +193,7 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"},
-                {"stop_topic", "falcon_12_stop"}
+                {"stop_topic": "falcon_12_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
@@ -220,7 +220,7 @@ def generate_launch_description():
                 {"op_mode": 0},
                 {"print_data": False},
                 {"can_interface": "can0"},
-                {"stop_topic", "falcon_13_stop"}
+                {"stop_topic": "falcon_13_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True

@@ -53,7 +53,7 @@ std::string interfaceName = "wlan0";
 
 constexpr size_t NUM_MOTORS = 8;
 
-int motors0[NUM_MOTORS] = {0, 0, 0, 0, 0, 0, 0, 0};
+int motors0[NUM_MOTORS] = {1, 1, 1, 1, 1, 1, 1, 1};
 int motors1[NUM_MOTORS] = {0, 0, 0, 0, 0, 0, 0, 0};
 int copy0[NUM_MOTORS] = {0};
 int copy1[NUM_MOTORS] = {0};
@@ -454,26 +454,27 @@ int main(int argc, char **argv){
     systemStatusPublisher = nodeHandle->create_publisher<messages::msg::SystemStatus>("system_status",1);
     printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
 
-    getInterfaceName();
+    //getInterfaceName();
 
-    for (size_t i = 0; i < MOTOR_IDS.size(); ++i){
-        motor_id_to_index[MOTOR_IDS[i]] = i;
-    }
+    //for (size_t i = 0; i < MOTOR_IDS.size(); ++i){
+    //    motor_id_to_index[MOTOR_IDS[i]] = i;
+    //}
 
-    std::thread can0_thread(can_read_loop, "can0", std::ref(motors0), std::ref(mutex0));
-    std::thread can1_thread(can_read_loop, "can1", std::ref(motors1), std::ref(mutex1));
+    //std::thread can0_thread(can_read_loop, "can0", std::ref(motors0), std::ref(mutex0));
+    //std::thread can1_thread(can_read_loop, "can1", std::ref(motors1), std::ref(mutex1));
 
     rclcpp::Rate rate(10);
     while(rclcpp::ok()){
 
         rclcpp::spin_some(nodeHandle);
-        statusCheck();
+        //statusCheck();
+        publishStatus();
         rate.sleep();
     }
 
     run_threads = false;
-    if (can0_thread.joinable()) can0_thread.join();
-    if (can1_thread.joinable()) can1_thread.join();
+    //if (can0_thread.joinable()) can0_thread.join();
+    //if (can1_thread.joinable()) can1_thread.join();
 
     rclcpp::shutdown();
     return 0;

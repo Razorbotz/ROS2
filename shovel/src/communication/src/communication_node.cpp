@@ -566,6 +566,14 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
 int systemCounter = 0;
 void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status) {
     orinController->receivedStatusMonitor();
+    {
+        uint8_t can0[MAX_MOTORS], can1[MAX_MOTORS];
+        for (size_t i = 0; i < MAX_MOTORS; i++) {
+            can0[i] = static_cast<uint8_t>(status->motors0[i] != 0);
+            can1[i] = static_cast<uint8_t>(status->motors1[i] != 0);
+        }
+        orinController->processStatusMonitorCANReport(can0, can1);
+    }
     if (silentRunning) return;
 
     systemCounter++;
@@ -668,6 +676,18 @@ void powerCallback(const messages::msg::Power::SharedPtr power){
  * */
 void talonStatusCallback(const std::string& name, const messages::msg::TalonStatus::SharedPtr talonStatus, int& counter, Talon& talon){
     //RCLCPP_INFO(nodeHandle->get_logger(), "talon1 callback");
+    if(name == "Talon 1"){
+        orinController->receivedMotor14();
+    }
+    if(name == "Talon 2"){
+        orinController->receivedMotor15();
+    }
+    if(name == "Talon 3"){
+        orinController->receivedMotor16();
+    }
+    if(name == "Talon 4"){
+        orinController->receivedMotor17();
+    }
     counter++;
     if(counter % 20 == 0)
         if(rssi < CRIT_THRESH)
@@ -698,6 +718,18 @@ void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus:
  * */
 void falconStatusCallback(const std::string& name, const messages::msg::FalconStatus::SharedPtr talonStatus, int& counter, Falcon& falcon){
     //RCLCPP_INFO(nodeHandle->get_logger(), "falcon1 callback");
+    if(name == "Falcon 1"){
+        orinController->receivedMotor10();
+    }
+    if(name == "Falcon 2"){
+        orinController->receivedMotor11();
+    }
+    if(name == "Falcon 3"){
+        orinController->receivedMotor12();
+    }
+    if(name == "Falcon 4"){
+        orinController->receivedMotor13();
+    }
     counter++;
     if(counter % 20 == 0){
         if(rssi < CRIT_THRESH)
