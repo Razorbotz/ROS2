@@ -57,6 +57,63 @@ message with the correct names that the individual motors are subscribed to.
 // which speeds
 // Identify when wheels are slipping
 // Adjust speeds to account for slipping, limit slip
+const double SLIP_THRESHOLD = 0.3;
+const double SLIP_CLAMP_FACTOR = 0.8;
+
+float lastLeftSpeed = 0.0;
+float lastRightSpeed = 0.0;
+
+void checkAndLimitSlip(){
+    if(std::abs(lastLeftSpeed) < 0.01 && std::abs(lastRightSpeed) < 0.01)
+        return;
+
+    // Right side: falcon1 (10) and falcon3 (12)
+    // Left side:  falcon2 (11) and falcon4 (13)
+    double rightFront = std::abs(falcon1GroundSpeed);
+    double rightRear  = std::abs(falcon3GroundSpeed);
+    double leftFront  = std::abs(falcon2GroundSpeed);
+    double leftRear   = std::abs(falcon4GroundSpeed);
+
+    // Check right side
+    if(std::abs(lastRightSpeed) > 0.01){
+        double rightRef = std::min(rightFront, rightRear);
+        if(rightRef > 0.01){
+            if((rightFront - rightRef) / rightRef > SLIP_THRESHOLD){
+                RCLCPP_WARN(nodeHandle->get_logger(), "Right front slipping! Speed: %.3f, Ref: %.3f", rightFront, rightRef);
+                std_msgs::msg::Float32 reduced;
+                reduced.data = lastRightSpeed * SLIP_CLAMP_FACTOR;
+                falcon10Publisher->publish(reduced);
+            }
+            if((rightRear - rightRef) / rightRef > SLIP_THRESHOLD){
+                RCLCPP_WARN(nodeHandle->get_logger(), "Right rear slipping! Speed: %.3f, Ref: %.3f", rightRear, rightRef);
+                std_msgs::msg::Float32 reduced;
+                reduced.data = lastRightSpeed * SLIP_CLAMP_FACTOR;
+                falcon12Publisher->publish(reduced);
+            }
+        }
+    }
+
+    // Check left side
+    if(std::abs(lastLeftSpeed) > 0.01){
+        double leftRef = std::min(leftFront, leftRear);
+        if(leftRef > 0.01){
+            if((leftFront - leftRef) / leftRef > SLIP_THRESHOLD){
+                RCLCPP_WARN(nodeHandle->get_logger(), "Left front slipping! Speed: %.3f, Ref: %.3f", leftFront, leftRef);
+                std_msgs::msg::Float32 reduced;
+                reduced.data = lastLeftSpeed * SLIP_CLAMP_FACTOR;
+                falcon11Publisher->publish(reduced);
+            }
+            if((leftRear - leftRef) / leftRef > SLIP_THRESHOLD){
+                RCLCPP_WARN(nodeHandle->get_logger(), "Left rear slipping! Speed: %.3f, Ref: %.3f", leftRear, leftRef);
+                std_msgs::msg::Float32 reduced;
+                reduced.data = lastLeftSpeed * SLIP_CLAMP_FACTOR;
+                falcon13Publisher->publish(reduced);
+            }
+        }
+    }
+}
+
+
 void driveLeftSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     RCLCPP_INFO(nodeHandle->get_logger(),"driveLeftSpeed: %f", speed->data);
     std_msgs::msg::Float32 outSpeed;
@@ -204,6 +261,7 @@ int main(int argc, char **argv){
             start = std::chrono::high_resolution_clock::now();
         }
         publishStatus();
+        checkAndLimitSlip();
         rate.sleep();
         rclcpp:spin_some(nodeHandle);
     }

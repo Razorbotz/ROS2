@@ -116,7 +116,7 @@ public:
         // 4) Update loop (50 Hz feels good for actuators)
         last_update_time_ = now();
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(20),
+            std::chrono::milliseconds(10),
             std::bind(&TalonSimNode::update_and_publish, this));
 
         RCLCPP_INFO(this->get_logger(), "Talon Arm/Bucket Simulation Bridge Started");
@@ -215,7 +215,7 @@ private:
     void update_and_publish() {
         const rclcpp::Time t = now();
         double dt = (t - last_update_time_).seconds();
-        if (dt <= 0.0) dt = 0.02;
+        if (dt <= 0.0) dt = 0.01;
         last_update_time_ = t;
 
         if(usePosition){

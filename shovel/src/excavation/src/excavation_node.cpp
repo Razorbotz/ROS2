@@ -7,6 +7,7 @@
 #include <std_msgs/msg/empty.hpp>
 #include <messages/msg/key_state.hpp>
 
+#include <messages/msg/zed_position.hpp>
 #include "messages/msg/linear_status.hpp"
 #include "messages/msg/talon_status.hpp"
 #include "utils/utils.hpp"
@@ -19,6 +20,11 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon15Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon16Publisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > talon17Publisher;
+
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon14PositionPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon15PositionPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon16PositionPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32_<std::allocator<void> >, std::allocator<void> > > talon17PositionPublisher;
 
 std::shared_ptr<rclcpp::Publisher<messages::msg::LinearStatus>> linearStatus1Publisher;
 std::shared_ptr<rclcpp::Publisher<messages::msg::LinearStatus>> linearStatus2Publisher;
@@ -60,6 +66,25 @@ messages::msg::LinearStatus linearStatus4;
  */
 
 bool single_arm = false;
+bool level_bucket = false;
+bool level_arm = false;
+float roll = 0.0;
+
+// Number of degrees of travel of arm from fully retracted to fully extended
+#define ARM_DEGREES 60.0
+// Change in potentiometer value from fully retracted to fully extended
+#define ARM_TRAVEL 945.0
+
+#define BUCKET_DEGREES 120.0
+#define BUCKET_TRAVEL 680.0
+
+// Captured setpoints when user releases control
+float armSetpoint = 400;       // pot value when user stops input
+float bucketSetpoint = 0;      // pot value when user stops input
+float rollAtArmCapture = 0;    // roll when arm setpoint was captured
+float rollAtBucketCapture = 0; // roll when bucket setpoint was captured
+bool prevLevelArm = false;
+bool prevLevelBucket = false;
 
 // Global state
 bool automationGo = false;
@@ -358,6 +383,37 @@ void updateMotorPositions(int millis){
     }
 }
 
+void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
+    roll = zedPosition->roll;
+    if(level_arm){
+        int currentArm = linear1.potentiometer;
+        float target = 400 + roll * (ARM_TRAVEL / ARM_DEGREES);
+        if(target < 40.0)
+            target = 40.0;
+        int armTarget = (int)target;
+        RCLCPP_INFO(nodeHandle->get_logger(), "armTarget: %d", armTarget);
+        RCLCPP_INFO(nodeHandle->get_logger(), "currentArm: %d", currentArm);
+        std_msgs::msg::Int32 position;
+        position.data = armTarget;
+        talon14PositionPublisher->publish(position);
+        talon15PositionPublisher->publish(position);
+    }
+    if(level_bucket){
+        int currentArm = linear1.potentiometer;
+        int currentBucket = linear3.potentiometer;
+        float target = currentArm * (ARM_DEGREES / ARM_TRAVEL) * (BUCKET_TRAVEL / BUCKET_DEGREES) - roll * (BUCKET_TRAVEL / BUCKET_DEGREES) - 50;
+        int bucketTarget = (int)target;
+        RCLCPP_INFO(nodeHandle->get_logger(), "bucketTarget: %d", bucketTarget);
+        RCLCPP_INFO(nodeHandle->get_logger(), "currentBucket: %d", currentBucket);
+        if(bucketTarget > 700)
+            bucketTarget = 700;
+        std_msgs::msg::Int32 position;
+        position.data = bucketTarget;
+        talon16PositionPublisher->publish(position);
+        talon17PositionPublisher->publish(position);
+    }
+}
+
 
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
@@ -394,11 +450,17 @@ int main(int argc, char **argv){
     auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,potentiometer3Callback);
     auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,potentiometer4Callback);
 
+    auto zedPositionSubscriber= nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
+
     talon14Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_14_speed",1);
     talon15Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_15_speed",1);
     talon16Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_16_speed",1);
     talon17Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_17_speed",1);
-    
+    talon14PositionPublisher = nodeHandle->create_publisher<std_msgs::msg::Int32>("talon_14_position",1);
+    talon15PositionPublisher = nodeHandle->create_publisher<std_msgs::msg::Int32>("talon_15_position",1);
+    talon16PositionPublisher = nodeHandle->create_publisher<std_msgs::msg::Int32>("talon_16_position",1);
+    talon17PositionPublisher = nodeHandle->create_publisher<std_msgs::msg::Int32>("talon_17_position",1);
+
     linearStatus1Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus1",1);
     linearStatus2Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus2",1);
     linearStatus3Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus3",1);

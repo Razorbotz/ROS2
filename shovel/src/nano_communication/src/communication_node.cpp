@@ -997,14 +997,20 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE); 
     } 
 
-    bytesRead = recvfrom(server_fd, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen); 
-    sendto(server_fd, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen); 
-    silentRunning=true;
-    broadcast=false;
-    last_client_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed); 
-
     fcntl(server_fd, F_SETFL, O_NONBLOCK);
+    bool connected = false;
 
+    while(!connected){
+        bytesRead = recvfrom(server_fd, buffer, 1024, 0, (struct sockaddr *)&address, &addrlen);
+        if (bytesRead > 0) {
+            sendto(server_fd, hello.c_str(), strlen(hello.c_str()), 0, (struct sockaddr *)&address, addrlen);
+            silentRunning = true;
+            broadcast = false;
+            connected = true;
+        }
+        rclcpp::spin_some(nodeHandle);
+    }
+    last_client_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed); 
 
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
