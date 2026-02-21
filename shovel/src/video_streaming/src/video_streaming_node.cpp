@@ -450,7 +450,7 @@ int main(int argc, char **argv){
 
     image_transport::ImageTransport it(nodeHandle);
     auto zed_sub = nodeHandle->create_subscription<sensor_msgs::msg::Image>(
-        "/zed2i/left/image_raw",
+        "/zed_image",
         rclcpp::SensorDataQoS(),
         &zedImageCallback);
 
