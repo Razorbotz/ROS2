@@ -78,13 +78,15 @@ float roll = 0.0;
 #define BUCKET_DEGREES 120.0
 #define BUCKET_TRAVEL 680.0
 
-// Captured setpoints when user releases control
-float armSetpoint = 400;       // pot value when user stops input
-float bucketSetpoint = 0;      // pot value when user stops input
-float rollAtArmCapture = 0;    // roll when arm setpoint was captured
-float rollAtBucketCapture = 0; // roll when bucket setpoint was captured
+float armSetpoint = 400;         // pot value when user stops input
+float bucketSetpoint = 0;        // pot value when user stops input
+float pitchAtArmCapture = 0.0;   // pitch when arm setpoint was captured
+float pitchAtBucketCapture = 0.0;// pitch when bucket setpoint was captured
 bool prevLevelArm = false;
 bool prevLevelBucket = false;
+float filtered_pitch = 0.0;
+bool first_pitch_received = false;
+const float PITCH_ALPHA = 0.15;
 
 // Global state
 bool automationGo = false;
@@ -177,7 +179,7 @@ void automationGoCallback(const std_msgs::msg::Bool::SharedPtr msg){
 
 
 void handleSyncErrors(core::LinearActuator* a, core::LinearActuator* b, float currentSpeed) {
-    bool speedsChanged = core::setSyncErrors(a, b, currentSpeed);
+    bool speedsChanged = core::enforceSyncLimits(a, b, currentSpeed);
     if (speedsChanged) {
         if (a->motorNumber == 14) {
             publishSpeedsArm();
@@ -384,33 +386,61 @@ void updateMotorPositions(int millis){
 }
 
 void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
-    roll = zedPosition->roll;
+    float raw_pitch = zedPosition->pitch; 
+
+    // Initialize the filter on the first run so it doesn't ramp up from 0
+    if (!first_pitch_received) {
+        filtered_pitch = raw_pitch;
+        first_pitch_received = true;
+    } else {
+        // Exponential Moving Average filter
+        filtered_pitch = (PITCH_ALPHA * raw_pitch) + ((1.0 - PITCH_ALPHA) * filtered_pitch);
+    }
+
+    // --- ARM LEVELING ---
+    if(level_arm && !prevLevelArm){
+        armSetpoint = linear1.potentiometer;
+        pitchAtArmCapture = filtered_pitch; // Latch to the smoothed value
+    }
+    prevLevelArm = level_arm;
+
     if(level_arm){
-        int currentArm = linear1.potentiometer;
-        float target = 400 + roll * (ARM_TRAVEL / ARM_DEGREES);
-        if(target < 40.0)
-            target = 40.0;
+        float pitch_delta = filtered_pitch - pitchAtArmCapture;
+        
+        float target = armSetpoint + pitch_delta * (ARM_TRAVEL / ARM_DEGREES);
+        
+        if(target < 40.0) target = 40.0;
+        if(target > 980.0) target = 980.0; 
+        
         int armTarget = (int)target;
-        RCLCPP_INFO(nodeHandle->get_logger(), "armTarget: %d", armTarget);
-        RCLCPP_INFO(nodeHandle->get_logger(), "currentArm: %d", currentArm);
+        
         std_msgs::msg::Int32 position;
         position.data = armTarget;
         talon14PositionPublisher->publish(position);
-        talon15PositionPublisher->publish(position);
+        if (armHasPair) talon15PositionPublisher->publish(position);
     }
+
+    // --- BUCKET LEVELING ---
+    if(level_bucket && !prevLevelBucket){
+        bucketSetpoint = linear3.potentiometer;
+        pitchAtBucketCapture = filtered_pitch; // Latch to the smoothed value
+    }
+    prevLevelBucket = level_bucket;
+
     if(level_bucket){
-        int currentArm = linear1.potentiometer;
-        int currentBucket = linear3.potentiometer;
-        float target = currentArm * (ARM_DEGREES / ARM_TRAVEL) * (BUCKET_TRAVEL / BUCKET_DEGREES) - roll * (BUCKET_TRAVEL / BUCKET_DEGREES) - 50;
+        float pitch_delta = filtered_pitch - pitchAtBucketCapture;
+        
+        float target = bucketSetpoint + pitch_delta * (BUCKET_TRAVEL / BUCKET_DEGREES);
+        
+        if(target > 700.0) target = 700.0;
+        if(target < 20.0) target = 20.0; 
+        
         int bucketTarget = (int)target;
-        RCLCPP_INFO(nodeHandle->get_logger(), "bucketTarget: %d", bucketTarget);
-        RCLCPP_INFO(nodeHandle->get_logger(), "currentBucket: %d", currentBucket);
-        if(bucketTarget > 700)
-            bucketTarget = 700;
+        
         std_msgs::msg::Int32 position;
         position.data = bucketTarget;
         talon16PositionPublisher->publish(position);
-        talon17PositionPublisher->publish(position);
+        if (bucketHasPair) talon17PositionPublisher->publish(position);
     }
 }
 
@@ -437,6 +467,8 @@ int main(int argc, char **argv){
         armHasPair  = false;    // only linear1
         bucketHasPair = false;  // only linear3
     }
+    linear3.softMaxLimit = 700; 
+    linear4.softMaxLimit = 700;
 
     auto automationGoSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>("automationGo",1,automationGoCallback);
     auto stopSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);

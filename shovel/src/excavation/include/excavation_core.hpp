@@ -58,6 +58,10 @@ namespace core{
         //float upperDistance = 0.0;
         //float lowerSpeed = 0.0;
         //float upperSpeed = 0.0;
+        int softMaxLimit = 1024; // Default to physical max
+        int softMinLimit = 0;    // Default to physical min
+        int noiseThreshold = 2;             // Increased tolerance for voltage sag
+        float filteredPotentiometer = 0.0f; // EMA filtered value
         LinearActuator(int motor, float strokeLength, float ExtensionSpeed, float TimeToExtend)
             : motorNumber(motor), stroke(strokeLength), extensionSpeed(ExtensionSpeed), timeToExtend(TimeToExtend) {}
     };
@@ -204,18 +208,23 @@ namespace core{
     inline bool processPotentiometer(int potentData, LinearActuator* linear, bool runSystem) {
         bool errorLogged = false;
 
-        // Track observed min/max
-        if (potentData < linear->min) linear->min = potentData;
-        if (potentData > linear->max) linear->max = potentData;
-
-        // Initialization
-        if (!linear->initialized) {
-            if (!isFloatValue(potentData) && isRealValue(potentData)) {
-                linear->initialized = true;
-            }
+        if (!linear->initialized && isRealValue(potentData) && !isFloatValue(potentData)) {
+            linear->filteredPotentiometer = static_cast<float>(potentData);
+            linear->initialized = true;
         }
+        else if (linear->initialized) {
+            // Smooth out sudden analog spikes caused by heavy current draw
+            // 0.3 alpha = favors recent data but cuts out extreme spikes
+            linear->filteredPotentiometer = (0.3f * potentData) + (0.7f * linear->filteredPotentiometer);
+        }
+        
+        int smoothedData = static_cast<int>(linear->filteredPotentiometer);
 
-        // Disconnect check
+        // Track observed min/max using smoothed data
+        if (smoothedData < linear->min) linear->min = smoothedData;
+        if (smoothedData > linear->max) linear->max = smoothedData;
+
+        // Disconnect check (uses raw data to instantly catch a cut wire)
         if (linear->initialized && isFloatValue(potentData)) {
             if (std::abs(linear->potentiometer - potentData) > 50) {
                 linear->sensorless = true;
@@ -223,12 +232,14 @@ namespace core{
             }
         }
 
-        if (isRealValue(potentData)) {
-            linear->distance = linear->stroke * (static_cast<float>(potentData - POT_RAW_MIN_VALID) / POT_RAW_RANGE);
+        if (isRealValue(smoothedData)) {
+            linear->distance = linear->stroke * (static_cast<float>(smoothedData - POT_RAW_MIN_VALID) / POT_RAW_RANGE);
         }
 
-        // Not-moving detection
-        if (linear->potentiometer >= potentData - NOISE_THRESH && linear->potentiometer <= potentData + NOISE_THRESH) {
+        // Uses the struct's configurable noiseThreshold
+        if (linear->potentiometer >= smoothedData - linear->noiseThreshold && 
+            linear->potentiometer <= smoothedData + linear->noiseThreshold) {
+            
             if (linear->speed != 0.0f && runSystem) {
                 linear->timeWithoutChange += 1;
                 if (linear->timeWithoutChange >= NO_MOVEMENT_LIMIT) {
@@ -236,11 +247,11 @@ namespace core{
                         linear->sensorless = true;
                         linear->error = PotentiometerError;
                     }
-                    else if (linear->max > 800 && linear->speed > 0.0f && potentData >= linear->max - 20) {
+                    else if (linear->max > (linear->softMaxLimit - 50) && linear->speed > 0.0f && smoothedData >= linear->softMaxLimit - 20) {
                         linear->atMax = true;
                         linear->timeWithoutChange = 0;
                     }
-                    else if (linear->min < 200 && linear->speed < 0.0f && potentData <= linear->min + 20) {
+                    else if (linear->min < (linear->softMinLimit + 50) && linear->speed < 0.0f && smoothedData <= linear->softMinLimit + 20) {
                         linear->atMin = true;
                         linear->timeWithoutChange = 0;
                     }
@@ -267,13 +278,15 @@ namespace core{
             if (linear->atMin && linear->speed > 0.0f) linear->atMin = false;
         }
 
-        linear->potentiometer = potentData;
+        linear->potentiometer = smoothedData;
 
-        // Special case for bucket actuators
-        if (linear->motorNumber == 16 || linear->motorNumber == 17) {
-            if (potentData > 700) linear->atMax = true;
-            else linear->atMax = false;
+        if (smoothedData >= linear->softMaxLimit) linear->atMax = true;
+        else if (smoothedData <= linear->softMinLimit) linear->atMin = true;
+        else {
+            linear->atMax = false;
+            linear->atMin = false;
         }
+        
         return errorLogged;
     }
 
@@ -316,32 +329,6 @@ namespace core{
     }
 
     /** @brief Function that sets the speeds of the first pair of linear
-     * actuators, then syncs the motors. 
-     * 
-     * The setSpeed function checks if the linear actuators are at the min
-     * or max, then sets the speed to 0.0 if either are true.
-     * @return void
-     * */
-    inline void setSpeedsPair(LinearActuator* a, LinearActuator* b, float currentSpeed, bool automationGo) {
-        if (!automationGo) {
-            a->speed = currentSpeed;
-            b->speed = currentSpeed;
-        } else {
-            if (a->error != PotentiometerError && b->error != PotentiometerError) {
-                a->speed = currentSpeed;
-                b->speed = currentSpeed;
-            }
-        }
-
-        if (a->error != PotentiometerError && b->error != PotentiometerError) {
-            // Use the sync logic defined earlier
-            sync(a, b, currentSpeed);
-            setSpeedAtEnd(a, currentSpeed);
-            setSpeedAtEnd(b, currentSpeed);
-        }
-    }
-
-    /** @brief Function that sets the speeds of the first pair of linear
      * actuators, then syncs the motors.
      * 
      * The setSpeed function checks if the linear actuators are at the min
@@ -357,6 +344,32 @@ namespace core{
         setSpeedAtEnd(b, currentSpeed);
     }
 
+    /** @brief Function that sets the speeds of the first pair of linear
+     * actuators, then syncs the motors. 
+     * 
+     * The setSpeed function checks if the linear actuators are at the min
+     * or max, then sets the speed to 0.0 if either are true.
+     * @return void
+     * */
+    inline void setSpeedsPair(LinearActuator* a, LinearActuator* b, float currentSpeed, bool automationGo) {
+        if (a->error == PotentiometerError || b->error == PotentiometerError || a->sensorless || b->sensorless) {
+            setSpeedsDistancePair(a, b, currentSpeed);
+            return;
+        }
+
+        if (!automationGo) {
+            a->speed = currentSpeed;
+            b->speed = currentSpeed;
+        } else {
+            a->speed = currentSpeed;
+            b->speed = currentSpeed;
+        }
+
+        sync(a, b, currentSpeed);
+        setSpeedAtEnd(a, currentSpeed);
+        setSpeedAtEnd(b, currentSpeed);
+    }
+
     /** @brief Function that checks if the linear actuators are out of sync
      * then sets the error state to the correct one
      * 
@@ -366,7 +379,7 @@ namespace core{
      * which indicates that the actuators are out of sync.
      * @return void
      * */
-    inline bool setSyncErrors(LinearActuator* a, LinearActuator* b, float currentSpeed) {
+    inline bool enforceSyncLimits(LinearActuator* a, LinearActuator* b, float currentSpeed) {
         float diff = std::abs(a->potentiometer - b->potentiometer);
         float thresh = (950.0f / a->stroke) / 6.0f;
 

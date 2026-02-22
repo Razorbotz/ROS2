@@ -91,7 +91,7 @@ TEST_F(ExcavationFuncTest, SpeedsPairRespectsAutomationSafety) {
     EXPECT_FLOAT_EQ(a.speed, 0.0f); 
 }
 
-// 4. Test setSyncErrors
+// 4. Test enforceSyncLimits
 TEST_F(ExcavationFuncTest, SyncErrorsTriggersSpeedChange) {
     core::LinearActuator a = createDefault(14);
     core::LinearActuator b = createDefault(15);
@@ -102,8 +102,7 @@ TEST_F(ExcavationFuncTest, SyncErrorsTriggersSpeedChange) {
     a.speed = 1.0f;
     b.speed = 1.0f;
     
-    // CORRECTED: core::setSyncErrors
-    bool changed = core::setSyncErrors(&a, &b, 1.0f);
+    bool changed = core::enforceSyncLimits(&a, &b, 1.0f);
     
     EXPECT_TRUE(changed);
     EXPECT_NE(a.speed, 1.0f); // A should have slowed down
@@ -148,4 +147,89 @@ TEST_F(ExcavationFuncTest, DetectsStall) {
     }
 
     EXPECT_EQ(a.error, ActuatorNotMovingError);
+}
+
+TEST_F(ExcavationFuncTest, ManualOverrideUsesSensorlessFallback) {
+    core::LinearActuator a = createDefault(14);
+    core::LinearActuator b = createDefault(15);
+    
+    // Simulate snagged wire on motor A
+    a.error = PotentiometerError;
+    a.sensorless = true;
+    
+    // Setup a massive simulated distance discrepancy 
+    a.distance = 5.0f;
+    b.distance = 0.0f;
+    
+    bool automationGo = false; // Pilot is in manual control
+    
+    core::setSpeedsPair(&a, &b, 1.0f, automationGo);
+    
+    // Motor A should be halted by the distance sync, protecting the frame
+    EXPECT_FLOAT_EQ(a.speed, 0.0f); 
+}
+
+// 5. Test Software Limits
+TEST_F(ExcavationFuncTest, SoftLimitsOverrideAtMax) {
+    core::LinearActuator a = createDefault(14);
+    a.softMaxLimit = 700; // Simulate bucket actuator limit
+    a.initialized = true;
+    a.potentiometer = 690;
+    a.filteredPotentiometer = 690.0f;
+    bool run = true;
+    
+    // Send 750, which is below the raw 1024 max but above the soft max
+    // Since it's a massive jump, we run it a few times to let the EMA catch up
+    for(int i = 0; i < 5; i++) {
+        core::processPotentiometer(750, &a, run);
+    }
+    
+    EXPECT_TRUE(a.atMax);
+}
+
+// 6. Test Slow Actuator Movement Detection
+TEST_F(ExcavationFuncTest, SlowActuatorRegistersMovement) {
+    core::LinearActuator a = createDefault(14);
+    a.noiseThreshold = 2; // Tight threshold for slow actuators
+    a.initialized = true;
+    a.potentiometer = 500;
+    a.filteredPotentiometer = 500.0f;
+    a.speed = 1.0f; // Actuator is commanded to move
+    bool run = true;
+
+    // Move by 5 units (typical for the slow actuator)
+    core::processPotentiometer(505, &a, run);
+    
+    // timeWithoutChange should reset/remain 0 because 5 > 2
+    EXPECT_EQ(a.timeWithoutChange, 0); 
+    EXPECT_EQ(a.error, None);
+
+    // Move by another 5 units
+    core::processPotentiometer(510, &a, run);
+    EXPECT_EQ(a.timeWithoutChange, 0); 
+}
+
+// 7. Test EMA Filter Against Voltage Sag
+TEST_F(ExcavationFuncTest, EmaFilterSquashesVoltageSag) {
+    core::LinearActuator a = createDefault(14);
+    a.noiseThreshold = 5; // Fast actuator configuration
+    a.initialized = true;
+    a.potentiometer = 500;
+    a.filteredPotentiometer = 500.0f;
+    a.speed = 1.0f; 
+    bool run = true;
+
+    // Simulate mechanical stall against a rock
+    core::processPotentiometer(500, &a, run);
+    core::processPotentiometer(500, &a, run);
+    int currentTimeWithoutChange = a.timeWithoutChange;
+
+    // Sudden heavy current draw causes a 15-unit electrical noise spike
+    // EMA calculation: (0.3 * 515) + (0.7 * 500) = 154.5 + 350 = 504.5 -> 504
+    // Delta between previous (500) and new smoothed (504) is 4.
+    // Since 4 <= noiseThreshold (5), it is treated as noise, not movement.
+    core::processPotentiometer(515, &a, run);
+
+    // The stall counter should INCREASE, proving the noise didn't trick the system
+    EXPECT_EQ(a.timeWithoutChange, currentTimeWithoutChange + 1);
 }
