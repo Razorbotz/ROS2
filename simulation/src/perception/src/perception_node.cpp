@@ -16,6 +16,13 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 
+// ros2 run perception perception_node
+// ros2 run teleop_twist_keyboard teleop_twist_keyboard
+// ros2 run rqt_image_view rqt_image_view
+// export GAZEBO_MODEL_PATH=/usr/share/gazebo-11/models:/home/team/SoftwareDevelopment/ROS2/simulation/install/sim/share/sim/models:/home/team/SoftwareDevelopment/ROS2/simulation/src/sim/models
+// gazebo --verbose /home/team/SoftwareDevelopment/ROS2/simulation/src/sim/worlds/high_resolution/artemis/artemis_arena.world -s libgazebo_ros_factory.so -s libgazebo_ros_init.so
+// ros2 launch launch/test_rig.launch.py
+
 class LunarPerceptionNode : public rclcpp::Node
 {
 public:
