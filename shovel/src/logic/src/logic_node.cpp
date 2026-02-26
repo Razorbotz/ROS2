@@ -230,7 +230,7 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
         if(axisState->axis==0){
             joystick2Roll = transformJoystickInfo(axisState->state, deadZone);
             std_msgs::msg::Float32 bucketSpeed;
-            bucketSpeed.data = joystick2Roll;
+            bucketSpeed.data = -joystick2Roll;
             bucketSpeedPublisher->publish(bucketSpeed);
         }
         else if(axisState->axis==1){

@@ -205,28 +205,26 @@ namespace core{
      * @param *linear - Pointer to linear object
      * @return bool - errorLogged
      * */
-    inline bool processPotentiometer(int potentData, LinearActuator* linear, bool runSystem) {
+inline bool processPotentiometer(int potentData, LinearActuator* linear, bool runSystem) {
         bool errorLogged = false;
 
         if (!linear->initialized && isRealValue(potentData) && !isFloatValue(potentData)) {
             linear->filteredPotentiometer = static_cast<float>(potentData);
+            linear->previousPotent = potentData; // Set the initial stationary anchor
             linear->initialized = true;
-        }
-        else if (linear->initialized) {
-            // Smooth out sudden analog spikes caused by heavy current draw
-            // 0.3 alpha = favors recent data but cuts out extreme spikes
+        } else if (linear->initialized) {
+            // EMA filter to ignore sudden voltage sags
             linear->filteredPotentiometer = (0.3f * potentData) + (0.7f * linear->filteredPotentiometer);
         }
         
         int smoothedData = static_cast<int>(linear->filteredPotentiometer);
 
-        // Track observed min/max using smoothed data
         if (smoothedData < linear->min) linear->min = smoothedData;
         if (smoothedData > linear->max) linear->max = smoothedData;
 
-        // Disconnect check (uses raw data to instantly catch a cut wire)
+        // Disconnect check (sudden massive drop to floating range = cut wire)
         if (linear->initialized && isFloatValue(potentData)) {
-            if (std::abs(linear->potentiometer - potentData) > 50) {
+            if (std::abs(linear->previousPotent - potentData) > 50) {
                 linear->sensorless = true;
                 linear->error = PotentiometerError;
             }
@@ -236,18 +234,16 @@ namespace core{
             linear->distance = linear->stroke * (static_cast<float>(smoothedData - POT_RAW_MIN_VALID) / POT_RAW_RANGE);
         }
 
-        // Uses the struct's configurable noiseThreshold
-        if (linear->potentiometer >= smoothedData - linear->noiseThreshold && 
-            linear->potentiometer <= smoothedData + linear->noiseThreshold) {
+        // --- THE FIX: Anchor-based Movement Tracking ---
+        // Compare current data against the ANCHOR, not the previous tick
+        if (smoothedData >= linear->previousPotent - linear->noiseThreshold && 
+            smoothedData <= linear->previousPotent + linear->noiseThreshold) {
             
             if (linear->speed != 0.0f && runSystem) {
                 linear->timeWithoutChange += 1;
                 if (linear->timeWithoutChange >= NO_MOVEMENT_LIMIT) {
-                    if (isFloatValue(linear->potentiometer) && !linear->initialized) {
-                        linear->sensorless = true;
-                        linear->error = PotentiometerError;
-                    }
-                    else if (linear->max > (linear->softMaxLimit - 50) && linear->speed > 0.0f && smoothedData >= linear->softMaxLimit - 20) {
+                    
+                    if (linear->max > (linear->softMaxLimit - 50) && linear->speed > 0.0f && smoothedData >= linear->softMaxLimit - 20) {
                         linear->atMax = true;
                         linear->timeWithoutChange = 0;
                     }
@@ -257,12 +253,12 @@ namespace core{
                     }
                     else {
                         if (linear->error == None || linear->error == ActuatorsSyncError) {
-                            if(linear->initialized && isFloatValue(potentData)){
+                            if (linear->initialized && isFloatValue(potentData)) {
                                 linear->sensorless = true;
                                 linear->error = PotentiometerError;
                                 errorLogged = true;
                             }
-                            else{
+                            else {
                                 linear->error = ActuatorNotMovingError;
                                 errorLogged = true;
                             }
@@ -272,12 +268,18 @@ namespace core{
             }
         }
         else {
+            // The actuator has successfully moved beyond the noise threshold!
             linear->timeWithoutChange = 0;
-            if (linear->error == ActuatorNotMovingError) linear->error = None;
+            linear->previousPotent = smoothedData; // Set the new anchor
+            
+            if (linear->error == ActuatorNotMovingError) {
+                linear->error = None;
+            }
             if (linear->atMax && linear->speed < 0.0f) linear->atMax = false;
             if (linear->atMin && linear->speed > 0.0f) linear->atMin = false;
         }
 
+        // Always update the public variable so kinematics and sync have fresh data
         linear->potentiometer = smoothedData;
 
         if (smoothedData >= linear->softMaxLimit) linear->atMax = true;

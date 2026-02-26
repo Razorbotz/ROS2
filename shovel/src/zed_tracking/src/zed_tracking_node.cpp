@@ -25,6 +25,9 @@ std::string AREA_MAP =  "AreaMap.area";
 
 sl::Camera zed;
 
+int killKey = 0;
+bool printData = false;
+
 void write_shutdown_marker() {
     FILE* fp = fopen(SHUTDOWN_MARKER_FILE.c_str(), "w");
     if (fp) {
