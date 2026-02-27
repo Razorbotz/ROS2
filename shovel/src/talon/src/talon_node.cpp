@@ -274,12 +274,11 @@ int main(int argc,char** argv){
 		);
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
-
-	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
-	if(can_interface != "can0")
-		std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
+	if(can_interface != "can0")
+		std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
 
 	int kTimeoutMs=30;
 	int kPIDLoopIdx=0;
