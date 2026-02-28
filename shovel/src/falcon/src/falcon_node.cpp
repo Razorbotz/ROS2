@@ -267,9 +267,6 @@ int main(int argc,char** argv){
 	}
 	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
-
-	if(can_interface != "can0")
-		std::this_thread::sleep_for(std::chrono::milliseconds(8000));
 	c_Phoenix_Diagnostics_Create1(portNumber);
 
 	int kTimeoutMs=30;
@@ -296,6 +293,8 @@ int main(int argc,char** argv){
 	talonFX->Config_kD(kPIDLoopIdx, kD, kTimeoutMs);
 	talonFX->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
 
+	talonFX->SetControlFramePeriod(ControlFrame::Control_3_General, 20);
+	talonFX->SetControlFramePeriod(ControlFrame::Control_4_Advanced, 20);	
 	talonFX->Set(ControlMode::PercentOutput, 0);
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"configured falcon");

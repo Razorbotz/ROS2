@@ -276,8 +276,6 @@ int main(int argc,char** argv){
 	}
 	ctre::phoenix::platform::can::SetCANInterface(can_interface.c_str());
 	RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
-	if(can_interface != "can0")
-		std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 	c_Phoenix_Diagnostics_Create1(portNumber);  //Creates a Phoenix Diagnostics server with the port specified
 
 	int kTimeoutMs=30;
@@ -301,6 +299,8 @@ int main(int argc,char** argv){
 	talonSRX->Config_kD(kPIDLoopIdx, kD, kTimeoutMs);
 	talonSRX->ConfigAllowableClosedloopError(kPIDLoopIdx,0,kTimeoutMs);
 
+	talonSRX->SetControlFramePeriod(ControlFrame::Control_3_General, 20);
+	talonSRX->SetControlFramePeriod(ControlFrame::Control_4_Advanced, 20);
 	talonSRX->Set(ControlMode::PercentOutput, 0);
 	talonSRX->Set(ControlMode::Position, 500);
 	//talonSRX->SetFeedbackDevice(FeedbackDevice.AnalogPotentiometer);

@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
     auto zedPositionPublisher = nodeHandle->create_publisher<messages::msg::ZedPosition>("zed_position", 1);
     image_transport::ImageTransport it(nodeHandle);
     image_transport::Publisher zedImagePublisher = it.advertise("zed_image", 1);
-
+    
     sl::InitParameters init_params;
     init_params.camera_resolution = sl::RESOLUTION::HD720;
     init_params.camera_fps = 30; 
@@ -180,9 +180,16 @@ int main(int argc, char **argv) {
 
     // Tracking setup
     sl::PositionalTrackingParameters tracking_params;
-    tracking_params.enable_imu_fusion = true;
+
+    tracking_params.set_floor_as_origin = false;
+    tracking_params.set_gravity_as_origin = true;
     tracking_params.enable_area_memory = true;
-    tracking_params.set_gravity_as_origin = true; 
+    tracking_params.enable_pose_smoothing = false;
+    tracking_params.enable_imu_fusion = true;
+    tracking_params.set_as_static = false;
+    tracking_params.depth_min_range = -1;
+    tracking_params.enable_2d_ground_mode = false;
+    tracking_params.enable_localization_only = false;
     tracking_params.mode = sl::POSITIONAL_TRACKING_MODE::GEN_3;
     
     auto returned_state = zed.enablePositionalTracking(tracking_params);
@@ -197,7 +204,7 @@ int main(int argc, char **argv) {
 
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);
-    check_for_crash();
+    //check_for_crash();
 
     // Initialization Variables
     bool origin_locked = false;
@@ -284,7 +291,7 @@ int main(int argc, char **argv) {
             }
 
             // Normal operation post-lock
-            auto tracking_state = zed.getPosition(zedPose, sl::REFERENCE_FRAME::WORLD);
+            auto tracking_state = zed.getPosition(zedPose);
             
             if (tracking_state == sl::POSITIONAL_TRACKING_STATE::OK) {
                 sl::Transform current_pose = zedPose.pose_data;
@@ -311,6 +318,7 @@ int main(int argc, char **argv) {
                     RCLCPP_INFO(nodeHandle->get_logger(), "ZED x: %.3f, y: %.3f, z: %.3f", zedPosition.x, zedPosition.y, zedPosition.z);
                 }
 
+                /*
                 if(writeCounter % 10 == 0){
                     std::ostringstream oss;
                     oss << zedPosition.x << "," << zedPosition.y << "," << zedPosition.z << "," 
@@ -327,11 +335,16 @@ int main(int argc, char **argv) {
                     }
                 }
                 writeCounter++;
+                */
             }
 
             if(!image_ocv_rgb.empty()){
+                std_msgs::msg::Header hdr;
+                hdr.stamp = nodeHandle->now();
+                hdr.frame_id = "zed_camera_link";
+
                 sensor_msgs::msg::Image::SharedPtr msg = cv_bridge::CvImage(hdr, "rgb8", image_ocv_rgb).toImageMsg();
-                zedImagePublisher.publish(msg);
+                zedImagePublisher.publish(*msg);
             }
 
 /*
@@ -347,6 +360,7 @@ int main(int argc, char **argv) {
 
         }
         rate.sleep();
+        rclcpp::spin_some(nodeHandle);
     }
     
     zed.close();

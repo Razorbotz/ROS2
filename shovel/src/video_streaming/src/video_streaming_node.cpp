@@ -409,7 +409,7 @@ void broadcastIP() {
 
     while (rclcpp::ok()) {
         if (broadcast) {
-            std::string addressString = getAddressString(AF_INET, "eth2");
+            std::string addressString = getAddressString(AF_INET, "wlP1p1s0");
             if (addressString.empty()) {
                 RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 5000, "Could not get IP for wlP1p1s0 to broadcast.");
                 std::this_thread::sleep_for(std::chrono::seconds(5));
