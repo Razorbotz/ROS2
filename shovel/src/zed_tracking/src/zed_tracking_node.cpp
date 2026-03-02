@@ -245,7 +245,6 @@ int main(int argc, char **argv) {
         init_params.camera_resolution = sl::RESOLUTION::HD720;
         init_params.camera_fps = 30; 
     }
-    sl::InitParameters init_params;
     init_params.camera_fps = 30;
     init_params.coordinate_units = sl::UNIT::METER;
     init_params.coordinate_system = sl::COORDINATE_SYSTEM::LEFT_HANDED_Y_UP;
