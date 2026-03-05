@@ -52,6 +52,7 @@ rosidl_generate_interfaces(messages
   "msg/FalconStatus.msg"
   "msg/SystemStatus.msg"
   "msg/DrivetrainStatus.msg"
+  "msg/NeoStatus.msg"
 
   DEPENDENCIES builtin_interfaces
 )
