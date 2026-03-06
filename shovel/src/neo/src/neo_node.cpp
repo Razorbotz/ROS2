@@ -70,11 +70,11 @@ int main(int argc,char** argv){
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting neo");
 
-    int motorNumber = utils::getParameter<int>("motor_number", 1);
+    int motorNumber = utils::getParameter<int>(nodeHandle, "motor_number", 1);
 	canSparkMax = new CANSparkMax("can0", motorNumber);
 
-    std::string infoTopic = utils::getParameter<std::string>("info_topic", "unset");
-    std::string speedTopic = utils::getParameter<std::string>("speed_topic", "unset");
+    std::string infoTopic = utils::getParameter<std::string>(nodeHandle, "info_topic", "unset");
+    std::string speedTopic = utils::getParameter<std::string>(nodeHandle, "speed_topic", "unset");
 
     messages::msg::NeoStatus neoStatus;
     auto neoStatusPublisher = nodeHandle->create_publisher<messages::msg::NeoStatus>(infoTopic.c_str(),1);
