@@ -21,7 +21,7 @@ struct Talon {
     uint16_t current;
     float output_percent;
     uint8_t temperature;
-    float sensor_position;
+    uint16_t sensor_position;
     float sensor_velocity;
     float max_current;
     bool temp_disable;

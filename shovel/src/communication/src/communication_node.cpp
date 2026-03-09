@@ -421,7 +421,7 @@ void send(std::string messageLabel, const messages::msg::TalonStatus::SharedPtr 
 
     uint16_t new_voltage = talonStatus->bus_voltage * 100.0;
     uint16_t new_current = talonStatus->output_current * 100.0;
-    float new_sensor_pos = talonStatus->sensor_position; 
+    uint16_t new_sensor_pos = talonStatus->sensor_position * 100.0;
 
     update_if_changed(message, message_changed, talon.voltage,        new_voltage,                  Field_Strings::BusVoltage);
     update_if_changed(message, message_changed, talon.current,        new_current,                  Field_Strings::OutputCurrent);

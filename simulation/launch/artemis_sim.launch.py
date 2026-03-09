@@ -17,7 +17,7 @@ def generate_launch_description():
     config_path = os.path.join(pkg_path, 'config', 'controllers.yaml')
     urdf_path = os.path.join(pkg_path, 'urdf', 'my_robot_tf.urdf')
     model_sdf_path = os.path.join(pkg_path, 'models', 'model', 'model.sdf')
-    world_path = os.path.join(pkg_path, 'worlds', 'high_resolution', 'ucf', 'ucf_arena.world')
+    world_path = os.path.join(pkg_path, 'worlds', 'high_resolution', 'artemis', 'artemis_arena.world')
 
     with open(model_sdf_path, 'r') as f:
         sdf_content = f.read()

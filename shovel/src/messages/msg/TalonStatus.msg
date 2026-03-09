@@ -7,8 +7,7 @@ float32 temperature
 int32 sensor_position
 float32 sensor_velocity
 int32 closed_loop_error 
-int32 integral_accumulator
-int32 error_derivative
+float32 integral_accumulator
+float32 error_derivative
 float32 max_current
 bool temp_disable
-bool volt_disable
