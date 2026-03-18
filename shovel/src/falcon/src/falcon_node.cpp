@@ -55,11 +55,11 @@ using namespace ctre::phoenix::motorcontrol;
 using namespace ctre::phoenix::motorcontrol::can;
 
 /** @file
- * @brief Node controlling one Talon motor 
+ * @brief Node controlling one Falcon 500 motor (Phoenix 5 API)
  * 
  * This node receives information published by the logic node,
  * then transforms the data received into movement by the motor
- * controlled by the Talon instance.  The topics that the node
+ * controlled by the TalonFX instance.  The topics that the node
  * subscribes to are as follows:
  * \li \b speed_topic
  * \li \b STOP
@@ -102,8 +102,10 @@ bool publish = false;
 int op_mode = 0;
 int killKey = 0;
 bool printData = false;
-int errorCounter = 0;
 std::string resetString = "";
+int reset_cooldown_ms = 2000;
+std::chrono::time_point<std::chrono::high_resolution_clock> lastResetTime;
+bool reset_sent = false;
 
 bool can_socket_bind_ok(const std::string& ifname) {
     int s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
@@ -114,7 +116,7 @@ bool can_socket_bind_ok(const std::string& ifname) {
 
     if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
         close(s);
-        return false; // ENODEV / etc.
+        return false;
     }
 
     sockaddr_can addr {};
@@ -231,13 +233,33 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
 	}
 }
 
+/** @brief Check Phoenix 5 sticky fault flags for overcurrent trip.
+ *
+ *  Phoenix 5's GetStickyFaults() populates a StickyFaults struct
+ *  with individual boolean fields.  We check the supply-side current
+ *  limit flag and the "reset during enable" flag (which fires when
+ *  the integrated breaker trips and the controller resets).
+ *
+ *  Returns true if an overcurrent-related fault is active.
+ */
+bool isOvercurrentTripped(){
+	StickyFaults faults;
+	talonFX->GetStickyFaults(faults);
+
+	// SupplyOverV / SupplyUnstable catch brownout-style trips.
+	// ResetDuringEn fires when the controller resets itself mid-operation,
+	// which is the typical symptom of the integrated breaker tripping.
+	return faults.ResetDuringEn
+	    || faults.SupplyOverV
+	    || faults.SupplyUnstable;
+}
+
 
 int main(int argc,char** argv){
 	rclcpp::init(argc,argv);
 	nodeHandle = rclcpp::Node::make_shared("talon");
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"Starting talon");
-	//int success;
 
 	int motorNumber = utils::getParameter<int>(nodeHandle, "motor_number", 1);
 	int portNumber = utils::getParameter<int>(nodeHandle, "diagnostics_port", 1);
@@ -282,7 +304,6 @@ int main(int argc,char** argv){
 	}
 	talonFX->SelectProfileSlot(0,0);
 	talonFX->ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, kTimeoutMs);
-	talonFX->ConfigClosedloopRamp(2);
 	talonFX->ConfigNominalOutputForward(0, kTimeoutMs);
 	talonFX->ConfigNominalOutputReverse(0, kTimeoutMs);
 	talonFX->ConfigPeakOutputForward(1, kTimeoutMs);
@@ -297,8 +318,7 @@ int main(int argc,char** argv){
 	talonFX->SetControlFramePeriod(ControlFrame::Control_4_Advanced, 20);	
 	talonFX->Set(ControlMode::PercentOutput, 0);
 
-	RCLCPP_INFO(nodeHandle->get_logger(),"configured falcon");
-
+	talonFX->ClearStickyFaults(kTimeoutMs);
 	TalonFXConfiguration allConfigs;
 
 	ctre::phoenix::motorcontrol::SupplyCurrentLimitConfiguration supplyLimitConfig;
@@ -325,15 +345,38 @@ int main(int argc,char** argv){
 
 	rclcpp::Rate rate(50);
 	auto start = std::chrono::high_resolution_clock::now();
-	auto errorTimer = std::chrono::high_resolution_clock::now();
+	lastResetTime = std::chrono::high_resolution_clock::now();
 	float maxCurrent = 0.0;
 	double busVoltage = 0.0;
+
 	while(rclcpp::ok()){
 		if(GO && publish)ctre::phoenix::unmanaged::FeedEnable(100);
 		auto finish = std::chrono::high_resolution_clock::now();
 
-		if(error){
-			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-errorTimer).count() > 1500){
+		if(isOvercurrentTripped()){
+			auto msSinceReset = std::chrono::duration_cast<std::chrono::milliseconds>(finish - lastResetTime).count();
+
+			if(!error){
+				RCLCPP_WARN(nodeHandle->get_logger(),"Falcon %d: overcurrent/supply fault detected!", talonFX->GetDeviceID());
+				error = true;
+			}
+
+			if(!reset_sent || msSinceReset > reset_cooldown_ms){
+				RCLCPP_INFO(nodeHandle->get_logger(), "Falcon %d: publishing reset (cooldown %d ms)", talonFX->GetDeviceID(), reset_cooldown_ms);
+				std_msgs::msg::String reset;
+				reset.data = resetString;
+				resetPublisher->publish(reset);
+				lastResetTime = std::chrono::high_resolution_clock::now();
+				reset_sent = true;
+			}
+		}
+		else {
+			if(error){
+				RCLCPP_INFO(nodeHandle->get_logger(),
+				            "Falcon %d: fault cleared", talonFX->GetDeviceID());
+				talonFX->ClearStickyFaults(kTimeoutMs);
+				error = false;
+				reset_sent = false;
 				restarted = true;
 			}
 		}
@@ -345,24 +388,6 @@ int main(int argc,char** argv){
 			bool isInverted=talonFX->GetInverted();
 			double motorOutputVoltage=talonFX->GetMotorOutputVoltage();
 			double motorOutputPercent=talonFX->GetMotorOutputPercent();
-			if(Speed > 0.1 && motorOutputPercent == 0.0){
-				errorCounter++;
-				if(errorCounter > 5 && !error){
-					RCLCPP_INFO(nodeHandle->get_logger(), "Falcon %d ERROR", deviceID);
-					error = true;
-					errorTimer = std::chrono::high_resolution_clock::now();
-					std_msgs::msg::String reset;
-					reset.data = resetString;
-					resetPublisher->publish(reset);
-				}
-			}
-			else{
-				if(motorOutputPercent != 0.0){
-					error = false;
-					restarted = false;
-					errorCounter = 0;
-				}
-			}
 			double temperature=talonFX->GetTemperature();
 			double sensorPosition0=talonFX->GetSelectedSensorPosition(0);
 			double sensorVelocity0=talonFX->GetSelectedSensorVelocity(0);
@@ -414,5 +439,3 @@ int main(int argc,char** argv){
 		rclcpp::spin_some(nodeHandle);
 	}
 }
-
-

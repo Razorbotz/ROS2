@@ -8,7 +8,8 @@ def generate_launch_description():
             name='excavation',
             executable='excavation_node',
             parameters=[
-                {"single_arm": True}
+                {"single_arm": True},
+                {"actuator_mode": "2_actuator"}
             ],
             respawn=True
         )

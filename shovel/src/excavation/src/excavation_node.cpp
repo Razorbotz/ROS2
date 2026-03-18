@@ -77,7 +77,7 @@ float roll = 0.0;
 #define ARM_TRAVEL 945.0
 
 #define BUCKET_DEGREES 120.0
-#define BUCKET_TRAVEL 680.0
+#define BUCKET_TRAVEL 945.0
 
 float armSetpoint = 400;         // pot value when user stops input
 float bucketSetpoint = 0;        // pot value when user stops input
@@ -452,7 +452,7 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
                 float pitch_delta = filtered_pitch - pitchAtBucketCapture;
                 float target = bucketSetpoint + pitch_delta * (BUCKET_TRAVEL / BUCKET_DEGREES);
                 
-                if(target > 700.0) target = 700.0;
+                if(target > 900.0) target = 900.0;
                 if(target < 20.0) target = 20.0; 
                 RCLCPP_INFO(nodeHandle->get_logger(), "Bucket target: %f", target);
                 
@@ -503,7 +503,7 @@ int main(int argc, char **argv){
     nodeHandle = rclcpp::Node::make_shared("excavation");
 
     single_arm = utils::getParameter<bool>(nodeHandle, "single_arm", false);
-    std::string robot_mode_str = utils::getParameter<std::string>(nodeHandle, "actuator_mode", "4_actuator");
+    std::string robot_mode_str = utils::getParameter<std::string>(nodeHandle, "actuator_mode", "2_actuator");
 
     if (robot_mode_str == "4_actuator") {
         robotMode   = MODE_4_ACTUATOR;
@@ -520,8 +520,6 @@ int main(int argc, char **argv){
         armHasPair  = false;    // only linear1
         bucketHasPair = false;  // only linear3
     }
-    linear3.softMaxLimit = 700; 
-    linear4.softMaxLimit = 700;
 
     auto automationGoSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>("automationGo",1,automationGoCallback);
     auto stopSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("STOP",1,stopCallback);
