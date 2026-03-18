@@ -169,8 +169,8 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
  */
 bool isOvercurrentTripped(){
     // GetStickyFault_* returns a StatusSignal<bool>.  Refresh + read.
-    bool supplyCurrent = talonFX->GetStickyFault_SupplyCurLim().GetValue();
-    bool statorCurrent = talonFX->GetStickyFault_StatorCurLim().GetValue();
+    bool supplyCurrent = talonFX->GetStickyFault_SupplyCurrLimit().GetValue();
+    bool statorCurrent = talonFX->GetStickyFault_StatorCurrLimit().GetValue();
     // Also check for the general "device disabled by overcurrent" sticky fault
     // which Phoenix 6 reports when the integrated breaker trips.
     bool procTemp      = talonFX->GetStickyFault_ProcTemp().GetValue();
@@ -212,7 +212,7 @@ int main(int argc,char** argv){
 
     RCLCPP_INFO(nodeHandle->get_logger(),"Opened CAN interface");
 
-    talonFX = new hardware::TalonFX(motorNumber, CANBus(can_interface));
+    talonFX = new hardware::TalonFX(motorNumber, ctre::phoenix6::CANBus(can_interface));
     
     RCLCPP_INFO(nodeHandle->get_logger(),"created talon instance");
     configs::TalonFXConfiguration allConfigs;
@@ -223,7 +223,7 @@ int main(int argc,char** argv){
     allConfigs.Slot0.kS = kF; 
 
     allConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
-    allConfigs.CurrentLimits.SupplyCurrentLimit = units::current::ampere_t{70.0}; 
+    allConfigs.CurrentLimits.SupplyCurrentLimit = units::current::ampere_t{70.0};
 
     if(invertMotor){
         allConfigs.MotorOutput.Inverted = signals::InvertedValue::CounterClockwise_Positive;
