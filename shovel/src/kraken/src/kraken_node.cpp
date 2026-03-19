@@ -51,8 +51,8 @@ using namespace ctre::phoenix6;
 rclcpp::Node::SharedPtr nodeHandle;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String_<std::allocator<void> >, std::allocator<void> > > resetPublisher;
 bool GO=false;
-std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious;
-std::chrono::time_point<std::chrono::high_resolution_clock> logicPrevious;
+std::chrono::time_point<std::chrono::high_resolution_clock> commPrevious = std::chrono::high_resolution_clock::now();
+std::chrono::time_point<std::chrono::high_resolution_clock> logicPrevious = std::chrono::high_resolution_clock::now();
 
 hardware::TalonFX* talonFX; 
 

@@ -82,13 +82,13 @@ void checkAndLimitSlip(){
                 RCLCPP_WARN(nodeHandle->get_logger(), "Right front slipping! Speed: %.3f, Ref: %.3f", rightFront, rightRef);
                 std_msgs::msg::Float32 reduced;
                 reduced.data = lastRightSpeed * SLIP_CLAMP_FACTOR;
-                falcon10Publisher->publish(reduced);
+                //falcon10Publisher->publish(reduced);
             }
             if((rightRear - rightRef) / rightRef > SLIP_THRESHOLD){
                 RCLCPP_WARN(nodeHandle->get_logger(), "Right rear slipping! Speed: %.3f, Ref: %.3f", rightRear, rightRef);
                 std_msgs::msg::Float32 reduced;
                 reduced.data = lastRightSpeed * SLIP_CLAMP_FACTOR;
-                falcon12Publisher->publish(reduced);
+                //falcon12Publisher->publish(reduced);
             }
         }
     }
@@ -101,13 +101,13 @@ void checkAndLimitSlip(){
                 RCLCPP_WARN(nodeHandle->get_logger(), "Left front slipping! Speed: %.3f, Ref: %.3f", leftFront, leftRef);
                 std_msgs::msg::Float32 reduced;
                 reduced.data = lastLeftSpeed * SLIP_CLAMP_FACTOR;
-                falcon11Publisher->publish(reduced);
+                //falcon11Publisher->publish(reduced);
             }
             if((leftRear - leftRef) / leftRef > SLIP_THRESHOLD){
                 RCLCPP_WARN(nodeHandle->get_logger(), "Left rear slipping! Speed: %.3f, Ref: %.3f", leftRear, leftRef);
                 std_msgs::msg::Float32 reduced;
                 reduced.data = lastLeftSpeed * SLIP_CLAMP_FACTOR;
-                falcon13Publisher->publish(reduced);
+                //falcon13Publisher->publish(reduced);
             }
         }
     }
@@ -254,7 +254,7 @@ int main(int argc, char **argv){
     auto start = std::chrono::high_resolution_clock::now();
     auto finish = std::chrono::high_resolution_clock::now();
     int counter = 0;
-    rclcpp::Rate rate(30);
+    rclcpp::Rate rate(60);
     while(rclcpp::ok()){
         finish = std::chrono::high_resolution_clock::now();
         if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > 33){
@@ -263,6 +263,6 @@ int main(int argc, char **argv){
         publishStatus();
         checkAndLimitSlip();
         rate.sleep();
-        rclcpp:spin_some(nodeHandle);
+        rclcpp::spin_some(nodeHandle);
     }
 }
