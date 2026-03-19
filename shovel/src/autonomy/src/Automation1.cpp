@@ -415,24 +415,11 @@ void Automation1::automate(){
     }
 
     if(robotState==DUMP_MACRO){
-        if(dumpState == DUMP_IDLE){
-            setArmPosition(700);
-            setBucketPosition(40);
-            dumpState = DUMP_EXTEND;
-        }
-        if(dumpState == DUMP_EXTEND){
-            if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
-                setArmPosition(250);
-                setBucketPosition(850);
-                dumpState = DUMP_RETRACT;
-            }
-        }
-        if(dumpState == DUMP_RETRACT){
-            if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1)	{				
-                robotState = ROBOT_IDLE;
-                dumpState = DUMP_IDLE;
-            }        
-        }
+        dumpMacro();
+    }
+
+    if(robotState==EXCAVATE_MACRO){
+        excavateMacro();
     }
     /*
     // Dump the collected rocks in the dump bin
@@ -518,11 +505,15 @@ void Automation1::stopLevel(){
 }
 
 
-void Automation1::setDump(){
+void Automation1::setDumpMacro(){
     robotState = DUMP_MACRO;
     setGo();
 }
 
+void Automation1::setExcavateMacro(){
+    robotState = EXCAVATE_MACRO;
+    setGo();
+}
 
 void Automation1::setExcavate(){
     currentX = position.x;
@@ -534,39 +525,61 @@ void Automation1::setExcavate(){
 }
 
 void Automation1::excavateMacro(){
-    if(excavationState == COLLECT){
-        // set actuators
-         if(deltaX < falcon1.outputPercentage * 0.05 || deltaZ < falcon1.outputPercentage * 0.05){
-            RCLCPP_INFO(this->node->get_logger(), "ERROR: Robot not moving");
+    if(excavationState == EXCAVATION_IDLE){
+        setArmPosition(100);
+        setBucketPosition(300);
+        excavationState = LOWER_ARM;
+    }
+    if(excavationState == LOWER_ARM){
+        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+            setArmPosition(400);
+            setBucketPosition(100);
+            excavationState = RAISE_ARM;
         }
+    }
+    if(excavationState == COLLECT){
+
+    }
+    if(excavationState == RAISE_ARM){
+        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+            excavationState = EXCAVATION_IDLE;
+            robotState = ROBOT_IDLE;
+        }
+    }
+    if(excavationState == SQUARE_UP){
+
     }
     if(excavationState == DUMP_BUCKET){
-        if(!dump){
-            setDestPosition(currentX, currentZ);
-            excavationState = RETURN;
+
+    }
+    if(excavationState == RETURN){
+
+    }
+}
+
+void Automation1::dumpMacro(){
+    if(dumpState == DUMP_IDLE){
+        setArmPosition(700);
+        setBucketPosition(40);
+        dumpState = DUMP_EXTEND;
+    }
+    if(dumpState == DUMP_EXTEND){
+        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+            setArmPosition(250);
+            setBucketPosition(850);
+            dumpState = DUMP_RETRACT;
         }
     }
+    if(dumpState == DUMP_FORWARD){
 
-    if(excavationState == RETURN){
-        if(checkAngle()){ 
-            int distance = checkDistance(.05);
-            if(distance == -1){
-                setDestAngle(getAngle());
-            }
-            else if(distance == 0){
-                changeSpeed(0.0, 0.0);
-                excavationState = COLLECT;
-                setDestPosition(currentX, currentZ - 2.0);
-            }
-            else if(distance == 1){
-                changeSpeed(0.1, 0.1);
-            }
-            else if(distance == 2){
-                changeSpeed(0.15, 0.15);
-            }
-            else{
-                changeSpeed(0.25, 0.25);
-            }
-        }
+    }
+    if(dumpState == DUMP_RETRACT){
+        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1)	{				
+            robotState = ROBOT_IDLE;
+            dumpState = DUMP_IDLE;
+        }        
+    }
+    if(dumpState == DUMP_REVERSE){
+
     }
 }

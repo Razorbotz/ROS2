@@ -25,13 +25,14 @@
 #define ARM_TRAVEL 945.0
 
 #define BUCKET_DEGREES 120.0
-#define BUCKET_TRAVEL 680.0
+#define BUCKET_TRAVEL 940.0
 
 class Automation{
     private:
     public:
 
-    enum RobotState{INITIAL,
+    enum RobotState{
+        INITIAL,
         DIAGNOSTICS,
         LOCATE,
         ALIGN,
@@ -47,7 +48,8 @@ class Automation{
         EXCAVATE_MACRO
     };
 
-enum ExcavationState{EXCAVATION_IDLE,
+    enum ExcavationState{
+        EXCAVATION_IDLE,
         RAISE_ARM,
         RAISE_BUCKET,
         COLLECT,
@@ -59,7 +61,8 @@ enum ExcavationState{EXCAVATION_IDLE,
         RETURN
     };
 
-enum ErrorState {TALON_14_ERROR, 
+    enum ErrorState {
+        TALON_14_ERROR, 
         TALON_15_ERROR, 
         TALON_16_ERROR, 
         TALON_17_ERROR, 
@@ -70,7 +73,8 @@ enum ErrorState {TALON_14_ERROR,
         NONE
     };
 
-enum DiagnosticsState{DIAGNOSTICS_IDLE,
+    enum DiagnosticsState{
+        DIAGNOSTICS_IDLE,
         TALON_EXTEND,
         TALON_RETRACT,
         FALCON_FORWARD,
@@ -92,9 +96,13 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         TIP_RIGHT,
         TIP_LEFT
     };
-    enum DumpState{DUMP_IDLE, 
-                    DUMP_EXTEND, 
-                    DUMP_RETRACT};
+    enum DumpState{
+        DUMP_IDLE, 
+        DUMP_FORWARD,
+        DUMP_EXTEND,
+        DUMP_RETRACT,
+        DUMP_REVERSE
+    };
     
 
     DumpState dumpState = DUMP_IDLE;
@@ -175,6 +183,8 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
         {DUMP_IDLE, "Idle"},
         {DUMP_EXTEND, "Extend"},
         {DUMP_RETRACT, "Retract"},
+        {DUMP_FORWARD, "Forward"},
+        {DUMP_REVERSE, "Reverse"},
     };
 
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
@@ -258,9 +268,11 @@ enum DiagnosticsState{DIAGNOSTICS_IDLE,
 
     virtual void excavateMacro() = 0;
 
-    virtual void setDump() = 0;
-
     virtual void setExcavate() = 0;
+
+    virtual void setExcavateMacro() = 0;
+
+    virtual void setDumpMacro() = 0;
     
     void setLinear1(const messages::msg::LinearStatus::SharedPtr linearStatus);
 

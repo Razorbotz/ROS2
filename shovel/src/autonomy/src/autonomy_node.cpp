@@ -145,6 +145,12 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         }
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
     }
+    if(keyState->key==48 && keyState->state==1){
+        automation->setDumpMacro();
+    }
+    if(keyState->key==49 && keyState->state==1){
+        automation->setExcavateMacro();
+    }
     if(keyState->key==100 && keyState->state==1){
         automation->setDiagnostics();
     }
@@ -154,9 +160,6 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(keyState->key==97 && keyState->state==1){
         automation->startAutonomy();
     }
-    if(keyState->key==68 && keyState->state==1){
-        automation->setDump();
-    }
     if(keyState->key == 107 && keyState->state == 1){
         automationGo = false;
         automation->setStop();
@@ -165,9 +168,9 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     if(keyState->key == 108 && keyState->state == 1){
         automation->setLevel();
     }
-    if(keyState->key == 48 && keyState->state==1){
-        return;
-    }
+    //if(keyState->key == 48 && keyState->state==1){
+    //    return;
+    //}
 }
 
 

@@ -22,7 +22,6 @@ def generate_launch_description():
     excav_launch_file = os.path.join(launch_dir, 'launch', 'launch_excav.py')
     drivetrain_launch_file = os.path.join(launch_dir, 'launch', 'launch_drivetrain.py')
     status_monitor_launch_file = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
-    reset_launch_file = os.path.join(launch_dir, 'launch', 'launch_reset.py')
 
     return LaunchDescription([
         IncludeLaunchDescription(
@@ -45,10 +44,6 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(excav_launch_file)
         )
         ,
-        #IncludeLaunchDescription(
-        #    PythonLaunchDescriptionSource(reset_launch_file)
-        #)
-        #,
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(drivetrain_launch_file)
         )

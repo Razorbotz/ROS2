@@ -27,5 +27,11 @@ class Automation1 : public Automation{
     
     void setExcavate();
 
+    void setDumpMacro();
+
+    void setExcavateMacro();
+
     void excavateMacro();
+
+    void dumpMacro();
 };

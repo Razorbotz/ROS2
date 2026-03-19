@@ -23,7 +23,6 @@ def generate_launch_description():
     cam_launch_file = os.path.join(launch_dir, 'launch', 'launch_cam.py')
     drivetrain_launch_file = os.path.join(launch_dir, 'launch', 'launch_drivetrain.py')
     status_monitor_launch_file = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
-    reset_launch_file = os.path.join(launch_dir, 'launch', 'launch_reset.py')
     realsense_pkg_dir = get_package_share_directory('realsense2_camera')
     realsense_launch_file = os.path.join(realsense_pkg_dir, 'launch', 'rs_launch.py')
 
@@ -52,10 +51,6 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(cam_launch_file)
         )
         ,
-        #IncludeLaunchDescription(
-        #    PythonLaunchDescriptionSource(reset_launch_file)
-        #)
-        #,
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(drivetrain_launch_file)
         )

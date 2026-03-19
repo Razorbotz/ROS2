@@ -42,32 +42,6 @@ def generate_launch_description():
         ,
         Node(
             package='talon',
-            name='Talon15',
-            executable='talon_node',
-            parameters=[
-                {"motor_number": 15},
-                {"diagnostics_port": 56714},
-                {"invert_motor": True},
-                {"speed_topic": "talon_15_speed"},
-                {"info_topic": "talon_15_info"},
-                {"position_topic": "talon_15_position"},
-                {"kP": 10.0},
-                {"kI": 0.000001},
-                {"kD": 0.000001},
-                {"kF": 0.0},
-                {"publishing_delay": 15},
-                {"kill_key": 51},
-                {"op_mode": 0},
-                {"print_data": False},
-                {"can_interface": "can0"},
-                {"stop_topic": "talon_15_stop"}
-            ],
-            output={'stderr': 'screen', 'stdout': 'screen'},
-            respawn=True
-        )
-        ,
-        Node(
-            package='talon',
             name='Talon16',
             executable='talon_node',
             parameters=[
@@ -87,32 +61,6 @@ def generate_launch_description():
                 {"print_data": False},
                 {"can_interface": "can0"},
                 {"stop_topic": "talon_16_stop"}
-            ],
-            output={'stderr': 'screen', 'stdout': 'screen'},
-            respawn=True
-        )
-        ,
-        Node(
-            package='talon',
-            name='Talon17',
-            executable='talon_node',
-            parameters=[
-                {"motor_number": 17},
-                {"diagnostics_port": 56712},
-                {"invert_motor": True},
-                {"speed_topic": "talon_17_speed"},
-                {"info_topic": "talon_17_info"},
-                {"position_topic": "talon_17_position"},
-                {"kP": 10.0},
-                {"kI": 0.000001},
-                {"kD": 0.000001},
-                {"kF": 0.0},
-                {"publishing_delay": 15},
-                {"kill_key": 53},
-                {"op_mode": 0},
-                {"print_data": False},
-                {"can_interface": "can0"},
-                {"stop_topic": "talon_17_stop"}
             ],
             output={'stderr': 'screen', 'stdout': 'screen'},
             respawn=True
