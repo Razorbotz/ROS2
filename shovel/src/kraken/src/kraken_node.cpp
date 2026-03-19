@@ -186,6 +186,7 @@ int main(int argc,char** argv){
 
     int motorNumber = ::utils::getParameter<int>(nodeHandle, "motor_number", 1);
     int portNumber = ::utils::getParameter<int>(nodeHandle, "diagnostics_port", 1);
+    setenv("PHOENIX_DIAGNOSTICS_PORT", std::to_string(portNumber).c_str(), 1);
     std::string infoTopic = ::utils::getParameter<std::string>(nodeHandle, "info_topic", "unset");
     std::string speedTopic = ::utils::getParameter<std::string>(nodeHandle, "speed_topic", "unset");
     std::string userTopic = ::utils::getParameter<std::string>(nodeHandle, "user_topic", "unset");
