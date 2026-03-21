@@ -53,6 +53,7 @@ rosidl_generate_interfaces(messages
   "msg/SystemStatus.msg"
   "msg/DrivetrainStatus.msg"
   "msg/NeoStatus.msg"
+  "msg/LidarDistance.msg"
 
   DEPENDENCIES builtin_interfaces
 )

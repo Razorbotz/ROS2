@@ -93,3 +93,8 @@ struct SystemState {
     int32_t  second_motor;
     int32_t  num_breaks;
 };
+
+struct LidarState {
+    int16_t distance_mm;
+    float distance_m;
+};

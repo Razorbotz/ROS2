@@ -36,6 +36,7 @@
 #include <messages/msg/falcon_status.hpp>
 #include <messages/msg/system_status.hpp>
 #include <messages/msg/drivetrain_status.hpp>
+#include <messages/msg/lidar_distance.hpp>
 
 #include <BinaryMessage.hpp>
 #include <Heartbeat.hpp>
@@ -123,6 +124,7 @@ AutonomyState autonomyState;
 ZedState zedState;
 DrivetrainState drivetrainState;
 SystemState systemState;
+LidarState lidarDistance;
 
 std::unique_ptr<HeartbeatLink> orinLink;
 std::unique_ptr<CanLink> orinCanLink;
@@ -248,6 +250,9 @@ void forceDataResync() {
     voltage = -1.0f;
     temperature = -1.0f;
     currents.fill(-1.0f);
+
+    lidarDistance.distance_mm = -1;
+    lidarDistance.distance_m = -1;
 }
 
 void updateSenderState(bool state) {
@@ -770,6 +775,18 @@ void autonomyStatusCallback(const messages::msg::AutonomyStatus::SharedPtr auton
             send("Autonomy", autonomyStatus);
 }
 
+void lidarDistanceCallback(const messages::msg::LidarDistance::SharedPtr distance){
+    if(silentRunning)return;
+    bool message_changed = false;
+    BinaryMessage message("Lidar");
+
+    update_if_changed(message, message_changed, distance->distance_mm, (uint16_t)lidarDistance.distance_mm, Field_Strings::Distance);
+
+    if (message_changed) {
+        send(message);
+    }
+}
+
 
 /** @brief Creates socketDescriptor for socket connection.
  * 
@@ -953,10 +970,11 @@ int main(int argc, char **argv){
                 linearStatusCallback("Linear 4", msg, linear4Counter, linear4);
             });
 
-    auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
+    auto zedPositionSubscriber = nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",10,zedPositionCallback);
     auto autonomyStatusSubscriber = nodeHandle->create_subscription<messages::msg::AutonomyStatus>("autonomy_status", 10, autonomyStatusCallback);
     auto systemStatusSubscriber = nodeHandle->create_subscription<messages::msg::SystemStatus>("system_status",10,systemStatusCallback);
     auto drivetrainStatusSubscriber = nodeHandle->create_subscription<messages::msg::DrivetrainStatus>("drivetrain_status",10,drivetrainStatusCallback);
+    auto distanceSubscriber = nodeHandle->create_subscription<messages::msg::LidarDistance>("lidar_distance",10,lidarDistanceCallback);
 
     falcon10StopPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_10_stop",1);
     falcon11StopPublisher = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_11_stop",1);

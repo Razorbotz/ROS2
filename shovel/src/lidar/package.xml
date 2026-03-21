@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>lidar</name>
+  <version>1.0.0</version>
+  <description>The lidar package</description>
+
+  <maintainer email="todo@todo.todo">nvidia</maintainer>
+  <author>Andrew Burroughs</author>	  
+  <license>none</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>	  
+  <depend>messages</depend>
+  <depend>utils</depend>
+
+  <export>
+     <build_type>ament_cmake</build_type>
+  </export>
+</package>
