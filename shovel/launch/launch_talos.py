@@ -23,6 +23,7 @@ def generate_launch_description():
     cam_launch_file = os.path.join(launch_dir, 'launch', 'launch_cam.py')
     drivetrain_launch_file = os.path.join(launch_dir, 'launch', 'launch_drivetrain.py')
     status_monitor_launch_file = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
+    bt_wrapper_file = os.path.join(launch_dir, 'launch', 'bt_config.py')
 
     return LaunchDescription([
         IncludeLaunchDescription(
@@ -61,5 +62,10 @@ def generate_launch_description():
         #   cmd=['ros2', 'bag', 'record', '-a'],
         #    output='screen'
         #)
+        ,
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(bt_wrapper_file),
+            launch_arguments={'target': 'sierra'}.items()
+        )
     ]
 )

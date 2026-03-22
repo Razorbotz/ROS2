@@ -134,8 +134,7 @@ void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
 void userSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     if(printData) RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
     if(speed->data != Speed){
-        double targetVelocity_RPS = (6000.0 * speed->data) / 60.0; 
-        if(publish) talonFX->SetControl(velOut.WithVelocity(units::turns_per_second_t{targetVelocity_RPS}));
+        if(publish) talonFX->SetControl(percentOut.WithOutput(speed->data));
         Speed = speed->data;
     }
 }

@@ -25,6 +25,7 @@ def generate_launch_description():
     status_monitor_launch_file = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
     realsense_pkg_dir = get_package_share_directory('realsense2_camera')
     realsense_launch_file = os.path.join(realsense_pkg_dir, 'launch', 'rs_launch.py')
+    bt_wrapper_file = os.path.join(launch_dir, 'launch', 'bt_config.py')
 
     return LaunchDescription([
         IncludeLaunchDescription(
@@ -66,6 +67,11 @@ def generate_launch_description():
         ,
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(realsense_launch_file)
+        )
+        ,
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(bt_wrapper_file),
+            launch_arguments={'target': 'sisyphus'}.items()
         )
     ]
 )
