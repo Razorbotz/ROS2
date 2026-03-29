@@ -34,7 +34,7 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 
-#include "messages/msg/falcon_status.hpp"
+#include "messages/msg/kraken_status.hpp"
 #include "utils/utils.hpp"
 
 // Phoenix 6 Includes
@@ -235,8 +235,8 @@ int main(int argc,char** argv){
     talonFX->GetConfigurator().Apply(allConfigs);
     talonFX->SetControl(percentOut.WithOutput(0.0));
 
-    messages::msg::FalconStatus falconStatus;
-    auto falconStatusPublisher=nodeHandle->create_publisher<messages::msg::FalconStatus>(infoTopic.c_str(),1);
+    messages::msg::KrakenStatus krakenStatus;
+    auto krakenStatusPublisher=nodeHandle->create_publisher<messages::msg::KrakenStatus>(infoTopic.c_str(),1);
     auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
     auto userSpeedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(userTopic.c_str(),1,userSpeedCallback);
     resetPublisher=nodeHandle->create_publisher<std_msgs::msg::String>("reset_topic",1);
@@ -299,27 +299,24 @@ int main(int argc,char** argv){
             double sensorVelocity0 = talonFX->GetVelocity().GetValueAsDouble();
             int closedLoopError0 = talonFX->GetClosedLoopError().GetValueAsDouble();
             
-            falconStatus.device_id=deviceID;    
-            falconStatus.bus_voltage=busVoltage;
-            falconStatus.output_current=outputCurrent;
-            falconStatus.output_voltage=motorOutputVoltage;
-            falconStatus.output_percent=motorOutputPercent;
-            falconStatus.temperature=temperature;
-            falconStatus.sensor_position=sensorPosition0;
-            falconStatus.sensor_velocity=sensorVelocity0;
-            falconStatus.closed_loop_error=closedLoopError0;
+            krakenStatus.device_id=deviceID;    
+            krakenStatus.bus_voltage=busVoltage;
+            krakenStatus.output_current=outputCurrent;
+            krakenStatus.output_voltage=motorOutputVoltage;
+            krakenStatus.output_percent=motorOutputPercent;
+            krakenStatus.temperature=temperature;
+            krakenStatus.sensor_position=sensorPosition0;
+            krakenStatus.sensor_velocity=sensorVelocity0;
+            krakenStatus.closed_loop_error=closedLoopError0;
             
-            falconStatus.integral_accumulator=0.0;
-            falconStatus.error_derivative=0.0;
-            
-            falconStatus.temp_disable = TEMP_DISABLE;
-            falconStatus.error = error;
-            falconStatus.restarted = restarted;
+            krakenStatus.temp_disable = TEMP_DISABLE;
+            krakenStatus.error = error;
+            krakenStatus.restarted = restarted;
             if(outputCurrent > maxCurrent){
                 maxCurrent = outputCurrent;
             }
-            falconStatus.max_current = maxCurrent;
-            falconStatusPublisher->publish(falconStatus);
+            krakenStatus.max_current = maxCurrent;
+            krakenStatusPublisher->publish(krakenStatus);
             start = std::chrono::high_resolution_clock::now();
             checkTemperature(temperature);
         }

@@ -13,18 +13,17 @@ def generate_launch_description():
         description='Nickname of the target Jetson (Sierra, Sisyphus, Talos)'
     )
 
-    # 2. MAC Address Lookup Logic
-    # Replace these with your actual Jetson MAC addresses
+    # 2. MAC Address Lookup Logic (Updated for case-insensitivity)
     mac_address = PythonExpression([
-        "'00:A5:54:7A:B9:2F' if '", LaunchConfiguration('target'), "' == 'Sierra' else ",
-        "'F8:3D:C6:57:3C:FA' if '", LaunchConfiguration('target'), "' == 'Sisyphus' else ",
-        "'F8:3D:C6:57:3C:FA' if '", LaunchConfiguration('target'), "' == 'Talos' else ",
-        "''" # Default empty
+        " '00:A5:54:7A:B9:2F' if '", LaunchConfiguration('target'), "'.lower() == 'sierra' else ",
+        " 'F8:3D:C6:57:3C:FA' if '", LaunchConfiguration('target'), "'.lower() == 'sisyphus' else ",
+        " 'F8:3D:C6:57:21:1C' if '", LaunchConfiguration('target'), "'.lower() == 'talos' else ",
+        " '' " 
     ])
 
     # 3. Path to your original Bluetooth launch file
-    # Using your os.getcwd() style to match your current setup
-    bt_launch_path = os.path.join(os.getcwd(), 'src', 'bluetooth', 'launch', 'bt_link.launch.py')
+    bt_pkg_dir = get_package_share_directory('bluetooth')
+    bt_launch_path = os.path.join(bt_pkg_dir, 'launch', 'bt_config.py')
 
     return LaunchDescription([
         target_robot_arg,

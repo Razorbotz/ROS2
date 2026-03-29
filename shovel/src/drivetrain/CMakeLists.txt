@@ -10,6 +10,10 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(messages REQUIRED)
 find_package(utils REQUIRED)
+find_package(nav_msgs)
+find_package(geometry_msgs)
+find_package(tf2_ros)
+find_package(tf2)
 
 include_directories(
 	include
@@ -29,4 +33,8 @@ ament_target_dependencies(${PROJECT_NAME}_node
 	std_msgs
 	messages
 	utils
+	nav_msgs
+	geometry_msgs
+	tf2_ros
+	tf2
 )

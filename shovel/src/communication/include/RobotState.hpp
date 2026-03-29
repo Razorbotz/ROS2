@@ -15,6 +15,19 @@ struct Falcon {
     bool error;
 };
 
+struct Kraken {
+    uint8_t device_id;
+    uint16_t voltage;
+    uint16_t current;
+    float output_percent;
+    uint8_t temperature;
+    float sensor_position;
+    float sensor_velocity;
+    float max_current;
+    bool temp_disable;
+    bool error;
+};
+
 struct Talon {
     uint8_t device_id;
     uint16_t voltage;

@@ -617,6 +617,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
         }
 
         case ID_REQ_AUTH: {
+            if(systemStatus_ref == BOOT) break;
             // Orin is requesting authorization for motors it can now control
             if (len != sizeof(AuthRequestPayload)) {
                 RCLCPP_WARN(nodeHandle->get_logger(), "ID_REQ_AUTH: bad payload size");
@@ -630,8 +631,7 @@ void AegisNanoController::on_packet_received(uint16_t id, const uint8_t* data, u
                     if (payload->motor_states[i] && auth_table[i]) {
                         auth_table[i] = false;
                         if (update_motor_auth) update_motor_auth(i, false);
-                        std::cout << "[Auth] Nano releasing motor " << (i + 10) 
-                                  << " to Orin per request." << std::endl;
+                        std::cout << "[Auth] Nano releasing motor " << (i + 10) << " to Orin per request." << std::endl;
                     }
                 }
                 sendAuthResponse(true);

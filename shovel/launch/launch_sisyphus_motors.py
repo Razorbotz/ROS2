@@ -1,0 +1,125 @@
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package='power_distribution_panel',
+            name='power_distribution_panel',
+            executable='power_distribution_panel_node',
+            parameters=[
+                {"can_interface": "can0"}
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
+        )
+        ,
+        Node(
+            package='falcon',
+            name='Falcon10',
+            executable='falcon_node',
+            parameters=[
+                {"motor_number": 10},
+                {"diagnostics_port": 72340},
+                {"invert_motor": False},
+                {"speed_topic": "falcon_10_speed"},
+                {"user_topic": "falcon_10_user_speed"},
+                {"reset_topic": "1"},
+                {"info_topic": "talon_10_info"},
+                {"kP": 10.0},
+                {"kI": 0.000001},
+                {"kD": 0.000001},
+                {"kF": 0.0},
+                {"publishing_delay": 15},
+                {"kill_key": 54},
+                {"op_mode": 0},
+                {"print_data": False},
+                {"can_interface": "can0"},
+                {"stop_topic": "falcon_10_stop"}
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
+        )
+	    ,
+        Node(
+            package='falcon',
+            name='Falcon11',
+            executable='falcon_node',
+            parameters=[
+                {"motor_number": 11},
+                {"diagnostics_port": 72341},
+                {"invert_motor": True},
+                {"speed_topic": "falcon_11_speed"},
+                {"user_topic": "falcon_11_user_speed"},
+                {"reset_topic": "2"},
+                {"info_topic": "talon_11_info"},
+                {"kP": 10.0},
+                {"kI": 0.000001},
+                {"kD": 0.000001},
+                {"kF": 0.0},
+                {"publishing_delay": 15},
+                {"kill_key": 55},
+                {"op_mode": 0},
+                {"print_data": False},
+                {"can_interface": "can0"},
+                {"stop_topic": "falcon_11_stop"}
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
+        )
+        ,
+        Node(
+            package='falcon',
+            name='Falcon12',
+            executable='falcon_node',
+            parameters=[
+                {"motor_number": 12},
+                {"diagnostics_port": 72342},
+                {"invert_motor": False},
+                {"speed_topic": "falcon_12_speed"},
+                {"user_topic": "falcon_12_user_speed"},
+                {"reset_topic": "3"},
+                {"info_topic": "talon_12_info"},
+                {"kP": 10.0},
+                {"kI": 0.000001},
+                {"kD": 0.000001},
+                {"kF": 0.0},
+                {"publishing_delay": 15},
+                {"kill_key": 56},
+                {"op_mode": 0},
+                {"print_data": False},
+                {"can_interface": "can0"},
+                {"stop_topic": "falcon_12_stop"}
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
+        )
+	    ,
+        Node(
+            package='falcon',
+            name='Falcon13',
+            executable='falcon_node',
+            parameters=[
+                {"motor_number": 13},
+                {"diagnostics_port": 72343},
+                {"invert_motor": True},
+                {"speed_topic": "falcon_13_speed"},
+                {"user_topic": "falcon_13_user_speed"},
+                {"reset_topic": "4"},
+                {"info_topic": "talon_13_info"},
+                {"kP": 10.0},
+                {"kI": 0.000001},
+                {"kD": 0.000001},
+                {"kF": 0.0},
+                {"publishing_delay": 15},
+                {"kill_key": 57},
+                {"op_mode": 0},
+                {"print_data": False},
+                {"can_interface": "can0"},
+                {"stop_topic": "falcon_13_stop"}
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
+        )
+    ]
+)

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>motors</name>
+  <version>1.0.0</version>
+  <description>
+    Unified motor controller package for the shovel robot.
+    Provides drive motor control (Falcon 500, Kraken x60, and Gazebo simulation)
+    and actuator control (TalonSRX and Gazebo simulation) through a hardware
+    abstraction layer. A single node binary supports all backends, selected
+    at launch time via parameters.
+  </description>
+
+  <maintainer email="andrewburroughs17@gmail.com">Andrew Burroughs</maintainer>
+  <license>None</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Required ROS dependencies -->
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2</depend>
+
+  <!-- Project-internal dependencies -->
+  <depend>messages</depend>
+  <depend>utils</depend>
+
+  <!-- Testing -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

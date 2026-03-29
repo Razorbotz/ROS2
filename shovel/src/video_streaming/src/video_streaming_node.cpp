@@ -47,6 +47,10 @@ int  server_fd = -1;
 rclcpp::Node::SharedPtr nodeHandle;
 bool broadcast = true;
 
+std::string robotName = "shovel";
+std::string interfaceName = "wlP1p1s0";
+int clientPort = 31338;
+
 struct sockaddr_in client_addr;
 socklen_t client_addr_len = sizeof(client_addr);
 bool client_connected     = false;
@@ -399,7 +403,6 @@ std::string getAddressString(int family, std::string interfaceName){
 
 
 
-std::string robotName="shovel";
 void broadcastIP() {
     int socketDescriptor = socket(AF_INET, SOCK_DGRAM, 0);
     if (socketDescriptor < 0) {
@@ -409,9 +412,10 @@ void broadcastIP() {
 
     while (rclcpp::ok()) {
         if (broadcast) {
-            std::string addressString = getAddressString(AF_INET, "wlP1p1s0");
+            std::string addressString = getAddressString(AF_INET, interfaceName);
             if (addressString.empty()) {
-                RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 5000, "Could not get IP for wlP1p1s0 to broadcast.");
+                RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 5000,
+                    "Could not get IP for %s to broadcast.", interfaceName.c_str());
                 std::this_thread::sleep_for(std::chrono::seconds(5));
                 continue;
             }
@@ -447,6 +451,18 @@ int main(int argc, char **argv){
 
     nodeHandle = rclcpp::Node::make_shared("video_streaming");
     RCLCPP_INFO(nodeHandle->get_logger(),"Starting video streaming server node");
+
+    // Parameters
+    nodeHandle->declare_parameter<std::string>("interface_name", "wlP1p1s0");
+    nodeHandle->declare_parameter<std::string>("robot_name", "shovel");
+    nodeHandle->declare_parameter<int>("port", 31338);
+    nodeHandle->get_parameter("interface_name", interfaceName);
+    nodeHandle->get_parameter("robot_name", robotName);
+    nodeHandle->get_parameter("port", clientPort);
+
+    RCLCPP_INFO(nodeHandle->get_logger(), "interface_name: %s", interfaceName.c_str());
+    RCLCPP_INFO(nodeHandle->get_logger(), "robot_name: %s", robotName.c_str());
+    RCLCPP_INFO(nodeHandle->get_logger(), "port: %d", clientPort);
 
     image_transport::ImageTransport it(nodeHandle);
     auto zed_sub = nodeHandle->create_subscription<sensor_msgs::msg::Image>(
@@ -491,14 +507,14 @@ int main(int argc, char **argv){
 
     address.sin_family      = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port        = htons(PORT);
+    address.sin_port        = htons(clientPort);
 
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
         RCLCPP_FATAL(nodeHandle->get_logger(), "Bind failed: %s", strerror(errno));
         close(server_fd);
         return EXIT_FAILURE;
     }
-    RCLCPP_INFO(nodeHandle->get_logger(), "Server listening on port %d", PORT);
+    RCLCPP_INFO(nodeHandle->get_logger(), "Server listening on port %d", clientPort);
 
     std::thread broadcastThread(broadcastIP);
 

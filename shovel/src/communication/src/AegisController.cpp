@@ -633,8 +633,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
                 for (size_t i = 0; i < MAX_MOTORS; i++) {
                     if (payload->motor_states[i] && auth_table[i]) {
                         auth_table[i] = false;
-                        std::cout << "[Auth] Orin releasing motor " << (i + 10) 
-                                  << " to Nano per request." << std::endl;
+                        std::cout << "[Auth] Orin releasing motor " << (i + 10)  << " to Nano per request." << std::endl;
                     }
                 }
                 sendAuthResponse(true);
@@ -642,8 +641,7 @@ void AegisController::on_packet_received(uint16_t id, const uint8_t* data, uint1
             }
             else {
                 // Can't release right now
-                std::cout << "[Auth] Orin denying auth request (not safe to release)." 
-                          << std::endl;
+                std::cout << "[Auth] Orin denying auth request (not safe to release)."  << std::endl;
                 sendAuthResponse(false);
             }
             break;
