@@ -38,6 +38,7 @@ public:
 
         publisher_ = this->create_publisher<vision_msgs::msg::Detection3DArray>("/perception/detections", 10);
         marker_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/perception/markers", 10);
+        cloud_publisher_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/perception/obstacles_cloud", 10);
             
         RCLCPP_INFO(this->get_logger(), "Lunar Perception Node Initialized with TF2.");
     }
@@ -107,6 +108,11 @@ private:
         extract.setNegative(true); 
         extract.filter(*cloud_obstacles);
 
+        sensor_msgs::msg::PointCloud2 obstacles_msg;
+        pcl::toROSMsg(*cloud_obstacles, obstacles_msg);
+        obstacles_msg.header = transformed_msg.header;
+        cloud_publisher_->publish(obstacles_msg);
+
         // STEP C: Euclidean Cluster Extraction
         pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
         tree->setInputCloud(cloud_obstacles);
@@ -175,6 +181,7 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr subscription_;
     rclcpp::Publisher<vision_msgs::msg::Detection3DArray>::SharedPtr publisher_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_publisher_;
+    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr cloud_publisher_;
 };
 
 int main(int argc, char *argv[])
