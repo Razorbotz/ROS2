@@ -170,7 +170,6 @@ int main(int argc, char** argv) {
     std::string motorType = ::utils::getParameter<std::string>(nodeHandle, "motor_type", "falcon");
     int motorNumber       = ::utils::getParameter<int>(nodeHandle, "motor_number", 1);
     int diagnosticsPort = utils::getParameter<int>(nodeHandle, "diagnostics_port", 1250);
-    setenv("PHOENIX_DIAGNOSTICS_PORT", std::to_string(diagnosticsPort).c_str(), 1);
     std::string canInterface = ::utils::getParameter<std::string>(nodeHandle, "can_interface", "can0");
 
     std::string infoTopic  = ::utils::getParameter<std::string>(nodeHandle, "info_topic", "unset");
@@ -252,8 +251,7 @@ int main(int argc, char** argv) {
     lastResetTime = std::chrono::high_resolution_clock::now();
 
     while (rclcpp::ok()) {
-        if (GO && publish)
-            hal->feedEnable(100);
+        if (GO)hal->feedEnable(100);
 
         auto finish = std::chrono::high_resolution_clock::now();
 

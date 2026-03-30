@@ -154,6 +154,7 @@ CanHeartbeatPayload can_hb{0x01, 0, 0, 0}; // Overwritten based on role
 
 std::atomic<bool> is_sender{false};
 std::array<std::atomic<bool>, 8> motor_publish_allowed = {false};
+std::array<std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool>>, 8> motorStopPublishers;
 
 float voltage = 0.0f;
 float temperature_val = 0.0f;
@@ -252,11 +253,11 @@ void updateSenderState(bool state) {
 void updateMotorAuthCallback(uint8_t motor_index, bool authorized) {
     if (motor_index < 8) {
         motor_publish_allowed[motor_index].store(authorized);
-        if (authorized) {
-            RCLCPP_INFO(nodeHandle->get_logger(), "Enabled Publisher for Motor %d", motor_index + 10);
-        } else {
-            RCLCPP_INFO(nodeHandle->get_logger(), "Disabled Publisher for Motor %d", motor_index + 10);
-        }
+        std_msgs::msg::Bool msg;
+        msg.data = authorized;
+        motorStopPublishers[motor_index]->publish(msg);
+        RCLCPP_INFO(nodeHandle->get_logger(), "%s Publisher for Motor %d",
+                    authorized ? "Enabled" : "Disabled", motor_index + 10);
     }
 }
 
@@ -693,7 +694,7 @@ int main(int argc, char** argv) {
             defaultListenPort = DEFAULT_ORIN_PORT; // Listen on Orin port
             defaultSendPort = DEFAULT_NANO_PORT; // Send to Nano port
             defaultIsPrimary = true;
-            defaultBindAddr = "127.0.0.1";
+            defaultBindAddr = "0.0.0.0";
             canHeartbeatId = 0x02;
             break;
         case NodeRole::NANO:
@@ -843,6 +844,15 @@ int main(int argc, char** argv) {
 
     RCLCPP_INFO(nodeHandle->get_logger(), "Drive motor types: [%s, %s, %s, %s]",
                 motor10Type.c_str(), motor11Type.c_str(), motor12Type.c_str(), motor13Type.c_str());
+
+    motorStopPublishers[0] = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_10_stop", 1);
+    motorStopPublishers[1] = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_11_stop", 1);
+    motorStopPublishers[2] = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_12_stop", 1);
+    motorStopPublishers[3] = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_13_stop", 1);
+    motorStopPublishers[4] = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_14_stop", 1);
+    motorStopPublishers[5] = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_15_stop", 1);
+    motorStopPublishers[6] = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_16_stop", 1);
+    motorStopPublishers[7] = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_17_stop", 1);
 
     int linear1Counter = 0, linear2Counter = 0, linear3Counter = 0, linear4Counter = 0;
     auto linear1Sub = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus1", 1,

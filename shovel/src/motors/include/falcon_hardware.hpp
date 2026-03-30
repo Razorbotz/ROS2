@@ -11,9 +11,10 @@
 #include <chrono>
 #include <unistd.h>
 
+#include "utils/utils.hpp"
 #include <messages/msg/falcon_status.hpp>
 
-#define Phoenix_No_WPI
+#define Phoenix_No_WPI // remove WPI dependencies
 #include <ctre/Phoenix.h>
 #include <ctre/phoenix/platform/Platform.h>
 #include <ctre/phoenix/unmanaged/Unmanaged.h>
@@ -60,8 +61,7 @@ public:
         ctre::phoenix::platform::can::SetCANInterface(canInterface.c_str());
         RCLCPP_INFO(node_->get_logger(), "Opened CAN interface: %s", canInterface.c_str());
 
-        setenv("PHOENIX_DIAGNOSTICS_PORT", std::to_string(diagnosticsPort).c_str(), 1);
-        c_Phoenix_Diagnostics_Create();
+        //::c_Phoenix_Diagnostics_Create1(diagnosticsPort);
 
         const int kTimeoutMs = 30;
         const int kPIDLoopIdx = 0;
