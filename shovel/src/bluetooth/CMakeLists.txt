@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(bt_rfcomm_link)
+project(bluetooth)
 
 find_package(ament_cmake REQUIRED)
 

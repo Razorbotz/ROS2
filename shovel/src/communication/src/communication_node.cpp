@@ -71,6 +71,7 @@
 #include <messages/msg/kraken_status.hpp>
 #include <messages/msg/system_status.hpp>
 #include <messages/msg/drivetrain_status.hpp>
+#include <messages/msg/lidar_distance.hpp>
 
 #include <BinaryMessage.hpp>
 #include <Heartbeat.hpp>
@@ -137,6 +138,7 @@ AutonomyState autonomyState;
 ZedState zedState;
 DrivetrainState drivetrainState;
 SystemState systemState;
+LidarState lidarState;
 
 std::unique_ptr<HeartbeatLink> aegisLink;
 std::unique_ptr<CanLink> aegisCanLink;
@@ -156,6 +158,7 @@ std::atomic<bool> is_sender{false};
 std::array<std::atomic<bool>, 8> motor_publish_allowed = {false};
 std::array<std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool>>, 8> motorStopPublishers;
 
+float current_lidar_dist = -1.0f;
 float voltage = 0.0f;
 float temperature_val = 0.0f;
 std::array<float, 16> currents{};
@@ -539,6 +542,17 @@ void drivetrainStatusCallback(const messages::msg::DrivetrainStatus::SharedPtr s
     if (message_changed) send(message);
 }
 
+void lidarDistanceCallback(const messages::msg::LidarDistance::SharedPtr msg) {
+    if (silentRunning) return;
+    
+    bool message_changed = false;
+    BinaryMessage message("Lidar");
+    
+    update_if_changed(message, message_changed, current_lidar_dist, msg->distance_m, "Distance");
+
+    if (message_changed) send(message);
+}
+
 int powerCounter = 0;
 void powerCallback(const messages::msg::Power::SharedPtr power) {
     powerCounter++;
@@ -868,6 +882,7 @@ int main(int argc, char** argv) {
     auto autonomySub  = nodeHandle->create_subscription<messages::msg::AutonomyStatus>("autonomy_status", 10, autonomyStatusCallback);
     auto systemSub    = nodeHandle->create_subscription<messages::msg::SystemStatus>("system_status", 10, systemStatusCallback);
     auto drivetrainSub = nodeHandle->create_subscription<messages::msg::DrivetrainStatus>("drivetrain_status", 10, drivetrainStatusCallback);
+    auto lidarSub = nodeHandle->create_subscription<messages::msg::LidarDistance>("lidar_distance", 1, lidarDistanceCallback);
 
     // --- Socket setup ---
     int server_fd, bytesRead;

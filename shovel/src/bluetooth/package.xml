@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>bt_rfcomm_link</name>
+  <name>bluetooth</name>
   <version>0.0.1</version>
   <description>Bluetooth RFCOMM client</description>
 
