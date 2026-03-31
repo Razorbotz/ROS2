@@ -1013,7 +1013,7 @@ int main(int argc, char** argv) {
                 messages::msg::AxisState axisState;
                 axisState.joystick = message[1];
                 axisState.axis = message[2];
-                axisState.state = parseFloat(&message[3]);
+                axisState.state = -parseFloat(&message[3]);
                 joystickAxisPublisher->publish(axisState);
             }
 
@@ -1056,12 +1056,12 @@ int main(int argc, char** argv) {
                         else if (keyState.key == 108) {
                             jkliAxis.axis = 0;
                             // Nano/sim inverts the X axis for 'l'
-                            jkliAxis.state = (nodeRole == NodeRole::ORIN) ? val : -val;
+                            jkliAxis.state = val;
                         }
                         else if (keyState.key == 106) {
                             jkliAxis.axis = 0;
                             // Nano/sim inverts the X axis for 'j'
-                            jkliAxis.state = (nodeRole == NodeRole::ORIN) ? -val : val;
+                            jkliAxis.state = -val;
                         }
 
                         joystickAxisPublisher->publish(jkliAxis);

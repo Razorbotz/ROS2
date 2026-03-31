@@ -114,7 +114,7 @@
   <joint name="FL_Wheel_Joint" type="continuous">
     <parent link="base_link"/>
     <child link="FL_Wheel"/>
-    <origin xyz="0.8411 -0.019814 0.235883" rpy="0 0 0"/>
+    <origin xyz="0.8411 -0.019814 0.235883" rpy="1.5708 0 0"/>
     <axis xyz="0 0 -1"/>
     <limit effort="2000" velocity="20"/>
     <dynamics damping="1.0" friction="1.0"/>
@@ -141,7 +141,7 @@
   <joint name="FR_Wheel_Joint" type="continuous">
     <parent link="base_link"/>
     <child link="FR_Wheel"/>
-    <origin xyz="0.8411 -0.538167 0.235883" rpy="0 0 0"/>
+    <origin xyz="0.8411 -0.538167 0.235883" rpy="1.5708 0 0"/>
     <axis xyz="0 0 -1"/>
     <limit effort="2000" velocity="20"/>
     <dynamics damping="1.0" friction="1.0"/>
@@ -168,7 +168,7 @@
   <joint name="BL_Wheel_Joint" type="continuous">
     <parent link="base_link"/>
     <child link="BL_Wheel"/>
-    <origin xyz="0.18387 0 0.23588" rpy="0 0 0"/>
+    <origin xyz="0.18387 0 0.23588" rpy="1.5708 0 0"/>
     <axis xyz="0 0 -1"/>
     <limit effort="2000" velocity="20"/>
     <dynamics damping="1.0" friction="1.0"/>
@@ -196,7 +196,7 @@
   <joint name="BR_Wheel_Joint" type="continuous">
     <parent link="base_link"/>
     <child link="BR_Wheel"/>
-    <origin xyz="0.183875 -0.475667 0.235883" rpy="0 0 -3.14159"/>
+    <origin xyz="0.183875 -0.475667 0.235883" rpy="1.5708 0 -3.14159"/>
     <axis xyz="0 0 1"/>
     <limit effort="2000" velocity="20"/>
     <dynamics damping="1.0" friction="1.0"/>
@@ -237,7 +237,7 @@
   <joint name="base_to_d455i" type="fixed">
     <parent link="base_link"/>
     <child link="d455i_base_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0.85 -0.55 0.5" rpy="0 0.35 0"/>
   </joint>
 
   <link name="lidar_link"/>

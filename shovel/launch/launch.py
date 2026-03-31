@@ -85,6 +85,7 @@ def generate_launch_description():
     bt_wrapper_launch = os.path.join(launch_dir, 'launch', 'bt_config.py')
     gazebo_launch = os.path.join(launch_dir, 'launch', 'artemis_sim.launch.py')
     video_launch = os.path.join(launch_dir, 'launch', 'launch_video_streaming.py')
+    lidar_launch = os.path.join(launch_dir, 'launch', 'launch_lidar.py')
 
     # Per-robot motor launch files (hardware)
     talos_motors_launch = os.path.join(launch_dir, 'launch', 'launch_talos_motors.py')
@@ -201,6 +202,18 @@ def generate_launch_description():
                 'interface_name': PythonExpression([
                     "'eth1' if '", robot, "' == 'sim' else 'wlP1p1s0'"
                 ]),
+                'motor10_type': PythonExpression([
+                    "'falcon' if '", robot, "' == 'sisyphus' else 'kraken'"
+                ]),
+                'motor11_type': PythonExpression([
+                    "'falcon' if '", robot, "' == 'sisyphus' else 'kraken'"
+                ]),
+                'motor12_type': PythonExpression([
+                    "'falcon' if '", robot, "' == 'sisyphus' else 'kraken'"
+                ]),
+                'motor13_type': PythonExpression([
+                    "'falcon' if '", robot, "' == 'sisyphus' else 'kraken'"
+                ])
             }.items(),
         ),
         IncludeLaunchDescription(
@@ -220,6 +233,16 @@ def generate_launch_description():
                 ]),
             }.items(),
         ),
+        #IncludeLaunchDescription(
+        #    PythonLaunchDescriptionSource(
+        #        os.path.join(get_package_share_directory('nav2_bringup'), 'launch', 'bringup_launch.py')
+        #    ),
+        #    launch_arguments={
+        #        'use_sim_time': PythonExpression(["'true' if '", robot, "' == 'sim' else 'false'"]),
+        #        'params_file': os.path.join(launch_dir, 'src', 'autonomy', 'config', 'nav2_params.yaml'), # <-- Update this path to where your yaml lives
+        #        'map': '' # Leave blank if you are building the map dynamically
+        #    }.items(),
+        #),
 
         # =================================================================
         #  Cameras (hardware only)
@@ -229,6 +252,15 @@ def generate_launch_description():
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(cam_launch),
+                ),
+            ],
+        ),
+
+        GroupAction(
+            condition=is_not_sim,
+            actions=[
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(lidar_launch),
                 ),
             ],
         ),

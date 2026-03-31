@@ -99,6 +99,10 @@ private:
         seg.segment(*inliers, *coefficients);
 
         if (inliers->indices.empty()) return;
+        float ground_z = 0.0;
+        if (coefficients->values.size() == 4 && std::abs(coefficients->values[2]) > 0.001) {
+            ground_z = -coefficients->values[3] / coefficients->values[2];
+        }
 
         // Extract Obstacles
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_obstacles(new pcl::PointCloud<pcl::PointXYZ>());
@@ -148,7 +152,7 @@ private:
             pcl::PointXYZ min_pt, max_pt;
             pcl::getMinMax3D(*cloud_cluster, min_pt, max_pt);
 
-            min_pt.z = 0.0;
+            min_pt.z = ground_z;
             vision_msgs::msg::Detection3D detection;
             detection.bbox.center.position.x = (min_pt.x + max_pt.x) / 2.0;
             detection.bbox.center.position.y = (min_pt.y + max_pt.y) / 2.0;
