@@ -170,12 +170,18 @@ double odomTheta = 0.0;
 double prevLeftPos = 0.0;
 double prevRightPos = 0.0;
 bool odomInitialized = false;
+bool publishOdom = true;
 
 // Slip detection
 const double SLIP_THRESHOLD = 0.3;
 const double SLIP_CLAMP_FACTOR = 0.8;
 float lastLeftSpeed = 0.0;
 float lastRightSpeed = 0.0;
+
+// Simulated encoder values
+double simLeftPos = 0.0;
+double simRightPos = 0.0;
+rclcpp::Time lastUpdateTime;
 
 
 // ============================================================================
@@ -476,22 +482,24 @@ void updateOdometry() {
     odomMsg.twist.covariance[28] = 1e6;    // angular y
     odomMsg.twist.covariance[35] = 0.03;   // angular z
 
-    odomPublisher->publish(odomMsg);
+    if (publishOdom) {
+        odomPublisher->publish(odomMsg);
 
-    // --- Broadcast TF: odom -> base_link ---
-    geometry_msgs::msg::TransformStamped tf;
-    tf.header.stamp = now;
-    tf.header.frame_id = "odom";
-    tf.child_frame_id = "base_link";
-    tf.transform.translation.x = odomX;
-    tf.transform.translation.y = odomY;
-    tf.transform.translation.z = 0.0;
-    tf.transform.rotation.x = q.x();
-    tf.transform.rotation.y = q.y();
-    tf.transform.rotation.z = q.z();
-    tf.transform.rotation.w = q.w();
+        // --- Broadcast TF: odom -> base_link ---
+        geometry_msgs::msg::TransformStamped tf;
+        tf.header.stamp = now;
+        tf.header.frame_id = "odom";
+        tf.child_frame_id = "base_link";
+        tf.transform.translation.x = odomX;
+        tf.transform.translation.y = odomY;
+        tf.transform.translation.z = 0.0;
+        tf.transform.rotation.x = q.x();
+        tf.transform.rotation.y = q.y();
+        tf.transform.rotation.z = q.z();
+        tf.transform.rotation.w = q.w();
 
-    tfBroadcaster->sendTransform(tf);
+        tfBroadcaster->sendTransform(tf);
+    }
 
     if (printData) {
         RCLCPP_INFO(nodeHandle->get_logger(),
@@ -542,6 +550,7 @@ int main(int argc, char **argv) {
     gearReduction  = utils::getParameter<double>(nodeHandle, "gear_reduction", 100.0);
     trackWidth     = utils::getParameter<double>(nodeHandle, "track_width", 0.6);
     useCmdVel      = utils::getParameter<bool>(nodeHandle, "use_cmd_vel", false);
+    publishOdom    = utils::getParameter<bool>(nodeHandle, "publish_odom", true);
     maxLinearSpeed = utils::getParameter<double>(nodeHandle, "max_linear_speed", 0.5);
     printData      = utils::getParameter<bool>(nodeHandle, "print_data", false);
     wheelCircum    = wheelDiameter * M_PI;
@@ -645,10 +654,27 @@ int main(int argc, char **argv) {
     tfBroadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(nodeHandle);
 
     RCLCPP_INFO(nodeHandle->get_logger(), "Drivetrain node initialized");
+    lastUpdateTime = nodeHandle->get_clock()->now();
 
     // --- Main loop ---
     rclcpp::Rate rate(60);
     while (rclcpp::ok()) {
+        auto currentTime = nodeHandle->get_clock()->now();
+        double dt = (currentTime - lastUpdateTime).seconds();
+        lastUpdateTime = currentTime;
+
+        // If we are in simulation, manually integrate the commanded speeds
+        // lastLeftSpeed/lastRightSpeed are duty cycles [-1.0, 1.0]
+        // maxLinearSpeed is in m/s
+        simLeftPos += (lastLeftSpeed * maxLinearSpeed * dt);
+        simRightPos += (lastRightSpeed * maxLinearSpeed * dt);
+
+        // Feed these back into the wheel ground positions so updateOdometry() can use them
+        wheels[1].groundPosition = simLeftPos; // Left Front
+        wheels[3].groundPosition = simLeftPos; // Left Rear
+        wheels[0].groundPosition = simRightPos; // Right Front
+        wheels[2].groundPosition = simRightPos; // Right Rear
+
         updateOdometry();
         publishStatus();
         checkAndLimitSlip();

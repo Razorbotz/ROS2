@@ -6,10 +6,12 @@ from launch.actions import (
     GroupAction,
     LogInfo,
 )
+from launch_ros.substitutions import FindPackageShare
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import (
     LaunchConfiguration,
     PythonExpression,
+    PathJoinSubstitution,
 )
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
@@ -271,10 +273,11 @@ def generate_launch_description():
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(
-                        os.path.join(
-                            get_package_share_directory('realsense2_camera'),
-                            'launch', 'rs_launch.py'
-                        )
+                        PathJoinSubstitution([
+                            FindPackageShare('realsense2_camera'),
+                            'launch', 
+                            'rs_launch.py'
+                        ])
                     ),
                 ),
             ],
@@ -333,6 +336,21 @@ def generate_launch_description():
                 ),
             ],
         ),
-
-
+        # =================================================================
+        #  Robot Localization (Global EKF)
+        # =================================================================
+        Node(
+            condition=is_sim,
+            package='robot_localization',
+            executable='ekf_node',
+            name='ekf_global_filter_node',
+            output='screen',
+            parameters=[
+                os.path.join(launch_dir, 'src', 'autonomy', 'config', 'ekf_global.yaml'),
+                {'use_sim_time': True}
+            ],
+            remappings=[
+                ('pose0', '/apriltag_pose') 
+            ]
+        ),
     ])

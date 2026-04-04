@@ -107,12 +107,14 @@ def generate_launch_description():
                         ('camera_info', [camera_name, '/camera_info']),
                     ],
                     parameters=[{
+                        'image_transport': 'raw',
                         'family': tag_family,
-                        'size': 0.3,
                         'max_hamming': 0,
                         'detector.threads': 2,
                         'detector.decimate': 1.0,
-                        'image_transport': 'raw',
+                        'publish_tf': True, 
+                        'tag.ids': [7, 11],
+                        'tag.sizes': [0.3, 0.3]
                     }],
                     output='screen',
                 ),
@@ -145,86 +147,14 @@ def generate_launch_description():
         ),
 
         # =================================================================
-        #  Static TF: known tag positions in the arena
-        #
-        #  This replaces aruco_bridge. Instead of computing the robot's
-        #  position from the detected marker, we define where each tag IS
-        #  in the map frame. The TF tree then provides map->base_link
-        #  through the camera chain automatically.
-        #
-        #  To add a new tag, add another static_transform_publisher node
-        #  with the tag's known position/orientation in the map frame.
-        #
-        #  Frame naming convention:
-        #    apriltag_ros publishes: camera_optical_frame -> tag36h11:<id>
-        #    We publish:             map -> tag36h11:<id> (static, known)
-        #
-        #  Arguments: x y z qx qy qz qw parent_frame child_frame
-        # =================================================================
-
-        # Tag ID 7 — on the arena wall
-        # Pose from artemis_arena.world: (3.4, 1.8, 0.4) rpy(0, -1.58, 0)
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='tag7_static_tf',
-            arguments=[
-                '--x', '3.4', '--y', '1.8', '--z', '0.4',
-                '--qx', '0.0', '--qy', '-0.7068', '--qz', '0.0', '--qw', '0.7074',
-                '--frame-id', 'map', '--child-frame-id', 'tag36h11:7',
-            ],
-            output='screen',
-        ),
-
-        # Tag ID 11 — second tag in the arena
-        # Pose from artemis_arena.world: (2.5, 2.5, 0.4) rpy(1.58, 1.58, 0)
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='tag11_static_tf',
-            arguments=[
-                '--x', '2.5', '--y', '2.5', '--z', '0.4',
-                '--qx', '0.5', '--qy', '0.5', '--qz', '0.5', '--qw', '0.5',
-                '--frame-id', 'map', '--child-frame-id', 'tag36h11:11',
-            ],
-            output='screen',
-        ),
-
-        # =================================================================
-        #  Localization: compute map -> odom from AprilTag detections
-        #
-        #  apriltag_ros publishes camera_optical_frame -> tag36h11:N
-        #  Static TFs above define map -> tag36h11:N
-        #  URDF + odometry provides odom -> ... -> camera_optical_frame
-        #
-        #  This node combines them to publish map -> odom.
+        #  AprilTag to EKF Translator
         # =================================================================
         ExecuteProcess(
             cmd=[
                 'python3',
-                os.path.join(launch_dir, 'src', 'apriltag', 'scripts', 'apriltag_localization_node.py'),
+                os.path.join(launch_dir, 'src', 'apriltag', 'scripts', 'apriltag_to_ekf.py'),
                 '--ros-args',
-                '-p', 'tag_frame:=tag36h11:7',
-                '-p', ['camera_frame:=', camera_frame],
-                '-p', ['odom_frame:=', odom_frame],
-                '-p', 'map_frame:=map',
-                '-p', 'publish_rate:=10.0',
-            ],
-            output='screen',
-        ),
-
-        # =================================================================
-        #  Tag Visualization: publishes MarkerArray on /apriltag_markers
-        #  so known tag positions are visible in Foxglove / RViz.
-        #  Add a Marker panel in Foxglove subscribed to /apriltag_markers.
-        # =================================================================
-        ExecuteProcess(
-            cmd=[
-                'python3',
-                os.path.join(launch_dir, 'src', 'apriltag', 'scripts', 'tag_visualizer_node.py'),
-                '--ros-args',
-                '-p', 'map_frame:=map',
-                '-p', 'tag_frames:=[tag36h11:7, tag36h11:11]',
+                '-p', 'use_sim_time:=true',
             ],
             output='screen',
         ),
