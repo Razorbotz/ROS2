@@ -114,8 +114,8 @@
   <joint name="FL_Wheel_Joint" type="continuous">
     <parent link="base_link"/>
     <child link="FL_Wheel"/>
-    <origin xyz="0.8411 -0.019814 0.235883" rpy="1.5708 0 0"/>
-    <axis xyz="0 0 -1"/>
+    <origin xyz="0.8411 -0.019814 0.235883" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
     <limit effort="2000" velocity="20"/>
     <dynamics damping="1.0" friction="1.0"/>
   </joint>
@@ -141,8 +141,8 @@
   <joint name="FR_Wheel_Joint" type="continuous">
     <parent link="base_link"/>
     <child link="FR_Wheel"/>
-    <origin xyz="0.8411 -0.538167 0.235883" rpy="1.5708 0 0"/>
-    <axis xyz="0 0 -1"/>
+    <origin xyz="0.8411 -0.538167 0.235883" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
     <limit effort="2000" velocity="20"/>
     <dynamics damping="1.0" friction="1.0"/>
   </joint>
@@ -168,8 +168,8 @@
   <joint name="BL_Wheel_Joint" type="continuous">
     <parent link="base_link"/>
     <child link="BL_Wheel"/>
-    <origin xyz="0.18387 0 0.23588" rpy="1.5708 0 0"/>
-    <axis xyz="0 0 -1"/>
+    <origin xyz="0.18387 0 0.23588" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
     <limit effort="2000" velocity="20"/>
     <dynamics damping="1.0" friction="1.0"/>
   </joint>
@@ -196,8 +196,8 @@
   <joint name="BR_Wheel_Joint" type="continuous">
     <parent link="base_link"/>
     <child link="BR_Wheel"/>
-    <origin xyz="0.183875 -0.475667 0.235883" rpy="1.5708 0 -3.14159"/>
-    <axis xyz="0 0 1"/>
+    <origin xyz="0.183875 -0.475667 0.235883" rpy="0 0 -3.14159"/>
+    <axis xyz="0 -1 0"/>
     <limit effort="2000" velocity="20"/>
     <dynamics damping="1.0" friction="1.0"/>
   </joint>
@@ -244,16 +244,22 @@
   <joint name="d455i_to_lidar" type="fixed">
     <parent link="d455i_base_link"/>
     <child link="lidar_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0.2" rpy="0 0 0"/>
   </joint>
 
   <link name="zed2i_left_optical_frame"/>
-  <joint name="zed2i_optical_joint" type="fixed">
+  <joint name="zed2i_left_optical_joint" type="fixed">
     <parent link="zed2i_base_link"/>
     <child link="zed2i_left_optical_frame"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 -0.06 0" rpy="-1.5708 0 -1.5708"/>
   </joint>
 
+  <link name="zed2i_right_optical_frame"/>
+  <joint name="zed2i_right_optical_joint" type="fixed">
+    <parent link="zed2i_base_link"/>
+    <child link="zed2i_right_optical_frame"/>
+    <origin xyz="0 0.06 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
 
   <ros2_control name="GazeboSystem" type="system">
     <hardware>

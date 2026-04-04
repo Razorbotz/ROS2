@@ -72,19 +72,6 @@ def generate_launch_description():
         arguments=['0', '0', '0', '0', '0', '0', 'map', 'world']
     )
 
-    # 3. Static TF: Wall Marker Position
-    node_wall_marker = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='map_to_wall_marker',
-        arguments=[
-            '3.4', '1.8', '0.4',    
-            '0', '-1.57', '0',      
-            'map',                  
-            'wall_marker_7'         
-        ]
-    )
-
     # 4A. Gazebo Headless (gzserver)
     cmd_gzserver = ExecuteProcess(
         condition=IfCondition(headless),
@@ -142,7 +129,6 @@ def generate_launch_description():
         env_resource_path,
         node_robot_state_publisher,
         node_static_tf,     
-        node_wall_marker,   
         cmd_gzserver,
         cmd_gazebo_gui,
         node_spawn_entity,

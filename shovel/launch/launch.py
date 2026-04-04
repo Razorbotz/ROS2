@@ -203,17 +203,17 @@ def generate_launch_description():
                     "'eth1' if '", robot, "' == 'sim' else 'wlP1p1s0'"
                 ]),
                 'motor10_type': PythonExpression([
-                    "'falcon' if '", robot, "' == 'sisyphus' else 'kraken'"
+                    "'falcon' if '", robot, "' in ('sisyphus', 'sim') else 'kraken'"
                 ]),
                 'motor11_type': PythonExpression([
-                    "'falcon' if '", robot, "' == 'sisyphus' else 'kraken'"
+                    "'falcon' if '", robot, "' in ('sisyphus', 'sim') else 'kraken'"
                 ]),
                 'motor12_type': PythonExpression([
-                    "'falcon' if '", robot, "' == 'sisyphus' else 'kraken'"
+                    "'falcon' if '", robot, "' in ('sisyphus', 'sim') else 'kraken'"
                 ]),
                 'motor13_type': PythonExpression([
-                    "'falcon' if '", robot, "' == 'sisyphus' else 'kraken'"
-                ])
+                    "'falcon' if '", robot, "' in ('sisyphus', 'sim') else 'kraken'"
+                ]),
             }.items(),
         ),
         IncludeLaunchDescription(
@@ -314,20 +314,25 @@ def generate_launch_description():
         ),
 
         # =================================================================
-        #  AprilTag detection + localization (all configurations)
+        #  AprilTag detection + localization (sim only)
         # =================================================================
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(launch_dir, 'launch', 'launch_apriltag.py')
-            ),
-            launch_arguments={
-                'use_gpu': PythonExpression([
-                    "'true' if '", robot, "' != 'sim' else 'false'"
-                ]),
-                'tag_family': '36h11',
-                'tag_size': '0.3',
-                'camera_name': '/zed2i/left',
-                'image_topic': 'image_raw',
-            }.items(),
+        GroupAction(
+            condition=is_sim,
+            actions=[
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(
+                        os.path.join(launch_dir, 'launch', 'launch_apriltag.py')
+                    ),
+                    launch_arguments={
+                        'use_gpu': 'false', 
+                        'tag_family': '36h11',
+                        'tag_size': '0.3',
+                        'camera_name': '/zed2i/left',
+                        'image_topic': 'image_raw',
+                    }.items(),
+                ),
+            ],
         ),
+
+
     ])

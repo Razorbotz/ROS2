@@ -1,5 +1,7 @@
+import os
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, LogInfo
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, GroupAction, LogInfo
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
@@ -33,6 +35,9 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    launch_dir = os.getcwd()
+
+
     # =========================================================================
     #  Arguments
     # =========================================================================
@@ -56,12 +61,22 @@ def generate_launch_description():
         'image_topic', default_value='image_raw',
         description='Image topic name under camera namespace'
     )
+    camera_frame_arg = DeclareLaunchArgument(
+        'camera_frame', default_value='zed2i_left_optical_frame',
+        description='Optical frame of the camera (check your Gazebo plugin / URDF)'
+    )
+    odom_frame_arg = DeclareLaunchArgument(
+        'odom_frame', default_value='odom',
+        description='Odometry frame'
+    )
 
     use_gpu = LaunchConfiguration('use_gpu')
     tag_family = LaunchConfiguration('tag_family')
     tag_size = LaunchConfiguration('tag_size')
     camera_name = LaunchConfiguration('camera_name')
     image_topic = LaunchConfiguration('image_topic')
+    camera_frame = LaunchConfiguration('camera_frame')
+    odom_frame = LaunchConfiguration('odom_frame')
 
     is_gpu = IfCondition(PythonExpression(["'", use_gpu, "' == 'true'"]))
     is_cpu = UnlessCondition(PythonExpression(["'", use_gpu, "' == 'true'"]))
@@ -72,6 +87,8 @@ def generate_launch_description():
         tag_size_arg,
         camera_name_arg,
         image_topic_arg,
+        camera_frame_arg,
+        odom_frame_arg,
 
         # =================================================================
         #  CPU detector: christianrauch/apriltag_ros
@@ -91,13 +108,11 @@ def generate_launch_description():
                     ],
                     parameters=[{
                         'family': tag_family,
-                        'size': tag_size,
+                        'size': 0.3,
                         'max_hamming': 0,
                         'detector.threads': 2,
                         'detector.decimate': 1.0,
                         'image_transport': 'raw',
-                        'qos_overrides./image_rect.subscription.reliability': 'best_effort',
-                        'qos_overrides./camera_info.subscription.reliability': 'best_effort',
                     }],
                     output='screen',
                 ),
@@ -147,30 +162,70 @@ def generate_launch_description():
         #  Arguments: x y z qx qy qz qw parent_frame child_frame
         # =================================================================
 
-        # Tag ID 7 — on the arena wall (same position as your old ArUco marker 7)
-        # Adjust x, y, z and orientation to match your arena layout.
+        # Tag ID 7 — on the arena wall
+        # Pose from artemis_arena.world: (3.4, 1.8, 0.4) rpy(0, -1.58, 0)
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
             name='tag7_static_tf',
             arguments=[
-                '--x', '0.0', '--y', '0.0', '--z', '1.0',
-                '--qx', '0.0', '--qy', '0.0', '--qz', '0.0', '--qw', '1.0',
+                '--x', '3.4', '--y', '1.8', '--z', '0.4',
+                '--qx', '0.0', '--qy', '-0.7068', '--qz', '0.0', '--qw', '0.7074',
                 '--frame-id', 'map', '--child-frame-id', 'tag36h11:7',
             ],
             output='screen',
         ),
 
-        # Add more tags as needed:
-        # Tag ID 0 — example for a second tag
-        # Node(
-        #     package='tf2_ros',
-        #     executable='static_transform_publisher',
-        #     name='tag0_static_tf',
-        #     arguments=[
-        #         '5.0', '0.0', '1.0', '0.0', '0.0', '0.707', '0.707',
-        #         'map', 'tag36h11:0',
-        #     ],
-        #     output='screen',
-        # ),
+        # Tag ID 11 — second tag in the arena
+        # Pose from artemis_arena.world: (2.5, 2.5, 0.4) rpy(1.58, 1.58, 0)
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='tag11_static_tf',
+            arguments=[
+                '--x', '2.5', '--y', '2.5', '--z', '0.4',
+                '--qx', '0.5', '--qy', '0.5', '--qz', '0.5', '--qw', '0.5',
+                '--frame-id', 'map', '--child-frame-id', 'tag36h11:11',
+            ],
+            output='screen',
+        ),
+
+        # =================================================================
+        #  Localization: compute map -> odom from AprilTag detections
+        #
+        #  apriltag_ros publishes camera_optical_frame -> tag36h11:N
+        #  Static TFs above define map -> tag36h11:N
+        #  URDF + odometry provides odom -> ... -> camera_optical_frame
+        #
+        #  This node combines them to publish map -> odom.
+        # =================================================================
+        ExecuteProcess(
+            cmd=[
+                'python3',
+                os.path.join(launch_dir, 'src', 'apriltag', 'scripts', 'apriltag_localization_node.py'),
+                '--ros-args',
+                '-p', 'tag_frame:=tag36h11:7',
+                '-p', ['camera_frame:=', camera_frame],
+                '-p', ['odom_frame:=', odom_frame],
+                '-p', 'map_frame:=map',
+                '-p', 'publish_rate:=10.0',
+            ],
+            output='screen',
+        ),
+
+        # =================================================================
+        #  Tag Visualization: publishes MarkerArray on /apriltag_markers
+        #  so known tag positions are visible in Foxglove / RViz.
+        #  Add a Marker panel in Foxglove subscribed to /apriltag_markers.
+        # =================================================================
+        ExecuteProcess(
+            cmd=[
+                'python3',
+                os.path.join(launch_dir, 'src', 'apriltag', 'scripts', 'tag_visualizer_node.py'),
+                '--ros-args',
+                '-p', 'map_frame:=map',
+                '-p', 'tag_frames:=[tag36h11:7, tag36h11:11]',
+            ],
+            output='screen',
+        ),
     ])
