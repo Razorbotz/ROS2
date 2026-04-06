@@ -15,7 +15,11 @@ def generate_launch_description():
             'robot', default_value='talos',
             description='Robot configuration to check if sim'
         ),
-        
+        DeclareLaunchArgument(
+            'use_sim', default_value='false',
+            description='Set true when running in Gazebo simulation'
+        ),
+
         Node(
             package='drivetrain',
             name='drivetrain',
@@ -24,13 +28,15 @@ def generate_launch_description():
             parameters=[{
                 'wheel_diameter': 0.4,
                 'gear_reduction': 100.0,
-                'track_width': 0.6,
+                'track_width': 0.85,
+                'max_linear_speed': 0.65,
                 'motor0_type': 'phoenix6',
                 'motor1_type': 'phoenix6',
                 'motor2_type': 'phoenix6',
                 'motor3_type': 'phoenix6',
-                'use_cmd_vel': False,      # set True when ready for Nav2
-                'publish_odom': True
+                'use_cmd_vel': False,
+                'publish_odom': True,
+                'use_sim': LaunchConfiguration('use_sim'),
             }]
         )
     ])

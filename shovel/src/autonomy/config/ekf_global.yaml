@@ -3,25 +3,32 @@ ekf_global_filter_node:
     frequency: 30.0
     two_d_mode: true
     publish_tf: true
-    use_sim_time: true
-
     map_frame: map
-    odom_frame: odom
+    odom_frame: base_link
     base_link_frame: base_link
     world_frame: map
 
-    # Continuous Odometry (RTAB-Map)
-    odom0: /odom
-    odom0_config: [true,  true,  true,
-                   true,  true,  true,
-                   false, false, false,
-                   false, false, false,
-                   false, false, false]
+    # Sensor 0: wheel odometry
+    odom0: /p3d/odom
+    odom0_config: [true, true, false,    # x, y, z
+                   false, false, true,    # roll, pitch, yaw
+                   false, false, false,   # vx, vy, vz
+                   false, false, false,   # vroll, vpitch, vyaw
+                   false, false, false]   # ax, ay, az
+    initial_state: [1.9, 1.75, 0.0,    # x, y, z
+                    0.0, 0.0, 3.14159,  # roll, pitch, yaw (facing -X = pi)
+                    0.0, 0.0, 0.0,      # vx, vy, vz
+                    0.0, 0.0, 0.0,      # vroll, vpitch, vyaw
+                    0.0, 0.0, 0.0]      # ax, ay, az
+    odom0_differential: true
 
-    # Discrete Absolute Poses (AprilTags)
+    # Sensor 1: AprilTag absolute pose (in map frame)
     pose0: /apriltag_pose
-    pose0_config: [true,  true,  true,
-                   true,  true,  true,
+    pose0_config: [true, true, false,     # x, y, z
+                   false, false, true,     # roll, pitch, yaw
                    false, false, false,
                    false, false, false,
                    false, false, false]
+    pose0_differential: false
+
+    use_sim_time: true

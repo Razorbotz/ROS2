@@ -13,6 +13,7 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2/LinearMath/Quaternion.h>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <messages/msg/key_state.hpp>
 
 #include "messages/msg/linear_status.hpp"
@@ -157,10 +158,12 @@ WheelState wheels[4];
 // Drivetrain parameters
 double wheelDiameter = 0.2;
 double wheelCircum = 0.0;
+double wheelRadius = 0.0;
 double gearReduction = 100.0;
 double trackWidth = 0.6;
 bool printData = false;
 bool useCmdVel = false;
+bool useSim = false;
 double maxLinearSpeed = 0.5;
 
 // Odometry state
@@ -184,9 +187,46 @@ double simRightPos = 0.0;
 rclcpp::Time lastUpdateTime;
 
 
-// ============================================================================
-//  Speed command callbacks
-// ============================================================================
+/** @brief Joint state callback — reads wheel positions/velocities from Gazebo's
+ *        ros2_control joint_state_broadcaster.
+ *
+ * In simulation, the physics engine is the ground truth. Gazebo reports joint
+ * positions in radians and velocities in rad/s. We convert to linear meters
+ * and m/s by multiplying by the wheel radius.
+ *
+ * Note on BR_Wheel_Joint: The URDF defines this joint with axis (0, -1, 0)
+ * and a pi rotation on the joint origin. Gazebo may report the velocity with
+ * the opposite sign for this wheel. We negate it to keep the convention that
+ * positive velocity = forward motion.
+ */
+void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr msg) {
+    for (size_t i = 0; i < msg->name.size(); i++) {
+        // Gazebo joint positions are in radians, velocities in rad/s.
+        // Multiply by wheel radius to get linear distance/speed at the ground.
+        double pos_meters = msg->position[i] * wheelRadius;
+        double vel_meters = msg->velocity[i] * wheelRadius;
+
+        if (msg->name[i] == "FR_Wheel_Joint") {
+            wheels[0].groundPosition = pos_meters;
+            wheels[0].groundSpeed = vel_meters;
+            wheels[0].updated = true;
+        } else if (msg->name[i] == "FL_Wheel_Joint") {
+            wheels[1].groundPosition = pos_meters;
+            wheels[1].groundSpeed = vel_meters;
+            wheels[1].updated = true;
+        } else if (msg->name[i] == "BR_Wheel_Joint") {
+            // Negate: URDF axis is (0, -1, 0) with pi rotation
+            wheels[2].groundPosition = -pos_meters;
+            wheels[2].groundSpeed = -vel_meters;
+            wheels[2].updated = true;
+        } else if (msg->name[i] == "BL_Wheel_Joint") {
+            wheels[3].groundPosition = pos_meters;
+            wheels[3].groundSpeed = vel_meters;
+            wheels[3].updated = true;
+        }
+    }
+}
+
 
 void driveLeftSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed) {
     if (printData)
@@ -216,6 +256,7 @@ void userLeftSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed) {
     if (printData)
         RCLCPP_INFO(nodeHandle->get_logger(), "userLeftSpeed: %f", speed->data);
 
+    lastLeftSpeed = speed->data;
     std_msgs::msg::Float32 outSpeed;
     outSpeed.data = speed->data;
     falcon11UserPublisher->publish(outSpeed);
@@ -227,6 +268,7 @@ void userRightSpeedCallback(const std_msgs::msg::Float32::SharedPtr speed) {
     if (printData)
         RCLCPP_INFO(nodeHandle->get_logger(), "userRightSpeed: %f", speed->data);
 
+    lastRightSpeed = speed->data;
     std_msgs::msg::Float32 outSpeed;
     outSpeed.data = speed->data;
     falcon10UserPublisher->publish(outSpeed);
@@ -281,10 +323,6 @@ void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr twist) {
 }
 
 
-// ============================================================================
-//  Motor status callbacks — Falcon 500 (Phoenix 5)
-// ============================================================================
-
 void falcon0Callback(const messages::msg::FalconStatus::SharedPtr status) {
     wheels[0].updateFromFalcon(status->sensor_velocity, status->sensor_position,
                                gearReduction, wheelCircum);
@@ -306,10 +344,6 @@ void falcon3Callback(const messages::msg::FalconStatus::SharedPtr status) {
 }
 
 
-// ============================================================================
-//  Motor status callbacks — Kraken x60 (Phoenix 6)
-// ============================================================================
-
 void kraken0Callback(const messages::msg::KrakenStatus::SharedPtr status) {
     wheels[0].updateFromKraken(status->sensor_velocity, status->sensor_position,
                                gearReduction, wheelCircum);
@@ -330,10 +364,6 @@ void kraken3Callback(const messages::msg::KrakenStatus::SharedPtr status) {
                                gearReduction, wheelCircum);
 }
 
-
-// ============================================================================
-//  Slip detection
-// ============================================================================
 
 void checkAndLimitSlip() {
     if (std::abs(lastLeftSpeed) < 0.01 && std::abs(lastRightSpeed) < 0.01)
@@ -386,10 +416,6 @@ void checkAndLimitSlip() {
 }
 
 
-// ============================================================================
-//  Odometry
-// ============================================================================
-
 /** @brief Compute and publish wheel odometry + TF.
  *
  * Uses differential drive forward kinematics:
@@ -403,8 +429,8 @@ void checkAndLimitSlip() {
  */
 void updateOdometry() {
     // Average left side (wheels 1, 3) and right side (wheels 0, 2)
-    double leftPos  = (wheels[1].groundPosition + wheels[3].groundPosition) / 2.0;
-    double rightPos = (wheels[0].groundPosition + wheels[2].groundPosition) / 2.0;
+    double leftPos  = (wheels[0].groundPosition + wheels[2].groundPosition) / 2.0;
+    double rightPos = (wheels[1].groundPosition + wheels[3].groundPosition) / 2.0;
 
     if (!odomInitialized) {
         prevLeftPos = leftPos;
@@ -510,10 +536,6 @@ void updateOdometry() {
 }
 
 
-// ============================================================================
-//  Drivetrain status publishing
-// ============================================================================
-
 void publishStatus() {
     messages::msg::DrivetrainStatus status;
 
@@ -537,10 +559,6 @@ void publishStatus() {
 }
 
 
-// ============================================================================
-//  Main
-// ============================================================================
-
 int main(int argc, char **argv) {
     rclcpp::init(argc, argv);
     nodeHandle = rclcpp::Node::make_shared("drivetrain");
@@ -553,7 +571,9 @@ int main(int argc, char **argv) {
     publishOdom    = utils::getParameter<bool>(nodeHandle, "publish_odom", true);
     maxLinearSpeed = utils::getParameter<double>(nodeHandle, "max_linear_speed", 0.5);
     printData      = utils::getParameter<bool>(nodeHandle, "print_data", false);
+    useSim         = utils::getParameter<bool>(nodeHandle, "use_sim", false);
     wheelCircum    = wheelDiameter * M_PI;
+    wheelRadius    = wheelDiameter / 2.0;
 
     // Motor types per wheel: "phoenix5" for Falcon 500, "phoenix6" for Kraken x60
     std::string motor0Type = utils::getParameter<std::string>(nodeHandle, "motor0_type", "phoenix6");
@@ -574,6 +594,7 @@ int main(int argc, char **argv) {
                 motor0Type.c_str(), motor1Type.c_str(),
                 motor2Type.c_str(), motor3Type.c_str());
     RCLCPP_INFO(nodeHandle->get_logger(), "  use_cmd_vel: %s", useCmdVel ? "true" : "false");
+    RCLCPP_INFO(nodeHandle->get_logger(), "  use_sim:     %s", useSim ? "true" : "false");
 
     // --- Speed command subscribers ---
     auto driveLeftSub  = nodeHandle->create_subscription<std_msgs::msg::Float32>(
@@ -591,6 +612,14 @@ int main(int argc, char **argv) {
         cmdVelSub = nodeHandle->create_subscription<geometry_msgs::msg::Twist>(
             "cmd_vel", 1, cmdVelCallback);
         RCLCPP_INFO(nodeHandle->get_logger(), "cmd_vel subscriber active");
+    }
+
+    // Sim mode: read wheel states from Gazebo's joint_state_broadcaster
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr jointStateSub;
+    if (useSim) {
+        jointStateSub = nodeHandle->create_subscription<sensor_msgs::msg::JointState>(
+            "joint_states", 10, jointStateCallback);
+        RCLCPP_INFO(nodeHandle->get_logger(), "Sim mode: reading odometry from joint_states");
     }
 
     // --- Motor status subscribers ---
@@ -646,8 +675,7 @@ int main(int argc, char **argv) {
     falcon12UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_12_user_speed", 1);
     falcon13UserPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("falcon_13_user_speed", 1);
 
-    drivetrainStatusPublisher = nodeHandle->create_publisher<messages::msg::DrivetrainStatus>(
-        "drivetrain_status", 1);
+    drivetrainStatusPublisher = nodeHandle->create_publisher<messages::msg::DrivetrainStatus>("drivetrain_status", 1);
     odomPublisher = nodeHandle->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
 
     // TF broadcaster
@@ -662,18 +690,6 @@ int main(int argc, char **argv) {
         auto currentTime = nodeHandle->get_clock()->now();
         double dt = (currentTime - lastUpdateTime).seconds();
         lastUpdateTime = currentTime;
-
-        // If we are in simulation, manually integrate the commanded speeds
-        // lastLeftSpeed/lastRightSpeed are duty cycles [-1.0, 1.0]
-        // maxLinearSpeed is in m/s
-        simLeftPos += (lastLeftSpeed * maxLinearSpeed * dt);
-        simRightPos += (lastRightSpeed * maxLinearSpeed * dt);
-
-        // Feed these back into the wheel ground positions so updateOdometry() can use them
-        wheels[1].groundPosition = simLeftPos; // Left Front
-        wheels[3].groundPosition = simLeftPos; // Left Rear
-        wheels[0].groundPosition = simRightPos; // Right Front
-        wheels[2].groundPosition = simRightPos; // Right Rear
 
         updateOdometry();
         publishStatus();

@@ -14,6 +14,7 @@ find_package(nav_msgs)
 find_package(geometry_msgs)
 find_package(tf2_ros)
 find_package(tf2)
+find_package(sensor_msgs REQUIRED)
 
 include_directories(
 	include
@@ -37,4 +38,5 @@ ament_target_dependencies(${PROJECT_NAME}_node
 	geometry_msgs
 	tf2_ros
 	tf2
+	sensor_msgs
 )

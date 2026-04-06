@@ -223,9 +223,15 @@ def generate_launch_description():
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(drivetrain_launch),
+            launch_arguments={
+                'use_sim': PythonExpression(["'true' if '", robot, "' == 'sim' else 'false'"]),
+            }.items(),
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(status_monitor_launch),
+            launch_arguments={
+                'simulation': PythonExpression(["'true' if '", robot, "' == 'sim' else 'false'"]),
+            }.items(),
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(video_launch),

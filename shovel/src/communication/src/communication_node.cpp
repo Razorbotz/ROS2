@@ -563,10 +563,8 @@ void powerCallback(const messages::msg::Power::SharedPtr power) {
 
 void talonStatusCallback(const std::string& name, const messages::msg::TalonStatus::SharedPtr talonStatus, int& counter, Talon& talon, int motorId) {
     notifyMotorReceived(motorId);
-    counter++;
-    if (counter % 20 == 0)
-        if (rssi < CRIT_THRESH)
-            send(name, talonStatus, talon);
+    if (rssi < CRIT_THRESH)
+        send(name, talonStatus, talon);
 }
 
 void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr talonStatus, Falcon& falcon) {
@@ -592,15 +590,8 @@ void falconStatusCallback(const std::string& name, const messages::msg::FalconSt
 
 void krakenStatusCallback(const std::string& name, const messages::msg::KrakenStatus::SharedPtr krakenStatus, int& counter, Kraken& kraken, int motorId) {
     notifyMotorReceived(motorId);
-    counter++;
-    if (counter % 20 == 0) {
-        if (rssi < CRIT_THRESH)
-            send(name, krakenStatus, kraken);
-    }
-    else {
-        if (rssi < CRIT_THRESH)
-            sendKrakenCrit(name, krakenStatus, kraken);
-    }
+    if (rssi < CRIT_THRESH)
+        send(name, krakenStatus, kraken);
 }
 
 void linearStatusCallback(const std::string& name, const messages::msg::LinearStatus::SharedPtr linearStatus,

@@ -64,14 +64,6 @@ def generate_launch_description():
         }]
     )
 
-    # 2. Static TF: Map -> World Bridge
-    node_static_tf = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='map_to_world',
-        arguments=['0', '0', '0', '0', '0', '0', 'map', 'world']
-    )
-
     # 4A. Gazebo Headless (gzserver)
     cmd_gzserver = ExecuteProcess(
         condition=IfCondition(headless),
@@ -128,7 +120,6 @@ def generate_launch_description():
         env_model_path,
         env_resource_path,
         node_robot_state_publisher,
-        node_static_tf,     
         cmd_gzserver,
         cmd_gazebo_gui,
         node_spawn_entity,

@@ -121,6 +121,30 @@ def generate_launch_description():
             ],
         ),
 
+        # Tag 7: <pose>3.4 1.8 0.4 0 -1.58 0</pose>
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='tag7_static_tf',
+            arguments=[
+                '--x', '3.4', '--y', '1.8', '--z', '0.4',
+                '--roll', '0.0', '--pitch', '-1.58', '--yaw', '0.0',
+                '--frame-id', 'map', '--child-frame-id', 'tag7_known',
+            ],
+        ),
+
+        # Tag 11: <pose>2.5 2.5 0.4 1.58 1.58 0</pose>
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='tag11_static_tf',
+            arguments=[
+                '--x', '2.5', '--y', '2.5', '--z', '0.4',
+                '--roll', '1.58', '--pitch', '1.58', '--yaw', '0.0',
+                '--frame-id', 'map', '--child-frame-id', 'tag11_known',
+            ],
+        ),
+
         # =================================================================
         #  GPU detector: isaac_ros_apriltag (Jetson/NVIDIA GPU)
         #  Publishes to /tag_detections topic
@@ -146,16 +170,26 @@ def generate_launch_description():
             ],
         ),
 
-        # =================================================================
-        #  AprilTag to EKF Translator
-        # =================================================================
-        ExecuteProcess(
-            cmd=[
-                'python3',
-                os.path.join(launch_dir, 'src', 'apriltag', 'scripts', 'apriltag_to_ekf.py'),
-                '--ros-args',
-                '-p', 'use_sim_time:=true',
+        # Replace the EKF node with this for sim:
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='world_to_map',
+            arguments=[
+                '--x', '0', '--y', '0', '--z', '0',
+                '--roll', '0', '--pitch', '0', '--yaw', '0',
+                '--frame-id', 'map', '--child-frame-id', 'world',
             ],
-            output='screen',
         ),
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='map_to_odom',
+            arguments=[
+                '--x', '0', '--y', '0', '--z', '0',
+                '--roll', '0', '--pitch', '0', '--yaw', '0',
+                '--frame-id', 'map', '--child-frame-id', 'odom',
+            ],
+        ),
+
     ])
