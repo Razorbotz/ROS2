@@ -3,68 +3,68 @@
 #include <std_msgs/msg/header.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
-#include <chrono>
-
-using namespace std::chrono_literals;
+#include <thread>
 
 class WebcamNode : public rclcpp::Node {
 public:
     WebcamNode() : Node("webcam") {
         RCLCPP_INFO(this->get_logger(), "Starting webcam node...");
 
-        // Match the topic name of the ZED node so downstream nodes don't break
         image_publisher_ = this->create_publisher<sensor_msgs::msg::Image>("zed_image", 10);
 
-        // Open the default camera (index 0)
-        // If you have multiple webcams, you may need to change this to 1, 2, etc.
-        cap_.open(0);
+        // Open the default camera using the V4L2 backend
+        cap_.open(0, cv::CAP_V4L2);
+        
         if (!cap_.isOpened()) {
-            RCLCPP_ERROR(this->get_logger(), "Failed to open webcam! Check connections and permissions.");
+            RCLCPP_ERROR(this->get_logger(), "Failed to open webcam!");
             return;
         }
 
-        // Try to set standard resolution (optional, adjust to your needs)
         cap_.set(cv::CAP_PROP_FRAME_WIDTH, 640);
         cap_.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-        cap_.set(cv::CAP_PROP_FPS, 30);
 
-        // Timer to pull frames at ~30Hz
-        timer_ = this->create_wall_timer(
-            33ms, std::bind(&WebcamNode::timer_callback, this));
+        // Spin up a dedicated background thread to read frames as fast as the camera provides them
+        capture_thread_ = std::thread(&WebcamNode::capture_loop, this);
     }
 
     ~WebcamNode() {
+        // Wait for the thread to finish cleanly on shutdown
+        if (capture_thread_.joinable()) {
+            capture_thread_.join();
+        }
         if (cap_.isOpened()) {
             cap_.release();
         }
     }
 
 private:
-    void timer_callback() {
+    void capture_loop() {
         cv::Mat frame;
         cv::Mat rgb_frame;
 
-        if (cap_.read(frame)) {
-            // OpenCV captures in BGR by default. 
-            // The ZED node published "rgb8", so we convert it here to perfectly match the original stream format.
-            cv::cvtColor(frame, rgb_frame, cv::COLOR_BGR2RGB);
+        // Loop continuously as long as the ROS node is alive
+        while (rclcpp::ok()) {
+            // cap_.read() is a blocking call, it will naturally pace the loop to the camera's true FPS
+            if (cap_.read(frame) && !frame.empty()) {
+                cv::cvtColor(frame, rgb_frame, cv::COLOR_BGR2RGB);
 
-            std_msgs::msg::Header hdr;
-            hdr.stamp = this->get_clock()->now();
-            hdr.frame_id = "webcam_link"; // Arbitrary frame ID since we aren't doing TF tracking
+                std_msgs::msg::Header hdr;
+                hdr.stamp = this->get_clock()->now();
+                hdr.frame_id = "webcam_link"; 
 
-            // Convert OpenCV Mat to ROS 2 Image message
-            sensor_msgs::msg::Image::SharedPtr msg = cv_bridge::CvImage(hdr, "rgb8", rgb_frame).toImageMsg();
-            
-            image_publisher_->publish(*msg);
-        } else {
-            RCLCPP_WARN(this->get_logger(), "Dropped frame - could not read from webcam.");
+                sensor_msgs::msg::Image::SharedPtr msg = cv_bridge::CvImage(hdr, "rgb8", rgb_frame).toImageMsg();
+                image_publisher_->publish(*msg);
+            } else {
+                // Use a throttled warning so we don't spam the terminal if it gets unplugged
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, 
+                    "Dropped frame - could not read from webcam.");
+            }
         }
     }
 
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher_;
-    rclcpp::TimerBase::SharedPtr timer_;
     cv::VideoCapture cap_;
+    std::thread capture_thread_;
 };
 
 int main(int argc, char **argv) {
