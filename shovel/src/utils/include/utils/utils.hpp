@@ -10,6 +10,8 @@
 #include <sys/ioctl.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
+#include <vector>
+#include <iostream>
 
 namespace utils {
 
@@ -38,6 +40,16 @@ namespace utils {
 	template <typename T>
 	T getParameter(rclcpp::Node::SharedPtr nodeHandle, const std::string& parameterName, const char* initialValue){
 		return getParameter<T>(nodeHandle, parameterName, std::string(initialValue));
+	}
+
+	template <typename T>
+	std::ostream& operator<<(std::ostream& os, const std::vector<T>& v){
+		os << "[";
+		for (size_t i = 0; i < v.size(); ++i){
+			os << v[i] << (i != v.size() - 1 ? ", " : "");
+		}
+		os << "]";
+		return os;
 	}
 
 	void set_speed_frame(struct can_frame* frame, int motorNumber, float speed);

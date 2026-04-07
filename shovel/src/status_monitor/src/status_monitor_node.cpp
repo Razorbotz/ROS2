@@ -15,6 +15,7 @@
 #include <vector>
 #include <linux/reboot.h>
 #include <sys/reboot.h>
+#include <cstdint>
 
 #include <rclcpp/rclcpp.hpp>
 #include <messages/msg/system_status.hpp>
@@ -517,10 +518,13 @@ int main(int argc, char** argv) {
     // Motor CAN IDs in physical wiring order (closest to CAN0 first).
     // Pass as an integer array parameter, e.g.: [10, 11, 13, 12, 16, 14]
     // These correspond to hex CAN IDs: 0xA, 0xB, 0xD, 0xC, 0x10, 0xE
-    std::vector<long int> defaultWiring = {0xA, 0xB, 0xD, 0xC, 0x10, 0xE};
-    std::vector<long int> wiringParam = utils::getParameter<std::vector<long int>>(
+    // Motor CAN IDs in physical wiring order (closest to CAN0 first).
+    // Pass as an integer array parameter, e.g.: [10, 11, 13, 12, 16, 14]
+    // These correspond to hex CAN IDs: 0xA, 0xB, 0xD, 0xC, 0x10, 0xE
+    std::vector<int64_t> defaultWiring = {0xA, 0xB, 0xD, 0xC, 0x10, 0xE};
+    std::vector<int64_t> wiringParam = utils::getParameter<std::vector<int64_t>>(
         nodeHandle, "motor_wiring_order", defaultWiring);
-
+    
     if (wiringParam.size() != numMotors) {
         RCLCPP_FATAL(nodeHandle->get_logger(),
             "motor_wiring_order has %zu entries but num_motors is %zu",
