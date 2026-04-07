@@ -256,12 +256,21 @@ def generate_launch_description():
         #  Cameras (hardware only)
         # =================================================================
         GroupAction(
-            condition=is_not_sim,
+            condition=IfCondition(PythonExpression(["'", robot, "' in ('talos', 'sierra')"])),
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(cam_launch),
                 ),
             ],
+        ),
+
+        # Sisyphus uses the standalone webcam stream
+        Node(
+            condition=is_sisyphus,
+            package='webcam',
+            executable='webcam_node',
+            name='webcam_tracking',
+            output='screen'
         ),
 
         GroupAction(
