@@ -21,9 +21,8 @@ def generate_launch_description():
         " '' " 
     ])
 
-    # 3. Path to your original Bluetooth launch file
     bt_pkg_dir = get_package_share_directory('bluetooth')
-    bt_launch_path = os.path.join(bt_pkg_dir, 'launch', 'bt_config.py')
+    bt_launch_path = os.path.join(bt_pkg_dir, 'launch', 'bt_link.launch.py')
 
     return LaunchDescription([
         target_robot_arg,

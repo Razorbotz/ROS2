@@ -264,15 +264,6 @@ def generate_launch_description():
             ],
         ),
 
-        # Sisyphus uses the standalone webcam stream
-        Node(
-            condition=is_sisyphus,
-            package='webcam',
-            executable='webcam_node',
-            name='webcam_tracking',
-            output='screen'
-        ),
-
         GroupAction(
             condition=is_not_sim,
             actions=[

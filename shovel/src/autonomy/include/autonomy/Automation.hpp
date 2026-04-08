@@ -100,8 +100,8 @@ class Automation{
         DUMP_IDLE, 
         DUMP_FORWARD,
         DUMP_EXTEND,
-        DUMP_RETRACT,
-        DUMP_REVERSE
+        DUMP_DUMP,
+        DUMP_RETRACT
     };
     
 
@@ -184,7 +184,7 @@ class Automation{
         {DUMP_EXTEND, "Extend"},
         {DUMP_RETRACT, "Retract"},
         {DUMP_FORWARD, "Forward"},
-        {DUMP_REVERSE, "Reverse"},
+        {DUMP_DUMP, "Dump"},
     };
 
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
