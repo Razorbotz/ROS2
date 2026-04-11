@@ -276,6 +276,12 @@ def generate_launch_description():
                 'interface_name': PythonExpression([
                     "'wlP1p1s0' if '", robot, "' != 'sim' else 'eth1'"
                 ]),
+                'zed_image_topic': PythonExpression([
+                    "'camera/d455/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/zed2i/left/image_raw'"
+                ]),
+                'intel_image_topic': PythonExpression([
+                    "'/d415/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/d455i/color/image_raw'"
+                ]),
             }.items(),
         ),
 

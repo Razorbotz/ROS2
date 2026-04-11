@@ -456,22 +456,31 @@ int main(int argc, char **argv){
     nodeHandle->declare_parameter<std::string>("interface_name", "wlP1p1s0");
     nodeHandle->declare_parameter<std::string>("robot_name", "shovel");
     nodeHandle->declare_parameter<int>("port", 31338);
+    nodeHandle->declare_parameter<std::string>("zed_image_topic", "/zed2i/left/image_raw");
+    nodeHandle->declare_parameter<std::string>("intel_image_topic", "/d455i/color/image_raw");
+
     nodeHandle->get_parameter("interface_name", interfaceName);
     nodeHandle->get_parameter("robot_name", robotName);
     nodeHandle->get_parameter("port", clientPort);
 
+    std::string zed_topic, intel_topic;
+    nodeHandle->get_parameter("zed_image_topic", zed_topic);
+    nodeHandle->get_parameter("intel_image_topic", intel_topic);
+
     RCLCPP_INFO(nodeHandle->get_logger(), "interface_name: %s", interfaceName.c_str());
     RCLCPP_INFO(nodeHandle->get_logger(), "robot_name: %s", robotName.c_str());
     RCLCPP_INFO(nodeHandle->get_logger(), "port: %d", clientPort);
+    RCLCPP_INFO(nodeHandle->get_logger(), "zed_image_topic: %s", zed_topic.c_str());
+    RCLCPP_INFO(nodeHandle->get_logger(), "intel_image_topic: %s", intel_topic.c_str()); 
 
     image_transport::ImageTransport it(nodeHandle);
     auto zed_sub = nodeHandle->create_subscription<sensor_msgs::msg::Image>(
-        "/zed2i/left/image_raw",
+        zed_topic,
         rclcpp::SensorDataQoS(),
         &zedImageCallback);
 
     auto intel_sub = nodeHandle->create_subscription<sensor_msgs::msg::Image>(
-        "/d455i/color/image_raw",
+        intel_topic,
         rclcpp::SensorDataQoS(),
         &intelImageCallback);
 
