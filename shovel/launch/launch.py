@@ -54,7 +54,7 @@ def generate_launch_description():
         description='Enable verbose logging'
     )
     use_foxglove_arg = DeclareLaunchArgument(
-        'use_foxglove', default_value='true',
+        'use_foxglove', default_value='false',
         description='Set to "true" to launch the Foxglove bridge, "false" to disable it.'
     )
     use_perception_arg = DeclareLaunchArgument(
@@ -68,11 +68,11 @@ def generate_launch_description():
     use_perception = LaunchConfiguration('use_perception')
 
     # Convenience conditions
-    is_sim = IfCondition(PythonExpression(["'", robot, "' == 'sim'"]))
-    is_not_sim = UnlessCondition(PythonExpression(["'", robot, "' == 'sim'"]))
-    is_sierra = IfCondition(PythonExpression(["'", robot, "' == 'sierra'"]))
-    is_talos = IfCondition(PythonExpression(["'", robot, "' == 'talos'"]))
-    is_sisyphus = IfCondition(PythonExpression(["'", robot, "' == 'sisyphus'"]))
+    is_sim = IfCondition(PythonExpression(["'", robot, "'.lower() == 'sim'"]))
+    is_not_sim = UnlessCondition(PythonExpression(["'", robot, "'.lower() == 'sim'"]))
+    is_sierra = IfCondition(PythonExpression(["'", robot, "'.lower() == 'sierra'"]))
+    is_talos = IfCondition(PythonExpression(["'", robot, "'.lower() == 'talos'"]))
+    is_sisyphus = IfCondition(PythonExpression(["'", robot, "'.lower() == 'sisyphus'"]))
 
     # =========================================================================
     #  Sub-launch file paths
@@ -163,16 +163,20 @@ def generate_launch_description():
         # =================================================================
         
         # Lunar Perception Node
-        Node(
+        camera_points_topic = PythonExpression([
+            "'/d455/depth/color/points' if '", robot, "'.lower() == 'sisyphus' else '/d415/depth/color/points'"
+        ])
+
+        perception_node = Node(
             condition=IfCondition(use_perception),
             package='perception', 
             executable='perception_node',
             name='perception_node',
             output='screen',
             remappings=[
-                ('/camera/points', '/my_robot/d455i/points') 
+                ('/camera/points', camera_points_topic) 
             ]
-        ),
+        )
 
         # Foxglove Bridge Node
         Node(
@@ -220,6 +224,7 @@ def generate_launch_description():
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(excav_launch),
+            condition=UnlessCondition(is_sisyphus)
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(drivetrain_launch),
@@ -241,16 +246,6 @@ def generate_launch_description():
                 ]),
             }.items(),
         ),
-        #IncludeLaunchDescription(
-        #    PythonLaunchDescriptionSource(
-        #        os.path.join(get_package_share_directory('nav2_bringup'), 'launch', 'bringup_launch.py')
-        #    ),
-        #    launch_arguments={
-        #        'use_sim_time': PythonExpression(["'true' if '", robot, "' == 'sim' else 'false'"]),
-        #        'params_file': os.path.join(launch_dir, 'src', 'autonomy', 'config', 'nav2_params.yaml'), # <-- Update this path to where your yaml lives
-        #        'map': '' # Leave blank if you are building the map dynamically
-        #    }.items(),
-        #),
 
         # =================================================================
         #  Cameras (hardware only)
@@ -273,21 +268,39 @@ def generate_launch_description():
             ],
         ),
 
-        # Sierra-specific: RealSense camera
-        GroupAction(
-            condition=is_sierra,
+        # RealSense D415 (Talos and Sierra)
+        realsense_d415 = GroupAction(
+            condition=IfCondition(PythonExpression(["'", robot, "'.lower() in ('talos', 'sierra')"])),
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(
-                        PathJoinSubstitution([
-                            FindPackageShare('realsense2_camera'),
-                            'launch', 
-                            'rs_launch.py'
-                        ])
+                        PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])
                     ),
+                    launch_arguments={
+                        'camera_name': 'd415',
+                        'enable_pointcloud': 'true',
+                        'device_type': 'd415',
+                    }.items(),
                 ),
-            ],
-        ),
+            ]
+        )
+
+        # RealSense D455 (Sisyphus Only)
+        realsense_d455 = GroupAction(
+            condition=is_sisyphus,
+            actions=[
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(
+                        PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])
+                    ),
+                    launch_arguments={
+                        'camera_name': 'd455',
+                        'enable_pointcloud': 'true',
+                        'device_type': 'd455',
+                    }.items(),
+                ),
+            ]
+        )
 
         # =================================================================
         #  BT wrapper — target depends on robot
