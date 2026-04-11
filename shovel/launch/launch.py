@@ -97,6 +97,53 @@ def generate_launch_description():
     # Unified sim motors launch file
     sim_motors_launch = os.path.join(launch_dir, 'launch', 'launch_motors.py')
 
+    camera_points_topic = PythonExpression([
+        "'/d455/depth/color/points' if '", robot, "'.lower() == 'sisyphus' else ",
+        "'/my_robot/d455i/points' if '", robot, "'.lower() == 'sim' else ",
+        "'/d415/depth/color/points'"
+    ])
+
+    perception_node = Node(
+        condition=IfCondition(use_perception),
+        package='perception', 
+        executable='perception_node',
+        name='perception_node',
+        output='screen',
+        remappings=[('/camera/points', camera_points_topic)]
+    )
+
+    realsense_d415 = GroupAction(
+        condition=IfCondition(PythonExpression(["'", robot, "'.lower() in ('talos', 'sierra')"])),
+        actions=[
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])
+                ),
+                launch_arguments={
+                    'camera_name': 'd415',
+                    'enable_pointcloud': 'true',
+                    'device_type': 'd415',
+                }.items(),
+            ),
+        ]
+    )
+
+    realsense_d455 = GroupAction(
+        condition=is_sisyphus,
+        actions=[
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])
+                ),
+                launch_arguments={
+                    'camera_name': 'd455',
+                    'enable_pointcloud': 'true',
+                    'device_type': 'd455',
+                }.items(),
+            ),
+        ]
+    )
+
     return LaunchDescription([
         robot_arg,
         role_arg,
@@ -161,22 +208,7 @@ def generate_launch_description():
         # =================================================================
         #  Shared nodes (all configurations)
         # =================================================================
-        
-        # Lunar Perception Node
-        camera_points_topic = PythonExpression([
-            "'/d455/depth/color/points' if '", robot, "'.lower() == 'sisyphus' else '/d415/depth/color/points'"
-        ])
-
-        perception_node = Node(
-            condition=IfCondition(use_perception),
-            package='perception', 
-            executable='perception_node',
-            name='perception_node',
-            output='screen',
-            remappings=[
-                ('/camera/points', camera_points_topic) 
-            ]
-        )
+        perception_node,
 
         # Foxglove Bridge Node
         Node(
@@ -224,7 +256,7 @@ def generate_launch_description():
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(excav_launch),
-            condition=UnlessCondition(is_sisyphus)
+            condition=UnlessCondition(PythonExpression(["'", robot, "'.lower() == 'sisyphus'"]))
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(drivetrain_launch),
@@ -268,39 +300,8 @@ def generate_launch_description():
             ],
         ),
 
-        # RealSense D415 (Talos and Sierra)
-        realsense_d415 = GroupAction(
-            condition=IfCondition(PythonExpression(["'", robot, "'.lower() in ('talos', 'sierra')"])),
-            actions=[
-                IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(
-                        PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])
-                    ),
-                    launch_arguments={
-                        'camera_name': 'd415',
-                        'enable_pointcloud': 'true',
-                        'device_type': 'd415',
-                    }.items(),
-                ),
-            ]
-        )
-
-        # RealSense D455 (Sisyphus Only)
-        realsense_d455 = GroupAction(
-            condition=is_sisyphus,
-            actions=[
-                IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(
-                        PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])
-                    ),
-                    launch_arguments={
-                        'camera_name': 'd455',
-                        'enable_pointcloud': 'true',
-                        'device_type': 'd455',
-                    }.items(),
-                ),
-            ]
-        )
+        realsense_d415,
+        realsense_d455,
 
         # =================================================================
         #  BT wrapper — target depends on robot
