@@ -34,12 +34,15 @@ std::string result = "";
 char buffer2[128];
 int previousTX = 0;
 int previousRX = 0;
+int previousRX1 = 0;
+int previousTX1 = 0;
 int previousRX2 = 0;
 int previousTX2 = 0;
 std::string canMessage = "";
+std::string canMessage1 = "";
 std::string canMessage2 = "";
 char wifiCommand[128];
-bool usingCAN1 = false;
+bool usingCAN2 = false;
 int downCounter = 0;
 std::string interfaceName = "wlan0";
 
@@ -50,16 +53,18 @@ constexpr size_t MAX_MOTORS = 8;
 size_t numMotors = 6;
 
 // Motor CAN IDs in physical wiring order along the daisy chain.
-// Index 0 = closest to CAN0 interface, last index = closest to CAN1 interface.
+// Index 0 = closest to CAN1 interface, last index = closest to CAN2 interface.
 // Set from the "motor_wiring_order" parameter.
 std::vector<uint32_t> motorWiringOrder;
 
 // Per-motor status arrays (indexed by wiring position)
-int motors0[MAX_MOTORS] = {0};
+// motors1 = visibility on CAN1 (physical, one side of bus)
+// motors2 = visibility on CAN2 (physical, other side of bus)
 int motors1[MAX_MOTORS] = {0};
-int copy0[MAX_MOTORS] = {0};
+int motors2[MAX_MOTORS] = {0};
 int copy1[MAX_MOTORS] = {0};
-int interfaces[MAX_MOTORS] = {0}; // 0 = CAN0, 1 = CAN1 only, -1 = unreachable
+int copy2[MAX_MOTORS] = {0};
+int interfaces[MAX_MOTORS] = {0}; // 0 = CAN1 (or both), 1 = CAN2 only, -1 = unreachable
 
 // Lookup: CAN ID -> wiring index
 std::unordered_map<uint32_t, size_t> canIdToWiringIndex;
@@ -72,32 +77,37 @@ int firstMotor = -1;
 int secondMotor = -1;
 int numBreaks = 0;
 
-int numMotors0 = 0;
 int numMotors1 = 0;
+int numMotors2 = 0;
 
 const uint32_t STATUS_01 = 0x041400;
 const uint32_t STATUS_02 = 0x041440;
 const uint32_t STATUS_03 = 0x041480;
 const uint32_t STATUS_04 = 0x0414C0;
 
-std::mutex mutex0, mutex1;
+std::mutex mutex1, mutex2;
 std::atomic<bool> run_threads{true};
+
+// CAN interface names — set from parameters
+std::string vcanInterface = "can0";   // Virtual CAN (cangw routing)
+std::string phys1Interface = "can1";  // Physical side 1 of bus
+std::string phys2Interface = "can2";  // Physical side 2 of bus
 
 void publishStatus() {
     messages::msg::SystemStatus systemStatus;
     systemStatus.rssi = rssi;
-    systemStatus.can_message = canMessage;
+    systemStatus.can_message = canMessage;       // CAN0 (vcan) status
     systemStatus.rx_packets = previousRX;
     systemStatus.tx_packets = previousTX;
-    systemStatus.can2_message = canMessage2;
-    systemStatus.rx2_packets = previousRX2;
-    systemStatus.tx2_packets = previousTX2;
-    systemStatus.using_can1 = usingCAN1;
+    systemStatus.can2_message = canMessage1;      // CAN1 (physical) status
+    systemStatus.rx2_packets = previousRX1;
+    systemStatus.tx2_packets = previousTX1;
+    systemStatus.using_can1 = usingCAN2;
     systemStatus.first_motor = firstMotor;
     systemStatus.second_motor = secondMotor;
     systemStatus.num_breaks = numBreaks;
-    std::copy(std::begin(motors0), std::end(motors0), systemStatus.motors0.begin());
-    std::copy(std::begin(motors1), std::end(motors1), systemStatus.motors1.begin());
+    std::copy(std::begin(motors1), std::end(motors1), systemStatus.motors0.begin());
+    std::copy(std::begin(motors2), std::end(motors2), systemStatus.motors1.begin());
     std::copy(std::begin(interfaces), std::end(interfaces), systemStatus.interfaces.begin());
     systemStatusPublisher->publish(systemStatus);
 }
@@ -147,11 +157,11 @@ int extract_packet_count(const std::string& command, char* buffer) {
 
 void check_packet_status(const std::string& interface, const std::string& direction,
                           int& previousValue, std::string& message, char* buffer,
-                          bool onlyIfUsingCAN1 = false, bool can1Active = false) {
+                          bool onlyIfActive = false, bool isActive = true) {
     int value = extract_packet_count(
         "ifconfig " + interface + " | grep -o -P '(?<=" + direction + " packets ).*(?= bytes)'",
         buffer);
-    if ((!onlyIfUsingCAN1 || can1Active) && value == previousValue) {
+    if ((!onlyIfActive || isActive) && value == previousValue) {
         message = direction + " ERROR";
     }
     previousValue = value;
@@ -221,50 +231,50 @@ void can_read_loop(const std::string& iface_name, int (&motors)[MAX_MOTORS], std
 void checkInterfaceStatus() {
     // Snapshot and reset the per-motor visibility arrays
     {
-        std::lock_guard<std::mutex> lock(mutex0);
-        for (size_t i = 0; i < MAX_MOTORS; ++i) {
-            copy0[i] = motors0[i];
-            motors0[i] = 0;
-        }
-    }
-    {
         std::lock_guard<std::mutex> lock(mutex1);
         for (size_t i = 0; i < MAX_MOTORS; ++i) {
             copy1[i] = motors1[i];
             motors1[i] = 0;
         }
     }
+    {
+        std::lock_guard<std::mutex> lock(mutex2);
+        for (size_t i = 0; i < MAX_MOTORS; ++i) {
+            copy2[i] = motors2[i];
+            motors2[i] = 0;
+        }
+    }
 
     // Count motors visible on each interface and classify per-motor reachability
-    numMotors0 = 0;
     numMotors1 = 0;
+    numMotors2 = 0;
     numBreaks = 0;
     firstMotor = -1;
     secondMotor = -1;
 
     for (size_t i = 0; i < numMotors; i++) {
-        bool onCan0 = (copy0[i] == 1);
         bool onCan1 = (copy1[i] == 1);
+        bool onCan2 = (copy2[i] == 1);
 
-        if (onCan0) numMotors0++;
         if (onCan1) numMotors1++;
+        if (onCan2) numMotors2++;
 
-        if (onCan0 && onCan1) {
+        if (onCan1 && onCan2) {
             interfaces[i] = 0; // Reachable on both (nominal)
-        } else if (onCan0 && !onCan1) {
-            interfaces[i] = 0; // Only on CAN0
-        } else if (!onCan0 && onCan1) {
-            interfaces[i] = 1; // Only on CAN1
+        } else if (onCan1 && !onCan2) {
+            interfaces[i] = 0; // Only on CAN1
+        } else if (!onCan1 && onCan2) {
+            interfaces[i] = 1; // Only on CAN2
         } else {
             interfaces[i] = -1; // Unreachable on both
         }
 
         if (printData) {
             RCLCPP_INFO(nodeHandle->get_logger(),
-                "Motor %d (0x%X): CAN0=%s, CAN1=%s, interface=%d",
+                "Motor %d (0x%X): %s=%s, %s=%s, interface=%d",
                 (int)i, motorWiringOrder[i],
-                onCan0 ? "yes" : "no",
-                onCan1 ? "yes" : "no",
+                phys1Interface.c_str(), onCan1 ? "yes" : "no",
+                phys2Interface.c_str(), onCan2 ? "yes" : "no",
                 interfaces[i]);
         }
     }
@@ -274,7 +284,7 @@ void checkInterfaceStatus() {
         interfaces[i] = -1;
     }
 
-    if (numMotors0 == (int)numMotors && numMotors1 == (int)numMotors) {
+    if (numMotors1 == (int)numMotors && numMotors2 == (int)numMotors) {
         // All motors visible on both interfaces: no breaks
         status = "All motors reachable on both interfaces";
         numBreaks = 0;
@@ -284,7 +294,7 @@ void checkInterfaceStatus() {
         return;
     }
 
-    if (numMotors0 == 0 && numMotors1 == 0) {
+    if (numMotors1 == 0 && numMotors2 == 0) {
         status = "Power failure - no motors detected on either interface";
         numBreaks = -1;
         if (printData) {
@@ -293,9 +303,9 @@ void checkInterfaceStatus() {
         return;
     }
 
-    if (numMotors0 == 0 && numMotors1 > 0) {
-        status = "CAN0 interface sees no motors. Possible: cable disconnected from CAN0, "
-                 "break between CAN0 connector and first motor (0x"
+    if (numMotors1 == 0 && numMotors2 > 0) {
+        status = phys1Interface + " sees no motors. Possible: cable disconnected from "
+                 + phys1Interface + ", break between " + phys1Interface + " connector and first motor (0x"
                  + std::to_string(motorWiringOrder[0]) + "), or CAN wires swapped";
         numBreaks = 1;
         firstMotor = -1;  // Break is before the first motor
@@ -306,10 +316,11 @@ void checkInterfaceStatus() {
         return;
     }
 
-    if (numMotors1 == 0 && numMotors0 > 0) {
-        status = "CAN1 interface sees no motors. Possible: cable disconnected from CAN1, "
-                 "break between last motor (0x"
-                 + std::to_string(motorWiringOrder[numMotors - 1]) + ") and CAN1 connector";
+    if (numMotors2 == 0 && numMotors1 > 0) {
+        status = phys2Interface + " sees no motors. Possible: cable disconnected from "
+                 + phys2Interface + ", break between last motor (0x"
+                 + std::to_string(motorWiringOrder[numMotors - 1]) + ") and "
+                 + phys2Interface + " connector";
         numBreaks = 1;
         firstMotor = (int)motorWiringOrder[numMotors - 1];
         secondMotor = -1;  // Break is after the last motor
@@ -321,41 +332,41 @@ void checkInterfaceStatus() {
 
     // Both interfaces see some motors. Walk the wiring order to find transitions.
     // In a single-break scenario:
-    //   - CAN0 sees a contiguous block from the start of the chain
-    //   - CAN1 sees a contiguous block from the end of the chain
+    //   - CAN1 sees a contiguous block from the start of the chain
+    //   - CAN2 sees a contiguous block from the end of the chain
     //   - Motors in between are unreachable (multiple breaks) or the sets are complementary (single break)
 
-    // Find the last motor visible on CAN0 (scanning from start)
-    int lastOnCan0 = -1;
+    // Find the last motor visible on CAN1 (scanning from start)
+    int lastOnCan1 = -1;
     for (size_t i = 0; i < numMotors; i++) {
-        if (copy0[i] == 1) {
-            lastOnCan0 = (int)i;
-        } else {
-            break;  // First gap from CAN0 side
-        }
-    }
-
-    // Find the first motor visible on CAN1 (scanning from end)
-    int firstOnCan1 = (int)numMotors;
-    for (int i = (int)numMotors - 1; i >= 0; i--) {
         if (copy1[i] == 1) {
-            firstOnCan1 = i;
+            lastOnCan1 = (int)i;
         } else {
             break;  // First gap from CAN1 side
         }
     }
 
-    // Check for single break: CAN0 block [0..lastOnCan0] and CAN1 block [firstOnCan1..numMotors-1]
+    // Find the first motor visible on CAN2 (scanning from end)
+    int firstOnCan2 = (int)numMotors;
+    for (int i = (int)numMotors - 1; i >= 0; i--) {
+        if (copy2[i] == 1) {
+            firstOnCan2 = i;
+        } else {
+            break;  // First gap from CAN2 side
+        }
+    }
+
+    // Check for single break: CAN1 block [0..lastOnCan1] and CAN2 block [firstOnCan2..numMotors-1]
     // should be complementary and adjacent
-    if (lastOnCan0 + 1 == firstOnCan1 && (size_t)(lastOnCan0 + 1 + ((int)numMotors - firstOnCan1)) == numMotors) {
-        // Single break between lastOnCan0 and firstOnCan1
+    if (lastOnCan1 + 1 == firstOnCan2 && (size_t)(lastOnCan1 + 1 + ((int)numMotors - firstOnCan2)) == numMotors) {
+        // Single break between lastOnCan1 and firstOnCan2
         numBreaks = 1;
-        firstMotor = (int)motorWiringOrder[lastOnCan0];
-        secondMotor = (int)motorWiringOrder[firstOnCan1];
+        firstMotor = (int)motorWiringOrder[lastOnCan1];
+        secondMotor = (int)motorWiringOrder[firstOnCan2];
         status = "Single break between motor 0x" + std::to_string(firstMotor)
-               + " (position " + std::to_string(lastOnCan0) + ")"
+               + " (position " + std::to_string(lastOnCan1) + ")"
                + " and motor 0x" + std::to_string(secondMotor)
-               + " (position " + std::to_string(firstOnCan1) + ")";
+               + " (position " + std::to_string(firstOnCan2) + ")";
         if (printData) {
             RCLCPP_INFO(nodeHandle->get_logger(), "%s", status.c_str());
         }
@@ -366,9 +377,9 @@ void checkInterfaceStatus() {
         // Count actual breaks by looking for transitions in combined visibility
         // Walk the chain and find gaps
         std::string breakLocations;
-        bool prevSeen = true; // Assume connection at CAN0 end
+        bool prevSeen = true; // Assume connection at CAN1 end
         for (size_t i = 0; i < numMotors; i++) {
-            bool currentSeen = (copy0[i] == 1 || copy1[i] == 1);
+            bool currentSeen = (copy1[i] == 1 || copy2[i] == 1);
             if (prevSeen && !currentSeen) {
                 numBreaks++;
                 // Break is before this motor
@@ -389,21 +400,21 @@ void checkInterfaceStatus() {
             prevSeen = currentSeen;
         }
 
-        // Check if there's a break after the last motor (CAN1 can't reach end)
+        // Check if there's a break after the last motor (CAN2 can't reach end)
         if (!prevSeen) {
             // Last motor(s) unreachable - already counted above
         }
 
         status = "Multiple breaks detected (" + std::to_string(numBreaks) + "): " + breakLocations;
 
-        // Log motors only reachable on CAN1
+        // Log motors only reachable on CAN2
         for (size_t i = 0; i < numMotors; i++) {
-            if (copy0[i] == 0 && copy1[i] == 1) {
+            if (copy1[i] == 0 && copy2[i] == 1) {
                 RCLCPP_WARN(nodeHandle->get_logger(),
-                    "Motor 0x%X (position %d) only reachable on CAN1",
-                    motorWiringOrder[i], (int)i);
+                    "Motor 0x%X (position %d) only reachable on %s",
+                    motorWiringOrder[i], (int)i, phys2Interface.c_str());
             }
-            if (copy0[i] == 0 && copy1[i] == 0) {
+            if (copy1[i] == 0 && copy2[i] == 0) {
                 RCLCPP_ERROR(nodeHandle->get_logger(),
                     "Motor 0x%X (position %d) unreachable on both interfaces!",
                     motorWiringOrder[i], (int)i);
@@ -415,12 +426,12 @@ void checkInterfaceStatus() {
         }
     }
 
-    // Log CAN1-only motors for all cases
+    // Log CAN2-only motors for all cases
     for (size_t i = 0; i < numMotors; i++) {
         if (interfaces[i] == 1 && printData) {
             RCLCPP_INFO(nodeHandle->get_logger(),
-                "Motor 0x%X (position %d) is only readable on CAN1",
-                motorWiringOrder[i], (int)i);
+                "Motor 0x%X (position %d) is only readable on %s",
+                motorWiringOrder[i], (int)i, phys2Interface.c_str());
         }
     }
 }
@@ -471,10 +482,17 @@ void statusCheck() {
     pclose(pipe);
     result = "";
 
-    check_packet_status("can0", "RX", previousRX, canMessage, buffer2);
-    check_packet_status("can1", "RX", previousRX2, canMessage2, buffer2);
-    check_packet_status("can0", "TX", previousTX, canMessage, buffer2);
-    check_packet_status("can1", "TX", previousTX2, canMessage2, buffer2, true, usingCAN1);
+    // CAN0 (vcan / cangw) packet stats
+    check_packet_status(vcanInterface, "RX", previousRX, canMessage, buffer2);
+    check_packet_status(vcanInterface, "TX", previousTX, canMessage, buffer2);
+
+    // CAN1 (physical side 1) packet stats
+    check_packet_status(phys1Interface, "RX", previousRX1, canMessage1, buffer2);
+    check_packet_status(phys1Interface, "TX", previousTX1, canMessage1, buffer2);
+
+    // CAN2 (physical side 2) packet stats
+    check_packet_status(phys2Interface, "RX", previousRX2, canMessage2, buffer2, true, usingCAN2);
+    check_packet_status(phys2Interface, "TX", previousTX2, canMessage2, buffer2, true, usingCAN2);
 
     checkInterfaceStatus();
 
@@ -491,6 +509,10 @@ int main(int argc, char** argv) {
     printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
     simulationMode = utils::getParameter<bool>(nodeHandle, "simulation", false);
 
+    vcanInterface = utils::getParameter<std::string>(nodeHandle, "vcan_interface", "can0");
+    phys1Interface = utils::getParameter<std::string>(nodeHandle, "phys1_interface", "can1");
+    phys2Interface = utils::getParameter<std::string>(nodeHandle, "phys2_interface", "can2");
+
     // Number of motors in this robot configuration (5 or 6)
     int numMotorsParam = utils::getParameter<int>(nodeHandle, "num_motors", 6);
     if (numMotorsParam < 1 || numMotorsParam > (int)MAX_MOTORS) {
@@ -500,7 +522,6 @@ int main(int argc, char** argv) {
     }
     numMotors = (size_t)numMotorsParam;
 
-    // In simulation mode, skip all CAN/WiFi setup and just publish healthy status
     if (simulationMode) {
         RCLCPP_INFO(nodeHandle->get_logger(),
             "Running in SIMULATION mode — publishing all-healthy status for %zu motors", numMotors);
@@ -515,10 +536,11 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    // Motor CAN IDs in physical wiring order (closest to CAN0 first).
-    // Pass as an integer array parameter, e.g.: [10, 11, 13, 12, 16, 14]
-    // These correspond to hex CAN IDs: 0xA, 0xB, 0xD, 0xC, 0x10, 0xE
-    // Motor CAN IDs in physical wiring order (closest to CAN0 first).
+    RCLCPP_INFO(nodeHandle->get_logger(),
+        "CAN interfaces: vcan=%s, phys1=%s, phys2=%s",
+        vcanInterface.c_str(), phys1Interface.c_str(), phys2Interface.c_str());
+
+    // Motor CAN IDs in physical wiring order (closest to phys1 first).
     // Pass as an integer array parameter, e.g.: [10, 11, 13, 12, 16, 14]
     // These correspond to hex CAN IDs: 0xA, 0xB, 0xD, 0xC, 0x10, 0xE
     std::vector<int64_t> defaultWiring = {0xA, 0xB, 0xD, 0xC, 0x10, 0xE};
@@ -537,7 +559,6 @@ int main(int argc, char** argv) {
         motorWiringOrder[i] = (uint32_t)wiringParam[i];
     }
 
-    // Build lookup map: CAN ID -> wiring position index
     canIdToWiringIndex.clear();
     for (size_t i = 0; i < numMotors; ++i) {
         canIdToWiringIndex[motorWiringOrder[i]] = i;
@@ -545,19 +566,18 @@ int main(int argc, char** argv) {
             "Wiring position %zu: motor CAN ID 0x%X", i, motorWiringOrder[i]);
     }
 
-    // Zero out motor arrays
     for (size_t i = 0; i < MAX_MOTORS; i++) {
-        motors0[i] = 0;
         motors1[i] = 0;
-        copy0[i] = 0;
+        motors2[i] = 0;
         copy1[i] = 0;
+        copy2[i] = 0;
         interfaces[i] = -1;
     }
 
     getInterfaceName();
 
-    std::thread can0_thread(can_read_loop, "can0", std::ref(motors0), std::ref(mutex0));
-    std::thread can1_thread(can_read_loop, "can1", std::ref(motors1), std::ref(mutex1));
+    std::thread can1_thread(can_read_loop, phys1Interface, std::ref(motors1), std::ref(mutex1));
+    std::thread can2_thread(can_read_loop, phys2Interface, std::ref(motors2), std::ref(mutex2));
 
     rclcpp::Rate rate(20);
     while (rclcpp::ok()) {
@@ -567,8 +587,8 @@ int main(int argc, char** argv) {
     }
 
     run_threads = false;
-    if (can0_thread.joinable()) can0_thread.join();
     if (can1_thread.joinable()) can1_thread.join();
+    if (can2_thread.joinable()) can2_thread.join();
 
     rclcpp::shutdown();
     return 0;

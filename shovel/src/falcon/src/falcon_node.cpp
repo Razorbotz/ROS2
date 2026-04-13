@@ -243,15 +243,15 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
  *  Returns true if an overcurrent-related fault is active.
  */
 bool isOvercurrentTripped(){
-	StickyFaults faults;
-	talonFX->GetStickyFaults(faults);
+    StickyFaults faults;
+    talonFX->GetStickyFaults(faults);
 
-	// SupplyOverV / SupplyUnstable catch brownout-style trips.
-	// ResetDuringEn fires when the controller resets itself mid-operation,
-	// which is the typical symptom of the integrated breaker tripping.
-	return faults.ResetDuringEn
-	    || faults.SupplyOverV
-	    || faults.SupplyUnstable;
+    if(faults.ResetDuringEn) return true;
+
+    double current = talonFX->GetSupplyCurrent();
+    if(current >= 69.0) return true;
+
+    return false;
 }
 
 

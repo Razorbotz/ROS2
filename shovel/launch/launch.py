@@ -45,6 +45,10 @@ def generate_launch_description():
         'robot', default_value='talos',
         description='Robot configuration: talos, sierra, sisyphus, or sim'
     )
+    use_motors_arg = DeclareLaunchArgument(
+        'use_motors', default_value='true',
+        description='Set to "true" to launch motor configurations, "false" to skip them.'
+    )
     role_arg = DeclareLaunchArgument(
         'role', default_value='orin',
         description='Communication node role: orin, nano, or sim'
@@ -63,6 +67,7 @@ def generate_launch_description():
     )
 
     robot = LaunchConfiguration('robot')
+    use_motors = LaunchConfiguration('use_motors')
     role = LaunchConfiguration('role')
     use_foxglove = LaunchConfiguration('use_foxglove')
     use_perception = LaunchConfiguration('use_perception')
@@ -94,55 +99,21 @@ def generate_launch_description():
     sierra_motors_launch = os.path.join(launch_dir, 'launch', 'launch_sierra_motors.py')
     sisyphus_motors_launch = os.path.join(launch_dir, 'launch', 'launch_sisyphus_motors.py')
 
+    launch_talos_motors = IfCondition(
+        PythonExpression(["'", use_motors, "' == 'true' and '", robot, "'.lower() == 'talos'"])
+    )
+    launch_sierra_motors = IfCondition(
+        PythonExpression(["'", use_motors, "' == 'true' and '", robot, "'.lower() == 'sierra'"])
+    )
+    launch_sisyphus_motors = IfCondition(
+        PythonExpression(["'", use_motors, "' == 'true' and '", robot, "'.lower() == 'sisyphus'"])
+    )
+    launch_sim_motors = IfCondition(
+        PythonExpression(["'", use_motors, "' == 'true' and '", robot, "'.lower() == 'sim'"])
+    )
+
     # Unified sim motors launch file
     sim_motors_launch = os.path.join(launch_dir, 'launch', 'launch_motors.py')
-
-    camera_points_topic = PythonExpression([
-        "'/d455/depth/color/points' if '", robot, "'.lower() == 'sisyphus' else ",
-        "'/my_robot/d455i/points' if '", robot, "'.lower() == 'sim' else ",
-        "'/d415/depth/color/points'"
-    ])
-
-    perception_node = Node(
-        condition=IfCondition(use_perception),
-        package='perception', 
-        executable='perception_node',
-        name='perception_node',
-        output='screen',
-        remappings=[('/camera/points', camera_points_topic)]
-    )
-
-    realsense_d415 = GroupAction(
-        condition=IfCondition(PythonExpression(["'", robot, "'.lower() in ('talos', 'sierra')"])),
-        actions=[
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])
-                ),
-                launch_arguments={
-                    'camera_name': 'd415',
-                    'enable_pointcloud': 'true',
-                    'device_type': 'd415',
-                }.items(),
-            ),
-        ]
-    )
-
-    realsense_d455 = GroupAction(
-        condition=is_sisyphus,
-        actions=[
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])
-                ),
-                launch_arguments={
-                    'camera_name': 'd455',
-                    'enable_pointcloud': 'true',
-                    'device_type': 'd455',
-                }.items(),
-            ),
-        ]
-    )
 
     return LaunchDescription([
         robot_arg,
@@ -169,7 +140,7 @@ def generate_launch_description():
         #  Motors — per-robot hardware configs
         # =================================================================
         GroupAction(
-            condition=is_talos,
+            condition=launch_talos_motors,
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(talos_motors_launch),
@@ -177,7 +148,7 @@ def generate_launch_description():
             ],
         ),
         GroupAction(
-            condition=is_sierra,
+            condition=launch_sierra_motors,
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(sierra_motors_launch),
@@ -185,7 +156,7 @@ def generate_launch_description():
             ],
         ),
         GroupAction(
-            condition=is_sisyphus,
+            condition=launch_sisyphus_motors,
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(sisyphus_motors_launch),
@@ -193,7 +164,7 @@ def generate_launch_description():
             ],
         ),
         GroupAction(
-            condition=is_sim,
+            condition=launch_sim_motors,
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(sim_motors_launch),
@@ -208,7 +179,22 @@ def generate_launch_description():
         # =================================================================
         #  Shared nodes (all configurations)
         # =================================================================
-        perception_node,
+        
+        # Lunar Perception Node
+        camera_points_topic = PythonExpression([
+            "'/d455/depth/color/points' if '", robot, "'.lower() == 'sisyphus' else '/d415/depth/color/points'"
+        ])
+
+        perception_node = Node(
+            condition=IfCondition(use_perception),
+            package='perception', 
+            executable='perception_node',
+            name='perception_node',
+            output='screen',
+            remappings=[
+                ('/camera/points', camera_points_topic) 
+            ]
+        )
 
         # Foxglove Bridge Node
         Node(
@@ -256,7 +242,7 @@ def generate_launch_description():
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(excav_launch),
-            condition=UnlessCondition(PythonExpression(["'", robot, "'.lower() == 'sisyphus'"]))
+            condition=UnlessCondition(is_sisyphus)
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(drivetrain_launch),
@@ -275,12 +261,6 @@ def generate_launch_description():
             launch_arguments={
                 'interface_name': PythonExpression([
                     "'wlP1p1s0' if '", robot, "' != 'sim' else 'eth1'"
-                ]),
-                'zed_image_topic': PythonExpression([
-                    "'camera/d455/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/zed2i/left/image_raw'"
-                ]),
-                'intel_image_topic': PythonExpression([
-                    "'/d415/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/d455i/color/image_raw'"
                 ]),
             }.items(),
         ),
@@ -306,8 +286,39 @@ def generate_launch_description():
             ],
         ),
 
-        realsense_d415,
-        realsense_d455,
+        # RealSense D415 (Talos and Sierra)
+        realsense_d415 = GroupAction(
+            condition=IfCondition(PythonExpression(["'", robot, "'.lower() in ('talos', 'sierra')"])),
+            actions=[
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(
+                        PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])
+                    ),
+                    launch_arguments={
+                        'camera_name': 'd415',
+                        'enable_pointcloud': 'true',
+                        'device_type': 'd415',
+                    }.items(),
+                ),
+            ]
+        )
+
+        # RealSense D455 (Sisyphus Only)
+        realsense_d455 = GroupAction(
+            condition=is_sisyphus,
+            actions=[
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(
+                        PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])
+                    ),
+                    launch_arguments={
+                        'camera_name': 'd455',
+                        'enable_pointcloud': 'true',
+                        'device_type': 'd455',
+                    }.items(),
+                ),
+            ]
+        )
 
         # =================================================================
         #  BT wrapper — target depends on robot

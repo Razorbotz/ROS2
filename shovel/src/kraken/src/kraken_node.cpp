@@ -269,10 +269,15 @@ int main(int argc,char** argv){
             }
 
             if(!reset_sent || msSinceReset > reset_cooldown_ms){
-                RCLCPP_INFO(nodeHandle->get_logger(), "Falcon %d: publishing reset (cooldown %d ms)", talonFX->GetDeviceID(), reset_cooldown_ms);
+                RCLCPP_INFO(nodeHandle->get_logger(), "Kraken %d: publishing reset (cooldown %d ms)", talonFX->GetDeviceID(), reset_cooldown_ms);
                 std_msgs::msg::String reset;
                 reset.data = resetString;
                 resetPublisher->publish(reset);
+
+                // Clear the sticky faults so isOvercurrentTripped() can
+                // return false on the next cycle if the fault is gone
+                talonFX->ClearStickyFaults();
+
                 lastResetTime = std::chrono::high_resolution_clock::now();
                 reset_sent = true;
             }
