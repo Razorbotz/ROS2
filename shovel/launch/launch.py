@@ -112,6 +112,10 @@ def generate_launch_description():
         PythonExpression(["'", use_motors, "' == 'true' and '", robot, "'.lower() == 'sim'"])
     )
 
+    camera_points_topic = PythonExpression([
+        "'/d455/depth/color/points' if '", robot, "'.lower() == 'sisyphus' else '/d415/depth/color/points'"
+    ])
+
     # Unified sim motors launch file
     sim_motors_launch = os.path.join(launch_dir, 'launch', 'launch_motors.py')
 
@@ -179,13 +183,7 @@ def generate_launch_description():
         # =================================================================
         #  Shared nodes (all configurations)
         # =================================================================
-        
-        # Lunar Perception Node
-        camera_points_topic = PythonExpression([
-            "'/d455/depth/color/points' if '", robot, "'.lower() == 'sisyphus' else '/d415/depth/color/points'"
-        ])
-
-        perception_node = Node(
+        Node(
             condition=IfCondition(use_perception),
             package='perception', 
             executable='perception_node',
@@ -194,7 +192,7 @@ def generate_launch_description():
             remappings=[
                 ('/camera/points', camera_points_topic) 
             ]
-        )
+        ),
 
         # Foxglove Bridge Node
         Node(
@@ -242,7 +240,7 @@ def generate_launch_description():
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(excav_launch),
-            condition=UnlessCondition(is_sisyphus)
+            condition=UnlessCondition(PythonExpression(["'", robot, "'.lower() == 'sisyphus'"]))
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(drivetrain_launch),
@@ -287,7 +285,7 @@ def generate_launch_description():
         ),
 
         # RealSense D415 (Talos and Sierra)
-        realsense_d415 = GroupAction(
+        GroupAction(
             condition=IfCondition(PythonExpression(["'", robot, "'.lower() in ('talos', 'sierra')"])),
             actions=[
                 IncludeLaunchDescription(
@@ -301,10 +299,10 @@ def generate_launch_description():
                     }.items(),
                 ),
             ]
-        )
+        ),
 
         # RealSense D455 (Sisyphus Only)
-        realsense_d455 = GroupAction(
+        GroupAction(
             condition=is_sisyphus,
             actions=[
                 IncludeLaunchDescription(
@@ -318,7 +316,7 @@ def generate_launch_description():
                     }.items(),
                 ),
             ]
-        )
+        ),
 
         # =================================================================
         #  BT wrapper — target depends on robot
