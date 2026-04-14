@@ -86,7 +86,6 @@ def generate_launch_description():
     logic_launch = os.path.join(launch_dir, 'launch', 'launch_logic.py')
     comm_launch = os.path.join(launch_dir, 'launch', 'launch_comm.py')
     excav_launch = os.path.join(launch_dir, 'launch', 'launch_excav.py')
-    cam_launch = os.path.join(launch_dir, 'launch', 'launch_cam.py')
     drivetrain_launch = os.path.join(launch_dir, 'launch', 'launch_drivetrain.py')
     status_monitor_launch = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
     bt_wrapper_launch = os.path.join(launch_dir, 'launch', 'bt_config.py')
@@ -261,7 +260,7 @@ def generate_launch_description():
                     "'wlP1p1s0' if '", robot, "' != 'sim' else 'eth1'"
                 ]),
                 'zed_image_topic': PythonExpression([
-                    "'/d455/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/zed_image'"
+                    "'/d455/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/zed/zed_node/left_gray/image_rect_gray'"
                 ]),
                 'intel_image_topic': PythonExpression([
                     "'/d415/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/d455i/color/image_raw'"
@@ -272,15 +271,6 @@ def generate_launch_description():
         # =================================================================
         #  Cameras (hardware only)
         # =================================================================
-        GroupAction(
-            condition=IfCondition(PythonExpression(["'", robot, "' in ('talos', 'sierra')"])),
-            actions=[
-                IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(cam_launch),
-                ),
-            ],
-        ),
-
         GroupAction(
             condition=is_not_sim,
             actions=[

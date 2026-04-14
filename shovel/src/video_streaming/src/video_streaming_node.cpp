@@ -132,35 +132,33 @@ bool send_udp_frame_chunked(int sock,
  */
 bool initialize_h264_encoder(int width, int height)
 {
-    if (h264_ctx) {
-        return true;
-    }
+    if (h264_ctx) return true;
 
     const AVCodec* codec = avcodec_find_encoder_by_name("libx264");
     if (!codec) {
-        codec = avcodec_find_encoder(AV_CODEC_ID_H264);
-        if (!codec) {
-            RCLCPP_ERROR(nodeHandle->get_logger(), "H.264 encoder not found (libx264/H264).");
-            return false;
-        }
-    }
-
-    h264_ctx = avcodec_alloc_context3(codec);
-    if (!h264_ctx) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Could not allocate H.264 codec context.");
+        RCLCPP_ERROR(nodeHandle->get_logger(), "H.264 encoder not found.");
         return false;
     }
 
-    // Encoder settings
+    h264_ctx = avcodec_alloc_context3(codec);
+    
+    // 1. Resolution & Framerate
     h264_ctx->width     = width;
     h264_ctx->height    = height;
-    h264_ctx->pix_fmt   = AV_PIX_FMT_YUV420P;
     h264_ctx->time_base = { 1, STREAM_FPS };
     h264_ctx->framerate = { STREAM_FPS, 1 };
-    h264_ctx->bit_rate  = STREAM_BITRATE;
 
-    // No B-frames → no reordering → lower latency
-    h264_ctx->max_b_frames = 0;
+    // 2. Grayscale Optimization (Massive CPU & Bandwidth saving)
+    h264_ctx->pix_fmt   = AV_PIX_FMT_GRAY8;
+
+    // 3. Strict Bandwidth Caps (1.5 Mbps limit)
+    h264_ctx->bit_rate       = 1500000;
+    h264_ctx->rc_max_rate    = 1500000;
+    h264_ctx->rc_buffer_size = 3000000; // 2-second buffer for smoothing
+
+    // 4. CPU Protection
+    h264_ctx->thread_count   = 2; // NEVER let it use all 6 Orin Nano cores
+    h264_ctx->thread_type    = FF_THREAD_SLICE; 
 
     // Low-latency x264 options
     av_opt_set(h264_ctx->priv_data, "preset", "ultrafast", 0);
@@ -168,12 +166,8 @@ bool initialize_h264_encoder(int width, int height)
     av_opt_set(h264_ctx->priv_data, "profile", "baseline", 0);
     av_opt_set_int(h264_ctx->priv_data, "sync-lookahead", 0, 0);
     av_opt_set_int(h264_ctx->priv_data, "rc-lookahead", 0, 0);
-    av_opt_set_int(h264_ctx->priv_data, "keyint", 5, 0);         // IDR every 5 frames
-    av_opt_set_int(h264_ctx->priv_data, "force-cfr", 1, 0);
-    av_opt_set_int(h264_ctx->priv_data, "crf", 26, 0);
+    av_opt_set_int(h264_ctx->priv_data, "keyint", 15, 0); // IDR every 15 frames
     av_opt_set_int(h264_ctx->priv_data, "slice-max-size", 1200, 0);
-    av_opt_set_int(h264_ctx->priv_data, "forced-idr", 1, 0);
-    av_opt_set_int(h264_ctx->priv_data, "repeat-headers", 1, 0); // SPS/PPS before keyframes
     av_opt_set_int(h264_ctx->priv_data, "aud", 1, 0);
 
     if (avcodec_open2(h264_ctx, codec, nullptr) < 0) {
@@ -183,45 +177,18 @@ bool initialize_h264_encoder(int width, int height)
     }
 
     video_frame = av_frame_alloc();
-    if (!video_frame) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Could not allocate video frame.");
-        avcodec_free_context(&h264_ctx);
-        h264_ctx = nullptr;
-        return false;
-    }
-
     video_frame->format = h264_ctx->pix_fmt;
     video_frame->width  = h264_ctx->width;
     video_frame->height = h264_ctx->height;
 
     if (av_frame_get_buffer(video_frame, 32) < 0) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Could not allocate frame buffer.");
         av_frame_free(&video_frame);
         avcodec_free_context(&h264_ctx);
-        video_frame = nullptr;
-        h264_ctx    = nullptr;
         return false;
-    }
-
-    // Pre-fill UV planes to neutral gray (128) once; we only change Y each frame.
-    for (int y = 0; y < (video_frame->height / 2); ++y) {
-        memset(video_frame->data[1] + y * video_frame->linesize[1], 128, video_frame->width / 2);
-        memset(video_frame->data[2] + y * video_frame->linesize[2], 128, video_frame->width / 2);
     }
 
     video_packet = av_packet_alloc();
-    if (!video_packet) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Could not allocate video packet.");
-        av_frame_free(&video_frame);
-        avcodec_free_context(&h264_ctx);
-        video_frame = nullptr;
-        h264_ctx    = nullptr;
-        return false;
-    }
-
     frame_pts = 0;
-    RCLCPP_INFO(nodeHandle->get_logger(), "H.264 encoder initialized %dx%d @ %d FPS",
-                width, height, STREAM_FPS);
     return true;
 }
 
@@ -316,16 +283,16 @@ void send_zed_frame()
 
         if (!h264_ctx || !video_frame || !video_packet) return;
 
+        // Make sure the frame is writable
         if (av_frame_make_writable(video_frame) < 0) {
             RCLCPP_WARN(nodeHandle->get_logger(), "Frame not writable.");
             return;
         }
 
-        // Copy gray into Y plane row-by-row
         for (int y = 0; y < STREAM_HEIGHT; ++y) {
             memcpy(video_frame->data[0] + y * video_frame->linesize[0],
-                   zed_resized.ptr(y),
-                   STREAM_WIDTH);
+                zed_resized.ptr(y),
+                STREAM_WIDTH);
         }
 
         video_frame->pts = frame_pts++;
@@ -452,29 +419,37 @@ int main(int argc, char **argv){
     nodeHandle = rclcpp::Node::make_shared("video_streaming");
     RCLCPP_INFO(nodeHandle->get_logger(),"Starting video streaming server node");
 
+    std::string zed_topic, intel_topic;
+
     // Parameters
     nodeHandle->declare_parameter<std::string>("interface_name", "wlP1p1s0");
     nodeHandle->declare_parameter<std::string>("robot_name", "shovel");
     nodeHandle->declare_parameter<int>("port", 31338);
+    nodeHandle->declare_parameter<std::string>("zed_image_topic", "/zed2i/left/image_raw");
+    nodeHandle->declare_parameter<std::string>("intel_image_topic", "/d455i/color/image_raw");
     nodeHandle->get_parameter("interface_name", interfaceName);
     nodeHandle->get_parameter("robot_name", robotName);
     nodeHandle->get_parameter("port", clientPort);
+    nodeHandle->get_parameter("zed_image_topic", zed_topic);
+    nodeHandle->get_parameter("intel_image_topic", intel_topic);
 
     RCLCPP_INFO(nodeHandle->get_logger(), "interface_name: %s", interfaceName.c_str());
     RCLCPP_INFO(nodeHandle->get_logger(), "robot_name: %s", robotName.c_str());
     RCLCPP_INFO(nodeHandle->get_logger(), "port: %d", clientPort);
+    RCLCPP_INFO(nodeHandle->get_logger(), "zed_image_topic: %s", zed_topic.c_str());
+    RCLCPP_INFO(nodeHandle->get_logger(), "intel_image_topic: %s", intel_topic.c_str());
 
-    image_transport::ImageTransport it(nodeHandle);
     auto zed_sub = nodeHandle->create_subscription<sensor_msgs::msg::Image>(
-        "/zed2i/left/image_raw",
+        zed_topic,
         rclcpp::SensorDataQoS(),
         &zedImageCallback);
 
     auto intel_sub = nodeHandle->create_subscription<sensor_msgs::msg::Image>(
-        "/d455i/color/image_raw",
+        intel_topic,
         rclcpp::SensorDataQoS(),
         &intelImageCallback);
 
+    image_transport::ImageTransport it(nodeHandle);
     auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,talon1Callback);
 
     ssize_t bytesRead;
