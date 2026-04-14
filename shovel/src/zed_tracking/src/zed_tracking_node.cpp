@@ -1,4 +1,3 @@
-
 #include <rclcpp/rclcpp.hpp>
 
 #include <sl/Camera.hpp>
@@ -26,39 +25,6 @@ sl::Camera zed;
 
 int killKey = 0;
 bool printData = false;
-//using namespace sl;
-//using namespace std;
-
-/** @file
- * @brief Node handling Zed camera
- * 
- * This node does not receive any information from other nodes, therefore, it does not subscribe to any node. Current purpose is to utilize the "ArUco Positional Tracking sample" with the Zed camera and publishes topics relating to it. Node contains no other functions, only main.
- * \see aruco.cpp
- *  
- * The topics that are being published are as follows:
- * \li \b zedPosition
- * "zedPosition" contains the variables x, y, z, ox, oy, oz, ow, and aruco_visible.
- * 
- * The variables x, y, and z are the translation vectors. 
- * To learn more about the translation vectors, see https://en.wikipedia.org/wiki/Translation_(geometry)
- * 
- * The variables ox, oy, oz, and ow are the orientation vectors. The orientation data is also known as "quaternion" data. These vectors help with calculating three-dimensional rotations.
- * To learn more about quaternion, see https://en.wikipedia.org/wiki/Quaternion
- * 
- * The variable "aruco_visible" tells whether or not that at least one marker is detected.
- * 
- * \see ZedPosition.msg
- * 
- * Zed camera currently using WVGA mode which has a FOV of 56(V) and 87(H).
- * 
- * Nodes that subscribe to the published Zed topics include the logic and autonomy node.
- * \see logic_node.cpp
- * 
- * \see autonomy_node.cpp
- * 
- * 
- * */
-
 
 bool isTagValidForReset(const std::vector<cv::Point2f> &corners, const cv::Size &image_size, float ratio = 0.05) {
   float image_area = image_size.width * image_size.height;
@@ -99,7 +65,6 @@ void signal_handler(int signum) {
 inline float deg2rad(float degrees) {
     return degrees * static_cast<float>(M_PI) / 180.0f;
 }
-
 
 void check_for_crash() {
     std::ifstream marker_file(SHUTDOWN_MARKER_FILE);
@@ -184,47 +149,27 @@ int main(int argc, char **argv) {
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("zed_tracking");
 
-
     RCLCPP_INFO(nodeHandle->get_logger(),"Starting zed_tracking");
 
     std::string resolution = utils::getParameter<std::string>(nodeHandle, "resolution", "VGA");
     double xOffset = utils::getParameter<double>(nodeHandle, "xOffset", 0.0);
 	killKey = utils::getParameter<int>(nodeHandle, "kill_key", 0);
     printData = utils::getParameter<bool>(nodeHandle, "print_Data", false);
+    
+    std::string zed_image_topic = utils::getParameter<std::string>(nodeHandle, "zed_image_topic", "/zed2i/left/image_raw");
 
     messages::msg::ZedPosition zedPosition;
     auto zedPositionPublisher=nodeHandle->create_publisher<messages::msg::ZedPosition>("zed_position",1);
 
     image_transport::ImageTransport it(nodeHandle);
-    image_transport::Publisher zedImagePublisher = it.advertise("zed_image", 1);
+    image_transport::Publisher zedImagePublisher = it.advertise(zed_image_topic, 1);
+    
     std_msgs::msg::Header hdr;
     sensor_msgs::msg::Image::SharedPtr msg;
 
     // Set configuration parameters
     sl::InitParameters init_params;
 
-    /*
-    Camera Resolution Options (https://www.stereolabs.com/docs/api/group__Video__group.html#gabd0374c748530a64a72872c43b2cc828)
-    HD2K 	
-    -2208*1242 (x2),
-    -available framerates: 15 fps
-    -FOV: 47(V), 76(H)
-
-    HD1080 	
-    -1920*1080 (x2)
-    -available framerates: 15, 30 fps
-   -FOV: 42(V), 69(H)
-
-    HD720 	
-    -1280*720 (x2)
-    -available framerates: 15, 30, 60 fps.
-   -FOV: 54(V), 85(H)
-
-    VGA	
-    -672*376 (x2)
-    -available framerates: 15, 30, 60, 100 fps.   
-    -FOV: 56(V), 87(H)
-    */
     if(resolution == "VGA"){
         init_params.camera_resolution = sl::RESOLUTION::HD720;
         init_params.camera_fps = 30;    
@@ -280,7 +225,6 @@ int main(int argc, char **argv) {
     cv::Matx<float, 4, 1> dist_coeffs = cv::Vec4f::zeros();
 
     float actual_marker_size_meters = 0.165f; // real marker size in meters
-   // float actual_marker_size_meters = 0.16f; //fake marker size in meters
     auto dictionary = aruco::getPredefinedDictionary(aruco::DICT_6X6_100);
 
     std::cout << "Make sure the ArUco marker is a 6x6 (100), measuring " << actual_marker_size_meters * 1000 << " mm" << std::endl;
@@ -442,7 +386,6 @@ int main(int argc, char **argv) {
                 if(printData)
                     RCLCPP_INFO(nodeHandle->get_logger(), "%s", position_txt.c_str());
 
-                // Saves the position values to a file
                 try{
                     if(writeCounter % 10 == 0){
                         if(printData)
@@ -474,7 +417,6 @@ int main(int argc, char **argv) {
                         }
                         close(fd);
 
-                        // Rename after successful write + fsync
                         if (std::rename(tmp_path.c_str(), POSITION_FILE.c_str()) != 0) {
                             RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to rename temp position file.");
                             std::perror("rename");
@@ -486,31 +428,21 @@ int main(int argc, char **argv) {
                 }
                 
                 writeCounter++;
-
             }
 
             if(!image_ocv_rgb.empty()){
-                msg = cv_bridge::CvImage(hdr, "rgb8", image_ocv_rgb).toImageMsg();
+                hdr.stamp = nodeHandle->now();
+                hdr.frame_id = "zed_camera_frame";
+                
+                msg = cv_bridge::CvImage(hdr, "bgr8", image_ocv_rgb).toImageMsg();
                 zedImagePublisher.publish(msg);
             }
+            
     		auto finish = std::chrono::high_resolution_clock::now();
             if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-previousReset).count() > 15000){
                 has_reset = false;
                 previousReset = std::chrono::high_resolution_clock::now();
             }
-
-/*
-            if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > 15000){
-                RCLCPP_INFO(nodeHandle->get_logger(), "Before writing area map");
-                // Save area map every 15 seconds
-                // Might need to change this depending on the 
-                zed.saveAreaMap(sl::String(AREA_MAP.c_str()));
-                if (std::rename(TEMP_MAP.c_str(), AREA_MAP.c_str()) != 0) {
-                    RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to rename temp position file.");
-                }
-                start = std::chrono::high_resolution_clock::now();
-            }
-*/
 
         }
 	    rate.sleep();

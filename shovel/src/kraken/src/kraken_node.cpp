@@ -156,25 +156,34 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
     }
 }
 
-/** @brief Check Phoenix 6 fault flags to detect overcurrent trip.
+/** @brief Check all relevant Phoenix 6 fault flags.
  *
- *  The Falcon 500 / Kraken x60 integrated overcurrent protection
- *  latches a hardware fault when it trips.  Rather than guessing
- *  from speed-vs-output heuristics, we read the sticky fault flags
- *  directly.  This catches the trip immediately regardless of what
- *  speed we commanded or what the motor was doing at the time.
- *
- *  Returns true if an overcurrent-related fault is active.
+ * Returns true if any critical hardware, current, or voltage fault is active.
  */
-bool isOvercurrentTripped(){
-    // GetStickyFault_* returns a StatusSignal<bool>.  Refresh + read.
-    bool supplyCurrent = talonFX->GetStickyFault_SupplyCurrLimit().GetValue();
-    bool statorCurrent = talonFX->GetStickyFault_StatorCurrLimit().GetValue();
-    // Also check for the general "device disabled by overcurrent" sticky fault
-    // which Phoenix 6 reports when the integrated breaker trips.
-    bool procTemp      = talonFX->GetStickyFault_ProcTemp().GetValue();
+bool isAnyFaultTripped(){
+    return talonFX->GetStickyFault_SupplyCurrLimit().GetValue() ||
+           talonFX->GetStickyFault_StatorCurrLimit().GetValue() ||
+           talonFX->GetStickyFault_Overvoltage().GetValue() ||
+           talonFX->GetStickyFault_Undervoltage().GetValue() ||
+           talonFX->GetStickyFault_Hardware().GetValue() ||
+           talonFX->GetStickyFault_DeviceTemp().GetValue() ||
+           talonFX->GetStickyFault_ProcTemp().GetValue() ||
+           talonFX->GetStickyFault_BootDuringEnable().GetValue();
+}
 
-    return supplyCurrent || statorCurrent || procTemp;
+/** @brief Log the specific active faults to the ROS2 console. */
+void printActiveFaults(){
+    int id = talonFX->GetDeviceID();
+    auto logger = nodeHandle->get_logger();
+
+    if (talonFX->GetStickyFault_SupplyCurrLimit().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Supply Current Limit Tripped", id);
+    if (talonFX->GetStickyFault_StatorCurrLimit().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Stator Current Limit Tripped", id);
+    if (talonFX->GetStickyFault_Overvoltage().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Supply Overvoltage (Regen Spike Detected)", id);
+    if (talonFX->GetStickyFault_Undervoltage().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Supply Undervoltage (Battery Sag)", id);
+    if (talonFX->GetStickyFault_Hardware().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Hardware Failure", id);
+    if (talonFX->GetStickyFault_DeviceTemp().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Device Temperature (Thermal Cutoff)", id);
+    if (talonFX->GetStickyFault_ProcTemp().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Processor Temperature", id);
+    if (talonFX->GetStickyFault_BootDuringEnable().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Boot During Enable (Power Loss/Brownout)", id);
 }
 
 int main(int argc,char** argv){
@@ -225,16 +234,22 @@ int main(int argc,char** argv){
     allConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
     allConfigs.CurrentLimits.SupplyCurrentLimit = units::current::ampere_t{70.0};
 
+    allConfigs.MotorOutput.NeutralMode = signals::NeutralModeValue::Coast;
+    allConfigs.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.5;
+    allConfigs.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.5;
+    allConfigs.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = 0.5;
+    allConfigs.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.5;
+    
     if(invertMotor){
         allConfigs.MotorOutput.Inverted = signals::InvertedValue::CounterClockwise_Positive;
     }
-	else {
+    else {
         allConfigs.MotorOutput.Inverted = signals::InvertedValue::Clockwise_Positive;
     }
 
     talonFX->GetConfigurator().Apply(allConfigs);
     talonFX->SetControl(percentOut.WithOutput(0.0));
-
+    
     messages::msg::KrakenStatus krakenStatus;
     auto krakenStatusPublisher=nodeHandle->create_publisher<messages::msg::KrakenStatus>(infoTopic.c_str(),1);
     auto speedSubscriber=nodeHandle->create_subscription<std_msgs::msg::Float32>(speedTopic.c_str(),1,speedCallback);
@@ -260,36 +275,21 @@ int main(int argc,char** argv){
         if(GO) ctre::phoenix::unmanaged::FeedEnable(100);
         auto finish = std::chrono::high_resolution_clock::now();
 
-        if(isOvercurrentTripped()){
+        if(isAnyFaultTripped()){
             auto msSinceReset = std::chrono::duration_cast<std::chrono::milliseconds>(finish - lastResetTime).count();
 
             if(!error){
-                RCLCPP_WARN(nodeHandle->get_logger(), "Kraken %d: overcurrent fault detected!", talonFX->GetDeviceID());
+                printActiveFaults();
                 error = true;
             }
 
             if(!reset_sent || msSinceReset > reset_cooldown_ms){
-                RCLCPP_INFO(nodeHandle->get_logger(), "Kraken %d: publishing reset (cooldown %d ms)", talonFX->GetDeviceID(), reset_cooldown_ms);
-                std_msgs::msg::String reset;
-                reset.data = resetString;
-                resetPublisher->publish(reset);
-
-                // Clear the sticky faults so isOvercurrentTripped() can
+                // Clear the sticky faults so isAnyFaultTripped() can
                 // return false on the next cycle if the fault is gone
                 talonFX->ClearStickyFaults();
 
                 lastResetTime = std::chrono::high_resolution_clock::now();
                 reset_sent = true;
-            }
-        }
-		else {
-            if(error){
-                RCLCPP_INFO(nodeHandle->get_logger(), "Kraken %d: overcurrent fault cleared", talonFX->GetDeviceID());
-                // Clear sticky faults so we can detect the next trip cleanly
-                talonFX->ClearStickyFaults();
-                error = false;
-                reset_sent = false;
-                restarted = true;
             }
         }
 
