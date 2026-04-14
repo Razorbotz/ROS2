@@ -163,7 +163,6 @@ bool initialize_h264_encoder(int width, int height)
     // Low-latency x264 options
     av_opt_set(h264_ctx->priv_data, "preset", "ultrafast", 0);
     av_opt_set(h264_ctx->priv_data, "tune", "zerolatency", 0);
-    av_opt_set(h264_ctx->priv_data, "profile", "baseline", 0);
     av_opt_set_int(h264_ctx->priv_data, "sync-lookahead", 0, 0);
     av_opt_set_int(h264_ctx->priv_data, "rc-lookahead", 0, 0);
     av_opt_set_int(h264_ctx->priv_data, "keyint", 15, 0); // IDR every 15 frames

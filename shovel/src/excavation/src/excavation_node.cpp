@@ -140,7 +140,7 @@ void publishSpeedsArm() {
         linear2.previousSpeed = linear2.speed;
     }
 
-    RCLCPP_INFO(nodeHandle->get_logger(), "Arm Speeds: %f, %f", linear1.speed, linear2.speed);
+    //RCLCPP_INFO(nodeHandle->get_logger(), "Arm Speeds: %f, %f", linear1.speed, linear2.speed);
 }
 
 
@@ -163,7 +163,7 @@ void publishSpeedsBucket() {
         linear4.previousSpeed = linear4.speed;
     }
 
-    RCLCPP_INFO(nodeHandle->get_logger(), "Bucket Speeds: %f, %f", linear3.speed, linear4.speed);
+    //RCLCPP_INFO(nodeHandle->get_logger(), "Bucket Speeds: %f, %f", linear3.speed, linear4.speed);
 }
 
 
@@ -394,7 +394,7 @@ void updateMotorPositions(int millis){
 
 void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
     float raw_pitch = zedPosition->roll; 
-    RCLCPP_INFO(nodeHandle->get_logger(), "raw_pitch: %f", raw_pitch);
+    //RCLCPP_INFO(nodeHandle->get_logger(), "raw_pitch: %f", raw_pitch);
 
     if (!first_pitch_received) {
         filtered_pitch = raw_pitch;
@@ -403,7 +403,7 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
     else {
         filtered_pitch = (PITCH_ALPHA * raw_pitch) + ((1.0 - PITCH_ALPHA) * filtered_pitch);
     }
-    RCLCPP_INFO(nodeHandle->get_logger(), "filtered_pitch: %f", filtered_pitch);
+    //RCLCPP_INFO(nodeHandle->get_logger(), "filtered_pitch: %f", filtered_pitch);
 
     // --- ARM LEVELING ---
     if (level_arm) {
@@ -424,7 +424,7 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
                 if(target < 40.0) target = 40.0;
                 if(target > 980.0) target = 980.0; 
                 
-                RCLCPP_INFO(nodeHandle->get_logger(), "Arm target: %f", target);
+                //RCLCPP_INFO(nodeHandle->get_logger(), "Arm target: %f", target);
                 std_msgs::msg::Int32 position;
                 position.data = (int)target;
                 talon14PositionPublisher->publish(position);
