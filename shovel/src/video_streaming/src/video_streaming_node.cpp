@@ -573,6 +573,9 @@ int main(int argc, char **argv){
                 else if(command==2){
                     uint8_t value = message[1];
                 }
+                else if(command==3){
+                    force_idr_next.store(true, std::memory_order_relaxed);
+                }
                 else {
                 }
             }
