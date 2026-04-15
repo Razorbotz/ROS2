@@ -12,6 +12,12 @@ find_package(messages REQUIRED)
 find_package(utils REQUIRED)
 find_package(phoenix6 REQUIRED)
 
+find_library(CTRE_PHOENIX6_LIB 
+	NAMES CTRE_Phoenix6 
+	PATHS /usr/lib/phoenix6 
+	NO_DEFAULT_PATH
+)
+
 include_directories(
 	include
 )
@@ -21,8 +27,13 @@ add_executable(${PROJECT_NAME}_node
 )
 
 target_link_libraries(${PROJECT_NAME}_node
-	phoenix6
+	${CTRE_PHOENIX6_LIB}
 	pthread
+)
+
+set_target_properties(${PROJECT_NAME}_node PROPERTIES
+	BUILD_WITH_INSTALL_RPATH TRUE
+	INSTALL_RPATH "/usr/lib/phoenix6"
 )
 
 install(TARGETS ${PROJECT_NAME}_node
