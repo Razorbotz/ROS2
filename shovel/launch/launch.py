@@ -261,7 +261,7 @@ def generate_launch_description():
                     "'wlP1p1s0' if '", robot, "' != 'sim' else 'eth1'"
                 ]),
                 'zed_image_topic': PythonExpression([
-                    "'/camera/d455f/infra1/image_rect_raw' if '", robot, "'.lower() == 'sisyphus' else '/zed/zed_node/left_gray/image_rect_gray'"
+                    "'/camera/d455f/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/zed/zed_node/left_gray/image_rect_gray'"
                 ]),
             }.items(),
         ),
