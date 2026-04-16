@@ -250,6 +250,7 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(status_monitor_launch),
             launch_arguments={
+                'robot': robot,
                 'simulation': PythonExpression(["'true' if '", robot, "' == 'sim' else 'false'"]),
             }.items(),
         ),
@@ -260,10 +261,7 @@ def generate_launch_description():
                     "'wlP1p1s0' if '", robot, "' != 'sim' else 'eth1'"
                 ]),
                 'zed_image_topic': PythonExpression([
-                    "'/d455/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/zed/zed_node/left_gray/image_rect_gray'"
-                ]),
-                'intel_image_topic': PythonExpression([
-                    "'/d415/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/d455i/color/image_raw'"
+                    "'/camera/d455f/infra1/image_rect_raw' if '", robot, "'.lower() == 'sisyphus' else '/zed/zed_node/left_gray/image_rect_gray'"
                 ]),
             }.items(),
         ),
@@ -292,23 +290,6 @@ def generate_launch_description():
                         'camera_name': 'd415',
                         'enable_pointcloud': 'true',
                         'device_type': 'd415',
-                    }.items(),
-                ),
-            ]
-        ),
-
-        # RealSense D455 (Sisyphus Only)
-        GroupAction(
-            condition=is_sisyphus,
-            actions=[
-                IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(
-                        PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])
-                    ),
-                    launch_arguments={
-                        'camera_name': 'd455',
-                        'enable_pointcloud': 'true',
-                        'device_type': 'd455',
                     }.items(),
                 ),
             ]

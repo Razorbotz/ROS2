@@ -36,8 +36,6 @@ extern "C" {
 #include <libavutil/imgutils.h>
 }
 
-#include "messages/msg/talon_status.hpp"
-
 // -------------------- Streaming / Encoder Globals --------------------
 #define PORT 31338
 
@@ -75,8 +73,6 @@ std::mutex img_mutex;
 cv::Mat last_zed_gray, last_rs_gray;
 
 rclcpp::Time last_zed_stamp, last_rs_stamp;
-bool showIntel = false;
-static const int INTEL_THRESHOLD = 400;
 
 std::atomic<uint64_t> last_video_tx_time_ms {0};
 static std::atomic<bool> force_idr_next{false};
@@ -211,13 +207,11 @@ void cleanup_h264_encoder(){
 
 void send_zed_frame();
 
+// Optimized code
 void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg){
     try {
-        cv::Mat img_bgr = cv_bridge::toCvCopy(msg, "bgr8")->image;
-        if (img_bgr.empty()) return;
-
-        cv::Mat gray_mat;
-        cv::cvtColor(img_bgr, gray_mat, cv::COLOR_BGR2GRAY);
+        cv::Mat gray_mat = cv_bridge::toCvCopy(msg, "mono8")->image;
+        if (gray_mat.empty()) return;
 
         {
             std::lock_guard<std::mutex> lk(img_mutex);
@@ -230,26 +224,6 @@ void zedImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg){
         RCLCPP_ERROR(nodeHandle->get_logger(), "zedImageCallback exception: %s", e.what());
     }
 }
-
-void intelImageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg){
-    try {
-        cv::Mat img_bgr = cv_bridge::toCvCopy(msg, "rgb8")->image;
-        if (img_bgr.empty()) return;
-
-        cv::Mat gray_mat;
-        cv::cvtColor(img_bgr, gray_mat, cv::COLOR_RGB2GRAY);
-
-        {
-            std::lock_guard<std::mutex> lk(img_mutex);
-            last_rs_gray  = gray_mat.clone();
-            last_rs_stamp = msg->header.stamp;
-        }
-    }
-    catch (const std::exception &e) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "intelImageCallback exception: %s", e.what());
-    }
-}
-
 
 void send_zed_frame()
 {
@@ -322,15 +296,6 @@ void send_zed_frame()
             }
             av_packet_unref(video_packet);
         }
-    }
-}
-
-void talon1Callback(const messages::msg::TalonStatus::SharedPtr talonStatus){
-    if(talonStatus->sensor_position < INTEL_THRESHOLD){
-        showIntel = true;
-    }
-    else{
-        showIntel = false;
     }
 }
 
@@ -418,38 +383,29 @@ int main(int argc, char **argv){
     nodeHandle = rclcpp::Node::make_shared("video_streaming");
     RCLCPP_INFO(nodeHandle->get_logger(),"Starting video streaming server node");
 
-    std::string zed_topic, intel_topic;
+    std::string zed_topic;
 
     // Parameters
     nodeHandle->declare_parameter<std::string>("interface_name", "wlP1p1s0");
     nodeHandle->declare_parameter<std::string>("robot_name", "shovel");
     nodeHandle->declare_parameter<int>("port", 31338);
     nodeHandle->declare_parameter<std::string>("zed_image_topic", "/zed2i/left/image_raw");
-    nodeHandle->declare_parameter<std::string>("intel_image_topic", "/d455i/color/image_raw");
     nodeHandle->get_parameter("interface_name", interfaceName);
     nodeHandle->get_parameter("robot_name", robotName);
     nodeHandle->get_parameter("port", clientPort);
     nodeHandle->get_parameter("zed_image_topic", zed_topic);
-    nodeHandle->get_parameter("intel_image_topic", intel_topic);
 
     RCLCPP_INFO(nodeHandle->get_logger(), "interface_name: %s", interfaceName.c_str());
     RCLCPP_INFO(nodeHandle->get_logger(), "robot_name: %s", robotName.c_str());
     RCLCPP_INFO(nodeHandle->get_logger(), "port: %d", clientPort);
     RCLCPP_INFO(nodeHandle->get_logger(), "zed_image_topic: %s", zed_topic.c_str());
-    RCLCPP_INFO(nodeHandle->get_logger(), "intel_image_topic: %s", intel_topic.c_str());
 
     auto zed_sub = nodeHandle->create_subscription<sensor_msgs::msg::Image>(
         zed_topic,
         rclcpp::SensorDataQoS(),
         &zedImageCallback);
 
-    auto intel_sub = nodeHandle->create_subscription<sensor_msgs::msg::Image>(
-        intel_topic,
-        rclcpp::SensorDataQoS(),
-        &intelImageCallback);
-
     image_transport::ImageTransport it(nodeHandle);
-    auto talon1Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_14_info",1,talon1Callback);
 
     ssize_t bytesRead;
     struct sockaddr_in address;

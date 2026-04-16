@@ -20,17 +20,12 @@ def generate_launch_description():
         'zed_image_topic', default_value='/zed2i/left/image_raw',
         description='Image topic for the ZED camera'
     )
-    intel_image_topic_arg = DeclareLaunchArgument(
-        'intel_image_topic', default_value='/d455i/color/image_raw',
-        description='Image topic for the Intel RealSense camera'
-    )
 
     return LaunchDescription([
         interface_name_arg,
         robot_name_arg,
         port_arg,
         zed_image_topic_arg,
-        intel_image_topic_arg,
 
         Node(
             package='video_streaming',
@@ -41,7 +36,6 @@ def generate_launch_description():
                 'robot_name': LaunchConfiguration('robot_name'),
                 'port': LaunchConfiguration('port'),
                 'zed_image_topic': LaunchConfiguration('zed_image_topic'),
-                'intel_image_topic': LaunchConfiguration('intel_image_topic'),
             }],
             remappings=[
                 ('/zed_image', '/zed2i/left/image_raw')
