@@ -90,8 +90,8 @@ std::atomic<bool> run_threads{true};
 
 // CAN interface names — set from parameters
 std::string vcanInterface = "can0";   // Virtual CAN (cangw routing)
-std::string phys1Interface = "can1";  // Physical side 1 of bus
-std::string phys2Interface = "can2";  // Physical side 2 of bus
+std::string phys1Interface = "extcan0";  // Physical side 1 of bus
+std::string phys2Interface = "extcan1";  // Physical side 2 of bus
 
 void publishStatus() {
     messages::msg::SystemStatus systemStatus;
@@ -219,7 +219,7 @@ void can_read_loop(const std::string& iface_name, int (&motors)[MAX_MOTORS], std
                 uint32_t canId = frame.can_id & 0x0000003F;
                 if (get_motor_index(canId, motor_index)) {
                     std::lock_guard<std::mutex> lock(mutex);
-                    motors[motor_index] = 1;
+                    motors[motor_index] = 3;
                 }
             }
         }
@@ -233,15 +233,15 @@ void checkInterfaceStatus() {
     {
         std::lock_guard<std::mutex> lock(mutex1);
         for (size_t i = 0; i < MAX_MOTORS; ++i) {
-            copy1[i] = motors1[i];
-            motors1[i] = 0;
+            copy1[i] = (motors1[i] > 0) ? 1 : 0;
+            if (motors1[i] > 0) motors1[i]--; // Decay the TTL
         }
     }
     {
         std::lock_guard<std::mutex> lock(mutex2);
         for (size_t i = 0; i < MAX_MOTORS; ++i) {
-            copy2[i] = motors2[i];
-            motors2[i] = 0;
+            copy2[i] = (motors2[i] > 0) ? 1 : 0;
+            if (motors2[i] > 0) motors2[i]--; // Decay the TTL
         }
     }
 
@@ -510,8 +510,8 @@ int main(int argc, char** argv) {
     simulationMode = utils::getParameter<bool>(nodeHandle, "simulation", false);
 
     vcanInterface = utils::getParameter<std::string>(nodeHandle, "vcan_interface", "can0");
-    phys1Interface = utils::getParameter<std::string>(nodeHandle, "phys1_interface", "can1");
-    phys2Interface = utils::getParameter<std::string>(nodeHandle, "phys2_interface", "can2");
+    phys1Interface = utils::getParameter<std::string>(nodeHandle, "phys1_interface", "extcan0");
+    phys2Interface = utils::getParameter<std::string>(nodeHandle, "phys2_interface", "extcan1");
 
     // Number of motors in this robot configuration (5 or 6)
     int numMotorsParam = utils::getParameter<int>(nodeHandle, "num_motors", 6);

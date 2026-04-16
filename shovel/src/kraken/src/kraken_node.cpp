@@ -163,7 +163,6 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
 bool isAnyFaultTripped(){
     return talonFX->GetStickyFault_SupplyCurrLimit().GetValue() ||
            talonFX->GetStickyFault_StatorCurrLimit().GetValue() ||
-           talonFX->GetStickyFault_Overvoltage().GetValue() ||
            talonFX->GetStickyFault_Undervoltage().GetValue() ||
            talonFX->GetStickyFault_Hardware().GetValue() ||
            talonFX->GetStickyFault_DeviceTemp().GetValue() ||
@@ -178,7 +177,6 @@ void printActiveFaults(){
 
     if (talonFX->GetStickyFault_SupplyCurrLimit().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Supply Current Limit Tripped", id);
     if (talonFX->GetStickyFault_StatorCurrLimit().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Stator Current Limit Tripped", id);
-    if (talonFX->GetStickyFault_Overvoltage().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Supply Overvoltage (Regen Spike Detected)", id);
     if (talonFX->GetStickyFault_Undervoltage().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Supply Undervoltage (Battery Sag)", id);
     if (talonFX->GetStickyFault_Hardware().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Hardware Failure", id);
     if (talonFX->GetStickyFault_DeviceTemp().GetValue()) RCLCPP_WARN(logger, "Kraken %d FAULT: Device Temperature (Thermal Cutoff)", id);
@@ -235,10 +233,10 @@ int main(int argc,char** argv){
     allConfigs.CurrentLimits.SupplyCurrentLimit = units::current::ampere_t{70.0};
 
     allConfigs.MotorOutput.NeutralMode = signals::NeutralModeValue::Coast;
-    allConfigs.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.5;
-    allConfigs.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.5;
-    allConfigs.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = 0.5;
-    allConfigs.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.5;
+    allConfigs.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.5_s;
+    allConfigs.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.5_s;
+    allConfigs.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = 0.5_s;
+    allConfigs.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.5_s;
     
     if(invertMotor){
         allConfigs.MotorOutput.Inverted = signals::InvertedValue::CounterClockwise_Positive;

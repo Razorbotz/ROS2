@@ -28,6 +28,7 @@ add_executable(${PROJECT_NAME}_node
 
 target_link_libraries(${PROJECT_NAME}_node
 	${CTRE_PHOENIX6_LIB}
+	phoenix6
 	pthread
 )
 
