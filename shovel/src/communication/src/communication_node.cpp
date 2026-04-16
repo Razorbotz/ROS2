@@ -656,6 +656,7 @@ void network_worker() {
 
         uint64_t now = get_time_ms();
         if (now - last_ros_update_time > 100) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             continue;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -921,6 +922,7 @@ int main(int argc, char** argv) {
             connected = true;
         }
         rclcpp::spin_some(nodeHandle);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10)); 
     }
     last_client_tx_time_ms.store(get_time_ms(), std::memory_order_relaxed);
 

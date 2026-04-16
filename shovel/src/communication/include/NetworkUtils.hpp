@@ -72,34 +72,44 @@ inline void checksum_encode(std::shared_ptr<std::list<uint8_t>> byteList){
  * */
 inline std::string getAddressString(int family, std::string interfaceName){
     std::string addressString("");
-    ifaddrs* interfaceAddresses = nullptr;
-    for (int failed=getifaddrs(&interfaceAddresses); !failed && interfaceAddresses; interfaceAddresses=interfaceAddresses->ifa_next){
-        if(strcmp(interfaceAddresses->ifa_name,interfaceName.c_str())==0 && interfaceAddresses->ifa_addr->sa_family == family) {
-            if (interfaceAddresses->ifa_addr->sa_family == AF_INET) {
-                sockaddr_in *socketAddress = reinterpret_cast<sockaddr_in *>(interfaceAddresses->ifa_addr);
-                addressString += inet_ntoa(socketAddress->sin_addr);
-            }
-            if (interfaceAddresses->ifa_addr->sa_family == AF_INET6) {
-                sockaddr_in6 *socketAddress = reinterpret_cast<sockaddr_in6 *>(interfaceAddresses->ifa_addr);
-                for (int index = 0; index < 16; index += 2) {
-                    char bits[5];
-                    sprintf(bits,"%02x%02x", socketAddress->sin6_addr.s6_addr[index],socketAddress->sin6_addr.s6_addr[index + 1]);
-                    if (index)addressString +=":";
-                    addressString +=bits;
+    ifaddrs* ifAddrStruct = nullptr;
+    ifaddrs* ifa = nullptr;
+
+    if (getifaddrs(&ifAddrStruct) == 0) {
+        
+        for (ifa = ifAddrStruct; ifa != nullptr; ifa = ifa->ifa_next) {
+            
+            if (ifa->ifa_name != nullptr && 
+                strcmp(ifa->ifa_name, interfaceName.c_str()) == 0 && 
+                ifa->ifa_addr->sa_family == family) {
+                
+                if (ifa->ifa_addr->sa_family == AF_INET) {
+                    sockaddr_in *socketAddress = reinterpret_cast<sockaddr_in *>(ifa->ifa_addr);
+                    addressString += inet_ntoa(socketAddress->sin_addr);
                 }
-            }
-            if (interfaceAddresses->ifa_addr->sa_family == AF_PACKET) {
-                sockaddr_ll *socketAddress = reinterpret_cast<sockaddr_ll *>(interfaceAddresses->ifa_addr);
-                for (int index = 0; index < socketAddress->sll_halen; index++) {
-                    char bits[3];
-                    sprintf(bits,"%02x", socketAddress->sll_addr[index]);
-                    if (index)addressString +=":";
-                    addressString +=bits;
+                if (ifa->ifa_addr->sa_family == AF_INET6) {
+                    sockaddr_in6 *socketAddress = reinterpret_cast<sockaddr_in6 *>(ifa->ifa_addr);
+                    for (int index = 0; index < 16; index += 2) {
+                        char bits[5];
+                        sprintf(bits,"%02x%02x", socketAddress->sin6_addr.s6_addr[index],socketAddress->sin6_addr.s6_addr[index + 1]);
+                        if (index) addressString +=":";
+                        addressString +=bits;
+                    }
+                }
+                if (ifa->ifa_addr->sa_family == AF_PACKET) {
+                    sockaddr_ll *socketAddress = reinterpret_cast<sockaddr_ll *>(ifa->ifa_addr);
+                    for (int index = 0; index < socketAddress->sll_halen; index++) {
+                        char bits[3];
+                        sprintf(bits,"%02x", socketAddress->sll_addr[index]);
+                        if (index) addressString +=":";
+                        addressString +=bits;
+                    }
                 }
             }
         }
+        freeifaddrs(ifAddrStruct);
     }
-    freeifaddrs(interfaceAddresses);
+    
     return addressString;
 }
 
