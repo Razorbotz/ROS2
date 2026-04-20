@@ -207,6 +207,7 @@ def generate_launch_description():
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(autonomy_launch),
+            launch_arguments={'robot': robot}.items(),
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(logic_launch),

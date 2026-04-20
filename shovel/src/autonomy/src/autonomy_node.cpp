@@ -335,7 +335,18 @@ int main(int argc, char **argv){
     std::string mapUsed = utils::getParameter<std::string>(nodeHandle, "map", "NASA");
     bool turnLeft = utils::getParameter<bool>(nodeHandle, "turnLeft", false);
     printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
-    automation = new Automation1();
+    
+    std::string robotName = utils::getParameter<std::string>(nodeHandle, "robot", "talos");
+
+    if (robotName == "sisyphus" || robotName == "Sisyphus") {
+        automation = new Automation2();
+        RCLCPP_INFO(nodeHandle->get_logger(), "Loaded Automation2 logic for Sisyphus.");
+    }
+    else {
+        automation = new Automation1();
+        RCLCPP_INFO(nodeHandle->get_logger(), "Loaded Automation1 logic.");
+    }
+
     automation->setMap(mapUsed);
     automation->setTurnLeft(turnLeft);
     automation->setNode(nodeHandle);
