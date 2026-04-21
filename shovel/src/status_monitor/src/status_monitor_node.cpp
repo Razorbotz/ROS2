@@ -93,6 +93,11 @@ std::string vcanInterface = "can0";   // Virtual CAN (cangw routing)
 std::string phys1Interface = "can1";  // Physical side 1 of bus
 std::string phys2Interface = "can2";  // Physical side 2 of bus
 
+// Lowest motor CAN ID in the system — used to convert a motor's CAN ID into
+// its index in the published SystemStatus arrays (index = can_id - MOTOR_ID_BASE).
+// Drive/arm motors use CAN IDs 10..17 (0xA..0x11), so the base is 10.
+constexpr uint32_t MOTOR_ID_BASE = 10;
+
 void publishStatus() {
     messages::msg::SystemStatus systemStatus;
     systemStatus.rssi = rssi;
@@ -106,9 +111,45 @@ void publishStatus() {
     systemStatus.first_motor = firstMotor;
     systemStatus.second_motor = secondMotor;
     systemStatus.num_breaks = numBreaks;
-    std::copy(std::begin(motors1), std::end(motors1), systemStatus.motors0.begin());
-    std::copy(std::begin(motors2), std::end(motors2), systemStatus.motors1.begin());
-    std::copy(std::begin(interfaces), std::end(interfaces), systemStatus.interfaces.begin());
+
+    // Internally motors1/motors2/interfaces/copy1/copy2 are indexed by physical
+    // WIRING POSITION along the daisy chain. Downstream consumers (communication
+    // node / Aegis) index by MOTOR-ID OFFSET (can_id - MOTOR_ID_BASE). Remap here
+    // so motor 0xN always lands in array slot (N - MOTOR_ID_BASE), regardless of
+    // where it sits in the physical wiring order.
+    //
+    // We read from the already-snapshotted copy1/copy2 (populated by
+    // checkInterfaceStatus, which runs immediately before publishStatus) rather
+    // than from the live TTL arrays, so the published visibility is consistent
+    // with the break-detection logic.
+    uint8_t motors0_by_id[MAX_MOTORS] = {0};
+    uint8_t motors1_by_id[MAX_MOTORS] = {0};
+    int     interfaces_by_id[MAX_MOTORS];
+    for (size_t i = 0; i < MAX_MOTORS; i++) interfaces_by_id[i] = -1;
+
+    for (size_t i = 0; i < numMotors; i++) {
+        uint32_t can_id = motorWiringOrder[i];
+        if (can_id < MOTOR_ID_BASE) {
+            RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 5000,
+                "Motor CAN ID 0x%X is below MOTOR_ID_BASE (%u); skipping in published status",
+                can_id, MOTOR_ID_BASE);
+            continue;
+        }
+        size_t idx = (size_t)(can_id - MOTOR_ID_BASE);
+        if (idx >= MAX_MOTORS) {
+            RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(), 5000,
+                "Motor CAN ID 0x%X maps to index %zu which exceeds MAX_MOTORS (%zu); skipping",
+                can_id, idx, MAX_MOTORS);
+            continue;
+        }
+        motors0_by_id[idx]    = (uint8_t)copy1[i];
+        motors1_by_id[idx]    = (uint8_t)copy2[i];
+        interfaces_by_id[idx] = interfaces[i];
+    }
+
+    std::copy(std::begin(motors0_by_id),    std::end(motors0_by_id),    systemStatus.motors0.begin());
+    std::copy(std::begin(motors1_by_id),    std::end(motors1_by_id),    systemStatus.motors1.begin());
+    std::copy(std::begin(interfaces_by_id), std::end(interfaces_by_id), systemStatus.interfaces.begin());
     systemStatusPublisher->publish(systemStatus);
 }
 
@@ -214,13 +255,10 @@ void can_read_loop(const std::string& iface_name, int (&motors)[MAX_MOTORS], std
         int nbytes = read(s, &frame, sizeof(frame));
         if (nbytes > 0) {
             size_t motor_index;
-            uint32_t statusField = frame.can_id & 0x000FFFC0;
-            if (statusField == STATUS_01 || statusField == STATUS_02 || statusField == STATUS_04) {
-                uint32_t canId = frame.can_id & 0x0000003F;
-                if (get_motor_index(canId, motor_index)) {
-                    std::lock_guard<std::mutex> lock(mutex);
-                    motors[motor_index] = 3;
-                }
+            uint32_t canId = frame.can_id & 0x0000003F;
+            if (get_motor_index(canId, motor_index)) {
+                std::lock_guard<std::mutex> lock(mutex);
+                motors[motor_index] = 3;
             }
         }
     }
