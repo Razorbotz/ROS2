@@ -20,6 +20,7 @@
 #include <messages/msg/linear_status.hpp>
 
 #include "autonomy/Automation1.hpp"
+#include "autonomy/Automation2.hpp"
 #include "autonomy/AutomationTypes.hpp"
 #include "utils/utils.hpp"
 

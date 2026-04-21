@@ -80,6 +80,7 @@
 #include <MessageUtils.hpp>
 #include "AegisController.hpp"
 #include "AegisNanoController.hpp"
+#include "AegisGatewayManager.cpp"
 #include "utils/utils.hpp"
 #include "EthernetHBThread.hpp"
 
@@ -259,8 +260,16 @@ void updateMotorAuthCallback(uint8_t motor_index, bool authorized) {
         std_msgs::msg::Bool msg;
         msg.data = authorized;
         motorStopPublishers[motor_index]->publish(msg);
-        RCLCPP_INFO(nodeHandle->get_logger(), "%s Publisher for Motor %d",
-                    authorized ? "Enabled" : "Disabled", motor_index + 10);
+        RCLCPP_INFO(nodeHandle->get_logger(), "%s Publisher for Motor %d", authorized ? "Enabled" : "Disabled", motor_index + 10);
+
+        std::vector<int> allowed_motors;
+        for (int i = 0; i < 8; i++) {
+            if (motor_publish_allowed[i].load()) {
+                allowed_motors.push_back(i + 10);
+            }
+        }
+
+        AegisGatewayManager::setAllowedMotors(allowed_motors);
     }
 }
 

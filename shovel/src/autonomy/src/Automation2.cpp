@@ -44,7 +44,50 @@ void Automation2::startAutonomy() {
 
 void Automation2::setDiagnostics() {
     robotState = DIAGNOSTICS;
-    diagnosticsState = TALON_EXTEND; // Or Sisyphus equivalent
+    diagnosticsState = TALON_EXTEND;
     auto start = std::chrono::high_resolution_clock::now();
     setStartTime(start);
+}
+
+void Automation2::setLevel() {
+    robotState = LEVEL;
+    auto start = std::chrono::high_resolution_clock::now();
+    setStartTime(start);
+}
+
+void Automation2::stopLevel() {
+    if(robotState == LEVEL) {
+        robotState = ROBOT_IDLE;
+    }
+}
+
+void Automation2::setDumpMacro() {
+    robotState = DUMP_MACRO;
+    setGo();
+}
+
+void Automation2::setExcavateMacro() {
+    robotState = ROBOT_IDLE;
+    setGo();
+}
+
+void Automation2::setExcavate() {
+    currentX = position.x;
+    currentZ = position.z;
+    excavate = false;
+    robotState = ROBOT_IDLE;
+}
+
+void Automation2::excavateMacro() {
+    if(excavationState == EXCAVATION_IDLE) {
+        RCLCPP_INFO(this->node->get_logger(), "Sisyphus collection macro triggered.");
+        robotState = ROBOT_IDLE; 
+    }
+}
+
+void Automation2::dumpMacro() {
+    if(dumpState == DUMP_IDLE) {
+        RCLCPP_INFO(this->node->get_logger(), "Sisyphus dump macro triggered.");
+        robotState = ROBOT_IDLE;
+    }
 }

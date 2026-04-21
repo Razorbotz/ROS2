@@ -1258,7 +1258,8 @@ void AegisBase::onMotorNodeMessageReceived(uint8_t motor_id) {
     uint8_t idx;
     if (motor_id >= 10) {
         idx = motor_id - 10;
-    } else {
+    }
+    else {
         idx = motor_id;
     }
 
@@ -1275,9 +1276,11 @@ void AegisBase::onMotorNodeMessageReceived(uint8_t motor_id) {
         systemStatus_ref != SINGLE_FC) {
         if (is_primary_fc && systemStatus_ref == STOP) {
             // Orin in STOP: allowed to self-authorize
-        } else if (!is_primary_fc && systemStatus_ref == STOP && !hb_link.is_remote_alive()) {
+        }
+        else if (!is_primary_fc && systemStatus_ref == STOP && !hb_link.is_remote_alive()) {
             // Nano in STOP with dead remote: allowed to self-authorize
-        } else {
+        }
+        else {
             return;
         }
     }
@@ -1333,7 +1336,8 @@ bool AegisBase::evaluateAndSelfAuthorize(uint8_t motor_index) {
         std::cout << "[Auth] Orin immediately self-authorized motor " << (int)(motor_index + 10) 
                   << " (CAN visible, node alive, remote not authorized)." << std::endl;
         return true;
-    } else {
+    }
+    else {
         // Nano: defer authorization for SELF_AUTH_HOLDOFF_MS to give Orin time to claim first
         pending_self_auth[motor_index] = true;
         pending_auth_time[motor_index] = std::chrono::steady_clock::now();

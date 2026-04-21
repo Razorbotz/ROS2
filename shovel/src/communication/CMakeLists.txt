@@ -26,6 +26,7 @@ add_executable(${PROJECT_NAME}_node
         src/AegisBase.cpp
         src/AegisController.cpp
         src/AegisNanoController.cpp
+        src/AegisGatewayManager.cpp
         src/CANHeartbeat.cpp
         src/communication_node.cpp
 )

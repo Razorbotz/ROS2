@@ -15,7 +15,7 @@ def generate_launch_description():
 
     # 2. MAC Address Lookup Logic (Updated for case-insensitivity)
     mac_address = PythonExpression([
-        " '00:A5:54:7A:B9:2F' if '", LaunchConfiguration('target'), "'.lower() == 'sierra' else ",
+        " 'F8:3D:C6:57:2F:F2' if '", LaunchConfiguration('target'), "'.lower() == 'sierra' else ",
         " 'F8:3D:C6:57:3C:FA' if '", LaunchConfiguration('target'), "'.lower() == 'sisyphus' else ",
         " 'F8:3D:C6:57:21:1C' if '", LaunchConfiguration('target'), "'.lower() == 'talos' else ",
         " '' " 
