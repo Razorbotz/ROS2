@@ -79,6 +79,11 @@ Zed tracking node - Critical systems should not be impacted.
  * 
  * */
 
+ /*
+ TODO: Add Kraken callback subscribers
+ Write code to add the Kraken callbacks in the Automation
+ */
+
 rclcpp::Node::SharedPtr nodeHandle;
 std_msgs::msg::Empty heartbeat;
 
@@ -343,9 +348,13 @@ int main(int argc, char **argv){
         automation = new Automation2();
         RCLCPP_INFO(nodeHandle->get_logger(), "Loaded Automation2 logic for Sisyphus.");
     }
+    else if (robotName == "talos" || robotName == "Talos") {
+        automation = new Automation2();
+        RCLCPP_INFO(nodeHandle->get_logger(), "Loaded Automation3 logic for Talos.");
+    }
     else {
         automation = new Automation1();
-        RCLCPP_INFO(nodeHandle->get_logger(), "Loaded Automation1 logic.");
+        RCLCPP_INFO(nodeHandle->get_logger(), "Loaded Automation1 logic for Sierra.");
     }
 
     automation->setMap(mapUsed);

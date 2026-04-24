@@ -22,12 +22,11 @@ void Automation1::automate(){
     }
 
     if(robotState == INITIAL){
-        RCLCPP_INFO(this->node->get_logger(), "Initialize");
+        RCLCPP_INFO(this->node->get_logger(), "Talos Initialize");
         auto start = std::chrono::high_resolution_clock::now();
         setStartTime(start);
         setGo();
-        // TODO: Change this to be updated for the new bot. Might need to change this
-        // for Sierra
+        // TODO: Change this to be updated
         //setArmPosition(400);
         //setBucketPosition(100);
         if(checkArmPosition(10)){
@@ -36,8 +35,9 @@ void Automation1::automate(){
         }
     }
 
+    // TODO: Change this for the new bot. Need to remove the Talons 15 and 17
     if(robotState==DIAGNOSTICS){
-        RCLCPP_INFO(this->node->get_logger(), "Diagnostics");
+        RCLCPP_INFO(this->node->get_logger(), "Talos Pre-Flight Diagnostics");
         auto finish = std::chrono::high_resolution_clock::now();
         if(diagnosticsState==TALON_EXTEND){
             setBucketSpeed(1.0);

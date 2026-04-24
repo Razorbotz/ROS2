@@ -69,11 +69,6 @@
  *   - print_data (bool, default false)         — enable verbose logging
  */
 
-
-// ============================================================================
-//  Motor type abstraction
-// ============================================================================
-
 enum class MotorType {
     PHOENIX_5,  // Falcon 500: 2048 units/rev, velocity in units/100ms
     PHOENIX_6   // Kraken x60: velocity in rotations/sec, position in rotations
@@ -125,11 +120,6 @@ struct WheelState {
         updated = true;
     }
 };
-
-
-// ============================================================================
-//  Globals
-// ============================================================================
 
 rclcpp::Node::SharedPtr nodeHandle;
 
@@ -210,16 +200,19 @@ void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr msg) {
             wheels[0].groundPosition = pos_meters;
             wheels[0].groundSpeed = vel_meters;
             wheels[0].updated = true;
-        } else if (msg->name[i] == "FL_Wheel_Joint") {
+        }
+        else if (msg->name[i] == "FL_Wheel_Joint") {
             wheels[1].groundPosition = pos_meters;
             wheels[1].groundSpeed = vel_meters;
             wheels[1].updated = true;
-        } else if (msg->name[i] == "BR_Wheel_Joint") {
+        }
+        else if (msg->name[i] == "BR_Wheel_Joint") {
             // Negate: URDF axis is (0, -1, 0) with pi rotation
             wheels[2].groundPosition = -pos_meters;
             wheels[2].groundSpeed = -vel_meters;
             wheels[2].updated = true;
-        } else if (msg->name[i] == "BL_Wheel_Joint") {
+        }
+        else if (msg->name[i] == "BL_Wheel_Joint") {
             wheels[3].groundPosition = pos_meters;
             wheels[3].groundSpeed = vel_meters;
             wheels[3].updated = true;
@@ -632,7 +625,8 @@ int main(int argc, char **argv) {
     if (wheels[0].motorType == MotorType::PHOENIX_5) {
         motorSubs.push_back(nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_10_info", 1, falcon0Callback));
-    } else {
+    }
+    else {
         motorSubs.push_back(nodeHandle->create_subscription<messages::msg::KrakenStatus>(
             "talon_10_info", 1, kraken0Callback));
     }
@@ -641,7 +635,8 @@ int main(int argc, char **argv) {
     if (wheels[1].motorType == MotorType::PHOENIX_5) {
         motorSubs.push_back(nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_11_info", 1, falcon1Callback));
-    } else {
+    }
+    else {
         motorSubs.push_back(nodeHandle->create_subscription<messages::msg::KrakenStatus>(
             "talon_11_info", 1, kraken1Callback));
     }
@@ -650,7 +645,8 @@ int main(int argc, char **argv) {
     if (wheels[2].motorType == MotorType::PHOENIX_5) {
         motorSubs.push_back(nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_12_info", 1, falcon2Callback));
-    } else {
+    }
+    else {
         motorSubs.push_back(nodeHandle->create_subscription<messages::msg::KrakenStatus>(
             "talon_12_info", 1, kraken2Callback));
     }
@@ -659,7 +655,8 @@ int main(int argc, char **argv) {
     if (wheels[3].motorType == MotorType::PHOENIX_5) {
         motorSubs.push_back(nodeHandle->create_subscription<messages::msg::FalconStatus>(
             "talon_13_info", 1, falcon3Callback));
-    } else {
+    }
+    else {
         motorSubs.push_back(nodeHandle->create_subscription<messages::msg::KrakenStatus>(
             "talon_13_info", 1, kraken3Callback));
     }
