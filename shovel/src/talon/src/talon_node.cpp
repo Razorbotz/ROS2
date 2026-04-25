@@ -173,6 +173,7 @@ int killKey = 0;
 void publishCallback(std_msgs::msg::Bool::SharedPtr pub){
 	publish = pub->data;
 	if(publish){
+		if(printData) RCLCPP_INFO(nodeHandle->get_logger(), "Publish");
 		if(usePosition){
 			talonSRX->Set(ControlMode::Position, currentSpeed);
 		}
@@ -380,8 +381,6 @@ int main(int argc,char** argv){
 					RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
 			}
 			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
-				if(printData)
-					RCLCPP_INFO(nodeHandle->get_logger(),"comm disable");
 			}
 			if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100){
 				if(printData)

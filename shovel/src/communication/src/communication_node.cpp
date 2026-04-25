@@ -141,6 +141,51 @@ DrivetrainState drivetrainState;
 SystemState systemState;
 LidarState lidarState;
 
+// Per-motor "force send booleans on next packet" flags. Set by forceDataResync()
+// and cleared by the corresponding send() function once it has emitted them.
+// Booleans can't use out-of-band sentinels like the numeric fields do, so a
+// dedicated force-flag is the only way to guarantee a resync re-sends them.
+struct ForceBoolFlags {
+    bool temp_disable = false;
+    bool error = false;
+};
+ForceBoolFlags falcon_force[4];
+ForceBoolFlags kraken_force[4];
+ForceBoolFlags talon_force[4];   // Talon has no `error` field; only temp_disable is used.
+
+// Helper: behaves like update_if_changed for booleans, but if `force` is true,
+// always emits the field and updates the cache, then clears the force flag.
+inline void update_bool_with_force(BinaryMessage& msg, bool& changed, bool& old_val,
+                                   bool new_val, bool& force, Field_Strings field) {
+    if (force || old_val != new_val) {
+        changed = true;
+        msg.addElementBoolean(field, new_val);
+        old_val = new_val;
+        force = false;
+    }
+}
+
+// Resolve the per-motor force-flags struct from a reference to the cache global.
+// The send() functions only know the cache by reference, so we map via address.
+inline ForceBoolFlags& getForceFlags(Falcon& f) {
+    if (&f == &falcon1) return falcon_force[0];
+    if (&f == &falcon2) return falcon_force[1];
+    if (&f == &falcon3) return falcon_force[2];
+    return falcon_force[3]; // falcon4
+}
+inline ForceBoolFlags& getForceFlags(Kraken& k) {
+    if (&k == &kraken1) return kraken_force[0];
+    if (&k == &kraken2) return kraken_force[1];
+    if (&k == &kraken3) return kraken_force[2];
+    return kraken_force[3]; // kraken4
+}
+inline ForceBoolFlags& getForceFlags(Talon& t) {
+    if (&t == &talon1) return talon_force[0];
+    if (&t == &talon2) return talon_force[1];
+    if (&t == &talon3) return talon_force[2];
+    return talon_force[3]; // talon4
+}
+
 std::unique_ptr<HeartbeatLink> aegisLink;
 std::unique_ptr<CanLink> aegisCanLink;
 std::mutex aegisMutex;
@@ -194,13 +239,15 @@ void forceDataResync() {
         f.output_percent = -999.0f; f.temperature = 255;
         f.sensor_position = -999999.0f; f.sensor_velocity = -999999.0f;
         f.max_current = -1.0f;
-        f.temp_disable = !f.temp_disable; f.error = !f.error;
+        // Booleans: don't toggle (unreliable — the toggle may match the real value
+        // and update_if_changed will then skip the field). Instead, request a
+        // forced send on the next status packet via the ForceBoolFlags struct below.
     };
     auto resetTalon = [](Talon& t) {
         t.device_id = 255; t.voltage = 0xFFFF; t.current = 0xFFFF;
         t.output_percent = -999.0f; t.temperature = 255;
         t.sensor_position = -999999.0f; t.sensor_velocity = -999999.0f;
-        t.max_current = -1.0f; t.temp_disable = !t.temp_disable;
+        t.max_current = -1.0f;
     };
     auto resetLinear = [](Linear& l) {
         l.motor_number = 255; l.speed = -999.0f; l.potentiometer = 0xFFFF;
@@ -214,11 +261,20 @@ void forceDataResync() {
         k.output_percent = -999.0f; k.temperature = 255;
         k.sensor_position = -999999.0f; k.sensor_velocity = -999999.0f;
         k.max_current = -1.0f;
-        k.temp_disable = !k.temp_disable; k.error = !k.error;
     };
     resetKraken(kraken1); resetKraken(kraken2); resetKraken(kraken3); resetKraken(kraken4);
     resetTalon(talon1); resetTalon(talon2); resetTalon(talon3); resetTalon(talon4);
     resetLinear(linear1); resetLinear(linear2); resetLinear(linear3); resetLinear(linear4);
+
+    // Request a forced re-broadcast of every motor's boolean fields on the next
+    // status packet. Each send() function will clear its flags after emitting.
+    for (int i = 0; i < 4; ++i) {
+        falcon_force[i].temp_disable = true;
+        falcon_force[i].error        = true;
+        kraken_force[i].temp_disable = true;
+        kraken_force[i].error        = true;
+        talon_force[i].temp_disable  = true;
+    }
 
     autonomyState.robot_state = "RESYNC"; autonomyState.excavation_state = "RESYNC";
     autonomyState.error_state = "RESYNC"; autonomyState.diagnostics_state = "RESYNC";
@@ -346,8 +402,9 @@ void send(std::string messageLabel, const messages::msg::FalconStatus::SharedPtr
     update_if_changed(message, message_changed, falcon.sensor_position, falconStatus->sensor_position, Field_Strings::SensorPosition);
     update_if_changed(message, message_changed, falcon.sensor_velocity, falconStatus->sensor_velocity, Field_Strings::SensorVelocity);
     update_if_changed(message, message_changed, falcon.max_current,     falconStatus->max_current,     Field_Strings::MaxCurrent);
-    update_if_changed(message, message_changed, falcon.temp_disable,    falconStatus->temp_disable,    Field_Strings::TempDisable);
-    update_if_changed(message, message_changed, falcon.error,           falconStatus->error,           Field_Strings::Error);
+    ForceBoolFlags& ff = getForceFlags(falcon);
+    update_bool_with_force(message, message_changed, falcon.temp_disable, falconStatus->temp_disable, ff.temp_disable, Field_Strings::TempDisable);
+    update_bool_with_force(message, message_changed, falcon.error,        falconStatus->error,        ff.error,        Field_Strings::Error);
 
     if (message_changed) send(message);
 }
@@ -370,8 +427,9 @@ void send(std::string messageLabel, const messages::msg::KrakenStatus::SharedPtr
     update_if_changed(message, message_changed, kraken.sensor_position,  (float)krakenStatus->sensor_position, Field_Strings::SensorPosition);
     update_if_changed(message, message_changed, kraken.sensor_velocity,  (float)krakenStatus->sensor_velocity, Field_Strings::SensorVelocity);
     update_if_changed(message, message_changed, kraken.max_current,      (float)krakenStatus->max_current,   Field_Strings::MaxCurrent);
-    update_if_changed(message, message_changed, kraken.temp_disable,     krakenStatus->temp_disable,         Field_Strings::TempDisable);
-    update_if_changed(message, message_changed, kraken.error,            krakenStatus->error,                Field_Strings::Error);
+    ForceBoolFlags& kf = getForceFlags(kraken);
+    update_bool_with_force(message, message_changed, kraken.temp_disable, krakenStatus->temp_disable, kf.temp_disable, Field_Strings::TempDisable);
+    update_bool_with_force(message, message_changed, kraken.error,        krakenStatus->error,        kf.error,        Field_Strings::Error);
 
     if (message_changed) send(message);
 }
@@ -381,6 +439,7 @@ void sendKrakenCrit(std::string messageLabel, const messages::msg::KrakenStatus:
     if ((float)krakenStatus->output_percent == kraken.output_percent) return;
     BinaryMessage message(messageLabel);
     message.addElementFloat32("Output Percent", krakenStatus->output_percent);
+    kraken.output_percent = krakenStatus->output_percent;  // keep cache in sync with what we just sent
     send(message);
 }
 
@@ -400,7 +459,8 @@ void send(std::string messageLabel, const messages::msg::TalonStatus::SharedPtr 
     update_if_changed(message, message_changed, talon.sensor_position, new_sensor_pos,                Field_Strings::SensorPosition);
     update_if_changed(message, message_changed, talon.sensor_velocity, talonStatus->sensor_velocity,  Field_Strings::SensorVelocity);
     update_if_changed(message, message_changed, talon.max_current,     talonStatus->max_current,      Field_Strings::MaxCurrent);
-    update_if_changed(message, message_changed, talon.temp_disable,    talonStatus->temp_disable,     Field_Strings::TempDisable);
+    ForceBoolFlags& tf = getForceFlags(talon);
+    update_bool_with_force(message, message_changed, talon.temp_disable, talonStatus->temp_disable, tf.temp_disable, Field_Strings::TempDisable);
 
     if (message_changed) send(message);
 }
@@ -581,6 +641,7 @@ void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus:
     if (talonStatus->output_percent == falcon.output_percent) return;
     BinaryMessage message(messageLabel);
     message.addElementFloat32("Output Percent", talonStatus->output_percent);
+    falcon.output_percent = talonStatus->output_percent;  // keep cache in sync with what we just sent
     send(message);
 }
 

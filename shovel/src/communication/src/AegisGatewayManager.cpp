@@ -14,11 +14,11 @@ public:
      */
     static void setAllowedMotors(const std::vector<int>& allowedMotors) {
         // 1. Flush all existing rules to prevent duplicates
-        std::system("sudo cangw -F");
+        std::system("cangw -F");
 
         // 2. Re-establish the Receive Path (Physical can2 -> Virtual can0)
         // The Orin requires the '-x' flag due to the mttcan loopback bug. The Nano does not.
-        std::system("sudo cangw -A -s can2 -d can0 -e");
+        std::system("cangw -A -s can2 -d can0 -e");
 
         // 3. Handle total mute (STANDBY state)
         if (allowedMotors.empty()) {
@@ -32,7 +32,7 @@ public:
             
             // 0x80000000 is the Extended Frame Flag.
             // 0x8000003F is the mask to isolate the lowest 6 bits (the motor ID).
-            ss << "sudo cangw -A -s can0 -d can2 -e -f 0x800000" 
+            ss << "cangw -A -s can0 -d can2 -e -f 0x800000" 
                << std::setfill('0') << std::setw(2) << std::hex << motorId 
                << ":0x8000003F";
             
@@ -47,11 +47,11 @@ public:
      * @brief Helper function to instantly grant control over the entire chassis.
      */
     static void allowAllMotors() {
-        std::system("sudo cangw -F");
-        std::system("sudo cangw -A -s can2 -d can0 -e");
+        std::system("cangw -F");
+        std::system("cangw -A -s can2 -d can0 -e");
         
         // Blindly route all outbound traffic
-        std::system("sudo cangw -A -s can0 -d can2 -e");
+        std::system("cangw -A -s can0 -d can2 -e");
         std::cout << "[AEGIS] FULL CONTROL GRANTED. All motors allowed." << std::endl;
     }
 };
