@@ -559,6 +559,30 @@ void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status) {
             can1[i] = static_cast<uint8_t>(status->motors1[i] != 0);
         }
         aegis->processStatusMonitorCANReport(can0, can1);
+
+        // Build a per-motor side map from the status monitor's classification
+        // and push it to the gateway manager. status->interfaces[i] is indexed
+        // by motor-ID-offset (i = can_id - MOTOR_ID_BASE, where MOTOR_ID_BASE=10):
+        //   0  = reachable on can1 (covers "reachable on both" too)
+        //   1  = only reachable on can2
+        //  -1  = unreachable on both -> mute
+        // Only the Orin role owns the cangw rules; the Nano never touches them.
+        if (nodeRole == NodeRole::ORIN) {
+            std::unordered_map<int, AegisGatewayManager::MotorSide> motorSide;
+            constexpr int MOTOR_ID_BASE = 10;
+            for (size_t i = 0; i < MAX_MOTORS; i++) {
+                int motor_id = MOTOR_ID_BASE + (int)i;
+                int classification = status->interfaces[i];
+                if (classification == 0) {
+                    motorSide[motor_id] = AegisGatewayManager::MotorSide::Can1;
+                } else if (classification == 1) {
+                    motorSide[motor_id] = AegisGatewayManager::MotorSide::Can2;
+                } else {
+                    motorSide[motor_id] = AegisGatewayManager::MotorSide::Unreachable;
+                }
+            }
+            AegisGatewayManager::updateMotorSides(motorSide);
+        }
     }
     if (silentRunning) return;
     systemCounter++;
