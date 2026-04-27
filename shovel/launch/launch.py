@@ -65,12 +65,17 @@ def generate_launch_description():
         'use_perception', default_value='true',
         description='Set to "true" to launch the lunar perception node.'
     )
+    enable_recording_arg = DeclareLaunchArgument(
+        'enable_recording', default_value='true',
+        description='Set to "true" to record telemetry to a bag file for post-run analysis.'
+    )
 
     robot = LaunchConfiguration('robot')
     use_motors = LaunchConfiguration('use_motors')
     role = LaunchConfiguration('role')
     use_foxglove = LaunchConfiguration('use_foxglove')
     use_perception = LaunchConfiguration('use_perception')
+    enable_recording = LaunchConfiguration('enable_recording')
 
     # Convenience conditions
     is_sim = IfCondition(PythonExpression(["'", robot, "'.lower() == 'sim'"]))
@@ -92,6 +97,7 @@ def generate_launch_description():
     gazebo_launch = os.path.join(launch_dir, 'launch', 'artemis_sim.launch.py')
     video_launch = os.path.join(launch_dir, 'launch', 'launch_video_streaming.py')
     lidar_launch = os.path.join(launch_dir, 'launch', 'launch_lidar.py')
+    recorder_launch = os.path.join(launch_dir, 'launch', 'launch_recorder.py')
 
     # Per-robot motor launch files (hardware)
     talos_motors_launch = os.path.join(launch_dir, 'launch', 'launch_talos_motors.py')
@@ -122,8 +128,10 @@ def generate_launch_description():
         robot_arg,
         role_arg,
         print_data_arg,
+        use_motors_arg,
         use_foxglove_arg,
         use_perception_arg,
+        enable_recording_arg,
 
         LogInfo(msg=['Launching robot configuration: ', robot]),
 
@@ -350,20 +358,13 @@ def generate_launch_description():
             ],
         ),
         # =================================================================
-        #  Robot Localization (Global EKF)
+        #  Telemetry recorder
         # =================================================================
-        Node(
-            condition=is_sim,
-            package='robot_localization',
-            executable='ekf_node',
-            name='ekf_global_filter_node',
-            output='screen',
-            parameters=[
-                os.path.join(launch_dir, 'src', 'autonomy', 'config', 'ekf_global.yaml'),
-                {'use_sim_time': True}
-            ],
-            remappings=[
-                ('pose0', '/apriltag_pose') 
-            ]
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(recorder_launch),
+            launch_arguments={
+                'robot': robot,
+                'enable_recording': enable_recording,
+            }.items(),
         ),
     ])
