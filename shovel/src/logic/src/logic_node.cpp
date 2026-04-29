@@ -211,7 +211,7 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
     float deadZone = 0.1;
     if(axisState->joystick == 0){
         if(axisState->axis==0){
-            joystick1Roll = transformJoystickInfo(-axisState->state, deadZone);
+            joystick1Roll = transformJoystickInfo(axisState->state, deadZone);
             updateSpeed();
         }
         else if(axisState->axis==1){
