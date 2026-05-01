@@ -21,7 +21,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 10},
                 {"diagnostics_port": 72340},
-                {"invert_motor": False},
+                {"invert_motor": True},
                 {"speed_topic": "falcon_10_speed"},
                 {"user_topic": "falcon_10_user_speed"},
                 {"reset_topic": "1"},
@@ -48,7 +48,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 11},
                 {"diagnostics_port": 72341},
-                {"invert_motor": True},
+                {"invert_motor": False},
                 {"speed_topic": "falcon_11_speed"},
                 {"user_topic": "falcon_11_user_speed"},
                 {"reset_topic": "2"},
@@ -75,7 +75,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 12},
                 {"diagnostics_port": 72342},
-                {"invert_motor": False},
+                {"invert_motor": True},
                 {"speed_topic": "falcon_12_speed"},
                 {"user_topic": "falcon_12_user_speed"},
                 {"reset_topic": "3"},
@@ -102,7 +102,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 13},
                 {"diagnostics_port": 72343},
-                {"invert_motor": True},
+                {"invert_motor": False},
                 {"speed_topic": "falcon_13_speed"},
                 {"user_topic": "falcon_13_user_speed"},
                 {"reset_topic": "4"},
