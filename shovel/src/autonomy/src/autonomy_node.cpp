@@ -398,7 +398,7 @@ int main(int argc, char **argv){
         RCLCPP_INFO(nodeHandle->get_logger(), "Loaded Automation2 logic for Sisyphus.");
     }
     else if (robotName == "talos" || robotName == "Talos") {
-        automation = new Automation2();
+        automation = new Automation1();
         RCLCPP_INFO(nodeHandle->get_logger(), "Loaded Automation3 logic for Talos.");
     }
     else {

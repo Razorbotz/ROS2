@@ -2,18 +2,18 @@
 #include <ctime>
 
 #include "autonomy/Automation.hpp"
-#include "autonomy/Automation1.hpp"
+#include "autonomy/Automation2.hpp"
 
 /** @file
  *
- * @brief Defines functions used in Automation1.hpp
+ * @brief Defines functions used in Automation2.hpp
  * 
  * This function sets the wheel speed and spins to the right until the camera
  * sees the Aruco marker, then drives forward until the robot is less than a
  * meter away from the marker.
  * */
 
-void Automation1::automate(){
+void Automation2::automate(){
     if(robotState==ROBOT_IDLE){
         //if(deltaX < falcon1.outputPercentage * 0.05 || deltaZ < falcon1.outputPercentage * 0.05){
         //    RCLCPP_INFO(this->node->get_logger(), "ERROR: Robot not moving");
@@ -471,7 +471,7 @@ void Automation1::automate(){
 }
     
 
-void Automation1::publishAutomationStatus(){
+void Automation2::publishAutomationStatus(){
     std::string robotStateString = robotStateMap.at(robotState);
     std::string excavationStateString = excavationStateMap.at(excavationState);
     std::string errorStateString = errorStateMap.at(errorState);
@@ -481,43 +481,43 @@ void Automation1::publishAutomationStatus(){
     publishAutonomyStatus(robotStateString, excavationStateString, errorStateString, diagnosticsStateString, tiltStateString, dumpStateString, std::to_string(levelBucket), std::to_string(levelArms));
 }
 
-void Automation1::setDiagnostics(){
+void Automation2::setDiagnostics(){
     robotState = DIAGNOSTICS;
     diagnosticsState = TALON_EXTEND;
     auto start = std::chrono::high_resolution_clock::now();
     setStartTime(start);
 }
 
-void Automation1::startAutonomy(){
+void Automation2::startAutonomy(){
     robotState = INITIAL;
     auto start = std::chrono::high_resolution_clock::now();
     setStartTime(start);
 }
 
-void Automation1::setLevel(){
+void Automation2::setLevel(){
     robotState = LEVEL;
     auto start = std::chrono::high_resolution_clock::now();
     setStartTime(start);
 }
 
-void Automation1::stopLevel(){
+void Automation2::stopLevel(){
     if(robotState == LEVEL){
         robotState = ROBOT_IDLE;
     }
 }
 
 
-void Automation1::setDumpMacro(){
+void Automation2::setDumpMacro(){
     robotState = DUMP_MACRO;
     setGo();
 }
 
-void Automation1::setExcavateMacro(){
+void Automation2::setExcavateMacro(){
     robotState = EXCAVATE_MACRO;
     setGo();
 }
 
-void Automation1::setExcavate(){
+void Automation2::setExcavate(){
     currentX = position.x;
     currentZ = position.z;
     excavate = true;
@@ -526,7 +526,7 @@ void Automation1::setExcavate(){
     setGo();
 }
 
-void Automation1::excavateMacro(){
+void Automation2::excavateMacro(){
     if(excavationState == EXCAVATION_IDLE){
         RCLCPP_INFO(this->node->get_logger(), "Starting Excavate Macro");
         setArmPosition(100);
@@ -570,7 +570,7 @@ void Automation1::excavateMacro(){
     }
 }
 
-void Automation1::dumpMacro(){
+void Automation2::dumpMacro(){
     if(dumpState == DUMP_IDLE){
         RCLCPP_INFO(this->node->get_logger(), "Starting Dump Macro");
         setArmPosition(900);
