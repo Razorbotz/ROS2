@@ -7,6 +7,7 @@
 #include <messages/msg/linear_status.hpp>
 #include <messages/msg/talon_status.hpp>
 #include <messages/msg/falcon_status.hpp>
+#include <messages/msg/kraken_status.hpp>
 #include <messages/msg/autonomy_status.hpp>
 #include <std_msgs/msg/int32.hpp>
 
@@ -70,6 +71,10 @@ class Automation{
         FALCON_11_ERROR, 
         FALCON_12_ERROR, 
         FALCON_13_ERROR,
+        KRAKEN_10_ERROR,
+        KRAKEN_11_ERROR,
+        KRAKEN_12_ERROR,
+        KRAKEN_13_ERROR,
         NONE
     };
 
@@ -152,6 +157,10 @@ class Automation{
         {FALCON_11_ERROR, "Falcon 11 Error"},
         {FALCON_12_ERROR, "Falcon 12 Error"},
         {FALCON_13_ERROR, "Falcon 13 Error"},
+        {KRAKEN_10_ERROR, "Kraken 10 Error"},
+        {KRAKEN_11_ERROR, "Kraken 11 Error"},
+        {KRAKEN_12_ERROR, "Kraken 12 Error"},
+        {KRAKEN_13_ERROR, "Kraken 13 Error"},
         {NONE, "None"}
     };
 
@@ -207,6 +216,7 @@ class Automation{
     float currentRightSpeed=0;
     Linear linear1, linear2, linear3, linear4;
     MotorStatus talon1, talon2, talon3, talon4, falcon1, falcon2, falcon3, falcon4;
+    MotorStatus kraken1, kraken2, kraken3, kraken4;
     // Height, width, excavation area, obstacle area, target Area
     Arena NASA{50, 69, 20, 39, {0, 0, 0, 0}};
     Arena UCF_1{82, 46, 1, 41, {0, 0, 0, 0}};
@@ -297,6 +307,14 @@ class Automation{
     void setFalcon3(const messages::msg::FalconStatus::SharedPtr falconStatus);
     
     void setFalcon4(const messages::msg::FalconStatus::SharedPtr falconStatus);
+
+    void setKraken1(const messages::msg::KrakenStatus::SharedPtr krakenStatus);
+
+    void setKraken2(const messages::msg::KrakenStatus::SharedPtr krakenStatus);
+
+    void setKraken3(const messages::msg::KrakenStatus::SharedPtr krakenStatus);
+
+    void setKraken4(const messages::msg::KrakenStatus::SharedPtr krakenStatus);
 
     bool checkErrors(Linear linear);
 

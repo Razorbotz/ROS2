@@ -15,7 +15,7 @@
 
 void Automation1::automate(){
     if(robotState==ROBOT_IDLE){
-        //if(deltaX < falcon1.outputPercentage * 0.05 || deltaZ < falcon1.outputPercentage * 0.05){
+        //if(deltaX < kraken1.outputPercentage * 0.05 || deltaZ < kraken1.outputPercentage * 0.05){
         //    RCLCPP_INFO(this->node->get_logger(), "ERROR: Robot not moving");
         //}
 
@@ -101,24 +101,24 @@ void Automation1::automate(){
             }
         }
         if(diagnosticsState==FALCON_FORWARD){
-            RCLCPP_INFO(this->node->get_logger(), "Falcon Forward");
+            RCLCPP_INFO(this->node->get_logger(), "Kraken Forward");
 
             if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-getStartTime()).count() > 500){
                 changeSpeed(0.0, 0.0);
-                if(falcon1.outputCurrent == 0.0){
-                    errorState = FALCON_10_ERROR;
+                if(kraken1.outputCurrent == 0.0){
+                    errorState = KRAKEN_10_ERROR;
                     robotState = ROBOT_IDLE;
                 }
-                else if(falcon2.outputCurrent == 0.0){
-                    errorState = FALCON_11_ERROR;
+                else if(kraken2.outputCurrent == 0.0){
+                    errorState = KRAKEN_11_ERROR;
                     robotState = ROBOT_IDLE;
                 }
-                else if(falcon3.outputCurrent == 0.0){
-                    errorState = FALCON_12_ERROR;
+                else if(kraken3.outputCurrent == 0.0){
+                    errorState = KRAKEN_12_ERROR;
                     robotState = ROBOT_IDLE;
                 }
-                else if(falcon4.outputCurrent == 0.0){
-                    errorState = FALCON_13_ERROR;
+                else if(kraken4.outputCurrent == 0.0){
+                    errorState = KRAKEN_13_ERROR;
                     robotState = ROBOT_IDLE;
                 }
                 else{
@@ -279,7 +279,7 @@ void Automation1::automate(){
             }
         }
         if(excavationState == COLLECT){
-            if(deltaX < falcon1.outputPercentage * 0.05 || deltaZ < falcon1.outputPercentage * 0.05){
+            if(deltaX < kraken1.outputPercentage * 0.05 || deltaZ < kraken1.outputPercentage * 0.05){
                 setArmPosition(linear1.potentiometer + 10);
                 stillCounter += 1;
                 if(stillCounter > 5 || position.pitch > 5){
@@ -289,7 +289,7 @@ void Automation1::automate(){
             else{
                 stillCounter = 0;
             }
-            if(deltaX > falcon1.outputPercentage * 0.25 || deltaZ > falcon1.outputPercentage * 0.25){
+            if(deltaX > kraken1.outputPercentage * 0.25 || deltaZ > kraken1.outputPercentage * 0.25){
                 setArmPosition(linear1.potentiometer - 10);
             }
             if(abs(this->position.z) > abs(this->destX)){

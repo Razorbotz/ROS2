@@ -333,6 +333,50 @@ void Automation::setFalcon4(const messages::msg::FalconStatus::SharedPtr falconS
 
 
 /*
+Function to set Kraken1 to the received Kraken motor values.
+*/
+void Automation::setKraken1(const messages::msg::KrakenStatus::SharedPtr krakenStatus){
+    this->kraken1.busVoltage = krakenStatus->bus_voltage;
+    this->kraken1.outputCurrent = krakenStatus->output_current;
+    this->kraken1.outputVoltage = krakenStatus->output_voltage;
+    this->kraken1.outputPercentage = krakenStatus->output_percent;
+}
+
+
+/*
+Function to set Kraken2 to the received Kraken motor values.
+*/
+void Automation::setKraken2(const messages::msg::KrakenStatus::SharedPtr krakenStatus){
+    this->kraken2.busVoltage = krakenStatus->bus_voltage;
+    this->kraken2.outputCurrent = krakenStatus->output_current;
+    this->kraken2.outputVoltage = krakenStatus->output_voltage;
+    this->kraken2.outputPercentage = krakenStatus->output_percent;
+}
+
+
+/*
+Function to set Kraken3 to the received Kraken motor values.
+*/
+void Automation::setKraken3(const messages::msg::KrakenStatus::SharedPtr krakenStatus){
+    this->kraken3.busVoltage = krakenStatus->bus_voltage;
+    this->kraken3.outputCurrent = krakenStatus->output_current;
+    this->kraken3.outputVoltage = krakenStatus->output_voltage;
+    this->kraken3.outputPercentage = krakenStatus->output_percent;
+}
+
+
+/*
+Function to set Kraken4 to the received Kraken motor values.
+*/
+void Automation::setKraken4(const messages::msg::KrakenStatus::SharedPtr krakenStatus){
+    this->kraken4.busVoltage = krakenStatus->bus_voltage;
+    this->kraken4.outputCurrent = krakenStatus->output_current;
+    this->kraken4.outputVoltage = krakenStatus->output_voltage;
+    this->kraken4.outputPercentage = krakenStatus->output_percent;
+}
+
+
+/*
 * Function that checks if the linear actuator has a PotentiometerError
 * or an ActuatorNotMovingError.
 * @param linear - Linear actuator object

@@ -17,6 +17,7 @@
 #include <messages/msg/autonomy_status.hpp>
 #include <messages/msg/talon_status.hpp>
 #include <messages/msg/falcon_status.hpp>
+#include <messages/msg/kraken_status.hpp>
 #include <messages/msg/linear_status.hpp>
 
 #include "autonomy/Automation1.hpp"
@@ -101,6 +102,8 @@ bool zedInit = false;
 bool useSpeed = false;
 bool useController = false;
 
+std::string robotName = "talos";
+
 Automation* automation;
 
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
@@ -116,6 +119,11 @@ std::chrono::time_point<std::chrono::high_resolution_clock> falcon1Previous;
 std::chrono::time_point<std::chrono::high_resolution_clock> falcon2Previous;
 std::chrono::time_point<std::chrono::high_resolution_clock> falcon3Previous;
 std::chrono::time_point<std::chrono::high_resolution_clock> falcon4Previous;
+
+std::chrono::time_point<std::chrono::high_resolution_clock> kraken1Previous;
+std::chrono::time_point<std::chrono::high_resolution_clock> kraken2Previous;
+std::chrono::time_point<std::chrono::high_resolution_clock> kraken3Previous;
+std::chrono::time_point<std::chrono::high_resolution_clock> kraken4Previous;
 
 std::chrono::time_point<std::chrono::high_resolution_clock> talon1Previous;
 std::chrono::time_point<std::chrono::high_resolution_clock> talon2Previous;
@@ -300,6 +308,27 @@ void falcon4Callback(const messages::msg::FalconStatus::SharedPtr falconOut){
 }
 
 
+void kraken1Callback(const messages::msg::KrakenStatus::SharedPtr krakenOut){
+    automation->setKraken1(krakenOut);
+    kraken1Previous = std::chrono::high_resolution_clock::now();
+}
+
+void kraken2Callback(const messages::msg::KrakenStatus::SharedPtr krakenOut){
+    automation->setKraken2(krakenOut);
+    kraken2Previous = std::chrono::high_resolution_clock::now();
+}
+
+void kraken3Callback(const messages::msg::KrakenStatus::SharedPtr krakenOut){
+    automation->setKraken3(krakenOut);
+    kraken3Previous = std::chrono::high_resolution_clock::now();
+}
+
+void kraken4Callback(const messages::msg::KrakenStatus::SharedPtr krakenOut){
+    automation->setKraken4(krakenOut);
+    kraken4Previous = std::chrono::high_resolution_clock::now();
+}
+
+
 bool checkTimes(){
     auto finish = std::chrono::high_resolution_clock::now();
     if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-zedPrevious).count() > 1000 || !zedInit){
@@ -314,21 +343,41 @@ bool checkTimes(){
         RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Talon3 hasn't updated in time.");
         return false;
     }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon1Previous).count() > 200){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon1 hasn't updated in time.");
-        return false;
+    if(robotName == "talos" || robotName == "Talos"){
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-kraken1Previous).count() > 200){
+            RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Kraken1 hasn't updated in time.");
+            return false;
+        }
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-kraken2Previous).count() > 200){
+            RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Kraken2 hasn't updated in time.");
+            return false;
+        }
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-kraken3Previous).count() > 200){
+            RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Kraken3 hasn't updated in time.");
+            return false;
+        }
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-kraken4Previous).count() > 200){
+            RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Kraken4 hasn't updated in time.");
+            return false;
+        }
     }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon2Previous).count() > 200){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon2 hasn't updated in time.");
-        return false;
-    }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon3Previous).count() > 200){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon3 hasn't updated in time.");
-        return false;
-    }
-    if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon4Previous).count() > 200){
-        RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon4 hasn't updated in time.");
-        return false;
+    else{
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon1Previous).count() > 200){
+            RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon1 hasn't updated in time.");
+            return false;
+        }
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon2Previous).count() > 200){
+            RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon2 hasn't updated in time.");
+            return false;
+        }
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon3Previous).count() > 200){
+            RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon3 hasn't updated in time.");
+            return false;
+        }
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-falcon4Previous).count() > 200){
+            RCLCPP_INFO(nodeHandle->get_logger(), "ERROR: Falcon4 hasn't updated in time.");
+            return false;
+        }
     }
     return true;
 }
@@ -342,7 +391,7 @@ int main(int argc, char **argv){
     bool turnLeft = utils::getParameter<bool>(nodeHandle, "turnLeft", false);
     printData = utils::getParameter<bool>(nodeHandle, "print_data", false);
     
-    std::string robotName = utils::getParameter<std::string>(nodeHandle, "robot", "talos");
+    robotName = utils::getParameter<std::string>(nodeHandle, "robot", "talos");
 
     if (robotName == "sisyphus" || robotName == "Sisyphus") {
         automation = new Automation2();
@@ -373,10 +422,30 @@ int main(int argc, char **argv){
     auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,talon3Callback);
     auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,talon4Callback);
     
-    auto falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_10_info",1,falcon1Callback);
-    auto falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_11_info",1,falcon2Callback);
-    auto falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_12_info",1,falcon3Callback);
-    auto falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_13_info",1,falcon4Callback);
+    rclcpp::Subscription<messages::msg::FalconStatus>::SharedPtr falcon1Subscriber;
+    rclcpp::Subscription<messages::msg::FalconStatus>::SharedPtr falcon2Subscriber;
+    rclcpp::Subscription<messages::msg::FalconStatus>::SharedPtr falcon3Subscriber;
+    rclcpp::Subscription<messages::msg::FalconStatus>::SharedPtr falcon4Subscriber;
+
+    rclcpp::Subscription<messages::msg::KrakenStatus>::SharedPtr kraken1Subscriber;
+    rclcpp::Subscription<messages::msg::KrakenStatus>::SharedPtr kraken2Subscriber;
+    rclcpp::Subscription<messages::msg::KrakenStatus>::SharedPtr kraken3Subscriber;
+    rclcpp::Subscription<messages::msg::KrakenStatus>::SharedPtr kraken4Subscriber;
+
+    if(robotName == "talos" || robotName == "Talos"){
+        kraken1Subscriber = nodeHandle->create_subscription<messages::msg::KrakenStatus>("talon_10_info",1,kraken1Callback);
+        kraken2Subscriber = nodeHandle->create_subscription<messages::msg::KrakenStatus>("talon_11_info",1,kraken2Callback);
+        kraken3Subscriber = nodeHandle->create_subscription<messages::msg::KrakenStatus>("talon_12_info",1,kraken3Callback);
+        kraken4Subscriber = nodeHandle->create_subscription<messages::msg::KrakenStatus>("talon_13_info",1,kraken4Callback);
+        RCLCPP_INFO(nodeHandle->get_logger(), "Subscribed to KrakenStatus topics for Talos.");
+    }
+    else{
+        falcon1Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_10_info",1,falcon1Callback);
+        falcon2Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_11_info",1,falcon2Callback);
+        falcon3Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_12_info",1,falcon3Callback);
+        falcon4Subscriber = nodeHandle->create_subscription<messages::msg::FalconStatus>("talon_13_info",1,falcon4Callback);
+        RCLCPP_INFO(nodeHandle->get_logger(), "Subscribed to FalconStatus topics for Sisyphus.");
+    }
 
     auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
 
