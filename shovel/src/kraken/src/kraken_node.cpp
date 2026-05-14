@@ -290,6 +290,13 @@ int main(int argc,char** argv){
                 reset_sent = true;
             }
         }
+        else {
+            if(error){
+                RCLCPP_INFO(nodeHandle->get_logger(), "Kraken %d: Faults cleared and nominal.", talonFX->GetDeviceID());
+                error = false;
+            }
+            reset_sent = false;
+        }
 
         if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
             int deviceID = talonFX->GetDeviceID();
