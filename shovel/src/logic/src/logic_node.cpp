@@ -224,10 +224,10 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
         }
         else if(axisState->axis==3){
             joystick1Throttle = axisState->state/2 + 0.5;
-            joystick1Throttle = transformJoystickInfo(joystick1Throttle, deadZone);
+            joystick1Throttle = 0.9 - transformJoystickInfo(joystick1Throttle, deadZone);
             std_msgs::msg::Float32 vibesSpeed;
             vibesSpeed.data = joystick1Throttle;
-            vibesSpeedPublisher.publish(vibesSpeed);
+            vibesSpeedPublisher->publish(vibesSpeed);
         }
     }
     else if(axisState->joystick == 1){
