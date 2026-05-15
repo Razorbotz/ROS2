@@ -60,7 +60,7 @@ bool TEMP_DISABLE = false;
 float Speed = 0.0;
 bool error = false;
 bool restarted = false;
-bool publish = false;
+bool publish = true;
 
 int op_mode = 0;
 int killKey = 0;
@@ -119,6 +119,7 @@ void logicHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
 void publishCallback(std_msgs::msg::Bool::SharedPtr pub){
     publish = pub->data;
     if(publish){
+        if(printData) RCLCPP_INFO(nodeHandle->get_logger(), )
         talonFX->SetControl(percentOut.WithOutput(Speed));
     }
 }
@@ -144,15 +145,6 @@ void checkTemperature(double temperature){
         case 0: temperature > 70 ? TEMP_DISABLE = true : TEMP_DISABLE = false; break;
         case 1: temperature > 80 ? TEMP_DISABLE = true : TEMP_DISABLE = false; break;
         case 2: temperature > 90 ? TEMP_DISABLE = true : TEMP_DISABLE = false; break;
-    }
-}
-
-void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
-    if(printData) std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
-    if(keyState->key == 98 && keyState->state==1){
-        std_msgs::msg::String reset;
-        reset.data = resetString;
-        resetPublisher->publish(reset);
     }
 }
 
@@ -258,8 +250,7 @@ int main(int argc,char** argv){
     auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
     auto commHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("comm_heartbeat",1,commHeartbeatCallback);
     auto logicHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("logic_heartbeat",1,logicHeartbeatCallback);
-    auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
-    auto publishSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>(stopTopic.c_str(),1,publishCallback);
+    //auto publishSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>(stopTopic.c_str(),1,publishCallback);
 
     RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 
@@ -289,13 +280,6 @@ int main(int argc,char** argv){
                 lastResetTime = std::chrono::high_resolution_clock::now();
                 reset_sent = true;
             }
-        }
-        else {
-            if(error){
-                RCLCPP_INFO(nodeHandle->get_logger(), "Kraken %d: Faults cleared and nominal.", talonFX->GetDeviceID());
-                error = false;
-            }
-            reset_sent = false;
         }
 
         if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-start).count() > publishingDelay){
@@ -337,7 +321,6 @@ int main(int argc,char** argv){
                 if(printData) RCLCPP_INFO(nodeHandle->get_logger(),"Temp Disable");
             }
             if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-commPrevious).count() > 100){
-                if(printData) RCLCPP_INFO(nodeHandle->get_logger(),"comm disable");
             }
             if(std::chrono::duration_cast<std::chrono::milliseconds>(finish-logicPrevious).count() > 100){
                 if(printData) RCLCPP_INFO(nodeHandle->get_logger(),"logic disable");

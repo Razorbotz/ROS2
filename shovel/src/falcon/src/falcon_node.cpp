@@ -93,7 +93,7 @@ bool TEMP_DISABLE = false;
 float Speed = 0.0;
 bool error = false;
 bool restarted = false;
-bool publish = false;
+bool publish = true;
 
 // Operating modes:
 // 0 - Normal
@@ -223,16 +223,6 @@ void checkTemperature(double temperature){
 	}
 }
 
-void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
-    if(printData)
-		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
-	if(keyState->key == 98 && keyState->state==1){
-		std_msgs::msg::String reset;
-		reset.data = resetString;
-		resetPublisher->publish(reset);
-	}
-}
-
 /** @brief Check Phoenix 5 sticky fault flags for overcurrent trip.
  *
  *  Phoenix 5's GetStickyFaults() populates a StickyFaults struct
@@ -338,8 +328,7 @@ int main(int argc,char** argv){
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
 	auto commHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("comm_heartbeat",1,commHeartbeatCallback);
 	auto logicHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("logic_heartbeat",1,logicHeartbeatCallback);
-	auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
-	auto publishSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>(stopTopic.c_str(),1,publishCallback);
+	//auto publishSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>(stopTopic.c_str(),1,publishCallback);
 
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 

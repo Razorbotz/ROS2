@@ -159,10 +159,14 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         }
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
     }
+    // 0
     if(keyState->key==48 && keyState->state==1){
+        RCLCPP_INFO(nodeHandle->get_logger(), "Dump Macro");
         automation->setDumpMacro();
     }
+    // 1
     if(keyState->key==49 && keyState->state==1){
+        RCLCPP_INFO(nodeHandle->get_logger(), "Excavation Macro");
         automation->setExcavateMacro();
     }
     if(keyState->key==100 && keyState->state==1){
@@ -306,7 +310,6 @@ void falcon4Callback(const messages::msg::FalconStatus::SharedPtr falconOut){
     automation->setFalcon4(falconOut);
     falcon4Previous = std::chrono::high_resolution_clock::now();
 }
-
 
 void kraken1Callback(const messages::msg::KrakenStatus::SharedPtr krakenOut){
     automation->setKraken1(krakenOut);

@@ -98,7 +98,7 @@ int motorNumber = 0;
 bool usePosition = false;
 float currentSpeed = 0.0;
 int currentPosition = 0;
-bool publish = false;
+bool publish = true;
 
 bool can_socket_bind_ok(const std::string& ifname) {
     int s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
@@ -227,18 +227,6 @@ void checkTemperature(double temperature){
 	}
 }
 
-
-void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
-    if(printData)
-		std::cout << "Key " << keyState->key << " " << keyState->state << std::endl;
-	if(keyState->key == 98 && keyState->state==1){
-		std_msgs::msg::String reset;
-		reset.data = resetString;
-		resetPublisher->publish(reset);
-	}
-}
-
-
 int main(int argc,char** argv){
 	rclcpp::init(argc,argv);
 	nodeHandle = rclcpp::Node::make_shared("talon");
@@ -322,8 +310,7 @@ int main(int argc,char** argv){
 	auto goSubscriber=nodeHandle->create_subscription<std_msgs::msg::Empty>("GO",1,goCallback);
 	auto commHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("comm_heartbeat",1,commHeartbeatCallback);
 	auto logicHeartbeatSubscriber = nodeHandle->create_subscription<std_msgs::msg::Empty>("logic_heartbeat",1,logicHeartbeatCallback);
-	auto keySubscriber= nodeHandle->create_subscription<messages::msg::KeyState>("key",1,keyCallback);
-	auto publishSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>(stopTopic.c_str(),1,publishCallback);
+	//auto publishSubscriber = nodeHandle->create_subscription<std_msgs::msg::Bool>(stopTopic.c_str(),1,publishCallback);
 	
 	RCLCPP_INFO(nodeHandle->get_logger(),"set subscribers");
 

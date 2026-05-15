@@ -103,6 +103,7 @@ std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > userRightSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > armSpeedPublisher;
 std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > bucketSpeedPublisher;
+std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > vibesSpeedPublisher;
 
 
 /** @brief Function to initialize the motors to zero
@@ -224,6 +225,9 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
         else if(axisState->axis==3){
             joystick1Throttle = axisState->state/2 + 0.5;
             joystick1Throttle = transformJoystickInfo(joystick1Throttle, deadZone);
+            std_msgs::msg::Float32 vibesSpeed;
+            vibesSpeed.data = joystick1Throttle;
+            vibesSpeedPublisher.publish(vibesSpeed);
         }
     }
     else if(axisState->joystick == 1){
@@ -394,6 +398,7 @@ int main(int argc, char **argv){
     driveRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
     armSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("arm_speed",1);
     bucketSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("bucket_speed",1);
+    vibesSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("vibes_speed",1);
     userLeftSpeedPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("user_left_speed",1);
     userRightSpeedPublisher= nodeHandle->create_publisher<std_msgs::msg::Float32>("user_right_speed",1);
 

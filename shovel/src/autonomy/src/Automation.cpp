@@ -921,8 +921,6 @@ which is bad practice because it will block other thread executions.
 This should probably be rewritten to use an if statement instead.
 */
 void Automation::setBucketPosition(int potent){
-    if(potent > 700)
-        potent = 700;
     target3 = potent;
     std_msgs::msg::Int32 position;
     position.data = potent;
