@@ -116,14 +116,6 @@ void logicHeartbeatCallback(std_msgs::msg::Empty::SharedPtr empty){
     logicPrevious = std::chrono::high_resolution_clock::now();
 }
 
-void publishCallback(std_msgs::msg::Bool::SharedPtr pub){
-    publish = pub->data;
-    if(publish){
-        if(printData) RCLCPP_INFO(nodeHandle->get_logger(), )
-        talonFX->SetControl(percentOut.WithOutput(Speed));
-    }
-}
-
 void speedCallback(const std_msgs::msg::Float32::SharedPtr speed){
     if(printData) RCLCPP_INFO(nodeHandle->get_logger(),"---------->>> %f ", speed->data);
     if(speed->data != Speed){
