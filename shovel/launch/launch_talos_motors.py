@@ -67,6 +67,31 @@ def generate_launch_description():
         )
         ,
         Node(
+            package='talon',
+            name='Talon18',
+            executable='talon_node',
+            parameters=[
+                {"motor_number": 18},
+                {"diagnostics_port": 56714},
+                {"invert_motor": False},
+                {"speed_topic": "vibes_speed"},
+                {"info_topic": "talon_18_info"},
+                {"kP": 10.0},
+                {"kI": 0.000001},
+                {"kD": 0.000001},
+                {"kF": 0.0},
+                {"publishing_delay": 15},
+                {"kill_key": 52},
+                {"op_mode": 0},
+                {"print_data": False},
+                {"can_interface": "can0"},
+                {"stop_topic": "talon_16_stop"}
+            ],
+            output={'stderr': 'screen', 'stdout': 'screen'},
+            respawn=True
+        )
+        ,
+        Node(
             package='kraken',
             name='Kraken10',
             executable='kraken_node',
