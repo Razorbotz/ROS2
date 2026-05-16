@@ -311,22 +311,6 @@ void updateSenderState(bool state) {
 }
 
 void updateMotorAuthCallback(uint8_t motor_index, bool authorized) {
-    if (motor_index < 8) {
-        motor_publish_allowed[motor_index].store(authorized);
-        std_msgs::msg::Bool msg;
-        msg.data = authorized;
-        motorStopPublishers[motor_index]->publish(msg);
-        RCLCPP_INFO(nodeHandle->get_logger(), "%s Publisher for Motor %d", authorized ? "Enabled" : "Disabled", motor_index + 10);
-
-        std::vector<int> allowed_motors;
-        for (int i = 0; i < 8; i++) {
-            if (motor_publish_allowed[i].load()) {
-                allowed_motors.push_back(i + 10);
-            }
-        }
-
-        AegisGatewayManager::setAllowedMotors(allowed_motors);
-    }
 }
 
 void send(BinaryMessage message) {
