@@ -95,6 +95,7 @@ bool twoControllers = false;
 bool useAltJoystick = false;
 bool vibesOn = false;
 float vibesSpeed = 0.0;
+float prevVibesSpeed = 0.0;
 
 float previousArmSpeed = 0.0;
 float previousBucketSpeed = 0.0;
@@ -276,12 +277,19 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 1");
             break;
         case 1:
-            vibesOn = !vibesOn;
-            if(!vibesOn)
-                vibesSpeed = 0.0;
-            RCLCPP_INFO(nodeHandle->get_logger(), "VibesSpeed: %d", vibesOn);
-            if(printData)
-                RCLCPP_INFO(nodeHandle->get_logger(), "Button 2");
+            if(buttonState->state == 1){
+                vibesOn = !vibesOn;
+                if(!vibesOn){
+                    prevVibesSpeed = vibesSpeed;
+                    vibesSpeed = 0.0;
+                }
+                else{
+                    vibesSpeed = prevVibesSpeed;
+                }
+                RCLCPP_INFO(nodeHandle->get_logger(), "VibesSpeed: %d", vibesOn);
+                if(printData)
+                    RCLCPP_INFO(nodeHandle->get_logger(), "Button 2");
+                }
             break;
         case 2:
             vibesSpeed = 0.34;

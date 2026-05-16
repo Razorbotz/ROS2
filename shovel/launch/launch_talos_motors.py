@@ -83,7 +83,7 @@ def generate_launch_description():
                 {"publishing_delay": 15},
                 {"kill_key": 52},
                 {"op_mode": 0},
-                {"print_data": False},
+                {"print_data": True},
                 {"can_interface": "can0"},
                 {"stop_topic": "talon_16_stop"}
             ],
