@@ -47,7 +47,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 16},
                 {"diagnostics_port": 56713},
-                {"invert_motor": False},
+                {"invert_motor": True},
                 {"speed_topic": "talon_16_speed"},
                 {"info_topic": "talon_16_info"},
                 {"position_topic": "talon_16_position"},
@@ -98,7 +98,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 10},
                 {"diagnostics_port": 72340},
-                {"invert_motor": True},
+                {"invert_motor": False},
                 {"speed_topic": "falcon_10_speed"},
                 {"user_topic": "falcon_10_user_speed"},
                 {"reset_topic": "1"},
@@ -125,7 +125,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 11},
                 {"diagnostics_port": 72341},
-                {"invert_motor": False},
+                {"invert_motor": True},
                 {"speed_topic": "falcon_11_speed"},
                 {"user_topic": "falcon_11_user_speed"},
                 {"reset_topic": "2"},
@@ -152,7 +152,7 @@ def generate_launch_description():
             parameters=[
                 {"motor_number": 12},
                 {"diagnostics_port": 72342},
-                {"invert_motor": True},
+                {"invert_motor": False},
                 {"speed_topic": "falcon_12_speed"},
                 {"user_topic": "falcon_12_user_speed"},
                 {"reset_topic": "3"},

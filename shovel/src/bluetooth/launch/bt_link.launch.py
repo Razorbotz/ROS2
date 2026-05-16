@@ -14,7 +14,7 @@ def generate_launch_description():
         DeclareLaunchArgument("enable_stdio", default_value="false", description="Enable stdin manual testing"),
 
         Node(
-            package="bt_rfcomm_link",
+            package="bluetooth",
             executable="bt_server_node.py",
             name="bt_server",
             output="screen",
@@ -28,7 +28,7 @@ def generate_launch_description():
         ),
 
         Node(
-            package="bt_rfcomm_link",
+            package="bluetooth",
             executable="bt_client_node.py",
             name="bt_client",
             output="screen",

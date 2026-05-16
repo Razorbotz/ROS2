@@ -93,6 +93,8 @@ bool useSpeed = false;
 bool useController = false;
 bool twoControllers = false;
 bool useAltJoystick = false;
+bool vibesOn = false;
+float vibesSpeed = 0.0;
 
 float previousArmSpeed = 0.0;
 float previousBucketSpeed = 0.0;
@@ -224,7 +226,7 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
         }
         else if(axisState->axis==3){
             joystick1Throttle = axisState->state/2 + 0.5;
-            joystick1Throttle = 0.9 - transformJoystickInfo(joystick1Throttle, deadZone);
+            joystick1Throttle = transformJoystickInfo(joystick1Throttle, deadZone);
             std_msgs::msg::Float32 vibesSpeed;
             vibesSpeed.data = joystick1Throttle;
             vibesSpeedPublisher->publish(vibesSpeed);
@@ -248,7 +250,10 @@ void joystickAxisCallback(const messages::msg::AxisState::SharedPtr axisState){
         }
         else if(axisState->axis==3){
             joystick2Throttle = axisState->state/2 + 0.5;
-            joystick2Throttle = transformJoystickInfo(joystick2Throttle, deadZone);
+            joystick2Throttle = 0.9 - transformJoystickInfo(joystick2Throttle, deadZone);
+            std_msgs::msg::Float32 vibesSpeed;
+            vibesSpeed.data = joystick1Throttle;
+            vibesSpeedPublisher->publish(vibesSpeed);
         }
     }
     
@@ -270,14 +275,23 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
     switch (buttonState->button) { 
 
         case 0:
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 1");
             break;
         case 1:
+            vibesOn = !vibesOn;
+            if(!vibesOn)
+                vibesSpeed = 0.0;
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 2");
             break;
         case 2:
+            vibesSpeed = 0.34;
             if(printData)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
             break;
         case 3:
+            vibesSpeed = 0.68;
             if(printData)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
             break;
@@ -298,13 +312,24 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 8");
             break;
         case 8:
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 9");
             break;
         case 9:
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 10");
             break;
         case 10:
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 11");
             break;
         case 11:
+            if(printData)
+                RCLCPP_INFO(nodeHandle->get_logger(), "Button 12");
             break;
+        std_msgs::msg::Float32 VibesSpeed;
+        VibesSpeed.data = vibesSpeed;
+        vibesSpeedPublisher->publish(VibesSpeed);
     }
 }
 

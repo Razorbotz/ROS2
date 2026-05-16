@@ -102,7 +102,7 @@ def generate_launch_description():
     # Per-robot motor launch files (hardware)
     talos_motors_launch = os.path.join(launch_dir, 'launch', 'launch_talos_motors.py')
     sierra_motors_launch = os.path.join(launch_dir, 'launch', 'launch_sierra_motors.py')
-    sisyphus_motors_launch = os.path.join(launch_dir, 'launch', 'launch_sisyphus_motors.py')
+    sisyphus_motors_launch = os.path.join(launch_dir, 'launch', 'launch_talos_motors.py')
 
     launch_talos_motors = IfCondition(
         PythonExpression(["'", use_motors, "' == 'true' and '", robot, "'.lower() == 'talos'"])
