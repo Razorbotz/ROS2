@@ -17,7 +17,7 @@ def generate_launch_description():
         description='UDP port for video streaming'
     )
     zed_image_topic_arg = DeclareLaunchArgument(
-        'zed_image_topic', default_value='/zed/zed_node/left_gray/image_rect_gray',
+        'zed_image_topic', default_value='/d455f/color/image_raw'',
         description='Image topic for the ZED camera'
     )
 
@@ -38,7 +38,7 @@ def generate_launch_description():
                 'zed_image_topic': LaunchConfiguration('zed_image_topic'),
             }],
             remappings=[
-                ('/zed_image', '/zed/zed_node/left_gray/image_rect_gray')
+                ('/zed_image', '/zed2i/left/image_raw')
             ],
             output='screen',
             respawn=True,
