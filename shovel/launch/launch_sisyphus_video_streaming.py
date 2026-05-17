@@ -17,7 +17,7 @@ def generate_launch_description():
         description='UDP port for video streaming'
     )
     zed_image_topic_arg = DeclareLaunchArgument(
-        'zed_image_topic', default_value='/d455f/color/image_raw'',
+        'zed_image_topic', default_value='/d455f/color/image_raw',
         description='Image topic for the ZED camera'
     )
 
