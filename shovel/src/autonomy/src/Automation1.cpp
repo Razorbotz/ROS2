@@ -583,7 +583,7 @@ void Automation1::dumpMacro(){
 
     if(dumpState == DUMP_IDLE){
         RCLCPP_INFO(this->node->get_logger(), "Starting Dump Macro");
-        setArmSpeed(armRaiseSpeed);          // raise arm by speed
+        setArmSpeed(-armRaiseSpeed);          // raise arm by speed
         changeSpeed(driveSpeed, driveSpeed); // drive forward at the same time
         setStartTime(std::chrono::high_resolution_clock::now());
         dumpState = DUMP_FORWARD;
@@ -593,13 +593,13 @@ void Automation1::dumpMacro(){
         if(std::chrono::duration_cast<std::chrono::milliseconds>(now - getStartTime()).count() > forwardMs){
             setArmSpeed(0.0);                       // stop arm (raised for forwardMs)
             changeSpeed(0.0, 0.0);                  // stop drive
-            moveBucketForTime(1.0, bucketExtendMs); // extend bucket actuator
+            moveBucketForTime(-1.0, bucketExtendMs); // extend bucket actuator
             dumpState = DUMP_EXTEND;
         }
     }
     else if(dumpState == DUMP_EXTEND){
         if(checkBucketTime()){                          // bucket extend done
-            moveBucketForTime(-1.0, bucketRetractMs);   // retract bucket actuator
+            moveBucketForTime(1.0, bucketRetractMs);   // retract bucket actuator
             dumpState = DUMP_RETRACT;
         }
     }
