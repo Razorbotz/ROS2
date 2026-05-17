@@ -530,11 +530,13 @@ void Automation1::excavateMacro(){
     if(excavationState == EXCAVATION_IDLE){
         RCLCPP_INFO(this->node->get_logger(), "Starting Excavate Macro");
         setArmPosition(100);
-        setBucketPosition(300);
+        // Replace setBucketPosition with a timed movement (e.g., 2000ms at full speed)
+        moveBucketForTime(1.0, 2000); 
         excavationState = LOWER_ARM;
     }
     else if(excavationState == LOWER_ARM){
-        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+        bool bucketDone = checkBucketTime();
+        if(checkArmPosition(20) == 1 && bucketDone){
             changeSpeed(0.2, 0.2); 
             setStartTime(std::chrono::high_resolution_clock::now());
             excavationState = COLLECT;
@@ -546,22 +548,24 @@ void Automation1::excavateMacro(){
             changeSpeed(0.0, 0.0);
             excavationState = RAISE_ARM;
             setArmPosition(900);
-            setBucketPosition(900);
+            moveBucketForTime(-1.0, 2000); // Move bucket back
         }
     }
     else if(excavationState == SQUARE_UP){
-        
+        // Existing logic...
     }
     else if(excavationState == RAISE_ARM){
-        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+        bool bucketDone = checkBucketTime();
+        if(checkArmPosition(20) == 1 && bucketDone){
             excavationState = LOWER_ARM;
             setArmPosition(300);
-            setBucketPosition(50);
+            moveBucketForTime(1.0, 1000); // Adjust bucket for lower state
             changeSpeed(-0.2, -0.2);
         }
     }
     else if(excavationState == LOWER_ARM){
-        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+        bool bucketDone = checkBucketTime();
+        if(checkArmPosition(20) == 1 && bucketDone){
             excavationState = EXCAVATION_IDLE;
             robotState = ROBOT_IDLE;
             changeSpeed(0.0, 0.0);
@@ -574,11 +578,12 @@ void Automation1::dumpMacro(){
     if(dumpState == DUMP_IDLE){
         RCLCPP_INFO(this->node->get_logger(), "Starting Dump Macro");
         setArmPosition(900);
-        setBucketPosition(40);
+        moveBucketForTime(1.0, 1500); 
         dumpState = DUMP_EXTEND;
     }
     else if(dumpState == DUMP_EXTEND){
-        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+        bool bucketDone = checkBucketTime();
+        if(checkArmPosition(20) == 1 && bucketDone){
             setStartTime(std::chrono::high_resolution_clock::now());
             dumpState = DUMP_FORWARD; 
             changeSpeed(0.2, 0.2);
@@ -588,12 +593,13 @@ void Automation1::dumpMacro(){
         auto current_time = std::chrono::high_resolution_clock::now();
         if(std::chrono::duration_cast<std::chrono::milliseconds>(current_time - getStartTime()).count() > 2000){
             setArmPosition(750);
-            setBucketPosition(900);
+            moveBucketForTime(-1.0, 2500); // Dump sequence
             dumpState = DUMP_DUMP;
         }
     }
     else if(dumpState == DUMP_DUMP){
-        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1){
+        bool bucketDone = checkBucketTime();
+        if(checkArmPosition(20) == 1 && bucketDone){
             setStartTime(std::chrono::high_resolution_clock::now());
             dumpState = DUMP_RETRACT; 
             changeSpeed(-0.2, -0.2);
@@ -601,13 +607,12 @@ void Automation1::dumpMacro(){
     }
     else if(dumpState == DUMP_RETRACT){
         auto current_time = std::chrono::high_resolution_clock::now();
-        if(checkArmPosition(20) == 1 && checkBucketPosition(20) == 1 && 
+        if(checkArmPosition(20) == 1 && 
             std::chrono::duration_cast<std::chrono::milliseconds>(current_time - getStartTime()).count() > 2000) {             
             changeSpeed(0.0, 0.0);
             dumpState = DUMP_IDLE;
             robotState = ROBOT_IDLE;
             RCLCPP_INFO(this->node->get_logger(), "Dump Macro Complete");
-
         }        
     }
 }

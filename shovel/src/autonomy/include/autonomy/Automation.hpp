@@ -246,6 +246,9 @@ class Automation{
     bool dump = true;
     bool excavate = true;
 
+    std::chrono::time_point<std::chrono::high_resolution_clock> bucketStartTime;
+    int bucketTargetTimeMs = 0;
+
     virtual void automate() = 0;
 
     virtual void publishAutomationStatus() = 0;
@@ -387,4 +390,8 @@ class Automation{
     void stopBucketLevel();
 
     void stopArmsLevel();
+
+    void moveBucketForTime(float speed, int time_ms);
+    
+    bool checkBucketTime();
 };

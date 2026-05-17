@@ -1067,3 +1067,28 @@ void Automation::stopBucketLevel(){
 void Automation::stopArmsLevel(){
     levelArms = false;
 }
+
+/*
+Starts the bucket motor at a specified speed and records the start time
+for time-based position estimation.
+*/
+void Automation::moveBucketForTime(float speed, int time_ms){
+    setBucketSpeed(speed);
+    this->bucketTargetTimeMs = time_ms;
+    this->bucketStartTime = std::chrono::high_resolution_clock::now();
+}
+
+/*
+Checks if the bucket has been moving for the requested amount of time.
+Returns true and stops the bucket if the time has elapsed.
+*/
+bool Automation::checkBucketTime(){
+    auto current_time = std::chrono::high_resolution_clock::now();
+    int elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - this->bucketStartTime).count();
+    
+    if(elapsed >= this->bucketTargetTimeMs){
+        setBucketSpeed(0.0); // Stop the bucket
+        return true;
+    }
+    return false;
+}

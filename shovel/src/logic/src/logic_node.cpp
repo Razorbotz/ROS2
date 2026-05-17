@@ -289,31 +289,35 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
                 RCLCPP_INFO(nodeHandle->get_logger(), "VibesSpeed: %d", vibesOn);
                 if(printData)
                     RCLCPP_INFO(nodeHandle->get_logger(), "Button 2");
-                }
                 RCLCPP_INFO(nodeHandle->get_logger(), "Sending vibesSpeed: %f", vibesSpeed);
                 std_msgs::msg::Float32 VibesSpeed;
                 VibesSpeed.data = vibesSpeed;
                 vibesSpeedPublisher->publish(VibesSpeed);
+            }
             break;
         case 2:
-            vibesSpeed = 0.34;
-            RCLCPP_INFO(nodeHandle->get_logger(), "VibesSpeed: 0.34");
-            if(printData)
-                RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
-            RCLCPP_INFO(nodeHandle->get_logger(), "Sending vibesSpeed: %f", vibesSpeed);
-            std_msgs::msg::Float32 VibesSpeed;
-            VibesSpeed.data = vibesSpeed;
-            vibesSpeedPublisher->publish(VibesSpeed);
+            if(buttonState->state == 1){
+                vibesSpeed = 0.34;
+                RCLCPP_INFO(nodeHandle->get_logger(), "VibesSpeed: 0.34");
+                if(printData)
+                    RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
+                RCLCPP_INFO(nodeHandle->get_logger(), "Sending vibesSpeed: %f", vibesSpeed);
+                std_msgs::msg::Float32 VibesSpeed;
+                VibesSpeed.data = vibesSpeed;
+                vibesSpeedPublisher->publish(VibesSpeed);
+            }
             break;
         case 3:
-            vibesSpeed = 0.68;
-            RCLCPP_INFO(nodeHandle->get_logger(), "VibesSpeed: 0.68");
-            if(printData)
-                RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
-            RCLCPP_INFO(nodeHandle->get_logger(), "Sending vibesSpeed: %f", vibesSpeed);
-            std_msgs::msg::Float32 VibesSpeed;
-            VibesSpeed.data = vibesSpeed;
-            vibesSpeedPublisher->publish(VibesSpeed);
+            if(buttonState->state == 1){
+                vibesSpeed = 0.68;
+                RCLCPP_INFO(nodeHandle->get_logger(), "VibesSpeed: 0.68");
+                if(printData)
+                    RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
+                RCLCPP_INFO(nodeHandle->get_logger(), "Sending vibesSpeed: %f", vibesSpeed);
+                std_msgs::msg::Float32 VibesSpeed;
+                VibesSpeed.data = vibesSpeed;
+                vibesSpeedPublisher->publish(VibesSpeed);
+            }
             break;
         case 4:
             if(printData)
@@ -346,7 +350,7 @@ void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonSt
         case 11:
             if(printData)
                 RCLCPP_INFO(nodeHandle->get_logger(), "Button 12");
-            break
+            break;
     }
 }
 
