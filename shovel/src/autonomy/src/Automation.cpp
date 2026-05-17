@@ -1092,3 +1092,29 @@ bool Automation::checkBucketTime(){
     }
     return false;
 }
+
+/*
+Starts the arm motor at a specified speed and records the start time
+for time-based position estimation. Mirrors moveBucketForTime but uses
+an independent timer so the arm and bucket can move concurrently.
+*/
+void Automation::moveArmForTime(float speed, int time_ms){
+    setArmSpeed(speed);
+    this->armTargetTimeMs = time_ms;
+    this->armStartTime = std::chrono::high_resolution_clock::now();
+}
+
+/*
+Checks if the arm has been moving for the requested amount of time.
+Returns true and stops the arm if the time has elapsed.
+*/
+bool Automation::checkArmTime(){
+    auto current_time = std::chrono::high_resolution_clock::now();
+    int elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - this->armStartTime).count();
+
+    if(elapsed >= this->armTargetTimeMs){
+        setArmSpeed(0.0); // Stop the arm
+        return true;
+    }
+    return false;
+}

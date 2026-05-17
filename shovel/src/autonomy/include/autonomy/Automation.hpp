@@ -106,7 +106,8 @@ class Automation{
         DUMP_FORWARD,
         DUMP_EXTEND,
         DUMP_DUMP,
-        DUMP_RETRACT
+        DUMP_RETRACT,
+        DUMP_BACKUP
     };
     
 
@@ -194,6 +195,7 @@ class Automation{
         {DUMP_RETRACT, "Retract"},
         {DUMP_FORWARD, "Forward"},
         {DUMP_DUMP, "Dump"},
+        {DUMP_BACKUP, "Back Up"},
     };
 
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveLeftSpeedPublisher;
@@ -248,6 +250,9 @@ class Automation{
 
     std::chrono::time_point<std::chrono::high_resolution_clock> bucketStartTime;
     int bucketTargetTimeMs = 0;
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> armStartTime;
+    int armTargetTimeMs = 0;
 
     virtual void automate() = 0;
 
@@ -394,4 +399,8 @@ class Automation{
     void moveBucketForTime(float speed, int time_ms);
     
     bool checkBucketTime();
+
+    void moveArmForTime(float speed, int time_ms);
+
+    bool checkArmTime();
 };

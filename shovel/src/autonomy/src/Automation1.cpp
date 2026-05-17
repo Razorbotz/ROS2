@@ -509,11 +509,13 @@ void Automation1::stopLevel(){
 
 void Automation1::setDumpMacro(){
     robotState = DUMP_MACRO;
+    dumpState = DUMP_IDLE;
     setGo();
 }
 
 void Automation1::setExcavateMacro(){
     robotState = EXCAVATE_MACRO;
+    excavationState = EXCAVATION_IDLE;
     setGo();
 }
 
@@ -527,33 +529,42 @@ void Automation1::setExcavate(){
 }
 
 void Automation1::excavateMacro(){
+    // Tunable constants for this macro
+    const float armLowerSpeed =  -1.0f;  // arm down speed (negative = down)
+    const float armRaiseSpeed =   1.0f;  // arm up speed
+    const float bucketSpeed   =   1.0f;  // bucket collect speed
+    const float driveSpeed    =   0.2f;  // forward drive speed
+    const int   lowerMs       =  2000;   // arm-lower duration
+    const int   bucketMs      =  2000;   // bucket-run duration (concurrent with lower)
+    const int   collectMs     =  2000;   // forward drive duration
+    const int   raiseMs       =  2000;   // arm-raise duration
+
     if(excavationState == EXCAVATION_IDLE){
         RCLCPP_INFO(this->node->get_logger(), "Starting Excavate Macro");
-        setArmPosition(100);
-        moveBucketForTime(1.0, 2000); 
+        moveArmForTime(armLowerSpeed, lowerMs);    // lower arm by speed
+        moveBucketForTime(bucketSpeed, bucketMs);  // run bucket concurrently
         excavationState = LOWER_ARM;
     }
     else if(excavationState == LOWER_ARM){
+        bool armDone = checkArmTime();
         bool bucketDone = checkBucketTime();
-        if(checkArmPosition(20) == 1 && bucketDone){
-            changeSpeed(0.2, 0.2); 
+        if(armDone && bucketDone){
+            changeSpeed(driveSpeed, driveSpeed);
             setStartTime(std::chrono::high_resolution_clock::now());
             excavationState = COLLECT;
         }
     }
     else if(excavationState == COLLECT){
-        auto current_time = std::chrono::high_resolution_clock::now();
-        if(std::chrono::duration_cast<std::chrono::milliseconds>(current_time - getStartTime()).count() > 2000){
+        auto now = std::chrono::high_resolution_clock::now();
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(now - getStartTime()).count() > collectMs){
             changeSpeed(0.0, 0.0);
+            moveArmForTime(armRaiseSpeed, raiseMs);  // raise arm by speed
             excavationState = RAISE_ARM;
-            setArmPosition(500);
         }
     }
     else if(excavationState == RAISE_ARM){
-        bool bucketDone = checkBucketTime();
-        if(checkArmPosition(20) == 1 && bucketDone){
+        if(checkArmTime()){
             excavationState = EXCAVATION_IDLE;
-            setArmPosition(300);
             robotState = ROBOT_IDLE;
             changeSpeed(0.0, 0.0);
             RCLCPP_INFO(this->node->get_logger(), "Excavate Macro Complete");
