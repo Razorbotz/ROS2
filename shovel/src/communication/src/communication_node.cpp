@@ -981,8 +981,7 @@ int main(int argc, char** argv) {
 
     while (rclcpp::ok()) {
         if (!aegisLink->is_remote_alive()) {
-            RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(),
-                                 (nodeRole == NodeRole::ORIN) ? 1000 : 10000, "Remote Dead!");
+            //RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(),(nodeRole == NodeRole::ORIN) ? 1000 : 10000, "Remote Dead!");
         }
         last_ros_update_time = get_time_ms();
 
