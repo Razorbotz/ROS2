@@ -392,112 +392,6 @@ void updateMotorPositions(int millis){
     }
 }
 
-void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition){
-    float raw_pitch = zedPosition->roll; 
-    //RCLCPP_INFO(nodeHandle->get_logger(), "raw_pitch: %f", raw_pitch);
-
-    if (!first_pitch_received) {
-        filtered_pitch = raw_pitch;
-        first_pitch_received = true;
-    }
-    else {
-        filtered_pitch = (PITCH_ALPHA * raw_pitch) + ((1.0 - PITCH_ALPHA) * filtered_pitch);
-    }
-    //RCLCPP_INFO(nodeHandle->get_logger(), "filtered_pitch: %f", filtered_pitch);
-
-    // --- ARM LEVELING ---
-    if (level_arm) {
-        if (std::abs(currentArmSpeed) > 0.05f) {
-            prevLevelArm = false; 
-        } 
-        else {
-            if (!prevLevelArm && linear1.initialized) {
-                armSetpoint = linear1.potentiometer;
-                pitchAtArmCapture = filtered_pitch;
-                prevLevelArm = true; // Mark as successfully latched
-            }
-
-            if (prevLevelArm) {
-                float pitch_delta = filtered_pitch - pitchAtArmCapture;
-                float target = armSetpoint + pitch_delta * (ARM_TRAVEL / ARM_DEGREES);
-                
-                if(target < 40.0) target = 40.0;
-                if(target > 980.0) target = 980.0; 
-                
-                //RCLCPP_INFO(nodeHandle->get_logger(), "Arm target: %f", target);
-                std_msgs::msg::Int32 position;
-                position.data = (int)target;
-                talon14PositionPublisher->publish(position);
-                if (armHasPair) talon15PositionPublisher->publish(position);
-            }
-        }
-    }
-    else {
-        prevLevelArm = false; 
-    }
-
-    // --- BUCKET LEVELING ---
-    if (level_bucket) {
-        if (std::abs(currentBucketSpeed) > 0.05f) {
-            prevLevelBucket = false;
-        }
-        else {
-            if (!prevLevelBucket && linear3.initialized) {
-                bucketSetpoint = linear3.potentiometer;
-                pitchAtBucketCapture = filtered_pitch;
-                prevLevelBucket = true; // Mark as successfully latched
-            }
-
-            if (prevLevelBucket) {
-                float pitch_delta = filtered_pitch - pitchAtBucketCapture;
-                float target = bucketSetpoint + pitch_delta * (BUCKET_TRAVEL / BUCKET_DEGREES);
-                
-                if(target > 900.0) target = 900.0;
-                if(target < 20.0) target = 20.0; 
-                RCLCPP_INFO(nodeHandle->get_logger(), "Bucket target: %f", target);
-                
-                std_msgs::msg::Int32 position;
-                position.data = (int)target;
-                talon16PositionPublisher->publish(position);
-                if (bucketHasPair) talon17PositionPublisher->publish(position);
-            }
-        }
-    }
-    else {
-        prevLevelBucket = false;
-    }
-}
-
-/** @brief Callback function for joystick buttons
- * 
- * This function is called when the node receives a
- * topic with the name joystick_button.  
- * @param buttonState \see ButtonState.msg
- * @return void
- * */
-void joystickButtonCallback(const messages::msg::ButtonState::SharedPtr buttonState){
-    std::cout << "Button " << buttonState->joystick << " " << buttonState->button << " " << buttonState->state << std::endl;
-    std_msgs::msg::Float32 armSpeed;
-    std_msgs::msg::Float32 bucketSpeed;
-    std_msgs::msg::Bool state; 
-
-    switch (buttonState->button) { 
-        case 2:
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 3");
-            if(buttonState->state == 1){
-                level_arm = !level_arm;
-            }
-            break;
-        case 3:
-            RCLCPP_INFO(nodeHandle->get_logger(), "Button 4");
-            if(buttonState->state == 1){
-                level_bucket = !level_bucket;
-            }
-            break;
-    }
-}
-
-
 int main(int argc, char **argv){
     rclcpp::init(argc,argv);
     nodeHandle = rclcpp::Node::make_shared("excavation");
@@ -533,9 +427,6 @@ int main(int argc, char **argv){
     auto talon3Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_16_info",1,potentiometer3Callback);
     auto talon4Subscriber = nodeHandle->create_subscription<messages::msg::TalonStatus>("talon_17_info",1,potentiometer4Callback);
 
-    auto zedPositionSubscriber= nodeHandle->create_subscription<messages::msg::ZedPosition>("zed_position",1,zedPositionCallback);
-    auto joystickButtonSubscriber= nodeHandle->create_subscription<messages::msg::ButtonState>("joystick_button",1,joystickButtonCallback);
-
     talon14Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_14_speed",1);
     talon15Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_15_speed",1);
     talon16Publisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("talon_16_speed",1);
@@ -549,6 +440,8 @@ int main(int argc, char **argv){
     linearStatus2Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus2",1);
     linearStatus3Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus3",1);
     linearStatus4Publisher = nodeHandle->create_publisher<messages::msg::LinearStatus>("linearStatus4",1);
+
+    linear3.sensorless = true;
 
     auto start = std::chrono::high_resolution_clock::now();
     auto finish = std::chrono::high_resolution_clock::now();

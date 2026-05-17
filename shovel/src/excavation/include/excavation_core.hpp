@@ -259,7 +259,7 @@ inline bool processPotentiometer(int potentData, LinearActuator* linear, bool ru
                                 errorLogged = true;
                             }
                             else {
-                                linear->error = ActuatorNotMovingError;
+                                //linear->error = ActuatorNotMovingError;
                                 errorLogged = true;
                             }
                         }
