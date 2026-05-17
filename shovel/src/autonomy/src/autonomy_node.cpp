@@ -160,7 +160,7 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
     }
     // 1 -> Dump Macro
-    if(keyState->key==49 && keyState->state==1){
+    if(keyState->key==49){
         RCLCPP_INFO(nodeHandle->get_logger(), "Dump Macro");
         automationGo = true;
         std_msgs::msg::Bool msg;
@@ -169,7 +169,7 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         automation->setDumpMacro();
     }
     // 2 -> Excavation Macro
-    if(keyState->key==50 && keyState->state==1){
+    if(keyState->key==50){
         RCLCPP_INFO(nodeHandle->get_logger(), "Excavation Macro");
         automationGo = true;
         std_msgs::msg::Bool msg;
