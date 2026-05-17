@@ -562,44 +562,50 @@ void Automation1::excavateMacro(){
 }
 
 void Automation1::dumpMacro(){
+    // Tunable constants for this macro
+    const float armRaiseSpeed   =  1.0f;   // arm up speed
+    const float driveSpeed      =  0.2f;   // forward/back drive speed
+    const int   forwardMs       =  2000;   // forward drive duration
+    const int   bucketExtendMs  =  3000;   // bucket extend duration
+    const int   bucketRetractMs =  3000;   // bucket retract duration
+    const int   backupMs        =  2000;   // reverse duration
+
     if(dumpState == DUMP_IDLE){
         RCLCPP_INFO(this->node->get_logger(), "Starting Dump Macro");
-        setArmPosition(900);
-        moveBucketForTime(1.0, 1500); 
-        dumpState = DUMP_EXTEND;
-    }
-    else if(dumpState == DUMP_EXTEND){
-        bool bucketDone = checkBucketTime();
-        if(checkArmPosition(20) == 1 && bucketDone){
-            setStartTime(std::chrono::high_resolution_clock::now());
-            dumpState = DUMP_FORWARD; 
-            changeSpeed(0.2, 0.2);
-        }
+        setArmSpeed(armRaiseSpeed);          // raise arm by speed
+        changeSpeed(driveSpeed, driveSpeed); // drive forward at the same time
+        setStartTime(std::chrono::high_resolution_clock::now());
+        dumpState = DUMP_FORWARD;
     }
     else if(dumpState == DUMP_FORWARD){
-        auto current_time = std::chrono::high_resolution_clock::now();
-        if(std::chrono::duration_cast<std::chrono::milliseconds>(current_time - getStartTime()).count() > 2000){
-            setArmPosition(750);
-            moveBucketForTime(-1.0, 2500); // Dump sequence
-            dumpState = DUMP_DUMP;
+        auto now = std::chrono::high_resolution_clock::now();
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(now - getStartTime()).count() > forwardMs){
+            setArmSpeed(0.0);                       // stop arm (raised for forwardMs)
+            changeSpeed(0.0, 0.0);                  // stop drive
+            moveBucketForTime(1.0, bucketExtendMs); // extend bucket actuator
+            dumpState = DUMP_EXTEND;
         }
     }
-    else if(dumpState == DUMP_DUMP){
-        bool bucketDone = checkBucketTime();
-        if(checkArmPosition(20) == 1 && bucketDone){
-            setStartTime(std::chrono::high_resolution_clock::now());
-            dumpState = DUMP_RETRACT; 
-            changeSpeed(-0.2, -0.2);
+    else if(dumpState == DUMP_EXTEND){
+        if(checkBucketTime()){                          // bucket extend done
+            moveBucketForTime(-1.0, bucketRetractMs);   // retract bucket actuator
+            dumpState = DUMP_RETRACT;
         }
     }
     else if(dumpState == DUMP_RETRACT){
-        auto current_time = std::chrono::high_resolution_clock::now();
-        if(checkArmPosition(20) == 1 && 
-            std::chrono::duration_cast<std::chrono::milliseconds>(current_time - getStartTime()).count() > 2000) {             
-            changeSpeed(0.0, 0.0);
+        if(checkBucketTime()){                       // bucket retract done
+            setStartTime(std::chrono::high_resolution_clock::now());
+            changeSpeed(-driveSpeed, -driveSpeed);   // back up
+            dumpState = DUMP_BACKUP;
+        }
+    }
+    else if(dumpState == DUMP_BACKUP){
+        auto now = std::chrono::high_resolution_clock::now();
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(now - getStartTime()).count() > backupMs){
+            changeSpeed(0.0, 0.0);                   // stop after reverse
             dumpState = DUMP_IDLE;
             robotState = ROBOT_IDLE;
             RCLCPP_INFO(this->node->get_logger(), "Dump Macro Complete");
-        }        
+        }
     }
 }

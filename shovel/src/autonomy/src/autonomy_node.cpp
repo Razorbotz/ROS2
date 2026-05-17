@@ -159,36 +159,29 @@ void keyCallback(const messages::msg::KeyState::SharedPtr keyState){
         }
         RCLCPP_INFO(nodeHandle->get_logger(), "Automation invert.  Current state: %d", automationGo);
     }
-    // 0
-    if(keyState->key==48 && keyState->state==1){
+    // 1 -> Dump Macro
+    if(keyState->key==49 && keyState->state==1){
         RCLCPP_INFO(nodeHandle->get_logger(), "Dump Macro");
+        automationGo = true;
+        std_msgs::msg::Bool msg;
+        msg.data = automationGo;
+        automationGoPublisher->publish(msg);
         automation->setDumpMacro();
     }
-    // 1
-    if(keyState->key==49 && keyState->state==1){
+    // 2 -> Excavation Macro
+    if(keyState->key==50 && keyState->state==1){
         RCLCPP_INFO(nodeHandle->get_logger(), "Excavation Macro");
+        automationGo = true;
+        std_msgs::msg::Bool msg;
+        msg.data = automationGo;
+        automationGoPublisher->publish(msg);
         automation->setExcavateMacro();
-    }
-    if(keyState->key==100 && keyState->state==1){
-        automation->setDiagnostics();
-    }
-    if(keyState->key==101 && keyState->state==1){
-        automation->setExcavate();
-    }
-    if(keyState->key==97 && keyState->state==1){
-        automation->startAutonomy();
     }
     if(keyState->key == 107 && keyState->state == 1){
         automationGo = false;
         automation->setStop();
         automation->setIdle();
     }
-    if(keyState->key == 108 && keyState->state == 1){
-        automation->setLevel();
-    }
-    //if(keyState->key == 48 && keyState->state==1){
-    //    return;
-    //}
 }
 
 
