@@ -28,6 +28,7 @@ void Automation::setNode(rclcpp::Node::SharedPtr node){
     driveRightSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("drive_right_speed",1);
     armSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("arm_speed",1);
     bucketSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("bucket_speed",1);
+    vibesSpeedPublisher= this->node->create_publisher<std_msgs::msg::Float32>("vibes_speed",1);
     goPublisher = this->node->create_publisher<std_msgs::msg::Empty>("GO", 1);
     stopPublisher = this->node->create_publisher<std_msgs::msg::Empty>("STOP",1);
     autonomyStatusPublisher = this->node->create_publisher<messages::msg::AutonomyStatus>("autonomy_status",1);
@@ -100,6 +101,12 @@ void Automation::setArmSpeed(float speed){
     std_msgs::msg::Float32 Speed;
     Speed.data = speed;
     armSpeedPublisher->publish(Speed);
+}
+
+void Automation::setArmSpeed(float speed){
+    std_msgs::msg::Float32 Speed;
+    Speed.data = speed;
+    vibesSpeedPublisher->publish(Speed);
 }
 
 

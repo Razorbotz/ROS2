@@ -202,6 +202,7 @@ class Automation{
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > driveRightSpeedPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > armSpeedPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > bucketSpeedPublisher;
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32_<std::allocator<void> >, std::allocator<void> > > vibesSpeedPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Empty_<std::allocator<void> >, std::allocator<void> > > goPublisher;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Empty_<std::allocator<void> >, std::allocator<void> > > stopPublisher;
     std::shared_ptr<rclcpp::Publisher<messages::msg::AutonomyStatus_<std::allocator<void> >, std::allocator<void> > > autonomyStatusPublisher;
@@ -267,6 +268,8 @@ class Automation{
     void setBucketSpeed(float speed);
 
     void setArmSpeed(float speed);
+
+    void setVibesSpeed(float speed);
 
     EulerAngles toEulerAngles(Quaternion q); 
 
