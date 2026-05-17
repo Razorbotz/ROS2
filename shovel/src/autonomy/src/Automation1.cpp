@@ -510,11 +510,13 @@ void Automation1::stopLevel(){
 void Automation1::setDumpMacro(){
     robotState = DUMP_MACRO;
     setGo();
+    setBucketSpeed(-1.0);
 }
 
 void Automation1::setExcavateMacro(){
     robotState = EXCAVATE_MACRO;
     setGo();
+    setBucketSpeed(1.0);
 }
 
 void Automation1::setExcavate(){
