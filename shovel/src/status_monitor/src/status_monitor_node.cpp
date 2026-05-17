@@ -448,14 +448,10 @@ void checkInterfaceStatus() {
         // Log motors only reachable on CAN2
         for (size_t i = 0; i < numMotors; i++) {
             if (copy1[i] == 0 && copy2[i] == 1) {
-                RCLCPP_WARN(nodeHandle->get_logger(),
-                    "Motor 0x%X (position %d) only reachable on %s",
-                    motorWiringOrder[i], (int)i, phys2Interface.c_str());
+                //RCLCPP_WARN(nodeHandle->get_logger(), "Motor 0x%X (position %d) only reachable on %s", motorWiringOrder[i], (int)i, phys2Interface.c_str());
             }
             if (copy1[i] == 0 && copy2[i] == 0) {
-                RCLCPP_ERROR(nodeHandle->get_logger(),
-                    "Motor 0x%X (position %d) unreachable on both interfaces!",
-                    motorWiringOrder[i], (int)i);
+                //RCLCPP_ERROR(nodeHandle->get_logger(), "Motor 0x%X (position %d) unreachable on both interfaces!", motorWiringOrder[i], (int)i);
             }
         }
 
