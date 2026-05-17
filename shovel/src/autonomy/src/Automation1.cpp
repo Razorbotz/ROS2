@@ -510,13 +510,11 @@ void Automation1::stopLevel(){
 void Automation1::setDumpMacro(){
     robotState = DUMP_MACRO;
     setGo();
-    setBucketSpeed(-1.0);
 }
 
 void Automation1::setExcavateMacro(){
     robotState = EXCAVATE_MACRO;
     setGo();
-    setBucketSpeed(1.0);
 }
 
 void Automation1::setExcavate(){
@@ -532,7 +530,6 @@ void Automation1::excavateMacro(){
     if(excavationState == EXCAVATION_IDLE){
         RCLCPP_INFO(this->node->get_logger(), "Starting Excavate Macro");
         setArmPosition(100);
-        // Replace setBucketPosition with a timed movement (e.g., 2000ms at full speed)
         moveBucketForTime(1.0, 2000); 
         excavationState = LOWER_ARM;
     }
@@ -549,26 +546,14 @@ void Automation1::excavateMacro(){
         if(std::chrono::duration_cast<std::chrono::milliseconds>(current_time - getStartTime()).count() > 2000){
             changeSpeed(0.0, 0.0);
             excavationState = RAISE_ARM;
-            setArmPosition(900);
-            moveBucketForTime(-1.0, 2000); // Move bucket back
+            setArmPosition(500);
         }
-    }
-    else if(excavationState == SQUARE_UP){
-        // Existing logic...
     }
     else if(excavationState == RAISE_ARM){
         bool bucketDone = checkBucketTime();
         if(checkArmPosition(20) == 1 && bucketDone){
-            excavationState = LOWER_ARM;
-            setArmPosition(300);
-            moveBucketForTime(1.0, 1000); // Adjust bucket for lower state
-            changeSpeed(-0.2, -0.2);
-        }
-    }
-    else if(excavationState == LOWER_ARM){
-        bool bucketDone = checkBucketTime();
-        if(checkArmPosition(20) == 1 && bucketDone){
             excavationState = EXCAVATION_IDLE;
+            setArmPosition(300);
             robotState = ROBOT_IDLE;
             changeSpeed(0.0, 0.0);
             RCLCPP_INFO(this->node->get_logger(), "Excavate Macro Complete");
