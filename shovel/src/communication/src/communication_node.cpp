@@ -1,37 +1,3 @@
-/**
- * @file communication_node.cpp
- * @brief Unified communication node for the shovel robot.
- *
- * This node handles all communication between the client GUI and the rover,
- * as well as inter-board communication (Orin <-> Nano) via the Aegis system.
- *
- * A single binary supports three roles, selected via the `role` parameter:
- *   - "orin"  — runs on the Orin, uses AegisController
- *   - "nano"  — runs on the Nano, uses AegisNanoController
- *   - "sim"   — simulation mode, uses AegisController with local networking
- *
- * Parameters:
- *   - role (string, default "nano")          — "orin", "nano", or "sim"
- *   - robot_name (string, default "shovel")  — broadcast robot name
- *   - debug (bool, default false)            — verbose logging
- *   - local (bool, default false)            — use localhost for Aegis
- *   - remote_ip (string)                     — remote Aegis peer IP
- *   - listen_port (int)                      — local Aegis UDP port
- *   - send_port (int)                        — remote Aegis UDP port
- *   - bind_address (string)                  — client socket bind address
- *   - interface_name (string)                — network interface for broadcast
- *
- * Subscribed topics:
- *   - power, talon_14-17_info (TalonStatus), talon_10-13_info (FalconStatus)
- *   - linearStatus1-4, zed_position, autonomy_status, system_status
- *   - drivetrain_status
- *
- * Published topics:
- *   - joystick_axis, joystick_button, joystick_hat, key
- *   - STOP, GO, comm_heartbeat
- *   - arm_speed, bucket_speed (nano/sim roles only)
- */
-
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -74,15 +40,10 @@
 #include <messages/msg/lidar_distance.hpp>
 
 #include <BinaryMessage.hpp>
-#include <Heartbeat.hpp>
 #include <RobotState.hpp>
 #include <NetworkUtils.hpp>
 #include <MessageUtils.hpp>
-#include "AegisController.hpp"
-#include "AegisNanoController.hpp"
-#include "AegisGatewayManager.cpp"
 #include "utils/utils.hpp"
-#include "EthernetHBThread.hpp"
 
 #include <iostream>
 #include <cstring>
@@ -90,24 +51,8 @@
 #include <netdb.h>
 
 #define PORT 31337
-#define DEFAULT_ORIN_PORT 31339
-#define DEFAULT_NANO_PORT 31340
-#define DEFAULT_LOCAL_IP "127.0.0.1"
-#define DEFAULT_ORIN_REMOTE_IP "192.168.50.10"
-#define DEFAULT_NANO_REMOTE_IP "192.168.50.11"
-
-// ============================================================================
-//  Role enumeration
-// ============================================================================
-
-enum class NodeRole {
-    ORIN,   // Runs on Orin, interfaces with Nano via AegisController
-    NANO,   // Runs on Nano, interfaces with Orin via AegisNanoController
-    SIM     // Simulation, uses AegisController with local networking
-};
 
 rclcpp::Node::SharedPtr nodeHandle;
-NodeRole nodeRole = NodeRole::NANO;
 
 std::string robotName = "unnamed";
 std::string interfaceName = "wlP1p1s0";
@@ -123,8 +68,6 @@ std_msgs::msg::Empty heartbeat;
 
 int rssi = 0;
 
-std::atomic<uint32_t> global_seq{0};
-std::atomic<uint64_t> last_ros_update_time{0};
 std::atomic<uint64_t> last_client_tx_time_ms{0};
 
 #define LOWER_THRESH 67
@@ -186,52 +129,16 @@ inline ForceBoolFlags& getForceFlags(Talon& t) {
     return talon_force[3]; // talon4
 }
 
-std::unique_ptr<HeartbeatLink> aegisLink;
-std::unique_ptr<CanLink> aegisCanLink;
-std::mutex aegisMutex;
-RemoteStatus aegisRemoteStatus;
-bool aegisRawData = false;
-SystemStatus aegisSysStatus = BOOT;
-HandshakeStatus aegisHandshakeStatus = IDLE_HANDSHAKE;
-ErrorCode aegisErrorCode = NO_ERROR;
-std::unique_ptr<EthernetHBThread> aegisEthHB;
-
-std::shared_ptr<AegisBase> aegis;
-
-CanHeartbeatPayload can_hb{0x01, 0, 0, 0}; // Overwritten based on role
-
-std::atomic<bool> is_sender{false};
-std::array<std::atomic<bool>, 8> motor_publish_allowed = {false};
-std::array<std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool>>, 8> motorStopPublishers;
-
 float current_lidar_dist = -1.0f;
 float voltage = 0.0f;
 float temperature_val = 0.0f;
 std::array<float, 16> currents{};
-
-std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32>> armSpeedPublisher;
-std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32>> bucketSpeedPublisher;
 
 uint64_t get_time_ms() {
     using namespace std::chrono;
     return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
-/** @brief Notify Aegis that a motor node message was received.
- *  All receivedMotor*() methods are on AegisBase.
- */
-void notifyMotorReceived(int motorId) {
-    switch (motorId) {
-        case 10: aegis->receivedMotor10(); break;
-        case 11: aegis->receivedMotor11(); break;
-        case 12: aegis->receivedMotor12(); break;
-        case 13: aegis->receivedMotor13(); break;
-        case 14: aegis->receivedMotor14(); break;
-        case 15: aegis->receivedMotor15(); break;
-        case 16: aegis->receivedMotor16(); break;
-        case 17: aegis->receivedMotor17(); break;
-    }
-}
 
 void forceDataResync() {
     auto resetFalcon = [](Falcon& f) {
@@ -295,22 +202,6 @@ void forceDataResync() {
     systemState.can_bus = "RESYNC"; systemState.rx_packets = -1;
 
     voltage = -1.0f; temperature_val = -1.0f; currents.fill(-1.0f);
-}
-
-void updateSenderState(bool state) {
-    RCLCPP_INFO(nodeHandle->get_logger(), "updateSenderState");
-    if (is_sender != state) {
-        if (state) {
-            RCLCPP_INFO(nodeHandle->get_logger(), "Role Switched: PRIMARY (Publishing enabled)");
-        }
-        else {
-            RCLCPP_INFO(nodeHandle->get_logger(), "Role Switched: SECONDARY (Publishing disabled)");
-        }
-        is_sender = state;
-    }
-}
-
-void updateMotorAuthCallback(uint8_t motor_index, bool authorized) {
 }
 
 void send(BinaryMessage message) {
@@ -515,7 +406,6 @@ void send(std::string messageLabel, const messages::msg::AutonomyStatus::SharedP
 
 int zedCounter = 0;
 void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition) {
-    aegis->receivedZedTracking();
     if (silentRunning) return;
     if (rssi > UPPER_THRESH) return;
     zedCounter++;
@@ -535,7 +425,6 @@ void zedPositionCallback(const messages::msg::ZedPosition::SharedPtr zedPosition
 
 int systemCounter = 0;
 void systemStatusCallback(const messages::msg::SystemStatus::SharedPtr status) {
-    aegis->receivedStatusMonitor();
     if (silentRunning) return;
     systemCounter++;
     if (systemCounter % 5 != 0) return;
@@ -650,7 +539,6 @@ void linearStatusCallback(const std::string& name, const messages::msg::LinearSt
 
 int autonomyCounter = 0;
 void autonomyStatusCallback(const messages::msg::AutonomyStatus::SharedPtr autonomyStatus) {
-    aegis->receivedAutonomy();
     autonomyCounter++;
     if (autonomyCounter % 15 == 0)
         if (rssi < CRIT_THRESH)
@@ -684,143 +572,16 @@ void broadcastIP() {
     }
 }
 
-std::thread comms_thread;
-std::atomic<bool> node_running{true};
-
-void network_worker() {
-    while (node_running) {
-        while (aegisLink->spin_once());
-
-        if (nodeRole == NodeRole::ORIN) {
-            static_cast<AegisController*>(aegis.get())->checkTimers();
-        }
-        else {
-            static_cast<AegisNanoController*>(aegis.get())->checkTimers();
-        }
-
-        aegisCanLink->read_heartbeat(can_hb);
-
-        uint64_t now = get_time_ms();
-        if (now - last_ros_update_time > 100) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            continue;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-}
-
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     nodeHandle = rclcpp::Node::make_shared("communication");
     RCLCPP_INFO(nodeHandle->get_logger(), "Starting unified communication node");
 
     // --- Parameters ---
-    std::string roleStr = utils::getParameter<std::string>(nodeHandle, "role", "orin");
     robotName       = utils::getParameter<std::string>(nodeHandle, "robot_name", "shovel");
     debug           = utils::getParameter<bool>(nodeHandle, "debug", false);
-    bool useLocal   = utils::getParameter<bool>(nodeHandle, "local", false);
     interfaceName   = utils::getParameter<std::string>(nodeHandle, "interface_name", "wlP1p1s0");
 
-    // Determine role
-    if (roleStr == "orin") {
-        nodeRole = NodeRole::ORIN;
-    }
-    else if (roleStr == "sim") {
-        nodeRole = NodeRole::SIM;
-    }
-    else {
-        nodeRole = NodeRole::NANO;
-    }
-    RCLCPP_INFO(nodeHandle->get_logger(), "Role: %s", roleStr.c_str());
-
-    // --- Role-based defaults ---
-    std::string defaultRemoteIP;
-    int defaultListenPort, defaultSendPort;
-    bool defaultIsPrimary;
-    std::string defaultBindAddr;
-    uint8_t canHeartbeatId;
-
-    switch (nodeRole) {
-        case NodeRole::ORIN:
-            defaultRemoteIP = DEFAULT_NANO_REMOTE_IP; // send to Nano
-            defaultListenPort = DEFAULT_ORIN_PORT; // Listen on Orin port
-            defaultSendPort = DEFAULT_NANO_PORT; // Send to Nano port
-            defaultIsPrimary = true;
-            defaultBindAddr = "0.0.0.0";
-            canHeartbeatId = 0x02;
-            break;
-        case NodeRole::NANO:
-            defaultRemoteIP = DEFAULT_ORIN_REMOTE_IP; // send to Orin
-            defaultListenPort = DEFAULT_NANO_PORT; // Listen to Nano port
-            defaultSendPort = DEFAULT_ORIN_PORT; // Send to Orin port
-            defaultIsPrimary = false;
-            defaultBindAddr = "0.0.0.0";
-            canHeartbeatId = 0x01;
-            break;
-        case NodeRole::SIM:
-            defaultRemoteIP = DEFAULT_LOCAL_IP;
-            defaultListenPort = DEFAULT_ORIN_PORT;
-            defaultSendPort = DEFAULT_NANO_PORT;
-            defaultIsPrimary = false;
-            defaultBindAddr = "0.0.0.0";
-            canHeartbeatId = 0x01;
-            useLocal = true;
-            interfaceName = "eth1";
-            RCLCPP_INFO(nodeHandle->get_logger(), "HERE");
-            break;
-    }
-
-    std::string remoteIP   = utils::getParameter<std::string>(nodeHandle, "remote_ip", defaultRemoteIP);
-    int listenPort         = utils::getParameter<int>(nodeHandle, "listen_port", defaultListenPort);
-    int sendPort           = utils::getParameter<int>(nodeHandle, "send_port", defaultSendPort);
-    std::string bindAddr   = utils::getParameter<std::string>(nodeHandle, "bind_address", defaultBindAddr);
-
-    is_sender.store(defaultIsPrimary);
-    can_hb = {canHeartbeatId, 0, 0, 0};
-
-    // --- Initialize Aegis ---
-    aegisRemoteStatus.UP = false;
-    aegisRemoteStatus.WIFI_UP = false;
-    aegisRemoteStatus.CAN0_UP = false;
-    aegisRemoteStatus.CAN1_UP = false;
-
-    if (useLocal) {
-        aegisLink = std::make_unique<HeartbeatLink>(listenPort, DEFAULT_LOCAL_IP, sendPort);
-    }
-    else {
-        aegisLink = std::make_unique<HeartbeatLink>(listenPort, remoteIP.c_str(), sendPort);
-    }
-
-    if (!aegisLink->init()) {
-        RCLCPP_ERROR(nodeHandle->get_logger(), "Failed to init Heartbeat Link!");
-        return -1;
-    }
-    aegisCanLink = std::make_unique<CanLink>();
-
-    using namespace std::placeholders;
-    if (nodeRole == NodeRole::ORIN || nodeRole == NodeRole::SIM) {
-        auto ctrl = std::make_shared<AegisController>(
-            nodeHandle, *aegisLink, *aegisCanLink, aegisMutex, aegisRemoteStatus,
-            aegisRawData, aegisSysStatus, aegisHandshakeStatus, aegisErrorCode,
-            updateSenderState, updateMotorAuthCallback);
-        aegisLink->set_data_callback(
-            std::bind(&AegisController::on_packet_received, ctrl, _1, _2, _3));
-        aegis = ctrl;
-    }
-    else {
-        auto ctrl = std::make_shared<AegisNanoController>(
-            nodeHandle, *aegisLink, *aegisCanLink, aegisMutex, aegisRemoteStatus,
-            aegisRawData, aegisSysStatus, aegisHandshakeStatus, aegisErrorCode,
-            updateSenderState, updateMotorAuthCallback);
-        aegisLink->set_data_callback(
-            std::bind(&AegisNanoController::on_packet_received, ctrl, _1, _2, _3));
-        aegis = ctrl;
-    }
-
-    aegisEthHB = std::make_unique<EthernetHBThread>(*aegisLink, std::chrono::milliseconds(10));
-    aegisEthHB->start();
-    aegis->initAegis();
-    comms_thread = std::thread(network_worker);
     RCLCPP_INFO(nodeHandle->get_logger(), "Comms Thread Started.");
 
     // --- Publishers ---
@@ -831,11 +592,6 @@ int main(int argc, char** argv) {
     auto stopPublisher           = nodeHandle->create_publisher<std_msgs::msg::Empty>("STOP", 1);
     auto goPublisher             = nodeHandle->create_publisher<std_msgs::msg::Empty>("GO", 1);
     auto commHeartbeatPublisher  = nodeHandle->create_publisher<std_msgs::msg::Empty>("comm_heartbeat", 1);
-
-    if (nodeRole == NodeRole::SIM) {
-        armSpeedPublisher    = nodeHandle->create_publisher<std_msgs::msg::Float32>("arm_speed", 1);
-        bucketSpeedPublisher = nodeHandle->create_publisher<std_msgs::msg::Float32>("bucket_speed", 1);
-    }
 
     auto powerSubscriber = nodeHandle->create_subscription<messages::msg::Power>("power", 1, powerCallback);
 
@@ -975,14 +731,11 @@ int main(int argc, char** argv) {
     std::list<uint8_t> messageBytesList;
     uint8_t message[256];
     rclcpp::Rate rate(120);
-    bool isClientConnected = (nodeRole == NodeRole::ORIN); // Orin starts connected, Nano/Sim starts disconnected
+    bool isClientConnected = false; // Orin starts connected, Nano/Sim starts disconnected
     auto previousHeartbeat = std::chrono::high_resolution_clock::now();
     auto previousReset = std::chrono::high_resolution_clock::now();
 
     while (rclcpp::ok()) {
-        if (!aegisLink->is_remote_alive()) {
-            //RCLCPP_WARN_THROTTLE(nodeHandle->get_logger(), *nodeHandle->get_clock(),(nodeRole == NodeRole::ORIN) ? 1000 : 10000, "Remote Dead!");
-        }
         last_ros_update_time = get_time_ms();
 
         try {
@@ -1002,7 +755,6 @@ int main(int argc, char** argv) {
             if (!isClientConnected) {
                 RCLCPP_INFO(nodeHandle->get_logger(), "New client connected. Sending greeting.");
                 isClientConnected = true;
-                aegis->updateConnectionStatus(isClientConnected);
                 previousHeartbeat = std::chrono::high_resolution_clock::now();
                 std::string hello("Hello from server");
                 sendto(server_fd, hello.c_str(), hello.length(), 0,
@@ -1020,7 +772,6 @@ int main(int argc, char** argv) {
 
             if (elapsed.count() > 5.0) {
                 isClientConnected = false;
-                aegis->updateConnectionStatus(isClientConnected);
                 RCLCPP_INFO(nodeHandle->get_logger(), "Client disconnected");
                 silentRunning = true;
                 broadcast = true;
@@ -1076,51 +827,6 @@ int main(int argc, char** argv) {
                 keyState.key = ((uint16_t)message[1]) << 8 | ((uint16_t)message[2]);
                 keyState.state = message[3];
                 keyPublisher->publish(keyState);
-
-                // Arm/bucket speed from keys 3-6 (nano/sim only)
-                if (nodeRole == NodeRole::SIM && armSpeedPublisher && bucketSpeedPublisher) {
-                    if (keyState.key == 51 || keyState.key == 52 ||
-                        keyState.key == 53 || keyState.key == 54)
-                    {
-                        std_msgs::msg::Float32 speed;
-                        if (keyState.state == 1) {
-                            if (keyState.key == 51) { speed.data = -1; armSpeedPublisher->publish(speed); }
-                            if (keyState.key == 52) { speed.data = 1;  armSpeedPublisher->publish(speed); }
-                            if (keyState.key == 53) { speed.data = -1; bucketSpeedPublisher->publish(speed); }
-                            if (keyState.key == 54) { speed.data = 1;  bucketSpeedPublisher->publish(speed); }
-                        }
-                        else {
-                            speed.data = 0;
-                            armSpeedPublisher->publish(speed);
-                            bucketSpeedPublisher->publish(speed);
-                        }
-                    }
-                }
-                if(nodeRole == NodeRole::SIM){
-                    // JKLI virtual joystick
-                    if (keyState.key == 105 || keyState.key == 107 ||
-                        keyState.key == 106 || keyState.key == 108){
-                        messages::msg::AxisState jkliAxis;
-                        jkliAxis.joystick = 0;
-                        float val = (keyState.state != 0) ? 1.0f : 0.0f;
-
-                        if (keyState.key == 105) { jkliAxis.axis = 1; jkliAxis.state = val; }
-                        else if (keyState.key == 107) { jkliAxis.axis = 1; jkliAxis.state = -val; }
-                        else if (keyState.key == 108) {
-                            jkliAxis.axis = 0;
-                            // Nano/sim inverts the X axis for 'l'
-                            jkliAxis.state = val;
-                        }
-                        else if (keyState.key == 106) {
-                            jkliAxis.axis = 0;
-                            // Nano/sim inverts the X axis for 'j'
-                            jkliAxis.state = -val;
-                        }
-
-                        joystickAxisPublisher->publish(jkliAxis);
-                    }
-                }
-
             }
 
             // Joystick button
@@ -1166,9 +872,6 @@ int main(int argc, char** argv) {
         commHeartbeatPublisher->publish(heartbeat);
         rate.sleep();
     }
-
-    node_running = false;
-    if (comms_thread.joinable()) comms_thread.join();
 
     rclcpp::shutdown();
     return 0;
