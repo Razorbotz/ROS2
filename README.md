@@ -38,11 +38,19 @@ All motor controller nodes, ie Talon, Falcon, and Exavation nodes, also subscrib
 
 ## Running the Simulation
 To run the autonomy code, run the following command in WSL one terminal:
+```
 cd SoftwareDevelopment/ROS2/simulation
+
 source install/setup.bash
+
 ros2 launch sim artemis_sim.launch.py
+```
 
 Run the following in a second terminal:
+```
 cd SoftwareDevelopment/ROS2/simulation
+
 source install/setup.bash
+
 ros2 run teleop keyboard_control
+```

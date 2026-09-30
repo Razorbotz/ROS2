@@ -20,13 +20,13 @@ shovel/install
 shovel/build
 shovel/log
 shovel/launch/__pycache__
-<<<<<<< Updated upstream
-
-simulation/build
-simulation/install
-=======
 simulation/install
 simulation/build
->>>>>>> Stashed changes
 simulation/log
 simulation/launch/__pycache__
+build_docker/
+install_docker/
+log_docker/
+build_native/
+install_native/
+log_native/

@@ -103,7 +103,7 @@ void Automation::setArmSpeed(float speed){
     armSpeedPublisher->publish(Speed);
 }
 
-void Automation::setArmSpeed(float speed){
+void Automation::setVibesSpeed(float speed){
     std_msgs::msg::Float32 Speed;
     Speed.data = speed;
     vibesSpeedPublisher->publish(Speed);

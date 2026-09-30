@@ -69,6 +69,8 @@ std_msgs::msg::Empty heartbeat;
 int rssi = 0;
 
 std::atomic<uint64_t> last_client_tx_time_ms{0};
+std::atomic<uint32_t> global_seq{0};
+std::atomic<uint64_t> last_ros_update_time{0};
 
 #define LOWER_THRESH 67
 #define UPPER_THRESH 80
@@ -205,8 +207,6 @@ void forceDataResync() {
 }
 
 void send(BinaryMessage message) {
-    if (!is_sender.load()) return;
-
     if (debug)
         RCLCPP_INFO(nodeHandle->get_logger(), "Sending message");
 
@@ -496,7 +496,6 @@ void powerCallback(const messages::msg::Power::SharedPtr power) {
 }
 
 void talonStatusCallback(const std::string& name, const messages::msg::TalonStatus::SharedPtr talonStatus, int& counter, Talon& talon, int motorId) {
-    notifyMotorReceived(motorId);
     if (rssi < CRIT_THRESH)
         send(name, talonStatus, talon);
 }
@@ -511,7 +510,6 @@ void sendFalconCrit(std::string messageLabel, const messages::msg::FalconStatus:
 }
 
 void falconStatusCallback(const std::string& name, const messages::msg::FalconStatus::SharedPtr talonStatus, int& counter, Falcon& falcon, int motorId) {
-    notifyMotorReceived(motorId);
     counter++;
     if (counter % 20 == 0) {
         if (rssi < CRIT_THRESH)
@@ -524,7 +522,6 @@ void falconStatusCallback(const std::string& name, const messages::msg::FalconSt
 }
 
 void krakenStatusCallback(const std::string& name, const messages::msg::KrakenStatus::SharedPtr krakenStatus, int& counter, Kraken& kraken, int motorId) {
-    notifyMotorReceived(motorId);
     if (rssi < CRIT_THRESH)
         send(name, krakenStatus, kraken);
 }
@@ -571,6 +568,7 @@ void broadcastIP() {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
+
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
@@ -653,15 +651,6 @@ int main(int argc, char** argv) {
     RCLCPP_INFO(nodeHandle->get_logger(), "Drive motor types: [%s, %s, %s, %s]",
                 motor10Type.c_str(), motor11Type.c_str(), motor12Type.c_str(), motor13Type.c_str());
 
-    motorStopPublishers[0] = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_10_stop", 1);
-    motorStopPublishers[1] = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_11_stop", 1);
-    motorStopPublishers[2] = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_12_stop", 1);
-    motorStopPublishers[3] = nodeHandle->create_publisher<std_msgs::msg::Bool>("falcon_13_stop", 1);
-    motorStopPublishers[4] = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_14_stop", 1);
-    motorStopPublishers[5] = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_15_stop", 1);
-    motorStopPublishers[6] = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_16_stop", 1);
-    motorStopPublishers[7] = nodeHandle->create_publisher<std_msgs::msg::Bool>("talon_17_stop", 1);
-
     int linear1Counter = 0, linear2Counter = 0, linear3Counter = 0, linear4Counter = 0;
     auto linear1Sub = nodeHandle->create_subscription<messages::msg::LinearStatus>("linearStatus1", 1,
         [&](const messages::msg::LinearStatus::SharedPtr msg) { linearStatusCallback("Linear 1", msg, linear1Counter, linear1); });
@@ -696,6 +685,8 @@ int main(int argc, char** argv) {
         perror("setsockopt");
         exit(EXIT_FAILURE);
     }
+
+    std::string bindAddr   = utils::getParameter<std::string>(nodeHandle, "bind_address", "0.0.0.0");
 
     address.sin_family = AF_INET;
     if (bindAddr == "0.0.0.0") {
