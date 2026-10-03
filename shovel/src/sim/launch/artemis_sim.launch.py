@@ -3,6 +3,7 @@ from launch.actions import ExecuteProcess, SetEnvironmentVariable, RegisterEvent
 from launch.event_handlers import OnProcessExit
 from launch_ros.actions import Node
 import os
+import tempfile
 from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
@@ -29,12 +30,28 @@ def generate_launch_description():
         value='/usr/share/gazebo-11:' + os.path.join(pkg_path, 'worlds')
     )
 
+    def resolve_paths(text):
+        return (text.replace('REPLACE_WITH_CONTROLLER_YAML', config_path)
+                    .replace('$(find sim)', pkg_path))
+
+    with open(urdf_path) as f:
+        robot_description = resolve_paths(f.read())
+
+    with open(model_sdf_path) as f:
+        model_sdf = resolve_paths(f.read())
+    resolved_sdf = tempfile.NamedTemporaryFile(
+        mode='w', suffix='.sdf', prefix='my_robot_', delete=False)
+    resolved_sdf.write(model_sdf)
+    resolved_sdf.close()
+    resolved_sdf_path = resolved_sdf.name
+    
     # 1. Robot State Publisher (Publishes URDF for ros2_control to find)
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[{'robot_description': open(urdf_path).read()}]
+        parameters=[{'robot_description': robot_description,
+                     'use_sim_time': True}]
     )
 
     # 2. Static TF: Map -> World Bridge (UPDATED)
@@ -75,7 +92,7 @@ def generate_launch_description():
         executable='spawn_entity.py',
         arguments=[
             '-entity', 'my_robot',
-            '-file', model_sdf_path,
+            '-file', resolved_sdf_path,
             '-x', '1.5', '-y', '1.5', '-z', '0.2',
             '-timeout', '120'
         ],

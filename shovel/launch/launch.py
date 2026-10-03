@@ -32,7 +32,6 @@ from ament_index_python.packages import get_package_share_directory
 #   - Whether Gazebo is launched
 #   - Communication node role (orin/nano/sim)
 #   - Which peripherals are started (RealSense, ArUco, etc.)
-#   - BT wrapper target
 
 
 def generate_launch_description():
@@ -93,7 +92,6 @@ def generate_launch_description():
     excav_launch = os.path.join(launch_dir, 'launch', 'launch_excav.py')
     drivetrain_launch = os.path.join(launch_dir, 'launch', 'launch_drivetrain.py')
     status_monitor_launch = os.path.join(launch_dir, 'launch', 'launch_status_monitor.py')
-    bt_wrapper_launch = os.path.join(launch_dir, 'launch', 'bt_config.py')
     gazebo_launch = os.path.join(launch_dir, 'launch', 'artemis_sim.launch.py')
     video_launch = os.path.join(launch_dir, 'launch', 'launch_video_streaming.py')
     lidar_launch = os.path.join(launch_dir, 'launch', 'launch_lidar.py')
@@ -302,39 +300,6 @@ def generate_launch_description():
                     }.items(),
                 ),
             ]
-        ),
-
-        # =================================================================
-        #  BT wrapper — target depends on robot
-        # =================================================================
-        # Talos and Sierra target Sisyphus
-        GroupAction(
-            condition=is_talos,
-            actions=[
-                IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(bt_wrapper_launch),
-                    launch_arguments={'target': 'Sisyphus'}.items(),
-                ),
-            ],
-        ),
-        GroupAction(
-            condition=is_sierra,
-            actions=[
-                IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(bt_wrapper_launch),
-                    launch_arguments={'target': 'Sisyphus'}.items(),
-                ),
-            ],
-        ),
-        # Sisyphus targets Sierra
-        GroupAction(
-            condition=is_sisyphus,
-            actions=[
-                IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(bt_wrapper_launch),
-                    launch_arguments={'target': 'Sierra'}.items(),
-                ),
-            ],
         ),
 
         # =================================================================
