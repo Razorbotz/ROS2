@@ -65,7 +65,7 @@ def generate_launch_description():
         description='Set to "true" to launch the lunar perception node.'
     )
     enable_recording_arg = DeclareLaunchArgument(
-        'enable_recording', default_value='true',
+        'enable_recording', default_value='false',
         description='Set to "true" to record telemetry to a bag file for post-run analysis.'
     )
 
@@ -268,7 +268,8 @@ def generate_launch_description():
                     "'wlP1p1s0' if '", robot, "' != 'sim' else 'eth1'"
                 ]),
                 'zed_image_topic': PythonExpression([
-                    "'/d455f/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/zed/zed_node/left_gray/image_rect_gray'"
+                    "'/zed2i/left/image_raw' if '", robot, "'.lower() == 'sim' else "
+                    "('/d455f/color/image_raw' if '", robot, "'.lower() == 'sisyphus' else '/zed/zed_node/left_gray/image_rect_gray')"
                 ]),
             }.items(),
         ),
